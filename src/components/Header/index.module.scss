@@ -1,0 +1,164 @@
+.header {
+	width: 100%;
+	height: 60px;
+	display: flex;
+	flex-direction: row;
+	background: #ffffff;
+	border: 1px solid #e2e2e9;
+	align-items: center;
+
+	.logoContainer {
+		display: flex;
+		cursor: pointer;
+		align-items: center;
+		background-color: #5c52d3;
+		border-radius: 8px;
+		width: 166px;
+		height: 45px;
+		margin-left: 21px;
+
+		flex-direction: row;
+		.logo {
+			width: 36px;
+			height: 36px;
+			margin-left: 4px;
+			margin-right: 3px;
+		}
+
+		.title {
+			font-size: 16px;
+			font-weight: 600;
+			color: #fff;
+			font-family: 'Montserrat', sans-serif;
+			//line-height: 24px;
+		}
+	}
+
+	.select {
+		cursor: pointer;
+		border-radius: 8px;
+		width: 142px;
+		height: 36px;
+		background: none;
+		border: 1px solid #179417;
+		margin-left: 26px;
+		font-family: 'Roboto';
+		font-weight: 400;
+		font-size: 16px;
+
+		.selectContainer {
+			display: flex;
+			align-items: center;
+			flex-direction: row;
+			justify-content: space-between;
+			margin-left: 16px;
+			margin-right: 12px;
+		}
+	}
+}
+
+.optionGroup {
+	background-color: #ffffff;
+	border-radius: 8px;
+	list-style: none;
+	width: 144px;
+	margin-top: 4px;
+	padding-top: 16px;
+	padding-bottom: 16px;
+	font-family: 'Roboto';
+	font-weight: 400;
+	font-size: 16px;
+
+	//shadow
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
+	.option {
+		cursor: pointer;
+		color: #a1a1a3;
+		padding: 0px 20px;
+		&:not(:first-child) {
+			margin-top: 16px;
+		}
+		&:hover {
+			color: #1f2133;
+		}
+		list-style: none;
+	}
+}
+.hideBtn {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	cursor: pointer;
+	background: none;
+	border: none;
+	width: 103px;
+	margin-left: 21px;
+	.btnText {
+		font-family: 'Roboto';
+		font-size: 16px;
+		font-weight: 400;
+	}
+	.rub {
+		font-family: 'Roboto';
+		font-size: 16px;
+		margin-left: 4px;
+
+		font-weight: 600;
+	}
+	.eye {
+		margin-left: 7px;
+	}
+}
+
+.rightly {
+	margin-left: 144px;
+}
+
+.dataSlidePicker {
+	margin-left: 196px;
+}
+
+.greenBtn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #1f2133;
+	font-family: 'Roboto';
+	font-size: 16px;
+	font-weight: 400;
+
+	&:hover {
+		color: #25991c;
+		transition: all 0.3s ease;
+	}
+	&:last-child {
+		margin-left: 36px;
+	}
+}
+
+.rightlyLastBtns {
+	margin-left: 406px;
+}
+
+.exitBtn {
+	margin-left: 47px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #1f2133;
+	font-family: 'Roboto';
+	font-size: 16px;
+	font-weight: 400;
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+
+	svg {
+		margin-left: 10px;
+	}
+
+	&:hover {
+		color: #25991c;
+		transition: all 0.3s ease;
+	}
+}
