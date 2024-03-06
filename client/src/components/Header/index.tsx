@@ -6,10 +6,20 @@ import Eye from '../../assets/eye'
 import Doc from '../../assets/doc'
 import DataSlidePicker from '../DataSlidePicker'
 import Exit from '../../assets/exit'
+import {useNavigate} from 'react-router-dom'
+import {useDispatch} from 'react-redux'
 
 interface IHeader {}
 
 const Header = ({}: IHeader) => {
+	const navigate = useNavigate()
+	const dispatch = useDispatch()
+
+	const handleLogout = () => {
+		dispatch({type: 'LOGOUT'})
+		navigate('/login')
+	}
+
 	return (
 		<header className={s.header}>
 			<div className={s.logoContainer}>
@@ -79,7 +89,7 @@ const Header = ({}: IHeader) => {
 					<p className={s.btnText}>Личный кабинет</p>
 				</button>
 			</div>
-			<button className={s.exitBtn}>
+			<button onClick={handleLogout} className={s.exitBtn}>
 				<p className={s.btnText}>Выход</p>
 				<Exit />
 			</button>
