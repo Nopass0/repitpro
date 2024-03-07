@@ -1,0 +1,110 @@
+.wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	overflow-x: hidden;
+	background-color: #f9f9fd;
+	.window {
+		display: flex;
+		flex-direction: column;
+
+		width: 350px;
+		height: fit-content;
+
+		border: 1px solid #e2e2e9;
+		border-radius: 20px;
+		-webkit-box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+		-moz-box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+		box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+		.HeaderWindow {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+
+			border-bottom: 1px solid #e2e2e9;
+			height: 54px;
+
+			h1 {
+				font-size: 20px;
+			}
+		}
+
+		.BodyWindow {
+			padding: 20px;
+
+			.InputName {
+				input {
+					width: calc(100% - 32px);
+					display: flex;
+					color: #1f2133;
+					font-size: 16px;
+					line-height: 160%;
+					border-radius: 8px;
+					border: 1px solid #25991c;
+					padding: 5px 15px;
+					outline: none;
+					margin-top: 5px;
+					margin-bottom: 10px;
+				}
+			}
+
+			.InputPswd {
+				input {
+					width: calc(100% - 32px);
+					display: flex;
+					color: #1f2133;
+					font-size: 16px;
+					line-height: 160%;
+					border-radius: 8px;
+					border: 1px solid #25991c;
+					padding: 5px 15px;
+					outline: none;
+					margin-top: 5px;
+					margin-bottom: 10px;
+				}
+			}
+
+			.BtnLogin {
+				text-decoration: none;
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+				width: 100%;
+				height: 36px;
+				font-size: 16px;
+				font-weight: 500;
+				line-height: 160%;
+				border-radius: 8px;
+				color: #fff;
+				background-color: #25991c;
+				border: 1px solid #25991c;
+
+				margin-bottom: 10px;
+			}
+
+			.BtnRegister {
+				text-decoration: none;
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+				width: 100%;
+				height: 36px;
+				font-size: 16px;
+				font-weight: 500;
+				line-height: 160%;
+				border-radius: 8px;
+				color: #1f2133;
+				background-color: transparent;
+				border: 1px solid #25991c;
+
+				margin-top: 5px;
+			}
+		}
+	}
+}
+.Error {
+	font-size: 14px;
+	color: #a41515;
+}

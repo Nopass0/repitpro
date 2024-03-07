@@ -49,7 +49,7 @@ const reducer = (state = defaultState, action: any) => {
 let store = createStore(reducer)
 
 function getWHeader(router_element: any, isPrivate: boolean) {
-	// console.log(defaultState.user.user_id, 'user')
+	console.log(defaultState, 'user')
 
 	return (
 		<>
@@ -61,7 +61,9 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 						<Navigate to="/" />
 					) : (
 						<>
-							<Header />
+							{window.location.pathname !== '/login' && window.location.pathname !== '/register' && (
+								<Header />
+							)}
 							{router_element}
 						</>
 					)}
