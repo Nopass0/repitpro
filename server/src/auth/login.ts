@@ -1,32 +1,23 @@
 import io from "../socket";
 import db from "../db";
-import { webcrypto } from "crypto";
+import bcrypt from "bcrypt";
 
 export const login = async (data) => {
-  //   console.log("login", data);
-
-  //crypt password
-  // const hash = await webcrypto.subtle.digest(
-  //   "SHA-256",
-  //   new TextEncoder().encode(data.password)
-  // );
-
-  const hash = await new TextEncoder().encode(data.password).toString();
-
   const user = await db.user.findUnique({
     where: {
       name: data.login,
-      password: hash,
     },
   });
 
   if (!user) {
     return io.emit("login", {
-      error: "Неверное имя пользователя или пароль",
+      error: "Пользователь не найден",
     });
   }
 
-  if (user.password !== hash) {
+  const hash = bcrypt.hashSync(user.password, 3);
+
+  if (await bcrypt.compare(data.password, hash)) {
     return io.emit("login", {
       error: "Неверное имя пользователя или пароль",
     });
