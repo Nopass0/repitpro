@@ -6,12 +6,12 @@ export const login = async (data) => {
   //   console.log("login", data);
 
   //crypt password
-  const hash = String(
-    await webcrypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(data.password)
-    )
-  );
+  // const hash = await webcrypto.subtle.digest(
+  //   "SHA-256",
+  //   new TextEncoder().encode(data.password)
+  // );
+
+  const hash = await new TextEncoder().encode(data.password).toString();
 
   const user = await db.user.findUnique({
     where: {
@@ -21,6 +21,12 @@ export const login = async (data) => {
   });
 
   if (!user) {
+    return io.emit("login", {
+      error: "Неверное имя пользователя или пароль",
+    });
+  }
+
+  if (user.password !== hash) {
     return io.emit("login", {
       error: "Неверное имя пользователя или пароль",
     });

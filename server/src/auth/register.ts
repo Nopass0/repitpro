@@ -6,13 +6,12 @@ export const register = async (data) => {
   //   console.log("login", data);
 
   //crypt password
-  const hash = String(
-    await webcrypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(data.password)
-    )
-  );
+  // const hash = await webcrypto.subtle.digest(
+  //   "SHA-256",
+  //   new TextEncoder().encode(data.password)
+  // );
 
+  const hash = await new TextEncoder().encode(data.password).toString();
   const user = await db.user.findUnique({
     where: {
       name: data.login,
