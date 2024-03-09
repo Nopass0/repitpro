@@ -10,6 +10,9 @@ import Login from './pages/Login'
 import Main from './pages/Main'
 import socket from './socket'
 import Register from './pages/Register/index.tsx'
+import {elements} from 'chart.js'
+import Test from './pages/Test/index.tsx'
+import LeftMenu from './components/LeftMenu/index.tsx'
 
 socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
@@ -61,10 +64,18 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 						<Navigate to="/" />
 					) : (
 						<>
-							{window.location.pathname !== '/login' && window.location.pathname !== '/register' && (
-								<Header />
+							{window.location.pathname !== '/login' &&
+							window.location.pathname !== '/register' ? (
+								<>
+									<Header />
+									<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+										<LeftMenu />
+										{router_element}
+									</div>
+								</>
+							) : (
+								{router_element}
 							)}
-							{router_element}
 						</>
 					)}
 				</>
@@ -89,6 +100,10 @@ let privateLinks = [
 	{
 		element: getWHeader(<Main />, true),
 		path: '/',
+	},
+	{
+		element: getWHeader(<Test />, true),
+		path: '/test',
 	},
 ]
 

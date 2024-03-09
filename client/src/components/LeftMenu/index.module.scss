@@ -1,0 +1,86 @@
+.wrapper {
+	width: 336px;
+	height: 872px; // на сайте 833 | в фигме 872
+
+	display: flex;
+	flex-direction: column;
+
+	margin: 20px 20px 20px 25px;
+
+	border: 1px solid #e2e2e9;
+	border-radius: 20px;
+
+	.Line {
+		background: #e2e2e9;
+		margin: 0 16px;
+	}
+
+	.HeaderLeftMenu {
+		display: flex;
+		flex-direction: column;
+		margin: 20px;
+
+		.FilterNArchive {
+			display: flex;
+			flex-direction: column;
+
+			border: 1px solid #25991c;
+			border-radius: 8px;
+
+			margin-bottom: 12px;
+
+			.muiSelectType,
+			.muiSelectArchive {
+				background: #ccc;
+				border: none;
+				cursor: pointer;
+
+				height: 26px;
+
+				margin: 14px 16px;
+			}
+		}
+
+		.SearchInput {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+
+			border: 1px solid #25991c;
+			border-radius: 8px;
+
+			margin-bottom: 14px;
+			padding: 0 0 0 11px;
+
+			input {
+				width: 238px;
+
+				font-size: 16px;
+
+				border: none;
+				background: none;
+				outline: none;
+			}
+
+			.SearchIconDiv {
+				background: #F3FDF2;
+				border-radius: 8px;
+
+				.SearchIcon {
+					padding: 11px;
+
+					path {
+						fill: #9296ad;
+					}
+				}
+			}
+		}
+	}
+}
+
+@media screen and (max-width: 1024px) {
+	.wrapper {
+		display: none;
+	}
+}
