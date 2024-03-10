@@ -68,7 +68,12 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 							window.location.pathname !== '/register' ? (
 								<>
 									<Header />
-									<div style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											width: '100%',
+										}}>
 										<LeftMenu />
 										{router_element}
 									</div>
@@ -86,12 +91,12 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 
 let publicLinks = [
 	{
-		element: getWHeader(<Login />, false),
+		element: <Login />,
 		path: '/login',
 	},
 
 	{
-		element: getWHeader(<Register />, false),
+		element: <Register />,
 		path: '/register',
 	},
 ]

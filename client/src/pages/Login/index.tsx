@@ -23,7 +23,7 @@ const Login = ({}: ILogin) => {
 				console.log('Req:', data)
 
 				dispatch({type: 'SET_TOKEN', payload: data.token})
-				navigator('/')
+				navigator('../')
 			}
 		})
 	}
@@ -36,7 +36,12 @@ const Login = ({}: ILogin) => {
 				</div>
 				<div className={s.BodyWindow}>
 					<div className={s.InputName}>
-						{error && <p className={s.Error}>Пожалуйста, введите правильные имя пользователя и пароль. Оба поля могут быть чувствительны к регистру.</p>}
+						{error && (
+							<p className={s.Error}>
+								Пожалуйста, введите правильные имя пользователя и пароль. Оба
+								поля могут быть чувствительны к регистру.
+							</p>
+						)}
 						<p>Имя пользователя:</p>
 						<input
 							onChange={(e) => setlogin(e.target.value)}

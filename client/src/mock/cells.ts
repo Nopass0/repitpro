@@ -2,17 +2,17 @@ import {ICell} from '../types'
 
 let Cells: ICell[] = [
 	{
-		workCount: 0,
+		workCount: 2,
 		id: 1,
-		day: 1,
-		lessonsCount: 0,
-		lessonsPrice: 0,
-		workPrice: 0,
+		day: 30,
+		lessonsCount: 3,
+		lessonsPrice: 4,
+		workPrice: 200,
 	},
 	{
 		workCount: 0,
 		id: 2,
-		day: 2,
+		day: 31,
 		lessonsCount: 0,
 		lessonsPrice: 0,
 		workPrice: 0,

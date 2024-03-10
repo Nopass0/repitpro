@@ -37,6 +37,20 @@ export const Calendar = ({className, cells}: ICalendar) => {
 											<p id="day" className={s.dayIndex}>
 												{cell ? `${cell.day}` : ''}
 											</p>
+											<div className={s.data}>
+												<p className={s.dataField}>
+													{cell ? `${cell.lessonsPrice}` : ''}
+												</p>
+												<p className={s.dataField}>
+													{cell ? `${cell.lessonsCount}` : ''}
+												</p>
+												<p className={s.dataField}>
+													{cell ? `${cell.workCount}` : ''}
+												</p>
+												<p className={s.dataField}>
+													{cell ? `${cell.workPrice}` : ''}
+												</p>
+											</div>
 										</div>
 									</td>
 								)

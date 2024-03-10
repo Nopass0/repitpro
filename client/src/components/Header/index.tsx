@@ -8,12 +8,14 @@ import DataSlidePicker from '../DataSlidePicker'
 import Exit from '../../assets/exit'
 import {useNavigate} from 'react-router-dom'
 import {useDispatch} from 'react-redux'
+import {useState} from 'react'
 
 interface IHeader {}
 
 const Header = ({}: IHeader) => {
 	const navigate = useNavigate()
 	const dispatch = useDispatch()
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 	const handleLogout = () => {
 		dispatch({type: 'LOGOUT'})
@@ -28,11 +30,16 @@ const Header = ({}: IHeader) => {
 			</div>
 			<Select
 				defaultValue={1}
+				onClick={() => setIsDropdownOpen(!isDropdownOpen)}
 				renderValue={(option: SelectOption<number> | null) => {
 					return (
 						<div className={s.selectContainer}>
 							<p className={s.selectText}>Добавить</p>
-							<Arrow />
+							{isDropdownOpen ? (
+								<Arrow direction={ArrowType.down} />
+							) : (
+								<Arrow direction={ArrowType.up} />
+							)}
 						</div>
 					)
 				}}

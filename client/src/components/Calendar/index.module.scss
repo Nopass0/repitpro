@@ -55,6 +55,12 @@
 							bottom: 24px;
 							left: 12px;
 						}
+
+						.data {
+							position: absolute;
+							top: -16px;
+							left: 20px;
+						}
 					}
 				}
 				&:not(:last-child) .td {
