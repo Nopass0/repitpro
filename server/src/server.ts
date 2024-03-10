@@ -3,6 +3,7 @@ import { login } from "./auth/login";
 import { register } from "./auth/register";
 import db from "./db";
 import { upload } from "./files/files";
+import { calendar } from "./calendar/calendar";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -11,6 +12,7 @@ io.on("connection", (socket) => {
   socket.on("login", (data) => login(data));
   socket.on("register", (data) => register(data));
   socket.on("upload", (file, callback) => upload(file, callback));
+  socket.on("getMonth", (data) => calendar(data));
 
   //check account
   socket.on("checkAccount", async (data) => {

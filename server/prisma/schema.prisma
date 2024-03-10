@@ -299,3 +299,17 @@ model Link {
 
   link       String?
 }
+
+model Day {
+  id         String   @id @default(cuid())
+  day        String
+  month      String
+  year       String
+  workCount   Int
+  lessonsCount Int
+  lessonsPrice Int
+  workPrice   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId  String
+}

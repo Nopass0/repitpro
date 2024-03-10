@@ -7,7 +7,7 @@ import Doc from '../../assets/doc'
 import DataSlidePicker from '../DataSlidePicker'
 import Exit from '../../assets/exit'
 import {useNavigate} from 'react-router-dom'
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {useState} from 'react'
 
 interface IHeader {}
@@ -15,6 +15,7 @@ interface IHeader {}
 const Header = ({}: IHeader) => {
 	const navigate = useNavigate()
 	const dispatch = useDispatch()
+	const currentMonth = useSelector((state: any) => state.currentMonth) // new Date().getMonth()
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 	const handleLogout = () => {
@@ -71,6 +72,12 @@ const Header = ({}: IHeader) => {
 
 			<DataSlidePicker
 				className={s.dataSlidePicker}
+				onChange={(id) => {
+					dispatch({
+						type: 'SET_CURRENT_MONTH',
+						payload: new Date('2022-' + (id + 1) + '-01').getMonth(),
+					})
+				}}
 				data={[
 					'Январь',
 					'Февраль',
@@ -85,7 +92,7 @@ const Header = ({}: IHeader) => {
 					'Ноябрь',
 					'Декабрь',
 				]}
-				defaultValueId={1}
+				defaultValueId={currentMonth.valueOf()}
 			/>
 
 			<div>
