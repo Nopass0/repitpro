@@ -8,7 +8,9 @@ export const calendar = (data) => {
 
   // Определение начальной и конечной даты месяца
   let startDate = new Date(new Date().getFullYear(), data.currentMonth, 1);
-  let endDate = new Date(new Date().getFullYear(), data.currentMonth + 1, 0); // последний день текущего месяца
+  //startDate на десять дней назад
+  startDate.setDate(startDate.getDate() - 10);
+  let endDate = new Date(new Date().getFullYear(), data.currentMonth + 2, 0); // последний день текущего месяца
 
   console.log(startDate.getTime(), endDate.getTime());
 
@@ -66,5 +68,7 @@ export const calendar = (data) => {
   });
 
   // Отправка данных через сокеты
+  console.log(_result.length);
+  console.log(_result);
   io.emit("getMonth", _result);
 };
