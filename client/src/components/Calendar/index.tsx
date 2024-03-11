@@ -101,12 +101,14 @@ export const Calendar = ({className, cells}: ICalendar) => {
 								let day =
 									((weekIndex * 7 +
 										dayIndex -
-										(new Date(currentYear, currentMonth, 1).getDay() === 0
+										(new Date(currentYear, currentMonth, 1).getDay() == 0
 											? 7
 											: new Date(currentYear, currentMonth, 1).getDay() - 0) +
 										firstDayOfWeekIndex) %
 										daysInMonth(new Date(currentYear, currentMonth, 0))) +
 									1
+								
+								
 
 								if (day < 1 && currentPartOfMonth == 1) {
 									//get previous month
@@ -123,20 +125,24 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 									console.log('prevMonthCells', prevMonthCell)
 								}
-								if (day === 1 && currentPartOfMonth == 1) {
+
+								if (day == 1 && currentPartOfMonth == 1) {
 									currentPartOfMonth = 2
 								}
 
-								if (day === 1 && currentPartOfMonth == 0) {
+								if (day == 1 && currentPartOfMonth == 0) {
 									currentPartOfMonth = 1
 								}
 
-								if (currentPartOfMonth === 0 && day < 1) {
+								if (currentPartOfMonth == 0 && day < 1) {
 									day =
 										daysInMonth(new Date(currentYear, currentMonth - 1, 0)) +
 										day
 								}
 
+								if (weekdays[dayIndex] == 'Пн' && day == 1 && weekIndex == 0) {
+									currentPartOfMonth = 1
+								}
 								let cell = currentCells?.find(
 									(item) =>
 										item.day == day &&
@@ -197,13 +203,15 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												className={
 													s.dayIndex +
 													' ' +
-													(dayIndex === 6 || dayIndex === 5 ? s.red : '')
+													(dayIndex === 6 || dayIndex === 5 ? s.red : '') +
+													' ' +
+													(currentPartOfMonth !== 1 && s.grey)
 												}>
 												{day}
 											</p>
 											{cell && (
 												// cell.day
-												<div className={s.data}>
+												<div className={s.data + ' ' + (currentPartOfMonth !== 1 && s.grey) }>
 													<p className={s.dataField}>
 														<p>Занятий: {cell.lessonsCount}</p>
 														<p>{cell.lessonsPrice}руб.</p>{' '}
