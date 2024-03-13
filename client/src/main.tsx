@@ -23,10 +23,11 @@ let defaultState = {
 		token: localStorage.getItem('token') || '',
 	} as IUser,
 	currentMonth: new Date().getMonth(),
-	currentYear: new Date().getFullYear(),
+	currentYear: new Date(Date.now()).getFullYear(),
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
+	currentYear: defaultState.currentYear,
 	token: defaultState.user.token,
 })
 if (defaultState.user.token !== '') {
@@ -47,11 +48,14 @@ const reducer = (state = defaultState, action: any) => {
 			return {...state, user: {...state.user, token: action.payload}}
 		case 'SET_CURRENT_MONTH':
 			socket.emit('getMonth', {
-				currentMonth: action.payload,
+				currentMonth: action.payload.month,
+				currentYear: action.payload.year,
 				token: defaultState.user.token,
 			})
-			// alert(action.payload)
-			return {...state, currentMonth: action.payload}
+			// alert('year' + action.payload.year + 'month' + action.payload.month)
+			return {...state, currentMonth: action.payload.month}
+		case 'SET_CURRENT_YEAR':
+			return {...state, currentYear: action.payload}
 		case 'LOGOUT':
 			localStorage.removeItem('token')
 

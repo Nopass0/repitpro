@@ -3,7 +3,9 @@
 	flex-direction: row;
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
-	width: 1516px;
+	// width: 1516px;
+	height: 744px;
+
 	.table {
 		background: #ffffff;
 		// border: 1px solid #e2e2e9;
@@ -41,6 +43,14 @@
 					padding: 0;
 					margin: 0;
 					display: table-cell;
+					cursor: pointer;
+					transition: all;
+					transition-duration: 200ms;
+
+					&:hover {
+						border: 1px solid #25991c;
+						border-radius: 8px;
+					}
 					// &:last-child {
 					// 	border-right: none;
 					// }
@@ -126,6 +136,7 @@
 				height: 116px;
 				padding: 0;
 				margin: 0;
+
 				.content {
 					position: relative;
 					.dayIndex {
@@ -135,6 +146,7 @@
 						position: absolute;
 						bottom: 24px;
 						left: 12px;
+						width: 100%;
 					}
 				}
 			}
@@ -200,5 +212,9 @@
 }
 
 .grey {
-	color: #D7D8E0;
+	color: #d7d8e0;
+}
+
+.last {
+	margin-top: 12px;
 }

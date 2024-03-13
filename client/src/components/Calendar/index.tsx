@@ -78,6 +78,17 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
+	//string as money format (Ex: 1000 => 1 000, 10000 => 10 000, 100000 => 100 000, 10=> 10)
+	const toMoneyFormat = (num: number) => {
+		return num
+			.toString()
+			.split('')
+			.reverse()
+			.reduce((prev, next, index) => {
+				return (index % 3 ? next : next + ' ') + prev
+			})
+	}
+
 	return (
 		<div className={s.calendar + ' ' + (className || '')}>
 			<table className={s.table}>
@@ -107,8 +118,6 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										firstDayOfWeekIndex) %
 										daysInMonth(new Date(currentYear, currentMonth, 0))) +
 									1
-								
-								
 
 								if (day < 1 && currentPartOfMonth == 1) {
 									//get previous month
@@ -209,19 +218,67 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												}>
 												{day}
 											</p>
-											{cell && (
-												// cell.day
-												<div className={s.data + ' ' + (currentPartOfMonth !== 1 && s.grey) }>
-													<p className={s.dataField}>
-														<p>Занятий: {cell.lessonsCount}</p>
-														<p>{cell.lessonsPrice}руб.</p>{' '}
+											{/* {cell && ( */}
+
+											<div
+												className={
+													s.data + ' ' + (currentPartOfMonth !== 1 && s.grey)
+												}>
+												<p className={s.dataField}>
+													<p>
+														Занятий:{' '}
+														<b>
+															{cell
+																? cell.lessonsCount.toString().slice(0, 2)
+																: 0}
+														</b>
 													</p>
-													<p className={s.dataField}>
-														<p>Работ: {cell.workCount}</p>
-														<p>{cell.workPrice}руб.</p>{' '}
+													<p>
+														<b>
+															{cell
+																? toMoneyFormat(cell.lessonsPrice)
+																		.toString()
+																		.slice(0, 8)
+																: 0}
+															₽
+														</b>
 													</p>
-												</div>
-											)}
+												</p>
+												<p className={s.dataField}>
+													<p>
+														Работ:
+														<b>
+															{cell ? cell.workCount.toString().slice(0, 2) : 0}
+														</b>
+													</p>
+													<p>
+														<b>
+															{cell
+																? toMoneyFormat(cell.workPrice)
+																		.toString()
+																		.slice(0, 8)
+																: 0}
+															₽
+														</b>
+													</p>
+												</p>
+												<p className={s.dataField + ' ' + s.last}>
+													<p>Доход</p>
+													<p>
+														<b>
+															{cell
+																? toMoneyFormat(
+																		cell.workPrice + cell.lessonsPrice,
+																  )
+																		.toString()
+																		.slice(0, 12)
+																: 0}
+															₽
+														</b>
+													</p>
+												</p>
+											</div>
+											{/* )} */}
 										</div>
 									</td>
 								)
@@ -272,12 +329,24 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										</p>
 										<div className={s.data}>
 											<p className={s.dataField}>
-												<p>Занятий: {item.lessonsCount}</p>
-												<p>{item.lessonsPrice}руб.</p>
+												<p>
+													Занятий: {item.lessonsCount.toString().slice(0, 2)}
+												</p>
+												<p>
+													{toMoneyFormat(item.lessonsPrice)
+														.toString()
+														.slice(0, 12)}
+													₽
+												</p>
 											</p>
 											<p className={s.dataField}>
-												<p>Работ: {item.workCount}</p>
-												<p>{item.workPrice}руб.</p>
+												<p>Работ: {item.workCount.toString().slice(0, 2)}</p>
+												<p>
+													{toMoneyFormat(item.workPrice)
+														.toString()
+														.slice(0, 12)}
+													₽
+												</p>
 											</p>
 										</div>
 									</div>

@@ -58,55 +58,37 @@ const Header = ({}: IHeader) => {
 					</Option>
 				</OptionGroup>
 			</Select>
-			<button className={s.hideBtn}>
-				<p className={s.btnText}>Скрыть</p>
-				<p className={s.rub}>₽</p>
-				<Eye className={s.eye} />
-			</button>
 
-			<button className={s.hideBtn + ' ' + s.rightly}>
-				<p className={s.btnText}>Подробно</p>
-
-				<Doc className={s.eye} />
-			</button>
-
-			<DataSlidePicker
-				className={s.dataSlidePicker}
-				onChange={(id) => {
-					dispatch({
-						type: 'SET_CURRENT_MONTH',
-						payload: new Date('2022-' + (id + 1) + '-01').getMonth(),
-					})
-				}}
-				data={[
-					'Январь',
-					'Февраль',
-					'Март',
-					'Апрель',
-					'Май',
-					'Июнь',
-					'Июль',
-					'Август',
-					'Сентябрь',
-					'Октябрь',
-					'Ноябрь',
-					'Декабрь',
-				]}
-				defaultValueId={currentMonth.valueOf()}
-			/>
-
-			<div>
-				<button className={s.greenBtn + ' ' + s.rightlyLastBtns}>
-					<p className={s.btnText}>Статистика</p>
+			<div className={s.calendarBtns}>
+				<button className={s.hideBtn}>
+					<p className={s.btnText}>Скрыть</p>
+					<p className={s.rub}>₽</p>
+					{/* <Eye className={s.eye} /> */}
 				</button>
-				<button className={s.greenBtn}>
-					<p className={s.btnText}>Личный кабинет</p>
+
+				<button className={s.hideBtn + ' ' + s.rightly}>
+					<p className={s.btnText}>Подробно</p>
+
+					<Doc className={s.eye} />
 				</button>
 			</div>
-			<button onClick={handleLogout} className={s.exitBtn}>
-				<p className={s.btnText}>Выход</p>
-				<Exit />
-			</button>
+
+			<DataSlidePicker className={s.dataSlidePicker} dateMode />
+
+			<div className={s.btns}>
+				<div>
+					<button className={s.greenBtn + ' ' + s.rightlyLastBtns}>
+						<p className={s.btnText}>Статистика</p>
+					</button>
+					<button className={s.greenBtn}>
+						<p className={s.btnText}>Личный кабинет</p>
+					</button>
+				</div>
+				<button onClick={handleLogout} className={s.exitBtn}>
+					<p className={s.btnText}>Выход</p>
+					<Exit />
+				</button>
+			</div>
 		</header>
 	)
 }

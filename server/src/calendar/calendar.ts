@@ -7,7 +7,7 @@ export const calendar = (data) => {
   console.log(data.currentMonth, data.token);
 
   // Определение начальной и конечной даты месяца
-  let startDate = new Date(new Date().getFullYear(), data.currentMonth, 1);
+  let startDate = new Date(data.currentYear, data.currentMonth, 1);
   //startDate на десять дней назад
   startDate.setDate(startDate.getDate() - 10);
   let endDate = new Date(new Date().getFullYear(), data.currentMonth + 2, 0); // последний день текущего месяца
