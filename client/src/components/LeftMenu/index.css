@@ -1,0 +1,9 @@
+.MuiInputBase-root:before,
+.MuiInputBase-root:after {
+	border: none !important;
+}
+
+.MuiSelect-select:focus,
+.MuiSelect-select:active {
+    background: none !important;
+}

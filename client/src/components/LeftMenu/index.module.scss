@@ -31,13 +31,23 @@
 
 			.muiSelectType,
 			.muiSelectArchive {
-				background: #ccc;
-				border: none;
+				background: none;
+				border: none !important;
 				cursor: pointer;
+				outline: none;
+				color: black;
+
+				display: flex;
+				flex-direction: row;
+				white-space: nowrap;
 
 				height: 26px;
 
 				margin: 14px 16px;
+			}
+
+			.muiSelectArchive::before, .muiSelectArchive::before {
+				border: none !important;
 			}
 		}
 

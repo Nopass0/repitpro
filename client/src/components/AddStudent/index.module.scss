@@ -1,0 +1,172 @@
+.wrapper {
+	width: 336px;
+	height: 872px; // на сайте 833 | в фигме 872
+
+	display: flex;
+	flex-direction: column;
+
+	margin: 20px 20px 20px 25px;
+
+	background-color: #f3fdf2;
+	border: 1px solid #e2e2e9;
+	border-radius: 20px;
+
+	.Line {
+		background: #e2e2e9;
+		margin: 10px 0px;
+	}
+	.wrapperMenu {
+		margin: 20px;
+
+		.HeaderAddStudent {
+			border: 1px solid #25991c;
+			border-radius: 8px;
+			background: #fff;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			margin-bottom: 20px;
+
+			height: 48px;
+		}
+
+		.StudentInput {
+			.StudentCard {
+				width: 100%;
+
+				font-size: 16px;
+				white-space: nowrap;
+
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+
+				p {
+					margin-right: 2px;
+				}
+
+				input,
+				textarea {
+					border: none;
+					background: none;
+					outline: none;
+				}
+				textarea {
+					resize: none;
+					width: 100%;
+					height: 19px;
+					font-size: 16px;
+				}
+				input[type='text'],
+				input[type='email'] {
+					font-size: 16px;
+				}
+			}
+		}
+		.RecordNListen {
+			min-width: 296px;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+
+			margin-bottom: 20px;
+			.Record,
+			.Listen {
+				width: 146px;
+				height: 45px;
+				border: 1px solid #25991c;
+				border-radius: 8px;
+				background: #fff;
+				
+				font-size: 16px;
+				font-weight: 400;
+				cursor: pointer;
+
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+				flex-wrap: nowrap;
+				padding: 0 13px;
+			}
+			.Record {
+				margin-right: 2px;
+			}
+		}
+		.ItemWrapper {
+			display: flex;
+			flex-direction: column;
+
+			.ItemHeader {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				margin-bottom: 20px;
+
+				height: 48px;
+
+				.dataSlidePicker,
+				.ItemPlus {
+					height: 48px;
+					border: 1px solid #25991c;
+					border-radius: 8px;
+					background: #fff;
+					cursor: pointer;
+				}
+				.dataSlidePicker {
+					width: 244px;
+					margin-right: 2px;
+
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+				.ItemPlus {
+					width: 48px;
+				}
+			}
+		}
+	}
+}
+
+@media screen and (max-width: 1024px) {
+	.wrapper {
+		display: none;
+	}
+}
+
+.dataSlidePicker {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	color: #1f2133;
+	.btnText {
+		font-family: 'Roboto';
+		font-size: 16px;
+		font-weight: 500;
+	}
+	.btn {
+		background: none;
+		border: 1px solid #179417;
+		border-radius: 180px;
+		cursor: pointer;
+		padding: 8px 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover {
+			background: #eee;
+			transition: all 0.3s ease;
+		}
+		&:first-child {
+			margin-right: 22px;
+		}
+		&:last-child {
+			margin-left: 22px;
+		}
+	}
+}
