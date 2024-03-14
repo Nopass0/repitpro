@@ -1,6 +1,9 @@
 .wrapper {
-	width: 336px;
+	min-width: 336px;
+	max-width: 336px;
 	height: 872px; // на сайте 833 | в фигме 872
+	overflow-x: hidden;
+	overflow-y: auto;
 
 	display: flex;
 	flex-direction: column;
@@ -33,38 +36,79 @@
 		}
 
 		.StudentInput {
-			.StudentCard {
+		}
+		.StudentCard {
+			width: 100%;
+
+			font-size: 16px;
+			white-space: nowrap;
+
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+
+			p {
+				font-weight: 500;
+				margin-right: 2px;
+			}
+
+			input,
+			textarea {
+				border: none;
+				background: none;
+				outline: none;
+			}
+			textarea {
+				resize: none;
 				width: 100%;
-
+				height: 19px;
 				font-size: 16px;
-				white-space: nowrap;
+			}
+			input[type='text'],
+			input[type='email'] {
+				font-size: 16px;
+			}
+		}
 
+		.StudentCardCheckBox {
+			width: 100%;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			align-items: center;
+
+			.CardCheckBox {
 				display: flex;
 				flex-direction: row;
+				flex-wrap: nowrap;
 				align-items: center;
+				white-space: nowrap;
+			}
+			p {
+				font-weight: 500;
+				margin-right: 2px;
+			}
+		
+			input[type='text'] {
+				width: 30px;
+				height: 15px;
+				border: none;
+				background: none;
+				outline: none;
+				font-size: 16px;
+			}
+			
+			.LineWrap {
+				position: absolute;
 
-				p {
-					margin-right: 2px;
-				}
-
-				input,
-				textarea {
-					border: none;
-					background: none;
-					outline: none;
-				}
-				textarea {
-					resize: none;
-					width: 100%;
-					height: 19px;
-					font-size: 16px;
-				}
-				input[type='text'],
-				input[type='email'] {
-					font-size: 16px;
+				.Line {
+					position: relative;
+					left: 262px;
+					top: 10px;
 				}
 			}
 		}
+
 		.RecordNListen {
 			min-width: 296px;
 			display: flex;
@@ -79,7 +123,7 @@
 				border: 1px solid #25991c;
 				border-radius: 8px;
 				background: #fff;
-				
+
 				font-size: 16px;
 				font-weight: 400;
 				cursor: pointer;

@@ -1,5 +1,6 @@
 import s from './index.module.scss'
 import * as mui from '@mui/material'
+import {styled} from '@mui/material/styles'
 import Line from '../Line'
 import Search from '../../assets/search'
 import {useState} from 'react'
@@ -7,6 +8,8 @@ import Arrow, {ArrowType} from '../../assets/arrow'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
 import Plus from '../../assets/ItemPlus.svg'
+import InActive from '../../assets/InActiveCheckboxIcon.svg'
+import CheckBox from '../CheckBox'
 interface IAddStudent {}
 
 const AddStudent = ({}: IAddStudent) => {
@@ -21,6 +24,18 @@ const AddStudent = ({}: IAddStudent) => {
 	const [commentStudent, setCommentStudent] = useState<string>('')
 
 	// Block item
+	const [itemName, setItemName] = useState<string>('')
+	const [tryLessonCheck, setTryLessonCheck] = useState<boolean>(false)
+	const [tryLessonCost, setTryLessonCost] = useState<string>('')
+
+	const [todayProgramStudent, setTodayProgramStudent] = useState<string>('')
+	const [targetLesson, setTargetLesson] = useState<string>('')
+	const [programLesson, setProgramLesson] = useState<string>('')
+	const [typeLesson, setTypeLesson] = useState<string>('')
+	const [placeLesson, setPlaceLesson] = useState<string>('')
+	const [timeLesson, setTimeLesson] = useState<string>('')
+	const [startLesson, setStartLesson] = useState<string>('')
+	const [endLesson, setEndLesson] = useState<string>('')
 
 	return (
 		<div className={s.wrapper}>
@@ -153,7 +168,96 @@ const AddStudent = ({}: IAddStudent) => {
 
 					<Line width="296px" className={s.Line} />
 
-					<div className={s.ItemMain}></div>
+					<div className={s.ItemMain}>
+						<div className={s.StudentCard}>
+							<input
+								type="text"
+								value={itemName}
+								onChange={(e) => setItemName(e.target.value)}
+								placeholder="Наименование"
+							/>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.StudentCardCheckBox}>
+							<div className={s.CardCheckBox}>
+								<p>Пробное занятие:</p>
+							</div>
+							<CheckBox className={s.CheckBox} size="20px" />
+							<p>Стоимость:</p>
+							<input
+								type="text"
+								value={tryLessonCost}
+								onChange={(e) => setTryLessonCost(e.target.value)}
+							/>
+							<p>₽</p>
+							<div className={s.LineWrap}>
+								<Line className={s.Line} width="30px" />
+							</div>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+						{/* Level */}
+
+						<div className={s.StudentCard}>
+							<p>Текущая программа ученика:</p>
+							<input
+								type="text"
+								value={todayProgramStudent}
+								onChange={(e) => setTodayProgramStudent(e.target.value)}
+							/>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.StudentCard}>
+							<p>Цель занятий:</p>
+							<input
+								type="text"
+								value={targetLesson}
+								onChange={(e) => setTargetLesson(e.target.value)}
+							/>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Программа ученика:</p>
+							<input
+								type="text"
+								value={programLesson}
+								onChange={(e) => setProgramLesson(e.target.value)}
+							/>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						{/* Type */}
+
+						<div className={s.StudentCard}>
+							<p>Место проведения:</p>
+							<input
+								type="text"
+								value={placeLesson}
+								onChange={(e) => setPlaceLesson(e.target.value)}
+							/>
+						</div>
+						
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.StudentCard}>
+							<p>Продолжительность занятия:</p>
+							<input
+								type="text"
+								value={timeLesson}
+								onChange={(e) => setTimeLesson(e.target.value)}
+							/>
+							<p>мин</p>
+						</div>
+						
+						<Line width="296px" className={s.Line} />
+
+					</div>
 				</div>
 			</div>
 		</div>
