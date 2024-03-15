@@ -24,6 +24,7 @@
 		flex-direction: column;
 
 		position: fixed;
+		z-index: 20;
 
 		padding: 20px;
 		border-bottom: 1px solid #e2e2e9;
@@ -154,6 +155,13 @@
 			}
 		}
 
+		// INPUT's
+		.PrePayCostInput {
+			width: 50px;
+			margin: 0 2px;
+
+			border-bottom: 1px solid #e2e2e9 !important;
+		}
 		.RecordNListen {
 			min-width: 296px;
 			display: flex;
@@ -226,6 +234,7 @@
 	.FooterWrapper {
 		width: 276px;
 		position: fixed;
+		z-index: 20;
 		bottom: 0;
 		padding: 20px;
 		background: #f3fdf2;
@@ -302,11 +311,114 @@
 			}
 		}
 	}
+
+	// Schedule Расписание
+
+	.ScheduleWrapper {
+		display: flex;
+		flex-direction: column;
+
+		height: fit-content;
+		border: 1px solid #25991c;
+		border-radius: 20px;
+
+		.LineGreen {
+			margin: 0;
+			background-color: #25991c;
+		}
+
+		.Line {
+			position: relative;
+			right: 10px;
+		}
+		.ScheduleHeader {
+			padding: 16px 10px;
+			font-weight: 500;
+		}
+
+		.Schedule {
+			padding: 10px;
+			display: flex;
+			flex-direction: column;
+
+			.ScheduleItem {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+
+				.ScheduleBtn {
+					cursor: pointer;
+					border: none;
+					background: none;
+
+					&:hover, &:active, &:focus {
+						transition: all .2s;
+						color: #25991c;
+					}
+				}
+			}
+		}
+	}
+
+	// Math Block 
+
+	.MathBlock {
+		margin-top: 10px;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid #e2e2e9;
+		border-radius: 20px;
+		padding: 10px;
+
+		.MathObjectsList {
+			display: flex;
+			flex-direction: column;
+
+			.MathObject {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.Line {
+				position: relative;
+				right: 10px;
+				margin: 10px 0;
+			}
+		}
+	}
 }
 
 @media screen and (max-width: 1024px) {
 	.wrapper {
 		display: none;
+	}
+}
+
+// Mui Collapse
+
+.MuiCollapse {
+	.MuiList {
+		.ListObjectWrapper {
+			display: flex;
+			flex-direction: column;
+
+			.ListObject {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+
+				margin-bottom: 2px;
+
+				background-color: rgb(255, 0, 0, 0.2);
+
+				.ButtonEdit {
+					border: none;
+					background: none;
+				}
+			}
+		}
 	}
 }
 

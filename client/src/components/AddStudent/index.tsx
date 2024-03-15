@@ -1,6 +1,8 @@
 import s from './index.module.scss'
 import * as mui from '@mui/material'
 import {styled} from '@mui/material/styles'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
 import {useState} from 'react'
@@ -13,7 +15,13 @@ import CheckBox from '../CheckBox'
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
 import {DatePicker} from '@mui/x-date-pickers/DatePicker'
-
+import CreateIcon from '@mui/icons-material/Create'
+import './index.css'
+import {ru} from 'date-fns/locale/ru'
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
+import ScheduleDate from '../ScheduleDate/index'
+import ScheduleIcon from '@mui/icons-material/Schedule'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
 interface IAddStudent {}
 
 const AddStudent = ({}: IAddStudent) => {
@@ -28,7 +36,9 @@ const AddStudent = ({}: IAddStudent) => {
 	const [commentStudent, setCommentStudent] = useState<string>('')
 	const [prePayCost, setPrePayCost] = useState<string>('')
 	const [prePayDate, setPrePayDate] = useState<string>('')
-
+	const [selectedDate, setSelectedDate] = useState(null)
+	const [storyLesson, setStoryLesson] = useState<string>('')
+	const [costOneLesson, setCostOneLesson] = useState<string>('')
 	// Block item
 	const [itemName, setItemName] = useState<string>('')
 	const [tryLessonCheck, setTryLessonCheck] = useState<boolean>(false)
@@ -57,7 +67,7 @@ const AddStudent = ({}: IAddStudent) => {
 		},
 		'.Mui-selected': {
 			color: '#fff',
-			backgroundColor: '#25991c',
+			backgroundColor: '#25991c !important',
 		},
 		'.Mui-selected:focus': {
 			color: '#fff',
@@ -72,6 +82,11 @@ const AddStudent = ({}: IAddStudent) => {
 			backgroundColor: '#25991c',
 		},
 	})
+	const [open, setOpen] = useState(true)
+
+	const handleClick = () => {
+		setOpen(!open)
+	}
 	return (
 		<div className={s.wrapper}>
 			<div className={s.Header}>
@@ -171,16 +186,20 @@ const AddStudent = ({}: IAddStudent) => {
 
 					<div className={s.StudentCard}>
 						<p>Предоплата:</p>
-						<LocalizationProvider dateAdapter={AdapterDayjs}>
+						<LocalizationProvider
+							dateAdapter={AdapterDateFns}
+							adapterLocale={ru}>
 							<DatePicker
 								slots={{
 									layout: StyledPickersLayout,
 								}}
 								timezone="system"
+								showDaysOutsideCurrentMonth
 							/>
 						</LocalizationProvider>
 
 						<input
+							className={s.PrePayCostInput}
 							type="text"
 							value={prePayCost}
 							onChange={(e) => setPrePayCost(e.target.value)}
@@ -188,7 +207,71 @@ const AddStudent = ({}: IAddStudent) => {
 
 						<p>₽</p>
 					</div>
+
 					<Line width="296px" className={s.Line} />
+
+					<mui.ListItemButton onClick={handleClick}>
+						<mui.ListItemText primary="История занятий и оплат" />
+						{open ? <ExpandLess /> : <ExpandMore />}
+					</mui.ListItemButton>
+
+					<mui.Collapse
+						className={s.MuiCollapse}
+						in={open}
+						timeout="auto"
+						unmountOnExit>
+						<mui.List className={s.MuiList} component="div" disablePadding>
+							<div className={s.ListObjectWrapper}>
+								<div className={s.ListObject}>
+									<p
+										style={{
+											fontWeight: '500',
+											fontSize: '14px',
+											marginRight: '5px',
+										}}>
+										12.03.2024
+									</p>
+									<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
+									<CheckBox size="16px" />
+									<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
+									<CheckBox size="16px" />
+									<button className={s.ButtonEdit}>
+										<CreateIcon style={{width: '18px', height: '18px'}} />
+									</button>
+								</div>
+								<div className={s.ListObject}>
+									<p
+										style={{
+											fontWeight: '500',
+											fontSize: '14px',
+											marginRight: '5px',
+										}}>
+										12.03.2024
+									</p>
+									<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
+									<CheckBox size="16px" />
+									<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
+									<CheckBox size="16px" />
+									<button className={s.ButtonEdit}>
+										<CreateIcon style={{width: '18px', height: '18px'}} />
+									</button>
+								</div>
+							</div>
+						</mui.List>
+					</mui.Collapse>
+
+					<Line width="296px" className={s.Line} />
+					<div className={s.StudentCard}>
+						<p>Стоимость одного занятия:</p>
+						<input
+							type="text"
+							value={costOneLesson}
+							onChange={(e) => setCostOneLesson(e.target.value)}
+						/>
+						<p>₽</p>
+					</div>
+					<Line width="296px" className={s.Line} />
+
 					<div className={s.StudentCard}>
 						<p>Комментарий:</p>
 						<textarea
@@ -323,7 +406,200 @@ const AddStudent = ({}: IAddStudent) => {
 						</div>
 
 						<Line width="296px" className={s.Line} />
+						<div style={{marginBottom: '10px'}} className={s.StudentCard}>
+							<p>Окончание занятий:</p>
+						</div>
 
+						<div className={s.ScheduleWrapper}>
+							<div className={s.ScheduleHeader}>
+								<p>Расписание</p>
+							</div>
+							<Line width="295px" className={s.LineGreen} />
+							<div className={s.Schedule}>
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Пн</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Вт</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Ср</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Чт</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate active>
+											<p>Пт</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate weekend>
+											<p>Сб</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate weekend>
+											<p>Вс</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<div className={s.MathBlock}>
+							<div className={s.MathObjectsList}>
+								<div className={s.MathObject}>
+									<p>Всего занятий: 0</p>
+									<p>Сумма: 0₽</p>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.MathObject}>
+									<p>Прошло: 0</p>
+									<p>Оплачено: 0 (0₽)</p>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.MathObject}>
+									<p>Не оплачено: 0</p>
+									<p style={{display: 'flex', flexDirection: 'row'}}>
+										<p style={{marginRight: '5px'}}>Долг:</p>
+										<p style={{color: 'red'}}>0</p>
+										<p>₽</p>
+									</p>
+								</div>
+							</div>
+						</div>
+						<mui.ListItemButton
+							style={{marginTop: '10px'}}
+							onClick={handleClick}>
+							<FileDownloadIcon style={{marginRight: '10px'}} />
+							<mui.ListItemText primary="Файлы/ссылки" />
+							{open ? <ExpandLess /> : <ExpandMore />}
+						</mui.ListItemButton>
+
+						<mui.Collapse in={open} timeout="auto" unmountOnExit>
+							<mui.List
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									flexDirection: 'column',
+								}}
+								component="div"
+								disablePadding>
+								<Line width="296px" className={s.Line} />
+								<p>Список пока пуст</p>
+							</mui.List>
+						</mui.Collapse>
 						<div className={s.FooterSpace}></div>
 					</div>
 				</div>
