@@ -6,7 +6,7 @@ import Eye from '../../assets/eye'
 import Doc from '../../assets/doc'
 import DataSlidePicker from '../DataSlidePicker'
 import Exit from '../../assets/exit'
-import {useNavigate} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {useState} from 'react'
 
@@ -80,9 +80,9 @@ const Header = ({}: IHeader) => {
 					<button className={s.greenBtn + ' ' + s.rightlyLastBtns}>
 						<p className={s.btnText}>Статистика</p>
 					</button>
-					<button className={s.greenBtn}>
+					<Link to={'/statistics'} className={s.greenBtn}>
 						<p className={s.btnText}>Личный кабинет</p>
-					</button>
+					</Link>
 				</div>
 				<button onClick={handleLogout} className={s.exitBtn}>
 					<p className={s.btnText}>Выход</p>

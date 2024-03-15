@@ -13,6 +13,7 @@ import Register from './pages/Register/index.tsx'
 import {elements} from 'chart.js'
 import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
+import Statistics from './pages/Statistics/index.tsx'
 
 socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
@@ -125,6 +126,10 @@ let privateLinks = [
 	{
 		element: getWHeader(<Test />, true),
 		path: '/test',
+	},
+	{
+		element: getWHeader(<Statistics />, true),
+		path: '/statistics',
 	},
 ]
 
