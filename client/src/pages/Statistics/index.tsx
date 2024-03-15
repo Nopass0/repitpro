@@ -7,6 +7,7 @@ import {
 	CategoryScale,
 	LinearScale,
 	PointElement,
+	scales,
 } from 'chart.js'
 import {Line} from 'react-chartjs-2'
 import s from './index.module.scss'
@@ -32,13 +33,62 @@ const getLabels = () => {
 
 const getDatasets = () => {
 	let datasets = []
-	for (let i = -200; i < 200; i++) {
+	for (let i = 0; i < 200; i++) {
 		//сделай плавный график волнистый (каждая точка должна отличаться от предыдущей максимальной разницей в 10)
-		datasets.push(
-			Math.sin(i) * Math.cos(i) > 10 ? Math.cos(i) : Math.cos(i) / Math.sin(i),
-		)
+		let a = Math.abs(Math.random() * Math.abs(Math.cos(i)))
+		if (datasets[i - 1] - a < Math.E) {
+			if (datasets[i - 1] - a > 0) {
+				a = datasets[i - 1] - a * 0.1
+			} else {
+				a = datasets[i - 1] + datasets[i - 1] * 0.06
+			}
+		}
+		datasets.push(a)
 	}
 	return datasets
+}
+
+const options = {
+	responsive: true,
+	maintainAspectRatio: false,
+
+	//width and height
+
+	aspectRatio: 2,
+
+	plugins: {
+		legend: {
+			//off
+			display: false,
+		},
+		title: {
+			display: false,
+		},
+		tooltip: {
+			enabled: false,
+		},
+
+		//плавнее
+
+		scales: {
+			x: {
+				ticks: {
+					display: false,
+				},
+				grid: {
+					display: false,
+				},
+			},
+			y: {
+				ticks: {
+					display: false,
+				},
+				grid: {
+					display: false,
+				},
+			},
+		},
+	},
 }
 
 let data = {
@@ -48,15 +98,36 @@ let data = {
 			label: 'Dataset 1',
 			data: getDatasets(),
 			fill: false,
-			backgroundColor: 'rgb(255, 99, 132)',
-			borderColor: 'rgba(255, 99, 132, 0.2)',
+			backgroundColor: '#FF0000',
+			borderColor: '#FF0000',
 		},
 		{
 			label: 'Dataset 2',
 			data: getDatasets(),
 			fill: false,
-			backgroundColor: 'rgb(75, 192, 192)',
-			borderColor: 'rgba(75, 192, 192, 0.2)',
+			backgroundColor: '#9747FF',
+			borderColor: '#9747FF',
+		},
+		{
+			label: 'Dataset 3',
+			data: getDatasets(),
+			fill: false,
+			backgroundColor: '#0027FF',
+			borderColor: '#0027FF',
+		},
+		{
+			label: 'Dataset 4',
+			data: getDatasets(),
+			fill: false,
+			backgroundColor: '#25991C',
+			borderColor: '#25991C',
+		},
+		{
+			label: 'Dataset 5',
+			data: getDatasets(),
+			fill: false,
+			backgroundColor: '#C7CB00',
+			borderColor: '#C7CB00',
 		},
 	],
 }
@@ -66,7 +137,7 @@ const Statistics = ({}: IStatistics) => {
 		<>
 			{/* <div className={s.center}></div> */}
 			<div className={s.wrapper}>
-				<Line data={data} />
+				<Line data={data} options={options} />
 			</div>
 		</>
 	)

@@ -24,6 +24,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	let cacheMonth = currentMonth
 	const currentYear = useSelector((state: any) => state.currentYear)
 
+	let token = useSelector((state: any) => state.user.token)
+
 	let currentPartOfMonth = 1 // 0 - previous month, 1 - current month, 2 - next month
 
 	let sumParamsOfWeeks = [
@@ -71,6 +73,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 		setCurrentCells(data)
 		console.log(data)
 	})
+
+	useEffect(() => {
+		socket.emit('getMonth', {currentMonth, currentYear, token: token})
+	}, [])
 
 	// Ваш импорт и код до возвращения компонента
 

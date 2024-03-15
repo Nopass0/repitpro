@@ -76,14 +76,15 @@ const Header = ({}: IHeader) => {
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />
 
 			<div className={s.btns}>
-				<div>
-					<button className={s.greenBtn + ' ' + s.rightlyLastBtns}>
-						<p className={s.btnText}>Статистика</p>
-					</button>
-					<Link to={'/statistics'} className={s.greenBtn}>
-						<p className={s.btnText}>Личный кабинет</p>
-					</Link>
-				</div>
+				<Link
+					to={'/statistics'}
+					className={s.greenBtn + ' ' + s.rightlyLastBtns}>
+					<p className={s.btnText}>Статистика</p>
+				</Link>
+				<Link to={'/'} className={s.greenBtn}>
+					<p className={s.btnText}>Личный кабинет</p>
+				</Link>
+
 				<button onClick={handleLogout} className={s.exitBtn}>
 					<p className={s.btnText}>Выход</p>
 					<Exit />
