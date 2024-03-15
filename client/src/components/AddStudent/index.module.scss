@@ -18,9 +18,19 @@
 		background: #e2e2e9;
 		margin: 10px 0px;
 	}
-	.wrapperMenu {
-		margin: 20px;
+	.Header {
+		width: 276px;
+		display: flex;
+		flex-direction: column;
 
+		position: fixed;
+
+		padding: 20px;
+		border-bottom: 1px solid #e2e2e9;
+		border-left: 1px solid #e2e2e9;
+		border-top-left-radius: 20px;
+
+		background-color: #f3fdf2;
 		.HeaderAddStudent {
 			border: 1px solid #25991c;
 			border-radius: 8px;
@@ -35,9 +45,49 @@
 			height: 48px;
 		}
 
-		.StudentInput {
+		.StudentCardName {
+			width: 100%;
+
+			font-size: 16px;
+			white-space: nowrap;
+
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+
+			p {
+				font-weight: 500;
+				margin-right: 2px;
+			}
+
+			p:last-child {
+				color: red;
+			}
+
+			input,
+			textarea {
+				border: none;
+				background: none;
+				outline: none;
+			}
+			textarea {
+				resize: none;
+				width: 100%;
+				height: 19px;
+				font-size: 16px;
+			}
+			input[type='text'],
+			input[type='email'] {
+				font-size: 16px;
+			}
 		}
-		.StudentCard {
+	}
+	.wrapperMenu {
+		margin: 20px 5px 20px 20px;
+
+		.StudentCard,
+		.StudentCardName {
 			width: 100%;
 
 			font-size: 16px;
@@ -70,6 +120,10 @@
 			}
 		}
 
+		.HeaderAddStudFixed {
+			height: 120px;
+		}
+
 		.StudentCardCheckBox {
 			width: 100%;
 			display: flex;
@@ -88,7 +142,7 @@
 				font-weight: 500;
 				margin-right: 2px;
 			}
-		
+
 			input[type='text'] {
 				width: 30px;
 				height: 15px;
@@ -96,16 +150,7 @@
 				background: none;
 				outline: none;
 				font-size: 16px;
-			}
-			
-			.LineWrap {
-				position: absolute;
-
-				.Line {
-					position: relative;
-					left: 262px;
-					top: 10px;
-				}
+				border-bottom: 1px solid #e2e2e9;
 			}
 		}
 
@@ -171,6 +216,89 @@
 				.ItemPlus {
 					width: 48px;
 				}
+			}
+		}
+		.FooterSpace {
+			height: 120px;
+		}
+	}
+
+	.FooterWrapper {
+		width: 276px;
+		position: fixed;
+		bottom: 0;
+		padding: 20px;
+		background: #f3fdf2;
+		border-bottom: 1px solid #e2e2e9;
+		border-bottom-left-radius: 20px;
+		border-bottom-right-radius: 20px;
+		.FooterButton {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+
+			.EditNSave {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+
+				margin-bottom: 9px;
+
+				white-space: nowrap;
+			}
+
+			.ArchiveNDelete {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+
+				white-space: nowrap;
+			}
+			.Edit,
+			.Archive {
+				background: #fff;
+				border: 1px solid #25991c;
+				border-radius: 8px;
+				cursor: pointer;
+				width: 135px;
+				height: 37px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				margin-right: 4px;
+				font-weight: 400;
+				font-size: 16px;
+			}
+
+			.Save {
+				background: #25991c;
+				border: 1px solid #25991c;
+				border-radius: 8px;
+				cursor: pointer;
+				width: 135px;
+				height: 37px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: #fff;
+				font-weight: 400;
+				font-size: 16px;
+			}
+
+			.Delete {
+				background: #fff;
+				border: 1px solid red;
+				border-radius: 8px;
+				cursor: pointer;
+				width: 135px;
+				height: 37px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-weight: 400;
+				font-size: 16px;
 			}
 		}
 	}

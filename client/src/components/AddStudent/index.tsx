@@ -10,6 +10,10 @@ import Listen from '../../assets/Listen.svg'
 import Plus from '../../assets/ItemPlus.svg'
 import InActive from '../../assets/InActiveCheckboxIcon.svg'
 import CheckBox from '../CheckBox'
+import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
+import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
+import {DatePicker} from '@mui/x-date-pickers/DatePicker'
+
 interface IAddStudent {}
 
 const AddStudent = ({}: IAddStudent) => {
@@ -22,6 +26,8 @@ const AddStudent = ({}: IAddStudent) => {
 	const [linkStudent, setLinkStudent] = useState<string>('')
 	const [costStudent, setCostStudent] = useState<string>('')
 	const [commentStudent, setCommentStudent] = useState<string>('')
+	const [prePayCost, setPrePayCost] = useState<string>('')
+	const [prePayDate, setPrePayDate] = useState<string>('')
 
 	// Block item
 	const [itemName, setItemName] = useState<string>('')
@@ -37,9 +43,38 @@ const AddStudent = ({}: IAddStudent) => {
 	const [startLesson, setStartLesson] = useState<string>('')
 	const [endLesson, setEndLesson] = useState<string>('')
 
+	const StyledPickersLayout = styled('span')({
+		'.MuiDateCalendar-root': {
+			color: '#25991c',
+			borderRadius: 2,
+			borderWidth: 1,
+			borderColor: '#25991c',
+			border: '1px solid',
+			// backgroundColor: '#bbdefb',
+		},
+		'.MuiPickersDay-today': {
+			border: '1px solid #25991c ',
+		},
+		'.Mui-selected': {
+			color: '#fff',
+			backgroundColor: '#25991c',
+		},
+		'.Mui-selected:focus': {
+			color: '#fff',
+			backgroundColor: '#25991c',
+		},
+		'.MuiButtonBase-root:focus': {
+			color: '#fff',
+			backgroundColor: '#25991c',
+		},
+		'.MuiPickersYear-yearButton .Mui-selected:focus': {
+			color: '#fff',
+			backgroundColor: '#25991c',
+		},
+	})
 	return (
 		<div className={s.wrapper}>
-			<div className={s.wrapperMenu}>
+			<div className={s.Header}>
 				<div className={s.HeaderAddStudent}>
 					<div className={s.dataSlidePicker}>
 						<button className={s.btn}>
@@ -55,17 +90,23 @@ const AddStudent = ({}: IAddStudent) => {
 						</button>
 					</div>
 				</div>
-				<div className={s.StudentInput}>
-					<div className={s.StudentCard}>
+				<div className={s.StudNameHead}>
+					<div className={s.StudentCardName}>
 						<p>Имя:</p>
 						<input
 							type="text"
 							value={nameStudent}
 							onChange={(e) => setNameStudent(e.target.value)}
 						/>
+						<p>*</p>
 					</div>
 
-					<Line width="296px" className={s.Line} />
+					{/* <Line width="296px" className={s.Line} /> */}
+				</div>
+			</div>
+			<div className={s.wrapperMenu}>
+				<div className={s.StudentInput}>
+					<div className={s.HeaderAddStudFixed}></div>
 
 					<div className={s.StudentCard}>
 						<p>Контактное лицо:</p>
@@ -123,6 +164,29 @@ const AddStudent = ({}: IAddStudent) => {
 							value={costStudent}
 							onChange={(e) => setCostStudent(e.target.value)}
 						/>
+						<p>₽</p>
+					</div>
+
+					<Line width="296px" className={s.Line} />
+
+					<div className={s.StudentCard}>
+						<p>Предоплата:</p>
+						<LocalizationProvider dateAdapter={AdapterDayjs}>
+							<DatePicker
+								slots={{
+									layout: StyledPickersLayout,
+								}}
+								timezone="system"
+							/>
+						</LocalizationProvider>
+
+						<input
+							type="text"
+							value={prePayCost}
+							onChange={(e) => setPrePayCost(e.target.value)}
+						/>
+
+						<p>₽</p>
 					</div>
 					<Line width="296px" className={s.Line} />
 					<div className={s.StudentCard}>
@@ -192,9 +256,6 @@ const AddStudent = ({}: IAddStudent) => {
 								onChange={(e) => setTryLessonCost(e.target.value)}
 							/>
 							<p>₽</p>
-							<div className={s.LineWrap}>
-								<Line className={s.Line} width="30px" />
-							</div>
 						</div>
 
 						<Line width="296px" className={s.Line} />
@@ -242,7 +303,7 @@ const AddStudent = ({}: IAddStudent) => {
 								onChange={(e) => setPlaceLesson(e.target.value)}
 							/>
 						</div>
-						
+
 						<Line width="296px" className={s.Line} />
 
 						<div className={s.StudentCard}>
@@ -254,9 +315,36 @@ const AddStudent = ({}: IAddStudent) => {
 							/>
 							<p>мин</p>
 						</div>
-						
+
 						<Line width="296px" className={s.Line} />
 
+						<div className={s.StudentCard}>
+							<p>Начало занятий:</p>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.FooterSpace}></div>
+					</div>
+				</div>
+			</div>
+			<div className={s.FooterWrapper}>
+				<div className={s.FooterButton}>
+					<div className={s.EditNSave}>
+						<button className={s.Edit}>
+							<p>Редактировать</p>
+						</button>
+						<button className={s.Save}>
+							<p>Сохранить</p>
+						</button>
+					</div>
+					<div className={s.ArchiveNDelete}>
+						<button className={s.Archive}>
+							<p>В архив</p>
+						</button>
+						<button className={s.Delete}>
+							<p>Удалить</p>
+						</button>
 					</div>
 				</div>
 			</div>
