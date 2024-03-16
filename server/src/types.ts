@@ -8,3 +8,13 @@ export interface ICell {
   lessonsPrice: number;
   workPrice: number;
 }
+
+export interface IStudentCard {
+  name: string;
+  phone: string;
+  contactPerson: string;
+  email: string;
+  address: string;
+  link: string;
+  cost: string;
+}
