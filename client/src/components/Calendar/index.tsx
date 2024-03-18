@@ -5,6 +5,12 @@ import {Select, SelectOption, OptionGroup, Option} from '@mui/base'
 import Arrow from '../../assets/arrow'
 import socket from '../../socket'
 import {useSelector} from 'react-redux'
+import img1 from '../../assets/1.svg'
+import img2 from '../../assets/2.svg'
+import img3 from '../../assets/3.svg'
+import img4 from '../../assets/4.svg'
+import img5 from '../../assets/5.svg'
+import img6 from '../../assets/6.svg'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -372,6 +378,35 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			</div>
 
 			{/* TODO */}
+			<div className={s.info}>
+				<div className={s.block}>
+					<div className={s.infoImg}>
+						<img src={img1} />
+						<p>Text</p>
+					</div>
+					<div className={s.infoImg}>
+						<img src={img2} />
+						<p>Text</p>
+					</div>
+					<div className={s.infoImg}>
+						<img src={img3} />
+						<p>Text</p>
+					</div>
+					<div className={s.infoImg}>
+						<img src={img4} />
+						<p>Text</p>
+					</div>
+					<div className={s.infoImg}>
+						<img src={img5} />
+						<p>Text</p>
+					</div>
+				</div>
+				<div className={s.devider}></div>
+				<div className={s.infoImg}>
+					<img src={img6} />
+					<p>Text</p>
+				</div>
+			</div>
 		</div>
 	)
 }
