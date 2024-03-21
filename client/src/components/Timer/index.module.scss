@@ -1,0 +1,81 @@
+.container {
+	background-color: #fff;
+	padding: 16px;
+	border-radius: 20px;
+	width: 189px;
+	margin: 0 auto;
+	.Header {
+		display: flex;
+	}
+}
+.flex {
+	@apply flex;
+}
+
+.justify-between {
+	@apply justify-between;
+}
+
+.items-center {
+	@apply items-center;
+}
+
+.mb4 {
+	@apply mb-4;
+}
+
+.text {
+	@apply font-semibold;
+}
+
+.textGreen {
+	@apply text-green-500;
+}
+
+.textRed {
+	@apply text-red-500;
+}
+
+.bgGray {
+	@apply bg-gray-200;
+}
+
+.p2 {
+	@apply p-2;
+}
+
+.roundedFull {
+	@apply rounded-full;
+}
+
+.inlineBlock {
+	@apply inline-block;
+}
+
+.textBlack {
+	@apply text-black;
+}
+
+.text2xl {
+	@apply text-2xl;
+}
+
+.bgGreen {
+	@apply bg-green-500;
+}
+
+.textWhite {
+	@apply text-white;
+}
+
+.py2 {
+	@apply py-2;
+}
+
+.px4 {
+	@apply px-4;
+}
+
+.wFull {
+	@apply w-full;
+}

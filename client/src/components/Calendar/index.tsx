@@ -11,6 +11,7 @@ import img3 from '../../assets/3.svg'
 import img4 from '../../assets/4.svg'
 import img5 from '../../assets/5.svg'
 import img6 from '../../assets/6.svg'
+import Line from '../Line'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -281,7 +282,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 															</b>
 														</p>
 													</p>
-													<p className={s.dataField + ' ' + s.last}>
+													<p className={s.dataField}>
 														<p>Доход</p>
 														<p>
 															<b>
@@ -311,7 +312,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						<thead className={s.head}>
 							<tr>
 								<th className={s.th}>
-									<Select
+									{/* <Select
 										defaultValue={1}
 										renderValue={(option: SelectOption<number> | null) => {
 											return (
@@ -334,43 +335,89 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												Заказчика
 											</Option>
 										</OptionGroup>
-									</Select>
+									</Select> */}
+									<p className={s.sumText}>Расчёт дохода</p>
+									<Line width="190px" className={s.Line} />
 								</th>
 							</tr>
 						</thead>
 						<tbody className={s.body}>
 							{sumParamsOfWeeks.map((item, index) => (
-								<tr className={s.tr}>
-									<td className={s.td}>
-										<div className={s.content}>
-											<p id="day" className={s.dayIndex}>
-												За неделю
-											</p>
-											<div className={s.data}>
-												<p className={s.dataField}>
-													<p>
-														Занятий: {item.lessonsCount.toString().slice(0, 2)}
-													</p>
-													<p>
-														{toMoneyFormat(item.lessonsPrice)
-															.toString()
-															.slice(0, 12)}
-														₽
-													</p>
+								<>
+									<tr className={s.tr}>
+										<td className={s.td}>
+											<div className={s.content}>
+												<p id="day" className={s.dayIndex}>
+													За неделю
 												</p>
-												<p className={s.dataField}>
-													<p>Работ: {item.workCount.toString().slice(0, 2)}</p>
-													<p>
-														{toMoneyFormat(item.workPrice)
-															.toString()
-															.slice(0, 12)}
-														₽
+												<div className={s.data}>
+													{item.lessonsCount > 0 && (
+														<>
+															<p className={s.dataField}>
+																<p>
+																	Занятий:{' '}
+																	<b>
+																		{item.lessonsCount.toString().slice(0, 2)}
+																	</b>
+																</p>
+																<p>
+																	<b>
+																		{toMoneyFormat(item.lessonsPrice)
+																			.toString()
+																			.slice(0, 12)}
+																		₽
+																	</b>
+																</p>
+															</p>
+														</>
+													)}
+													{item.workCount > 0 && (
+														<>
+															<p className={s.dataField}>
+																<p>
+																	Работ:{' '}
+																	<b>{item.workCount.toString().slice(0, 2)}</b>
+																</p>
+																<p>
+																	<b>
+																		{toMoneyFormat(item.workPrice)
+																			.toString()
+																			.slice(0, 12)}
+																		₽
+																	</b>
+																</p>
+															</p>
+														</>
+													)}
+
+													<p className={s.dataField}>
+														<p>
+															Доход:{' '}
+															<b>
+																{(item.workCount + item.lessonsCount)
+																	.toString()
+																	.slice(0, 2)}
+															</b>
+														</p>
+														<p>
+															<b>
+																{toMoneyFormat(
+																	item.workPrice + item.lessonsPrice,
+																)
+																	.toString()
+																	.slice(0, 12)}
+																₽
+															</b>
+														</p>
 													</p>
-												</p>
+												</div>
 											</div>
-										</div>
-									</td>
-								</tr>
+											{index <= 4 && (
+												<Line width="190px" className={s.LineSumTr} />
+											)}
+										</td>
+									</tr>
+								</>
 							))}
 						</tbody>
 					</table>

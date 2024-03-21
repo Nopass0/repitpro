@@ -1,9 +1,11 @@
 .wrapper {
 	min-width: 336px;
 	max-width: 336px;
-	height: 872px; // на сайте 833 | в фигме 872
+	// height: 872px; // на сайте 833 | в фигме 872
+	height: fit-content;
+	max-height: 833px;
 	overflow-x: hidden;
-	overflow-y: auto;
+	overflow-y: auto !important;
 
 	display: flex;
 	flex-direction: column;
@@ -19,11 +21,12 @@
 		margin: 10px 0px;
 	}
 	.Header {
-		width: 276px;
+		width: 290px;
 		display: flex;
 		flex-direction: column;
-
-		position: fixed;
+		position: sticky;
+		top: 0;
+		// position: fixed;
 		z-index: 20;
 
 		padding: 20px;
@@ -47,7 +50,7 @@
 		}
 
 		.StudentCardName {
-			width: 100%;
+			// width: 100%;
 
 			font-size: 16px;
 			white-space: nowrap;
@@ -90,7 +93,7 @@
 		.StudentCard,
 		.StudentCardName {
 			width: 100%;
-
+			max-width: 296px;
 			font-size: 16px;
 			white-space: nowrap;
 
@@ -105,9 +108,13 @@
 
 			input,
 			textarea {
+				display: block;
+				width: 100%;
+				max-width: 181px;
 				border: none;
 				background: none;
 				outline: none;
+				white-space: normal;
 			}
 			textarea {
 				resize: none;
@@ -119,10 +126,6 @@
 			input[type='email'] {
 				font-size: 16px;
 			}
-		}
-
-		.HeaderAddStudFixed {
-			height: 120px;
 		}
 
 		.StudentCardCheckBox {
@@ -157,7 +160,7 @@
 
 		// INPUT's
 		.PrePayCostInput {
-			width: 50px;
+			width: 50px !important;
 			margin: 0 2px;
 
 			border-bottom: 1px solid #e2e2e9 !important;
@@ -226,15 +229,14 @@
 				}
 			}
 		}
-		.FooterSpace {
-			height: 120px;
-		}
 	}
 
 	.FooterWrapper {
-		width: 276px;
-		position: fixed;
+		// width: 276px;
+		width: 300px;
+		position: sticky;
 		z-index: 20;
+		// top: 835px;
 		bottom: 0;
 		padding: 20px;
 		background: #f3fdf2;
@@ -351,8 +353,10 @@
 					border: none;
 					background: none;
 
-					&:hover, &:active, &:focus {
-						transition: all .2s;
+					&:hover,
+					&:active,
+					&:focus {
+						transition: all 0.2s;
 						color: #25991c;
 					}
 				}
@@ -360,7 +364,7 @@
 		}
 	}
 
-	// Math Block 
+	// Math Block
 
 	.MathBlock {
 		margin-top: 10px;
@@ -452,5 +456,21 @@
 		&:last-child {
 			margin-left: 22px;
 		}
+	}
+}
+.muiSelect__menu {
+	background: none;
+	border: none !important;
+	cursor: pointer;
+	outline: none;
+	color: black;
+	height: 31px;
+
+	display: flex;
+	flex-direction: row;
+	white-space: nowrap;
+	div {
+		padding-bottom: 0 !important;
+		padding-top: 5px !important;
 	}
 }

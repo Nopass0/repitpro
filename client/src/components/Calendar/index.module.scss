@@ -3,8 +3,8 @@
 	flex-direction: row;
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
-	// width: 1516px;
-	height: 744px;
+	max-width: 1490px;
+	height: 751px;
 	margin-top: 20px;
 
 	.table {
@@ -20,7 +20,7 @@
 		border-collapse: collapse;
 		padding: 0;
 		table-layout: fixed;
-		height: 744px;
+		height: 751px;
 
 		.head {
 			border-bottom: 1px solid #e2e2e9;
@@ -47,7 +47,6 @@
 					cursor: pointer;
 					transition: all;
 					transition-duration: 200ms;
-
 					&:hover {
 						// border: 1px solid #25991c;
 						// border-radius: 8px;
@@ -57,32 +56,39 @@
 					// }
 
 					.content {
-						position: relative;
+						padding: 0px 12px;
+						height: 80%;
+						// position: relative;
 						.dayIndex {
 							font-family: 'Roboto';
 							font-weight: 500;
 							font-size: 14px;
-							position: absolute;
-							bottom: 24px;
-							left: 12px;
+							margin-bottom: 6px;
+							// position: absolute;
+							// bottom: 24px;
+							// left: 12px;
 						}
 
 						.data {
-							position: absolute;
-							top: -16px;
-							left: 11px;
-							width: 80%;
+							// position: absolute;
+							// top: -16px;
+							// left: 11px;
+							// width: 80%;
 							font-weight: 400;
 
 							.dataField {
 								display: flex;
 								flex-direction: row;
 								justify-content: space-between;
-								width: 100%;
+								// width: 100%;
 							}
 
-							.dataFieldSum {
-								margin-top: 8px;
+							.dataField:first-child {
+								margin-bottom: 2px;
+							}
+
+							.dataField:last-child {
+								margin-top: 12px;
 							}
 						}
 					}
@@ -90,8 +96,14 @@
 				// &:not(:last-child) .td {
 				// 	border-bottom: 1px solid #e2e2e9;
 				// }
-				& .td {
-					border: 1px solid #e2e2e9;
+				.td {
+					border-right: 1px solid #e2e2e9;
+					border-radius: 20px;
+				}
+			}
+			.tr:not(:last-child) {
+				.td {
+					border-bottom: 1px solid #e2e2e9;
 					border-radius: 20px;
 				}
 			}
@@ -99,11 +111,97 @@
 	}
 
 	.sum {
-		width: 189px;
-		height: 744px;
+		max-width: 190px;
+		height: 751px;
 		background-color: #f3fdf2;
 		border-top-right-radius: 20px;
 		border-bottom-right-radius: 20px;
+
+		.sumTable {
+			max-width: 190px;
+		}
+		.sumText {
+			font-size: 16px;
+			font-weight: 400;
+			border: 1px solid #25991c;
+			background-color: #fff;
+			width: 168px;
+			border-radius: 8px;
+			padding: 5px;
+		}
+
+		.head {
+			display: block !important;
+
+			max-width: 190px;
+
+			.th {
+				width: 158px;
+				height: 48px;
+			}
+		}
+
+		.body {
+			max-width: 190px;
+
+			border-top: none;
+
+			.tr {
+				.td {
+					width: 158px;
+					height: 116px;
+					// border-right: 1px solid #e2e2e9;
+					padding: 0;
+					margin: 0;
+					display: table-cell;
+				}
+			}
+			.tr:not(:last-child) {
+				.td {
+					// border-bottom: 1px solid #e2e2e9;
+				}
+			}
+
+			.content {
+				padding: 0px 12px;
+				height: 100%;
+				// position: relative;
+				.dayIndex {
+					font-family: 'Roboto';
+					font-weight: 500;
+					font-size: 14px;
+					margin-top: 8px;
+					margin-bottom: 6px;
+					// position: absolute;
+					// bottom: 24px;
+					// left: 12px;
+				}
+
+				.data {
+					// position: absolute;
+					// top: -16px;
+					// left: 11px;
+					// width: 80%;
+					font-weight: 400;
+
+					.dataField {
+						display: flex;
+						flex-direction: row;
+						justify-content: space-between;
+						font-size: 14px;
+						// width: 100%;
+					}
+
+					.dataField:first-child {
+						margin-bottom: 2px;
+					}
+
+					.dataField:last-child {
+						margin-top: 12px;
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -129,44 +227,12 @@
 	}
 }
 
-.optionGroup {
-	background-color: #ffffff;
-	border-radius: 8px;
-	list-style: none;
-	width: 144px;
-	margin-top: 4px;
-	padding-top: 16px;
-	padding-bottom: 16px;
-	font-family: 'Roboto';
-	font-weight: 400;
-	font-size: 16px;
-
-	//shadow
-	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
-	.option {
-		cursor: pointer;
-		color: #a1a1a3;
-		padding: 0px 20px;
-		&:not(:first-child) {
-			margin-top: 16px;
-		}
-		&:hover {
-			color: #1f2133;
-		}
-		list-style: none;
-	}
-}
-
 .red {
 	color: #dc2d2d;
 }
 
 .grey {
 	color: #d7d8e0;
-}
-
-.last {
-	margin-top: 12px;
 }
 
 .info {
@@ -206,4 +272,20 @@
 	p {
 		margin-left: 12px;
 	}
+}
+
+.Line {
+	background-color: #e2e2e9 !important;
+	position: relative;
+	right: 4px;
+	top: 5px;
+	margin: 0 !important;
+}
+
+.LineSumTr {
+	background-color: #e2e2e9 !important;
+	position: relative;
+	right: 2px;
+	// bottom: 12px;
+	margin: 0 !important;
 }

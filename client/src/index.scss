@@ -114,3 +114,40 @@ body {
 	display: flex;
 	flex-direction: row;
 }
+
+@media screen and (max-width: 1780px) {
+	body {
+		zoom: 0.9;
+	}
+}
+@media screen and (max-width: 1680px) {
+	body {
+		zoom: 0.8;
+	}
+}
+@media screen and (max-width: 1440px) {
+	body {
+		zoom: 0.75;
+	}
+}
+@media screen and (max-width: 1366px) {
+	body {
+		zoom: 0.67;
+	}
+}
+@media screen and (max-width: 1220px) {
+	body {
+		zoom: 0.6;
+	}
+}
+
+@media screen and (max-width: 1024px) {
+	body {
+		zoom: 1;
+	}
+}
+@media screen and (max-width: 350px) {
+	body {
+		zoom: 0.8;
+	}
+}

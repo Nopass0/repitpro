@@ -89,7 +89,8 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 										style={{
 											display: 'flex',
 											flexDirection: 'row',
-											width: '100%',
+											// width: '100%',
+											maxWidth: '1920px',
 										}}>
 										<LeftMenu />
 										{router_element}
