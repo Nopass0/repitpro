@@ -25,10 +25,10 @@ const Register = ({}: IRegister) => {
 				console.log('Req:', data)
 
 				dispatch({type: 'SET_TOKEN', payload: data.token})
-				navigator('/')
+				// navigator('/')
+				window.location.href = '/'
 			})
-		}
-		else {
+		} else {
 			setpassword('')
 			setrepeatPassword('')
 			setError(true)

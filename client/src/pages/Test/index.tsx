@@ -1,9 +1,14 @@
-import TimeSelector from "../../components/Timer"
+import TimePicker from '../../components/Timer'
 
 const Test = () => {
 	return (
 		<div>
-			<TimeSelector />
+			<TimePicker
+				title="Test"
+				onTimeChange={() => {
+					return true
+				}}
+			/>
 		</div>
 	)
 }

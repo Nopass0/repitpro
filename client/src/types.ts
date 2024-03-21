@@ -12,3 +12,10 @@ export interface ICell {
 	lessonsPrice: number
 	workPrice: number
 }
+
+export enum ELeftMenuPage {
+	AddStudent = 'AddStudent',
+	AddGroup = 'AddGroup',
+	AddClient = 'AddClient',
+	MyCabinet = 'MyCabinet',
+}

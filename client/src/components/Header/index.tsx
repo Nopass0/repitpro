@@ -1,4 +1,7 @@
-import {OptionGroup, Select, SelectOption, Option} from '@mui/base'
+import {OptionGroup, SelectOption, Option} from '@mui/base'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
+import * as mui from '@mui/material'
 import s from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import logo from '../../assets/logo.png'
@@ -9,6 +12,7 @@ import Exit from '../../assets/exit'
 import {Link, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {useState} from 'react'
+import {ELeftMenuPage} from '../../types'
 
 interface IHeader {}
 
@@ -37,36 +41,53 @@ const Header = ({}: IHeader) => {
 						/>
 						<h1 className={s.title}>КАБИНЕТ РЕПЕТИТОРА</h1>
 					</div>
-					<Select
-						defaultValue={1}
-						onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+
+					<mui.Select
+						className={s.muiSelect__menu}
 						renderValue={(option: SelectOption<number> | null) => {
 							return (
 								<div className={s.selectContainer}>
 									<p className={s.selectText}>Добавить</p>
-									{isDropdownOpen ? (
-										<Arrow direction={ArrowType.down} />
-									) : (
-										<Arrow direction={ArrowType.up} />
-									)}
 								</div>
 							)
 						}}
-						placeholder="Select"
-						className={s.select}>
-						<OptionGroup className={s.optionGroup}>
-							<Option value={1} className={s.option}>
-								Ученика
-							</Option>
-							<Option value={2} className={s.option}>
-								Группу
-							</Option>
-							<Option value={3} className={s.option}>
-								Заказчика
-							</Option>
-						</OptionGroup>
-					</Select>
-					
+						variant={'standard'}
+						// @ts-ignore
+						defaultValue={1}
+						// value={valueMuiSelectArchive}
+					>
+						<mui.MenuItem
+							onClick={() => {
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.AddStudent,
+								})
+							}}
+							value={1}>
+							Ученика
+						</mui.MenuItem>
+						<mui.MenuItem
+							onClick={() => {
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.AddGroup,
+								})
+							}}
+							value={2}>
+							Группу
+						</mui.MenuItem>
+						<mui.MenuItem
+							onClick={() => {
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.AddClient,
+								})
+							}}
+							value={3}>
+							Заказчика
+						</mui.MenuItem>
+					</mui.Select>
+
 					<div className={s.calendarBtns}>
 						<button className={s.hideBtn + ' ' + s.HiddenBtn}>
 							<p className={s.btnText}>Скрыть</p>
@@ -91,7 +112,16 @@ const Header = ({}: IHeader) => {
 						<p className={s.btnText}>Статистика</p>
 					</Link>
 					<Link to={'/'} className={s.greenBtn}>
-						<p className={s.btnText}>Личный кабинет</p>
+						<p
+							onClick={() => {
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.MyCabinet,
+								})
+							}}
+							className={s.btnText}>
+							Личный кабинет
+						</p>
 					</Link>
 
 					<button onClick={handleLogout} className={s.exitBtn}>

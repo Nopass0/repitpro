@@ -1,0 +1,25 @@
+.MuiOutlinedInput-notchedOutline {
+    padding: 0 !important;
+    border: none !important;
+}
+
+.MuiOutlinedInput-root input[type='text'] {
+        font-size: 15px !important;
+}
+
+.MuiOutlinedInput-root {
+    padding-right: 15px !important;
+}
+
+.MuiIconButton-root {
+    padding: 0 !important;
+}
+
+.MuiSvgIcon-root {
+    width: 20px;
+    height: 20px;
+}
+
+.MuiListItemButton-root {
+    padding-left: 0 !important;
+}

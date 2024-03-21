@@ -1,81 +1,54 @@
-.container {
+// TimePicker.module.scss
+
+.timePicker {
+	display: flex;
 	background-color: #fff;
-	padding: 16px;
 	border-radius: 20px;
-	width: 189px;
-	margin: 0 auto;
-	.Header {
-		display: flex;
+	// justify-content: space-between;
+	width: 189px; // Adjust width as needed
+}
+
+.hourPicker,
+.minutePicker {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+}
+
+.arrowButton {
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	width: 30px;
+	height: 30px;
+}
+
+.timeDisplay {
+	font-size: 24px;
+	margin: 10px 0;
+}
+
+.timeOptions {
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	top: calc(100% + 10px); // Offset from the bottom
+	left: 0;
+	background-color: #fff; // Background color
+	border: 1px solid #ccc; // Border color
+	padding: 5px;
+	border-radius: 5px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Shadow
+	z-index: 1; // Place above main content
+}
+
+.timeOption {
+	opacity: 0.5;
+	transition: opacity 0.3s ease;
+
+	&:hover {
+		opacity: 1;
 	}
-}
-.flex {
-	@apply flex;
-}
-
-.justify-between {
-	@apply justify-between;
-}
-
-.items-center {
-	@apply items-center;
-}
-
-.mb4 {
-	@apply mb-4;
-}
-
-.text {
-	@apply font-semibold;
-}
-
-.textGreen {
-	@apply text-green-500;
-}
-
-.textRed {
-	@apply text-red-500;
-}
-
-.bgGray {
-	@apply bg-gray-200;
-}
-
-.p2 {
-	@apply p-2;
-}
-
-.roundedFull {
-	@apply rounded-full;
-}
-
-.inlineBlock {
-	@apply inline-block;
-}
-
-.textBlack {
-	@apply text-black;
-}
-
-.text2xl {
-	@apply text-2xl;
-}
-
-.bgGreen {
-	@apply bg-green-500;
-}
-
-.textWhite {
-	@apply text-white;
-}
-
-.py2 {
-	@apply py-2;
-}
-
-.px4 {
-	@apply px-4;
-}
-
-.wFull {
-	@apply w-full;
 }

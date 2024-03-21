@@ -17,7 +17,6 @@ import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
 import {DatePicker} from '@mui/x-date-pickers/DatePicker'
 import CreateIcon from '@mui/icons-material/Create'
 import './index.css'
-import {Select, SelectOption, OptionGroup, Option} from '@mui/base'
 import {ru} from 'date-fns/locale/ru'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 import ScheduleDate from '../ScheduleDate/index'
@@ -25,26 +24,9 @@ import ScheduleIcon from '@mui/icons-material/Schedule'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import TimeSelector from '../Timer/index'
 import uploadFile from '../../assets/UploadFile.svg'
-import TimePicker from '../Timer/index'
+interface IAddClient {}
 
-import TimeLine from './timeline'
-
-interface IAddStudent {}
-interface IScheduleTimer {
-	id: number
-}
-const ScheduleTimer = ({id: number}: IScheduleTimer) => {
-	return (
-		<div className={s.timePickerWrapper}>
-			<TimePicker
-				title={`Запланировать занятие #${id}`}
-				onTimeChange={() => {}}
-			/>
-		</div>
-	)
-}
-
-const AddStudent = ({}: IAddStudent) => {
+const AddClient = ({}: IAddClient) => {
 	// Block Student
 	const [nameStudent, setNameStudent] = useState<string>('')
 	const [contactFace, setContactFace] = useState<string>('')
@@ -104,58 +86,20 @@ const AddStudent = ({}: IAddStudent) => {
 	})
 	const [open, setOpen] = useState(true)
 
-	const weekDays = [
-		{
-			day: 'Пн',
-			timerElement: <ScheduleTimer id={1} />,
-			isOpened: false,
-		},
-		{
-			day: 'Вт',
-			timerElement: <ScheduleTimer id={2} />,
-			isOpened: false,
-		},
-		{
-			day: 'Ср',
-			timerElement: <ScheduleTimer id={3} />,
-			isOpened: false,
-		},
-		{
-			day: 'Чт',
-			timerElement: <ScheduleTimer id={4} />,
-			isOpened: false,
-		},
-		{
-			day: 'Пт',
-			timerElement: <ScheduleTimer id={5} />,
-			isOpened: false,
-		},
-		{
-			day: 'Сб',
-			timerElement: <ScheduleTimer id={6} />,
-			isOpened: false,
-		},
-		{
-			day: 'Вс',
-			timerElement: <ScheduleTimer id={7} />,
-			isOpened: false,
-		},
-	]
-
 	const handleClick = () => {
 		setOpen(!open)
 	}
 	return (
 		<div className={s.wrapper}>
 			<div className={s.Header}>
-				<div className={s.HeaderAddStudent}>
+				<div className={s.HeaderAddClient}>
 					<div className={s.dataSlidePicker}>
 						<button className={s.btn}>
 							<span>
 								<Arrow direction={ArrowType.left} />
 							</span>
 						</button>
-						<p className={s.btnText}>Карточка ученика &frac14;</p>
+						<p className={s.btnText}>Карточка клиента &frac14;</p>
 						<button className={s.btn}>
 							<span>
 								<Arrow direction={ArrowType.right} />
@@ -620,19 +564,143 @@ const AddStudent = ({}: IAddStudent) => {
 							</div>
 							<Line width="295px" className={s.LineGreen} />
 							<div className={s.Schedule}>
-								{weekDays.map(
-									(
-										day: {day: string; timerElement: any; isOpened: boolean},
-										index: number,
-									) => (
-										<>
-											<TimeLine day={day.day} key={index} />
-											{index !== weekDays.length - 1 ? (
-												<Line width="294px" className={s.Line} />
-											) : null}
-										</>
-									),
-								)}
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Пн</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Вт</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Ср</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate>
+											<p>Чт</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate active>
+											<p>Пт</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate weekend>
+											<p>Сб</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.ScheduleItem}>
+									<div
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											alignItems: 'center',
+										}}>
+										<ScheduleDate weekend>
+											<p>Вс</p>
+										</ScheduleDate>
+										<p style={{marginLeft: '10px', fontWeight: '400'}}>
+											18:30 - 19:30
+										</p>
+									</div>
+									<button className={s.ScheduleBtn}>
+										<ScheduleIcon />
+									</button>
+								</div>
 							</div>
 						</div>
 
@@ -707,4 +775,4 @@ const AddStudent = ({}: IAddStudent) => {
 	)
 }
 
-export default AddStudent
+export default AddClient

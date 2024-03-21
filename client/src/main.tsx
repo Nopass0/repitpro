@@ -14,6 +14,7 @@ import {elements} from 'chart.js'
 import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
 import Statistics from './pages/Statistics/index.tsx'
+import {ELeftMenuPage} from './types.ts'
 
 socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
@@ -25,6 +26,7 @@ let defaultState = {
 	} as IUser,
 	currentMonth: new Date().getMonth(),
 	currentYear: new Date(Date.now()).getFullYear(),
+	leftMenu: ELeftMenuPage.MyCabinet,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -57,6 +59,8 @@ const reducer = (state = defaultState, action: any) => {
 			return {...state, currentMonth: action.payload.month}
 		case 'SET_CURRENT_YEAR':
 			return {...state, currentYear: action.payload}
+		case 'SET_LEFT_MENU_PAGE':
+			return {...state, leftMenu: action.payload}
 		case 'LOGOUT':
 			localStorage.removeItem('token')
 
@@ -93,11 +97,11 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 											maxWidth: '1920px',
 										}}>
 										<LeftMenu />
-										{router_element}
+										{[router_element]}
 									</div>
 								</>
 							) : (
-								{router_element}
+								<>{[router_element]}</>
 							)}
 						</>
 					)}
