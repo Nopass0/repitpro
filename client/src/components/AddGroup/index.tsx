@@ -27,6 +27,7 @@ import uploadFile from '../../assets/UploadFile.svg'
 interface IAddGroup {}
 
 const AddGroup = ({}: IAddGroup) => {
+	const [groupName, setGroupName] = useState<string>('')
 	// Block Student
 	const [nameStudent, setNameStudent] = useState<string>('')
 	const [contactFace, setContactFace] = useState<string>('')
@@ -109,11 +110,12 @@ const AddGroup = ({}: IAddGroup) => {
 				</div>
 				<div className={s.StudNameHead}>
 					<div className={s.StudentCardName}>
-						<p>Имя:</p>
+						<p>Группа:</p>
 						<input
 							type="text"
-							value={nameStudent}
-							onChange={(e) => setNameStudent(e.target.value)}
+							value={groupName}
+							onChange={(e) => setGroupName(e.target.value)}
+							placeholder="Название группы"
 						/>
 						<p>*</p>
 					</div>
@@ -122,183 +124,6 @@ const AddGroup = ({}: IAddGroup) => {
 				</div>
 			</div>
 			<div className={s.wrapperMenu}>
-				<div className={s.StudentInput}>
-					<div className={s.StudentCard}>
-						<p>Контактное лицо:</p>
-						<input
-							type="text"
-							value={contactFace}
-							onChange={(e) => setContactFace(e.target.value)}
-						/>
-					</div>
-
-					<Line width="296px" className={s.Line} />
-
-					<div className={s.StudentCard}>
-						<p>Тел:</p>
-						<input
-							type="text"
-							value={phoneNumber}
-							onChange={(e) => setPhoneNumber(e.target.value)}
-							placeholder="+7 (___) ___-__"
-						/>
-						<div className={s.PhoneIcons}></div>
-					</div>
-					<Line width="296px" className={s.Line} />
-					<div className={s.StudentCard}>
-						<p>Эл. почта:</p>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-						/>
-					</div>
-					<Line width="296px" className={s.Line} />
-					<div className={s.StudentCard}>
-						<p>Адрес:</p>
-						<input
-							type="text"
-							value={address}
-							onChange={(e) => setAddress(e.target.value)}
-						/>
-					</div>
-					<Line width="296px" className={s.Line} />
-					<div className={s.StudentCard}>
-						<p>Источник:</p>
-						<input
-							type="text"
-							value={linkStudent}
-							onChange={(e) => setLinkStudent(e.target.value)}
-						/>
-					</div>
-					<Line width="296px" className={s.Line} />
-					<div className={s.StudentCard}>
-						<p>Расходы по ученику:</p>
-						<input
-							type="text"
-							value={costStudent}
-							onChange={(e) => setCostStudent(e.target.value)}
-						/>
-						<p>₽</p>
-					</div>
-
-					<Line width="296px" className={s.Line} />
-
-					<div className={s.StudentCard}>
-						<p>Предоплата:</p>
-						<LocalizationProvider
-							dateAdapter={AdapterDateFns}
-							adapterLocale={ru}>
-							<DatePicker
-								slots={{
-									layout: StyledPickersLayout,
-								}}
-								sx={{
-									input: {
-										paddingTop: '0px',
-										paddingBottom: '0px',
-									},
-								}}
-								timezone="system"
-								showDaysOutsideCurrentMonth
-							/>
-						</LocalizationProvider>
-
-						<input
-							className={s.PrePayCostInput}
-							type="text"
-							value={prePayCost}
-							onChange={(e) => setPrePayCost(e.target.value)}
-						/>
-
-						<p>₽</p>
-					</div>
-
-					<Line width="296px" className={s.Line} />
-
-					<mui.ListItemButton onClick={handleClick}>
-						<mui.ListItemText primary="История занятий и оплат" />
-						{open ? <ExpandLess /> : <ExpandMore />}
-					</mui.ListItemButton>
-
-					<mui.Collapse
-						className={s.MuiCollapse}
-						in={open}
-						timeout="auto"
-						unmountOnExit>
-						<mui.List className={s.MuiList} component="div" disablePadding>
-							<div className={s.ListObjectWrapper}>
-								<div className={s.ListObject}>
-									<p
-										style={{
-											fontWeight: '500',
-											fontSize: '14px',
-											marginRight: '5px',
-										}}>
-										12.03.2024
-									</p>
-									<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
-									<CheckBox size="16px" />
-									<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
-									<CheckBox size="16px" />
-									<button className={s.ButtonEdit}>
-										<CreateIcon style={{width: '18px', height: '18px'}} />
-									</button>
-								</div>
-								<div className={s.ListObject}>
-									<p
-										style={{
-											fontWeight: '500',
-											fontSize: '14px',
-											marginRight: '5px',
-										}}>
-										12.03.2024
-									</p>
-									<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
-									<CheckBox size="16px" />
-									<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
-									<CheckBox size="16px" />
-									<button className={s.ButtonEdit}>
-										<CreateIcon style={{width: '18px', height: '18px'}} />
-									</button>
-								</div>
-							</div>
-						</mui.List>
-					</mui.Collapse>
-
-					<Line width="296px" className={s.Line} />
-					<div className={s.StudentCard}>
-						<p>Стоимость одного занятия:</p>
-						<input
-							type="text"
-							value={costOneLesson}
-							onChange={(e) => setCostOneLesson(e.target.value)}
-						/>
-						<p>₽</p>
-					</div>
-					<Line width="296px" className={s.Line} />
-
-					<div className={s.StudentCard}>
-						<p>Комментарий:</p>
-						<textarea
-							value={commentStudent}
-							onChange={(e) => setCommentStudent(e.target.value)}
-						/>
-					</div>
-					<Line width="296px" className={s.Line} />
-				</div>
-
-				<div className={s.RecordNListen}>
-					<button className={s.Record}>
-						<p>Аудио</p>
-						<img src={microSVG} alt={microSVG} />
-					</button>
-					<button className={s.Listen}>
-						<p>Прослушать</p>
-						<img src={Listen} alt={Listen} />
-					</button>
-				</div>
-
 				<div className={s.ItemWrapper}>
 					<div className={s.ItemHeader}>
 						<div className={s.dataSlidePicker}>
@@ -748,6 +573,221 @@ const AddGroup = ({}: IAddGroup) => {
 								<p>Список пока пуст</p>
 							</mui.List>
 						</mui.Collapse>
+
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.StudentCard}>
+							<p>Комментарий:</p>
+							<textarea
+								value={commentStudent}
+								onChange={(e) => setCommentStudent(e.target.value)}
+							/>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.RecordNListen}>
+							<button className={s.Record}>
+								<p>Аудио</p>
+								<img src={microSVG} alt={microSVG} />
+							</button>
+							<button className={s.Listen}>
+								<p>Прослушать</p>
+								<img src={Listen} alt={Listen} />
+							</button>
+						</div>
+					</div>
+
+					<div className={s.ItemHeader}>
+						<div className={s.dataSlidePicker}>
+							<button className={s.btn}>
+								<span>
+									<Arrow direction={ArrowType.left} />
+								</span>
+							</button>
+							<p className={s.btnText}>Предмет &frac14;</p>
+							<button className={s.btn}>
+								<span>
+									<Arrow direction={ArrowType.right} />
+								</span>
+							</button>
+						</div>
+						<button className={s.ItemPlus}>
+							<img src={Plus} alt={Plus} />
+						</button>
+					</div>
+
+					<div className={s.StudentInput}>
+						<div className={s.StudentCard}>
+							<p>Имя:</p>
+							<input
+								type="text"
+								value={nameStudent}
+								onChange={(e) => setNameStudent(e.target.value)}
+							/>
+						</div>
+						<div className={s.StudentCard}>
+							<p>Контактное лицо:</p>
+							<input
+								type="text"
+								value={contactFace}
+								onChange={(e) => setContactFace(e.target.value)}
+							/>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.StudentCard}>
+							<p>Тел:</p>
+							<input
+								type="text"
+								value={phoneNumber}
+								onChange={(e) => setPhoneNumber(e.target.value)}
+								placeholder="+7 (___) ___-__"
+							/>
+							<div className={s.PhoneIcons}></div>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Эл. почта:</p>
+							<input
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+							/>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Адрес:</p>
+							<input
+								type="text"
+								value={address}
+								onChange={(e) => setAddress(e.target.value)}
+							/>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Источник:</p>
+							<input
+								type="text"
+								value={linkStudent}
+								onChange={(e) => setLinkStudent(e.target.value)}
+							/>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Расходы по ученику:</p>
+							<input
+								type="text"
+								value={costStudent}
+								onChange={(e) => setCostStudent(e.target.value)}
+							/>
+							<p>₽</p>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						<div className={s.StudentCard}>
+							<p>Предоплата:</p>
+							<LocalizationProvider
+								dateAdapter={AdapterDateFns}
+								adapterLocale={ru}>
+								<DatePicker
+									slots={{
+										layout: StyledPickersLayout,
+									}}
+									sx={{
+										input: {
+											paddingTop: '0px',
+											paddingBottom: '0px',
+										},
+									}}
+									timezone="system"
+									showDaysOutsideCurrentMonth
+								/>
+							</LocalizationProvider>
+
+							<input
+								className={s.PrePayCostInput}
+								type="text"
+								value={prePayCost}
+								onChange={(e) => setPrePayCost(e.target.value)}
+							/>
+
+							<p>₽</p>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+
+						<mui.ListItemButton onClick={handleClick}>
+							<mui.ListItemText primary="История занятий и оплат" />
+							{open ? <ExpandLess /> : <ExpandMore />}
+						</mui.ListItemButton>
+
+						<mui.Collapse
+							className={s.MuiCollapse}
+							in={open}
+							timeout="auto"
+							unmountOnExit>
+							<mui.List className={s.MuiList} component="div" disablePadding>
+								<div className={s.ListObjectWrapper}>
+									<div className={s.ListObject}>
+										<p
+											style={{
+												fontWeight: '500',
+												fontSize: '14px',
+												marginRight: '5px',
+											}}>
+											12.03.2024
+										</p>
+										<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
+										<CheckBox size="16px" />
+										<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
+										<CheckBox size="16px" />
+										<button className={s.ButtonEdit}>
+											<CreateIcon style={{width: '18px', height: '18px'}} />
+										</button>
+									</div>
+									<div className={s.ListObject}>
+										<p
+											style={{
+												fontWeight: '500',
+												fontSize: '14px',
+												marginRight: '5px',
+											}}>
+											12.03.2024
+										</p>
+										<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
+										<CheckBox size="16px" />
+										<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
+										<CheckBox size="16px" />
+										<button className={s.ButtonEdit}>
+											<CreateIcon style={{width: '18px', height: '18px'}} />
+										</button>
+									</div>
+								</div>
+							</mui.List>
+						</mui.Collapse>
+
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Стоимость одного занятия:</p>
+							<input
+								type="text"
+								value={costOneLesson}
+								onChange={(e) => setCostOneLesson(e.target.value)}
+							/>
+							<p>₽</p>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.RecordNListen}>
+							<button className={s.Record}>
+								<p>Аудио</p>
+								<img src={microSVG} alt={microSVG} />
+							</button>
+							<button className={s.Listen}>
+								<p>Прослушать</p>
+								<img src={Listen} alt={Listen} />
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

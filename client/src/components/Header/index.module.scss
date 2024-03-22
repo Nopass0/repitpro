@@ -6,7 +6,7 @@
 
 	.wrapperHeader {
 		max-width: 1920px;
-		margin: 0px auto 0px auto;
+		margin: 5px auto 0px auto;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -46,8 +46,6 @@
 			//line-height: 24px;
 		}
 	}
-
-
 
 	.select {
 		cursor: pointer;
@@ -100,7 +98,6 @@
 	}
 }
 
-
 .calendarBtns {
 	display: flex;
 	flex-direction: row;
@@ -152,7 +149,6 @@
 	flex-direction: row;
 	align-items: center;
 	// float: right;
-
 }
 
 .greenBtn {
@@ -205,4 +201,16 @@
 		color: #25991c;
 		transition: all 0.3s ease;
 	}
+}
+.muiSelect__menu {
+	background: none;
+	border: 1px solid #25991c !important;
+	border-radius: 8px;
+	cursor: pointer;
+	outline: none;
+	color: black;
+
+	padding: 0px 16px;
+	margin-left: 26px;
+
 }
