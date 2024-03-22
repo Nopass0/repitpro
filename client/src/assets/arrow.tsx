@@ -7,9 +7,11 @@ export enum ArrowType {
 
 interface IArrow {
 	direction?: ArrowType
+	className?: string
+	style?: string
 }
 
-const Arrow = ({direction = ArrowType.down}: IArrow) => {
+const Arrow = ({direction = ArrowType.down, className, style}: IArrow) => {
 	let rotateDeg = 0
 
 	switch (direction) {
@@ -32,6 +34,8 @@ const Arrow = ({direction = ArrowType.down}: IArrow) => {
 
 	return (
 		<svg
+			style={style}
+			className={className}
 			width="12"
 			height="8"
 			viewBox="0 0 12 8"

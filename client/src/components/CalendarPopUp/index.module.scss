@@ -1,0 +1,58 @@
+.wrapper {
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border-radius: 10px;
+
+	width: 300px;
+	height: 300px;
+
+	padding: 20px 20px;
+}
+
+.ArrowBtn {
+	border: none;
+	background-color: #fff;
+}
+
+.Header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	margin-bottom: 20px;
+
+	.Year {
+		font-size: 16px;
+		font-weight: 500;
+
+		margin: 0 25px;
+	}
+}
+
+.Main {
+	.Table {
+		width: 100%;
+		height: 100%;
+		border-collapse: collapse;
+	}
+
+	.TBody {
+		.Td {
+			padding: 30px 20px;
+			text-transform: uppercase;
+			font-weight: 500;
+			text-align: center;
+
+			cursor: pointer;
+			&:hover {
+				background-color: #e2e2e9;
+				transition: all 0.3s;
+			}
+		}
+		.active {
+			display: block;
+			border: 1px solid #25991c;
+			border-radius: 8px;
+		}
+	}
+}

@@ -2,7 +2,8 @@ import React from 'react'
 import s from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import {useDispatch, useSelector} from 'react-redux'
-
+import * as mui from '@mui/base'
+import CalendarPopUp from '../CalendarPopUp/index'
 interface IDataSlidePicker {
 	defaultValueId?: number
 	data?: string[]
@@ -77,9 +78,36 @@ const DataSlidePicker = ({
 					<Arrow direction={ArrowType.left} />
 				</span>
 			</button>
-			<p className={s.btnText}>
-				{dateMode ? `${months[currentMonth]} ${currentYear}г.` : data![value]}
-			</p>
+			<mui.Select
+				multiple={true}
+				renderValue={(option: mui.SelectOption<number> | null) => {
+					if (option == null || option.value === null) {
+						return (
+							<>
+								<p className={s.btnText}>
+									{dateMode
+										? `${months[currentMonth]} ${currentYear}г.`
+										: data![value]}
+								</p>
+							</>
+						)
+					}
+					return (
+						<>
+							<p className={s.btnText}>
+								{dateMode
+									? `${months[currentMonth]} ${currentYear}г.`
+									: data![value]}
+							</p>
+						</>
+					)
+				}}
+				>
+				<mui.Option value={1}>
+					<CalendarPopUp />
+				</mui.Option>
+			</mui.Select>
+
 			<button
 				className={s.btn}
 				onClick={() => {
