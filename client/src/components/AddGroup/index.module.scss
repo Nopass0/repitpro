@@ -176,7 +176,7 @@
 			.Listen {
 				width: 146px;
 				height: 45px;
-				border: 1px solid #25991c;
+				border: 1px solid #B67F15;
 				border-radius: 8px;
 				background: #fff;
 
@@ -211,7 +211,7 @@
 				.dataSlidePicker,
 				.ItemPlus {
 					height: 48px;
-					border: 1px solid #25991c;
+					border: 1px solid #B67F15;
 					border-radius: 8px;
 					background: #fff;
 					cursor: pointer;
@@ -239,7 +239,7 @@
 		// top: 835px;
 		bottom: 0;
 		padding: 20px;
-		background: #f3fdf2;
+		background: #FFFBE5;
 		border-bottom: 1px solid #e2e2e9;
 		border-bottom-left-radius: 20px;
 		border-bottom-right-radius: 20px;
@@ -269,7 +269,7 @@
 			.Edit,
 			.Archive {
 				background: #fff;
-				border: 1px solid #25991c;
+				border: 1px solid #B67F15;
 				border-radius: 8px;
 				cursor: pointer;
 				width: 135px;
@@ -321,12 +321,12 @@
 		flex-direction: column;
 
 		height: fit-content;
-		border: 1px solid #25991c;
+		border: 1px solid #B67F15;
 		border-radius: 20px;
 
 		.LineGreen {
 			margin: 0;
-			background-color: #25991c;
+			background-color: #B67F15;
 		}
 
 		.Line {
@@ -357,7 +357,7 @@
 					&:active,
 					&:focus {
 						transition: all 0.2s;
-						color: #25991c;
+						color: #B67F15;
 					}
 				}
 			}

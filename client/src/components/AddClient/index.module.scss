@@ -12,7 +12,7 @@
 
 	margin: 20px 20px 20px 25px;
 
-	background-color: #f3fdf2;
+	background-color: #F0F2FF;
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
 
@@ -34,9 +34,9 @@
 		border-left: 1px solid #e2e2e9;
 		border-top-left-radius: 20px;
 
-		background-color: #f3fdf2;
-		.HeaderAddStudent {
-			border: 1px solid #25991c;
+		background-color: #F0F2FF;
+		.HeaderAddClient {
+			border: 1px solid #5D6DC8;
 			border-radius: 8px;
 			background: #fff;
 
@@ -176,7 +176,7 @@
 			.Listen {
 				width: 146px;
 				height: 45px;
-				border: 1px solid #25991c;
+				border: 1px solid #5D6DC8;
 				border-radius: 8px;
 				background: #fff;
 
@@ -211,7 +211,7 @@
 				.dataSlidePicker,
 				.ItemPlus {
 					height: 48px;
-					border: 1px solid #25991c;
+					border: 1px solid #5D6DC8;
 					border-radius: 8px;
 					background: #fff;
 					cursor: pointer;
@@ -239,7 +239,7 @@
 		// top: 835px;
 		bottom: 0;
 		padding: 20px;
-		background: #f3fdf2;
+		background: #F0F2FF;
 		border-bottom: 1px solid #e2e2e9;
 		border-bottom-left-radius: 20px;
 		border-bottom-right-radius: 20px;
@@ -269,7 +269,7 @@
 			.Edit,
 			.Archive {
 				background: #fff;
-				border: 1px solid #25991c;
+				border: 1px solid #5D6DC8;
 				border-radius: 8px;
 				cursor: pointer;
 				width: 135px;
@@ -314,55 +314,6 @@
 		}
 	}
 
-	// Schedule Расписание
-
-	.ScheduleWrapper {
-		display: flex;
-		flex-direction: column;
-
-		height: fit-content;
-		border: 1px solid #25991c;
-		border-radius: 20px;
-
-		.LineGreen {
-			margin: 0;
-			background-color: #25991c;
-		}
-
-		.Line {
-			position: relative;
-			right: 10px;
-		}
-		.ScheduleHeader {
-			padding: 16px 10px;
-			font-weight: 500;
-		}
-
-		.Schedule {
-			padding: 10px;
-			display: flex;
-			flex-direction: column;
-
-			.ScheduleItem {
-				display: flex;
-				flex-direction: row;
-				justify-content: space-between;
-
-				.ScheduleBtn {
-					cursor: pointer;
-					border: none;
-					background: none;
-
-					&:hover,
-					&:active,
-					&:focus {
-						transition: all 0.2s;
-						color: #25991c;
-					}
-				}
-			}
-		}
-	}
 
 	// Math Block
 
@@ -438,7 +389,7 @@
 	}
 	.btn {
 		background: none;
-		border: 1px solid #179417;
+		border: 1px solid #5D6DC8;
 		border-radius: 180px;
 		cursor: pointer;
 		padding: 8px 10px;
