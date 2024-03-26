@@ -12,7 +12,7 @@
 
 	margin: 20px 20px 20px 25px;
 
-	background-color: #FFFBE5;
+	background-color: #fffbe5;
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
 
@@ -34,9 +34,9 @@
 		border-left: 1px solid #e2e2e9;
 		border-top-left-radius: 20px;
 
-		background-color: #FFFBE5;
+		background-color: #fffbe5;
 		.HeaderAddGroup {
-			border: 1px solid #B67F15;
+			border: 1px solid #b67f15;
 			border-radius: 8px;
 			background: #fff;
 
@@ -91,7 +91,8 @@
 		margin: 20px 5px 20px 20px;
 
 		.StudentCard,
-		.StudentCardName {
+		.StudentCardName,
+		.StudentCardMathBlock {
 			width: 100%;
 			max-width: 296px;
 			font-size: 16px;
@@ -176,7 +177,7 @@
 			.Listen {
 				width: 146px;
 				height: 45px;
-				border: 1px solid #B67F15;
+				border: 1px solid #b67f15;
 				border-radius: 8px;
 				background: #fff;
 
@@ -211,7 +212,7 @@
 				.dataSlidePicker,
 				.ItemPlus {
 					height: 48px;
-					border: 1px solid #B67F15;
+					border: 1px solid #b67f15;
 					border-radius: 8px;
 					background: #fff;
 					cursor: pointer;
@@ -239,7 +240,7 @@
 		// top: 835px;
 		bottom: 0;
 		padding: 20px;
-		background: #FFFBE5;
+		background: #fffbe5;
 		border-bottom: 1px solid #e2e2e9;
 		border-bottom-left-radius: 20px;
 		border-bottom-right-radius: 20px;
@@ -269,7 +270,7 @@
 			.Edit,
 			.Archive {
 				background: #fff;
-				border: 1px solid #B67F15;
+				border: 1px solid #b67f15;
 				border-radius: 8px;
 				cursor: pointer;
 				width: 135px;
@@ -321,12 +322,12 @@
 		flex-direction: column;
 
 		height: fit-content;
-		border: 1px solid #B67F15;
+		border: 1px solid #b67f15;
 		border-radius: 20px;
 
 		.LineGreen {
 			margin: 0;
-			background-color: #B67F15;
+			background-color: #b67f15;
 		}
 
 		.Line {
@@ -357,7 +358,7 @@
 					&:active,
 					&:focus {
 						transition: all 0.2s;
-						color: #B67F15;
+						color: #b67f15;
 					}
 				}
 			}
@@ -366,13 +367,21 @@
 
 	// Math Block
 
-	.MathBlock {
+	.MathBlockItem {
 		margin-top: 10px;
 		display: flex;
 		flex-direction: column;
 		border: 1px solid #e2e2e9;
 		border-radius: 20px;
 		padding: 10px;
+
+		.MathHeader {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			font-weight: 500;
+		}
 
 		.MathObjectsList {
 			display: flex;
@@ -391,6 +400,49 @@
 				margin: 10px 0;
 			}
 		}
+	}
+
+	.MathBlockStudent {
+		margin-top: 10px;
+		display: flex;
+		flex-direction: column;
+		border: 1px solid #e2e2e9;
+		border-radius: 20px;
+		padding: 10px;
+
+		.MathHeader {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			font-weight: 500;
+		}
+
+		.MathObjectsList {
+			display: flex;
+			flex-direction: column;
+
+			.MathObject {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.Line {
+				position: relative;
+				right: 10px;
+				margin: 10px 0;
+			}
+		}
+	}
+
+	.StudentCardMathBlock {
+		margin-top: 10px;
+		font-weight: 400 !important;
+		font-size: 16px !important;
+		justify-content: space-between;
+
 	}
 }
 
@@ -438,7 +490,7 @@
 	}
 	.btn {
 		background: none;
-		border: 1px solid #B67F15;
+		border: 1px solid #b67f15;
 		border-radius: 180px;
 		cursor: pointer;
 		padding: 8px 10px;
@@ -474,3 +526,5 @@
 		padding-top: 5px !important;
 	}
 }
+
+

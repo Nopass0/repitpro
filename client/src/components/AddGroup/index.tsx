@@ -24,6 +24,9 @@ import ScheduleIcon from '@mui/icons-material/Schedule'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import TimeSelector from '../Timer/index'
 import uploadFile from '../../assets/UploadFile.svg'
+import NowLevel from '../NowLevel/index'
+import InputPhoneNumber from '../InputPhoneNumber/index'
+import Input from '../Input'
 interface IAddGroup {}
 
 const AddGroup = ({}: IAddGroup) => {
@@ -42,6 +45,7 @@ const AddGroup = ({}: IAddGroup) => {
 	const [selectedDate, setSelectedDate] = useState(null)
 	const [storyLesson, setStoryLesson] = useState<string>('')
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
+	const [targetLessonStudent, setTargetLessonStudent] = useState<string>('')
 	// Block item
 	const [itemName, setItemName] = useState<string>('')
 	const [tryLessonCheck, setTryLessonCheck] = useState<boolean>(false)
@@ -50,12 +54,13 @@ const AddGroup = ({}: IAddGroup) => {
 	const [todayProgramStudent, setTodayProgramStudent] = useState<string>('')
 	const [targetLesson, setTargetLesson] = useState<string>('')
 	const [programLesson, setProgramLesson] = useState<string>('')
-	const [typeLesson, setTypeLesson] = useState<string>('')
+	const [typeLesson, setTypeLesson] = useState<number>(1)
 	const [placeLesson, setPlaceLesson] = useState<string>('')
 	const [timeLesson, setTimeLesson] = useState<string>('')
 	const [startLesson, setStartLesson] = useState<string>('')
 	const [endLesson, setEndLesson] = useState<string>('')
-
+	const [totalCostOneLesson, setTotalCostOneLesson] = useState<number>(0)
+	const [commentItem, setCommentItem] = useState<string>('')
 	const StyledPickersLayout = styled('span')({
 		'.MuiDateCalendar-root': {
 			color: '#25991c',
@@ -158,34 +163,6 @@ const AddGroup = ({}: IAddGroup) => {
 
 						<Line width="296px" className={s.Line} />
 
-						<div className={s.StudentCardCheckBox}>
-							<div className={s.CardCheckBox}>
-								<p>Пробное занятие:</p>
-							</div>
-							<CheckBox className={s.CheckBox} size="20px" />
-							<p>Стоимость:</p>
-							<input
-								type="text"
-								value={tryLessonCost}
-								onChange={(e) => setTryLessonCost(e.target.value)}
-							/>
-							<p>₽</p>
-						</div>
-
-						<Line width="296px" className={s.Line} />
-						{/* Level */}
-
-						<div className={s.StudentCard}>
-							<p>Текущая программа ученика:</p>
-							<input
-								type="text"
-								value={todayProgramStudent}
-								onChange={(e) => setTodayProgramStudent(e.target.value)}
-							/>
-						</div>
-
-						<Line width="296px" className={s.Line} />
-
 						<div className={s.StudentCard}>
 							<p>Цель занятий:</p>
 							<input
@@ -217,12 +194,12 @@ const AddGroup = ({}: IAddGroup) => {
 
 								<mui.Select
 									className={s.muiSelect__menu}
+									defaultValue={1}
 									variant={'standard'}
-									// value={valueMuiSelectArchive}
 									onChange={(e) => {
-										// setValueMuiSelectArchive(e.target.value)
+										setTypeLesson(e.target.value)
 									}}>
-									<mui.MenuItem value={'home'}>
+									<mui.MenuItem value={1}>
 										<svg
 											width="32"
 											height="32"
@@ -251,7 +228,7 @@ const AddGroup = ({}: IAddGroup) => {
 											/>
 										</svg>
 									</mui.MenuItem>
-									<mui.MenuItem value={'online'}>
+									<mui.MenuItem value={2}>
 										<svg
 											width="32"
 											height="32"
@@ -284,7 +261,7 @@ const AddGroup = ({}: IAddGroup) => {
 											/>
 										</svg>
 									</mui.MenuItem>
-									<mui.MenuItem value={'homeStud'}>
+									<mui.MenuItem value={3}>
 										<svg
 											width="32"
 											height="32"
@@ -331,7 +308,8 @@ const AddGroup = ({}: IAddGroup) => {
 
 						<div className={s.StudentCard}>
 							<p>Продолжительность занятия:</p>
-							<input
+							<Input
+								num
 								type="text"
 								value={timeLesson}
 								onChange={(e) => setTimeLesson(e.target.value)}
@@ -360,6 +338,8 @@ const AddGroup = ({}: IAddGroup) => {
 									showDaysOutsideCurrentMonth
 								/>
 							</LocalizationProvider>
+
+							<p style={{color: 'red'}}>*</p>
 						</div>
 						<Line width="296px" className={s.Line} />
 						<div style={{marginBottom: '10px'}} className={s.StudentCard}>
@@ -381,6 +361,7 @@ const AddGroup = ({}: IAddGroup) => {
 									showDaysOutsideCurrentMonth
 								/>
 							</LocalizationProvider>
+							<p style={{color: 'red'}}>*</p>
 						</div>
 
 						<div className={s.ScheduleWrapper}>
@@ -528,9 +509,14 @@ const AddGroup = ({}: IAddGroup) => {
 								</div>
 							</div>
 						</div>
-
-						<div className={s.MathBlock}>
+						{/* MATH NO DATA */}
+						<div className={s.MathBlockItem}>
 							<div className={s.MathObjectsList}>
+								<div className={s.MathHeader}>
+									<p>Общая стоимость 1-го занятия:</p>
+									<p>{totalCostOneLesson}₽</p>
+								</div>
+								<Line width="294px" className={s.Line} />
 								<div className={s.MathObject}>
 									<p>Всего занятий: 0</p>
 									<p>Сумма: 0₽</p>
@@ -542,12 +528,17 @@ const AddGroup = ({}: IAddGroup) => {
 								</div>
 								<Line width="294px" className={s.Line} />
 								<div className={s.MathObject}>
-									<p>Не оплачено: 0</p>
+									<p>Оплачено: 0</p>
 									<p style={{display: 'flex', flexDirection: 'row'}}>
 										<p style={{marginRight: '5px'}}>Долг:</p>
 										<p style={{color: 'red'}}>0</p>
 										<p>₽</p>
 									</p>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.MathObject}>
+									<p>Общие расходы по группе:</p>
+									<p>0₽</p>
 								</div>
 							</div>
 						</div>
@@ -579,8 +570,8 @@ const AddGroup = ({}: IAddGroup) => {
 						<div className={s.StudentCard}>
 							<p>Комментарий:</p>
 							<textarea
-								value={commentStudent}
-								onChange={(e) => setCommentStudent(e.target.value)}
+								value={commentItem}
+								onChange={(e) => setCommentItem(e.target.value)}
 							/>
 						</div>
 						<Line width="296px" className={s.Line} />
@@ -616,14 +607,18 @@ const AddGroup = ({}: IAddGroup) => {
 					</div>
 
 					<div className={s.StudentInput}>
-						<div className={s.StudentCard}>
+						<div
+							style={{justifyContent: 'space-between'}}
+							className={s.StudentCard}>
 							<p>Имя:</p>
 							<input
 								type="text"
 								value={nameStudent}
 								onChange={(e) => setNameStudent(e.target.value)}
 							/>
+							<p style={{color: 'red'}}>*</p>
 						</div>
+						<Line width="294px" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Контактное лицо:</p>
 							<input
@@ -637,12 +632,7 @@ const AddGroup = ({}: IAddGroup) => {
 
 						<div className={s.StudentCard}>
 							<p>Тел:</p>
-							<input
-								type="text"
-								value={phoneNumber}
-								onChange={(e) => setPhoneNumber(e.target.value)}
-								placeholder="+7 (___) ___-__"
-							/>
+							<InputPhoneNumber />
 							<div className={s.PhoneIcons}></div>
 						</div>
 						<Line width="296px" className={s.Line} />
@@ -655,15 +645,7 @@ const AddGroup = ({}: IAddGroup) => {
 							/>
 						</div>
 						<Line width="296px" className={s.Line} />
-						<div className={s.StudentCard}>
-							<p>Адрес:</p>
-							<input
-								type="text"
-								value={address}
-								onChange={(e) => setAddress(e.target.value)}
-							/>
-						</div>
-						<Line width="296px" className={s.Line} />
+
 						<div className={s.StudentCard}>
 							<p>Источник:</p>
 							<input
@@ -675,8 +657,8 @@ const AddGroup = ({}: IAddGroup) => {
 						<Line width="296px" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Расходы по ученику:</p>
-							<input
-								type="text"
+							<Input
+								num
 								value={costStudent}
 								onChange={(e) => setCostStudent(e.target.value)}
 							/>
@@ -705,7 +687,8 @@ const AddGroup = ({}: IAddGroup) => {
 								/>
 							</LocalizationProvider>
 
-							<input
+							<Input
+								num
 								className={s.PrePayCostInput}
 								type="text"
 								value={prePayCost}
@@ -714,9 +697,141 @@ const AddGroup = ({}: IAddGroup) => {
 
 							<p>₽</p>
 						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCardCheckBox}>
+							<div className={s.CardCheckBox}>
+								<p>Пробное занятие:</p>
+							</div>
+							<CheckBox className={s.CheckBox} size="20px" />
+							<p>Стоимость:</p>
+							<Input
+								num
+								type="text"
+								value={tryLessonCost}
+								onChange={(e) => setTryLessonCost(e.target.value)}
+							/>
+							<p>₽</p>
+						</div>
+						<Line width="296px" className={s.Line} />
+						{/* NO DATA */}
+						<div className={s.StudentCardCheckBox}>
+							<div className={s.CardCheckBoxLevel}>
+								<p>Текущий уровень:</p>
+							</div>
 
+							<NowLevel amountInputs={5} />
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Текущая программа ученика:</p>
+							<input
+								type="text"
+								value={todayProgramStudent}
+								onChange={(e) => setTodayProgramStudent(e.target.value)}
+							/>
+						</div>
 						<Line width="296px" className={s.Line} />
 
+						<div className={s.StudentCard}>
+							<p>Цель занятий:</p>
+							<input
+								type="text"
+								value={targetLessonStudent}
+								onChange={(e) => setTargetLessonStudent(e.target.value)}
+							/>
+						</div>
+						<Line width="296px" className={s.Line} />
+
+						{/* NO DATA */}
+						<div className={s.StudentCard}>
+							<p>Начало занятий:</p>
+							<LocalizationProvider
+								dateAdapter={AdapterDateFns}
+								adapterLocale={ru}>
+								<DatePicker
+									slots={{
+										layout: StyledPickersLayout,
+									}}
+									sx={{
+										input: {
+											paddingTop: '0px',
+											paddingBottom: '0px',
+										},
+									}}
+									timezone="system"
+									showDaysOutsideCurrentMonth
+								/>
+							</LocalizationProvider>
+
+							<p style={{color: 'red'}}>*</p>
+						</div>
+						<Line width="296px" className={s.Line} />
+						<div style={{marginBottom: '10px'}} className={s.StudentCard}>
+							<p>Окончание занятий:</p>
+							<LocalizationProvider
+								dateAdapter={AdapterDateFns}
+								adapterLocale={ru}>
+								<DatePicker
+									slots={{
+										layout: StyledPickersLayout,
+									}}
+									sx={{
+										input: {
+											paddingTop: '0px',
+											paddingBottom: '0px',
+										},
+									}}
+									timezone="system"
+									showDaysOutsideCurrentMonth
+								/>
+							</LocalizationProvider>
+							<p style={{color: 'red'}}>*</p>
+						</div>
+
+						<Line width="296px" className={s.Line} />
+						<div className={s.StudentCard}>
+							<p>Стоимость одного занятия:</p>
+							<Input
+								num
+								type="text"
+								value={costOneLesson}
+								onChange={(e) => setCostOneLesson(e.target.value)}
+							/>
+							<p>₽</p>
+						</div>
+						<div className={s.MathBlockStudent}>
+							<div className={s.MathObjectsList}>
+								<div className={s.MathObject}>
+									<p>Всего занятий: 0</p>
+									<p>Сумма: 0₽</p>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.MathObject}>
+									<p>Прошло: 0</p>
+									<p>Оплачено: 0 (0₽)</p>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.MathObject}>
+									<p>Оплачено: 0</p>
+									<p style={{display: 'flex', flexDirection: 'row'}}>
+										<p style={{marginRight: '5px'}}>Долг:</p>
+										<p style={{color: 'red'}}>0</p>
+										<p>₽</p>
+									</p>
+								</div>
+								<Line width="294px" className={s.Line} />
+								<div className={s.MathObject}>
+									<p>Общие расходы по группе:</p>
+									<p>0₽</p>
+								</div>
+							</div>
+						</div>
+						{/* NO DATA */}
+						<div className={s.StudentCardMathBlock}>
+							<p>Посещение занятий: 0</p>
+							<p>Пропущено: 0</p>
+						</div>
+						<Line width="296px" className={s.Line} />
 						<mui.ListItemButton onClick={handleClick}>
 							<mui.ListItemText primary="История занятий и оплат" />
 							{open ? <ExpandLess /> : <ExpandMore />}
@@ -766,16 +881,37 @@ const AddGroup = ({}: IAddGroup) => {
 								</div>
 							</mui.List>
 						</mui.Collapse>
+						<Line width="296px" className={s.Line} />
+						<mui.ListItemButton
+							style={{marginTop: '10px'}}
+							onClick={handleClick}>
+							<img src={uploadFile} alt={uploadFile} />
+							<mui.ListItemText primary="Файлы/ссылки" />
+							{open ? <ExpandLess /> : <ExpandMore />}
+						</mui.ListItemButton>
+
+						<mui.Collapse in={open} timeout="auto" unmountOnExit>
+							<mui.List
+								style={{
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									flexDirection: 'column',
+								}}
+								component="div"
+								disablePadding>
+								<Line width="296px" className={s.Line} />
+								<p>Список пока пуст</p>
+							</mui.List>
+						</mui.Collapse>
 
 						<Line width="296px" className={s.Line} />
 						<div className={s.StudentCard}>
-							<p>Стоимость одного занятия:</p>
-							<input
-								type="text"
-								value={costOneLesson}
-								onChange={(e) => setCostOneLesson(e.target.value)}
+							<p>Комментарий:</p>
+							<textarea
+								value={commentStudent}
+								onChange={(e) => setCommentStudent(e.target.value)}
 							/>
-							<p>₽</p>
 						</div>
 						<Line width="296px" className={s.Line} />
 						<div className={s.RecordNListen}>

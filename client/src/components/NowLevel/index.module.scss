@@ -1,0 +1,23 @@
+.button {
+	cursor: pointer;
+	border: 1px solid #7e7e7e;
+	background-color: transparent;
+
+	padding: 5px 8px;
+	border-radius: 5px;
+
+	&:not(:last-child) {
+		margin: 0 3px;
+	}
+
+	&:hover {
+		background-color: #25991c;
+		color: #fff;
+		transition: all 0.1s;
+	}
+}
+
+.active {
+	background-color: #25991c;
+	color: #fff;
+}

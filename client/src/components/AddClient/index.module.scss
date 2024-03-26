@@ -12,7 +12,7 @@
 
 	margin: 20px 20px 20px 25px;
 
-	background-color: #F0F2FF;
+	background-color: #f0f2ff;
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
 
@@ -34,9 +34,9 @@
 		border-left: 1px solid #e2e2e9;
 		border-top-left-radius: 20px;
 
-		background-color: #F0F2FF;
+		background-color: #f0f2ff;
 		.HeaderAddClient {
-			border: 1px solid #5D6DC8;
+			border: 1px solid #5d6dc8;
 			border-radius: 8px;
 			background: #fff;
 
@@ -176,7 +176,7 @@
 			.Listen {
 				width: 146px;
 				height: 45px;
-				border: 1px solid #5D6DC8;
+				border: 1px solid #5d6dc8;
 				border-radius: 8px;
 				background: #fff;
 
@@ -211,7 +211,7 @@
 				.dataSlidePicker,
 				.ItemPlus {
 					height: 48px;
-					border: 1px solid #5D6DC8;
+					border: 1px solid #5d6dc8;
 					border-radius: 8px;
 					background: #fff;
 					cursor: pointer;
@@ -239,7 +239,7 @@
 		// top: 835px;
 		bottom: 0;
 		padding: 20px;
-		background: #F0F2FF;
+		background: #f0f2ff;
 		border-bottom: 1px solid #e2e2e9;
 		border-bottom-left-radius: 20px;
 		border-bottom-right-radius: 20px;
@@ -269,7 +269,7 @@
 			.Edit,
 			.Archive {
 				background: #fff;
-				border: 1px solid #5D6DC8;
+				border: 1px solid #5d6dc8;
 				border-radius: 8px;
 				cursor: pointer;
 				width: 135px;
@@ -313,7 +313,6 @@
 			}
 		}
 	}
-
 
 	// Math Block
 
@@ -389,7 +388,7 @@
 	}
 	.btn {
 		background: none;
-		border: 1px solid #5D6DC8;
+		border: 1px solid #5d6dc8;
 		border-radius: 180px;
 		cursor: pointer;
 		padding: 8px 10px;
@@ -423,5 +422,69 @@
 	div {
 		padding-bottom: 0 !important;
 		padding-top: 5px !important;
+	}
+}
+.TypePaymentWrapper {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 6px;
+	.PrevPay,
+	.NextPay {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding: 6px 6px 6px 12px;
+		cursor: pointer;
+
+		border: 1px solid #5d6dc8;
+		background-color: #fff;
+		border-radius: 8px;
+	}
+}
+
+.PaymentTable {
+	width: 100%;
+	height: fit-content;
+
+	border: 1px solid #7e7e7e;
+	border-radius: 8px;
+	padding: 10px 0;
+
+	font-size: 14px !important;
+	font-weight: 400 !important;
+
+	display: flex;
+	flex-direction: column;
+
+	.DatePickerPayment {
+		width: 130px;
+		margin-right: 10px;
+	}
+
+	.PaymentRow {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+
+		margin: 0 10px;
+
+		.PayInput {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+
+			width: 100px;
+		}
+	}
+
+	.Line {
+		background-color: #7e7e7e !important;
+		margin: 5px 10px;
+		// position: relative;
+		// left: 10px;
 	}
 }
