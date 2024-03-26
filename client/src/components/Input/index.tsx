@@ -7,8 +7,8 @@ interface IInput {
 	children?: React.ReactNode
 	type?: string
 	value?: string
-	onChange?: () => void
-	onClick?: () => void
+	onChange?: (e: any) => void
+	onClick?: (e: any) => void
 	num?: boolean
 }
 
@@ -32,8 +32,8 @@ const Input: React.FC<IInput> = ({
 
 	return (
 		<input
-    style={style}
-    className={`${s.input} ${className}`}
+			style={style}
+			className={`${s.input} ${className}`}
 			type={type ? type : 'text'}
 			value={value}
 			onChange={(e) => {

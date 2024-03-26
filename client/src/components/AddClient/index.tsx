@@ -14,6 +14,7 @@ import InActive from '../../assets/InActiveCheckboxIcon.svg'
 import CheckBox from '../CheckBox'
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
+import InputMask from 'react-input-mask'
 import {DatePicker} from '@mui/x-date-pickers/DatePicker'
 import CreateIcon from '@mui/icons-material/Create'
 import './index.css'
@@ -120,11 +121,12 @@ const AddClient = ({}: IAddClient) => {
 				<div className={s.StudentInput}>
 					<div className={s.StudentCard}>
 						<p>Тел:</p>
-						<input
+						<InputMask
 							type="text"
+							mask="+7 (999) 999-99-99"
+							maskChar="_"
 							value={phoneNumber}
 							onChange={(e) => setPhoneNumber(e.target.value)}
-							placeholder="+7 (___) ___-__"
 						/>
 						<div className={s.PhoneIcons}></div>
 					</div>

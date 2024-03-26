@@ -16,6 +16,7 @@ import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
 import {DatePicker} from '@mui/x-date-pickers/DatePicker'
 import CreateIcon from '@mui/icons-material/Create'
+import InputMask from 'react-input-mask'
 import './index.css'
 import {ru} from 'date-fns/locale/ru'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
@@ -632,7 +633,13 @@ const AddGroup = ({}: IAddGroup) => {
 
 						<div className={s.StudentCard}>
 							<p>Тел:</p>
-							<InputPhoneNumber />
+							<InputMask
+								type="text"
+								mask="+7 (999) 999-99-99"
+								maskChar="_"
+								value={phoneNumber}
+								onChange={(e) => setPhoneNumber(e.target.value)}
+							/>
 							<div className={s.PhoneIcons}></div>
 						</div>
 						<Line width="296px" className={s.Line} />

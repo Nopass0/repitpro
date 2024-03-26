@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react'
 import s from './index.module.scss'
 
 interface INowLevel {
@@ -6,6 +6,7 @@ interface INowLevel {
 	style?: React.CSSProperties
 	children?: React.ReactNode
 	amountInputs?: number
+	onChange?: (value: number) => void
 }
 
 const NowLevel: React.FC<INowLevel> = ({
@@ -13,6 +14,7 @@ const NowLevel: React.FC<INowLevel> = ({
 	style,
 	children,
 	amountInputs = 5,
+	onChange,
 }: INowLevel) => {
 	const [activeButton, setActiveButton] = useState<number | null>(null)
 
@@ -22,11 +24,12 @@ const NowLevel: React.FC<INowLevel> = ({
 		} else {
 			setActiveButton(index)
 		}
+		onChange && onChange(index)
 	}
 
 	return (
 		<div className={s.wrapper}>
-			{Array.from({ length: amountInputs }, (_, i) => (
+			{Array.from({length: amountInputs}, (_, i) => (
 				<button
 					key={i}
 					className={`${s.button} ${activeButton === i ? s.active : ''}`}
@@ -40,4 +43,3 @@ const NowLevel: React.FC<INowLevel> = ({
 }
 
 export default NowLevel
-

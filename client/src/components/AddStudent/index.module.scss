@@ -195,6 +195,15 @@
 				margin-right: 2px;
 			}
 		}
+
+		.ItemMain {
+			display: none;
+		}
+
+		.ItemActive {
+			display: block;
+		}
+
 		.ItemWrapper {
 			display: flex;
 			flex-direction: column;
@@ -343,6 +352,11 @@
 			display: flex;
 			flex-direction: column;
 
+			//if .active_s and .scheduleItem:hover then display: block for .scheduleBtn_Delete
+			.active_s:hover > .ScheduleBtn_Delete {
+				display: block;
+			}
+
 			.ScheduleItem {
 				display: flex;
 				flex-direction: row;
@@ -359,6 +373,13 @@
 						transition: all 0.2s;
 						color: #25991c;
 					}
+				}
+
+				.ScheduleBtn_Delete {
+					cursor: pointer;
+					border: none;
+					background: none;
+					display: none;
 				}
 			}
 		}
@@ -484,7 +505,7 @@
 
 .timePickerWrapper {
 	position: absolute;
-	right: 0;
+	left: 460px;
 	top: 300px;
 	width: 190px;
 	height: 190px;

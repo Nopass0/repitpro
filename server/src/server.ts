@@ -4,6 +4,7 @@ import { register } from "./auth/register";
 import db from "./db";
 import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
+import { addStudent } from "./cards/student";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -13,6 +14,7 @@ io.on("connection", (socket) => {
   socket.on("register", (data) => register(data));
   socket.on("upload", (file, callback) => upload(file, callback));
   socket.on("getMonth", (data) => calendar(data));
+  socket.on("addStudent", (data) => addStudent(data));
 
   //check account
   socket.on("checkAccount", async (data) => {
