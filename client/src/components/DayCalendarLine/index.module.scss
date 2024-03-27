@@ -1,0 +1,59 @@
+button,
+input {
+	cursor: pointer;
+	border: none;
+	background: none;
+	outline: none;
+}
+
+
+
+.wrapper {
+	width: 700px;
+	height: 40px;
+	margin: 0px 10px;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+
+	white-space: nowrap;
+	font-size: 16px;
+
+		.Icon {
+			margin-right: 20px;
+			img {
+				width: 32px;
+				height: 32px;
+			}
+		}
+
+		.Time {
+			margin-right: 10px;
+			width: 100px;
+		}
+
+		.Name {
+			margin-right: 10px;
+			width: 220px;
+		}
+
+		.Item {
+			margin-right: 10px;
+			width: 110px;
+		}
+
+		.Price {
+			margin-right: 10px;
+			width: 70px;
+			font-weight: 500;
+			display: flex;
+			justify-content: flex-end;
+		}
+		.Checkbox {
+			margin-right: 10px;
+		}
+		.BtnDelete {
+			color: #9296AD;
+		}
+}

@@ -5,12 +5,12 @@ import {Select, SelectOption, OptionGroup, Option} from '@mui/base'
 import Arrow from '../../assets/arrow'
 import socket from '../../socket'
 import {useSelector} from 'react-redux'
-import img1 from '../../assets/1.svg'
-import img2 from '../../assets/2.svg'
-import img3 from '../../assets/3.svg'
-import img4 from '../../assets/4.svg'
-import img5 from '../../assets/5.svg'
-import img6 from '../../assets/6.svg'
+import GroupOnline from '../../assets/1.svg'
+import Online from '../../assets/2.svg'
+import HomeStudent from '../../assets/3.svg'
+import Group from '../../assets/4.svg'
+import Home from '../../assets/5.svg'
+import Client from '../../assets/6.svg'
 import Line from '../Line'
 
 const daysInMonth = (date: Date) => {
@@ -425,33 +425,82 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			</div>
 
 			{/* TODO */}
-			<div className={s.info}>
-				<div className={s.block}>
-					<div className={s.infoImg}>
-						<img src={img1} />
-						<p>Text</p>
+			<div className={s.footer}>
+				<div className={s.info}>
+					<div className={s.block}>
+						<p className={s.Title}>Ученики</p>
+						<div className={s.ImgWrapper}>
+							<div className={s.infoImg}>
+								<img src={Home} alt={Home} />
+								<p>Занятие на дому</p>
+							</div>
+							<div className={s.infoImg}>
+								<img src={HomeStudent} alt={HomeStudent} />
+								<p>
+									Занятие <br /> у ученика
+								</p>
+							</div>
+							<div className={s.infoImg}>
+								<img src={Group} alt={Group} />
+								<p>Группа</p>
+							</div>
+							<div className={s.infoImg}>
+								<img src={Online} alt={Online} />
+								<p>Онлайн</p>
+							</div>
+							<div className={s.infoImg}>
+								<img src={GroupOnline} alt={GroupOnline} />
+								<p>Группа онлайн</p>
+							</div>
+							<div className={s.devider}></div>
+						</div>
 					</div>
-					<div className={s.infoImg}>
-						<img src={img2} />
-						<p>Text</p>
-					</div>
-					<div className={s.infoImg}>
-						<img src={img3} />
-						<p>Text</p>
-					</div>
-					<div className={s.infoImg}>
-						<img src={img4} />
-						<p>Text</p>
-					</div>
-					<div className={s.infoImg}>
-						<img src={img5} />
-						<p>Text</p>
+					<div className={s.ClientWrapper}>
+						<p className={s.Title}>Заказчики</p>
+						<div className={s.infoImg}>
+							<img src={Client} alt={Client} />
+						</div>
 					</div>
 				</div>
-				<div className={s.devider}></div>
-				<div className={s.infoImg}>
-					<img src={img6} />
-					<p>Text</p>
+				<div className={s.IncomeNPrognosisWrapper}>
+					<div className={s.IncomeWrapper}>
+						<p className={s.Title}>Доход с начала месяца</p>
+						<div className={s.Lessons}>
+							<p>
+								Занятий: <b>1</b>
+							</p>
+							<b>{toMoneyFormat(168555)} ₽</b>
+						</div>
+						<div className={s.Works}>
+							<p>
+								Работ: <b>1</b>
+							</p>
+							<b>{toMoneyFormat(168555)} ₽</b>
+						</div>
+						<div className={s.Income}>
+							<p>Доход</p>
+							<b>{toMoneyFormat(168555)} ₽</b>
+						</div>
+					</div>
+					<div className={s.PrognosisWrapper}>
+						<p className={s.Title}>Прогноз на</p>
+						<div className={s.Lessons}>
+							<p>
+								Занятий: <b>1</b>
+							</p>
+							<b>{toMoneyFormat(168555)} ₽</b>
+						</div>
+						<div className={s.Works}>
+							<p>
+								Работ: <b>1</b>
+							</p>
+							<b>{toMoneyFormat(168555)} ₽</b>
+						</div>
+						<div className={s.Income}>
+							<p>Доход</p>
+							<b>{toMoneyFormat(168555)} ₽</b>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
