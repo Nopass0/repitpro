@@ -8,9 +8,10 @@ interface ILine {
 	size: string
 	className?: string
 	func?: () => void
+	color?: string
 }
 
-const CheckBox: React.FC<ILine> = ({size, className, func}: ILine) => {
+const CheckBox: React.FC<ILine> = ({size, className, func, color}: ILine) => {
 	const BpIcon = styled('span')(({theme}) => ({
 		borderRadius: 3,
 		width: size,
@@ -47,7 +48,7 @@ const CheckBox: React.FC<ILine> = ({size, className, func}: ILine) => {
 	}))
 
 	const BpCheckedIcon = styled(BpIcon)({
-		backgroundColor: '#25991C',
+		backgroundColor: color ||'#25991C',
 		backgroundImage:
 			'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
 		'&::before': {
@@ -61,7 +62,7 @@ const CheckBox: React.FC<ILine> = ({size, className, func}: ILine) => {
 			content: '""',
 		},
 		'input:hover ~ &': {
-			backgroundColor: '#25991C',
+			backgroundColor: color ||'#25991C',
 		},
 	})
 	return (

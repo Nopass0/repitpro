@@ -15,8 +15,8 @@ const MyCabinet = () => {
 	const [type, setType] = useState<string>('')
 	const [archive, setArchive] = useState<string>('')
 	const [search, setSearch] = useState<string>('')
-	const [valueMuiSelectType, setValueMuiSelectType] = useState<string>('')
-	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<string>('')
+	const [valueMuiSelectType, setValueMuiSelectType] = useState<number>(0)
+	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
 
 	const data_muiSelectType = [
 		{
@@ -46,7 +46,7 @@ const MyCabinet = () => {
 							setValueMuiSelectType(e.target.value)
 						}}>
 						{data_muiSelectType.map((item, index) => (
-							<mui.MenuItem value={item.label} key={index}>
+							<mui.MenuItem value={index} key={index}>
 								<div
 									style={{
 										display: 'flex',
@@ -67,10 +67,11 @@ const MyCabinet = () => {
 						className={s.muiSelectType}
 						variant={'standard'}
 						value={valueMuiSelectArchive}
-						onChange={(e) => {
+						onChange={(e:any) => {
 							setValueMuiSelectArchive(e.target.value)
+							
 						}}>
-						<mui.MenuItem value={'С архивом'}>
+						<mui.MenuItem value={0}>
 							<div
 								style={{
 									display: 'flex',
@@ -81,7 +82,7 @@ const MyCabinet = () => {
 								<p>С архивом</p>
 							</div>
 						</mui.MenuItem>
-						<mui.MenuItem value={'Только архив'}>
+						<mui.MenuItem value={1}>
 							<div
 								style={{
 									display: 'flex',
@@ -93,6 +94,7 @@ const MyCabinet = () => {
 							</div>
 						</mui.MenuItem>
 					</mui.Select>
+					
 				</div>
 				<div className={s.SearchInput}>
 					<input
