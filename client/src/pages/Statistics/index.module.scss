@@ -1,12 +1,105 @@
+.activeIcon {
+	color: #25991c;
+}
+
 .wrapper {
 	margin-top: 20px;
-	width: 90%;
-	height: 700px;
-	border-radius: 10px;
-	padding: 40px;
+	width: 100%;
+	max-width: 1450px;
+	height: 100%;
+
+	padding: 20px;
+	border: 1px solid #8b8b8b;
+	border-radius: 20px;
 	background-color: #fff;
-}
-.center {
-	margin-top: 20px;
-	margin-left: 20px;
+
+	overflow-y: scroll;
+	overflow-x: hidden;
+
+	.Header {
+		position: sticky;
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+
+		.CloseIcon {
+			color: red;
+			margin-left: 20px;
+		}
+
+		.Icon:first-child {
+			margin-right: 10px;
+		}
+
+		.Icon,
+		.CloseIcon {
+			width: 28px;
+			height: 28px;
+		}
+	}
+
+	.MainBlock {
+		display: flex;
+		flex-direction: column;
+
+		.GraphicBlock {
+			display: flex;
+			flex-direction: row;
+
+			.MenuForGraphic {
+				display: flex;
+				flex-direction: column;
+
+				width: 270px;
+				margin-right: 20px;
+				.muiSelect {
+					background: none;
+					border: none !important;
+					cursor: pointer;
+					outline: none;
+					color: black;
+
+					display: flex;
+					flex-direction: row;
+					white-space: nowrap;
+
+					height: 26px;
+				}
+			}
+
+			.Dates {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				margin-bottom: 100px;
+				.DatePicker {
+					border: 1px solid #8b8b8b;
+					border-radius: 8px;
+					padding: 4px 0;
+
+					align-items: center;
+				}
+
+				.LineDate {
+					margin: 0 5px !important;
+				}
+			}
+
+			.DataBlock {
+				display: grid;
+				grid-template-columns: 20px 120px 70px 42px;
+				grid-template-rows: repeat(2, 20px);
+				grid-column-gap: 5px;
+				grid-row-gap: 8px;
+			}
+
+			.chart_container {
+				max-width: 1450px;
+				width: calc(100% - 40px);
+				height: 360px;
+				margin: 0 auto;
+			}
+		}
+	}
 }

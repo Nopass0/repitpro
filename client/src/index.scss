@@ -26,7 +26,13 @@
 * {
 	@include scrollbars(6px, #eee, #ccc);
 }
-
+button,
+input {
+	cursor: pointer;
+	border: none;
+	background: none;
+	outline: none;
+}
 .roboto-thin {
 	font-family: 'Roboto', sans-serif;
 	font-weight: 100;

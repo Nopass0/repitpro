@@ -55,7 +55,7 @@ const CheckBox: React.FC<ILine> = ({
 	}))
 
 	const BpCheckedIcon = styled(BpIcon)({
-		backgroundColor: '#25991C',
+		backgroundColor: color || '#25991C',
 		backgroundImage:
 			'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
 		'&::before': {
@@ -69,7 +69,7 @@ const CheckBox: React.FC<ILine> = ({
 			content: '""',
 		},
 		'input:hover ~ &': {
-			backgroundColor: '#25991C',
+			backgroundColor: color || '#25991C',
 		},
 	})
 

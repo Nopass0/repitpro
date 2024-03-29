@@ -1,0 +1,141 @@
+button,
+input {
+	cursor: pointer;
+	border: none;
+	background: none;
+	outline: none;
+}
+.LineHeader {
+	background-color: #e2e2e9;
+	margin: 20px 0;
+}
+.Line {
+	background-color: #9296ad;
+}
+.wrapper {
+	width: 700px;
+	height: 603px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border-radius: 20px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+	overflow-x: hidden;
+	padding-top: 20px;
+
+	.Header {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		flex-direction: row;
+		.HeaderItems {
+			display: flex;
+			align-items: center;
+
+			.closeIcon {
+				position: relative;
+				left: 200px;
+				padding: 5px;
+				color: red;
+				cursor: pointer;
+
+				border-radius: 8px;
+				&:hover {
+					background-color: red;
+					color: #fff;
+					transition: all 0.2s;
+				}
+			}
+		}
+	}
+
+	.MainBlock {
+		max-height: 350px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	.ThreeBtnWrapper {
+		width: 100%;
+
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: row;
+		flex-wrap: nowrap;
+
+		.EditBtn {
+			width: 180px;
+			height: 48px;
+			border: 1px solid #25991c;
+			border-radius: 8px;
+			background: #fff;
+			cursor: pointer;
+
+			font-size: 16px;
+			font-weight: 500;
+			margin-right: 12px;
+		}
+
+		.SaveBtn {
+			width: 180px;
+			height: 48px;
+			border: 1px solid #25991c;
+			border-radius: 8px;
+			background: #fff;
+			cursor: pointer;
+
+			font-size: 16px;
+			font-weight: 500;
+			margin-right: 12px;
+		}
+
+		.PlusBtn {
+			width: 48px;
+			height: 48px;
+			border: 1px solid #25991c;
+			border-radius: 8px;
+			background: #fff;
+			cursor: pointer;
+		}
+
+		.active {
+			color: #fff;
+			background-color: #25991c;
+		}
+	}
+
+	.Footer {
+		width: 100%;
+		height: 82px;
+		background-color: #F3FDF2;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 16px;
+		border-bottom-left-radius: 8px;
+		border-bottom-right-radius: 8px;
+
+		.Left {
+			display: flex;
+			flex-direction: column;
+			margin-left: 20px;
+
+			.Lessons, .works {
+				display: flex;
+				flex-direction: row;
+
+				margin-bottom: 10px;
+
+				p {
+					width: 100px;
+					margin-right: 10px;
+				}
+			}
+		}
+		.income {
+			margin-right: 20px;
+		}
+	}
+}

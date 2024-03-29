@@ -1,20 +1,9 @@
-import TimePicker from '../../components/Timer'
-import CalendarPopUp from '../../components/CalendarPopUp/index';
-import NowLevel from '../../components/NowLevel/index';
-import PhoneInput from '../../components/InputPhoneNumber/index';
+import DayCalendarPopUp from '../../components/DayCalendarPopUp';
 
 const Test = () => {
 	return (
 		<div>
-			{/* <TimePicker
-				title="Test"
-				onTimeChange={() => {
-					return true
-				}}
-			/>
-			<CalendarPopUp/> */}
-			<NowLevel amountInputs={5}/>
-			<PhoneInput/>
+			<DayCalendarPopUp/>
 		</div>
 	)
 }

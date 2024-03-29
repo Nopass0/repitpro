@@ -235,42 +235,130 @@
 	color: #d7d8e0;
 }
 
-.info {
+.footer {
 	display: flex;
 	flex-direction: row;
-	width: 1100px;
-	height: 112px;
-	background-color: #fff;
-	border-radius: 20px;
+	width: 100%;
 	margin-top: 10px;
-	border: 1px solid #e2e2e9;
-	align-items: center;
-	// justify-content: center;
 
-	.block {
+	.info {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		width: 900px;
-		margin-left: 24px;
-		margin-right: 24px;
-		justify-content: space-between;
-	}
+		justify-content: center;
+		width: 1005px;
+		height: 90px;
+		background-color: #fff;
+		border-radius: 20px;
+		border: 1px solid #e2e2e9;
+		align-items: center;
+		padding: 10px 40px;
 
+		margin-right: 20px;
+		.Title {
+			font-size: 16px;
+			font-weight: 500;
+			color: #1f2133;
+			margin-bottom: 12px;
+		}
+		.block {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+
+			.ImgWrapper {
+				display: flex;
+				flex-direction: row;
+
+				.infoImg {
+					width: 135px;
+					display: flex;
+					align-items: center;
+					margin-right: 42px;
+					p {
+						margin-left: 12px;
+					}
+
+					img {
+						width: 49px;
+						height: 49px;
+					}
+				}
+
+				.infoImg:last-child {
+					margin-right: 62px;
+				}
+			}
+		}
+		.ClientWrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+	}
 	.devider {
 		width: 1px;
-		height: 46px;
-		background-color: #d7d8e0;
-		margin-right: 16px;
+		height: 63px;
+		background-color: #e4e4e4;
+		margin-right: 65px;
 	}
-}
 
-.infoImg {
-	align-items: center;
-	display: flex;
-	flex-direction: row;
-	p {
-		margin-left: 12px;
+	.IncomeNPrognosisWrapper {
+		width: 386px;
+		height: 112px;
+		background: #f3fdf2; //f3fdf2
+		border: 1px solid #e2e2e9;
+		border-radius: 20px;
+		display: flex;
+		.Title {
+			font-size: 14px;
+			font-weight: 500;
+			color: #1f2133;
+			margin-bottom: 6px;
+		}
+		.IncomeWrapper {
+			width: 193px;
+			height: 97px;
+
+			padding: 8px 12px;
+			border-right: 1px solid #e2e2e9;
+			.Lessons,
+			.Works,
+			.Income {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				font-size: 14px;
+				color: #1f2133;
+			}
+
+			.Works {
+				margin-top: 2px;
+				margin-bottom: 6px;
+			}
+		}
+
+		.PrognosisWrapper {
+			width: 193px;
+			height: 97px;
+
+			padding: 8px 12px;
+			border-right: 1px solid #e2e2e9;
+			.Lessons,
+			.Works,
+			.Income {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				font-size: 14px;
+				color: #9296AD;
+			}
+
+			.Works {
+				margin-top: 2px;
+				margin-bottom: 6px;
+			}
+		}
 	}
 }
 
