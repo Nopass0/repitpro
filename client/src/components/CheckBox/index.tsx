@@ -10,6 +10,7 @@ interface ILine {
 	func?: () => void
 	checked?: boolean // Добавлен пропс для определения состояния "checked"
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void // Добавлен пропс для обработчика изменения состояния
+	color?: string
 }
 
 const CheckBox: React.FC<ILine> = ({
@@ -17,6 +18,7 @@ const CheckBox: React.FC<ILine> = ({
 	className,
 	func,
 	checked,
+	color,
 	onChange,
 }: ILine) => {
 	const BpIcon = styled('span')(({theme}) => ({
