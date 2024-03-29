@@ -8,9 +8,17 @@ interface ILine {
 	size: string
 	className?: string
 	func?: () => void
+	checked?: boolean // Добавлен пропс для определения состояния "checked"
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void // Добавлен пропс для обработчика изменения состояния
 }
 
-const CheckBox: React.FC<ILine> = ({size, className, func}: ILine) => {
+const CheckBox: React.FC<ILine> = ({
+	size,
+	className,
+	func,
+	checked,
+	onChange,
+}: ILine) => {
 	const BpIcon = styled('span')(({theme}) => ({
 		borderRadius: 3,
 		width: size,
@@ -64,19 +72,20 @@ const CheckBox: React.FC<ILine> = ({size, className, func}: ILine) => {
 			backgroundColor: '#25991C',
 		},
 	})
+
 	return (
 		<mui.Checkbox
 			sx={{
 				'&:hover': {bgcolor: 'transparent'},
 			}}
 			className={className}
-			// onChange={func}
+			checked={checked} // Передаем значение "checked" из пропсов
+			onChange={onChange} // Передаем обработчик изменения состояния из пропсов
 			disableRipple
 			color="default"
 			checkedIcon={<BpCheckedIcon />}
 			icon={<BpIcon />}
 			inputProps={{'aria-label': 'Checkbox demo'}}
-			// {...props}
 		/>
 	)
 }

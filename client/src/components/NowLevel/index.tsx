@@ -6,6 +6,7 @@ interface INowLevel {
 	style?: React.CSSProperties
 	children?: React.ReactNode
 	amountInputs?: number
+	value?: number // Added value prop
 	onChange?: (value: number) => void
 }
 
@@ -14,9 +15,12 @@ const NowLevel: React.FC<INowLevel> = ({
 	style,
 	children,
 	amountInputs = 5,
+	value, // Destructuring value prop
 	onChange,
 }: INowLevel) => {
-	const [activeButton, setActiveButton] = useState<number | null>(null)
+	const [activeButton, setActiveButton] = useState<number | null>(
+		value !== undefined ? value - 1 : null,
+	) // Initializing activeButton based on value prop
 
 	const handleClick = (index: number) => {
 		if (index === activeButton) {
@@ -24,7 +28,7 @@ const NowLevel: React.FC<INowLevel> = ({
 		} else {
 			setActiveButton(index)
 		}
-		onChange && onChange(index)
+		onChange && onChange(index + 1) // Adjusting index to match value
 	}
 
 	return (
