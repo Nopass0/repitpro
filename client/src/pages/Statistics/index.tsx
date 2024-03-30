@@ -8,6 +8,7 @@ import {
 	LinearScale,
 	PointElement,
 	scales,
+	BarElement,
 } from 'chart.js'
 import {Bar, Line as LineGraph} from 'react-chartjs-2'
 import s from './index.module.scss'
@@ -15,7 +16,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import CloseIcon from '@mui/icons-material/Close'
 import {useState} from 'react'
-import {MenuItem, Select, styled} from '@mui/material'
+import {Checkbox, ListItemText, MenuItem, Select, styled} from '@mui/material'
 import Line from '../../components/Line'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
@@ -23,6 +24,7 @@ import {ru} from 'date-fns/locale/ru'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 
 import CheckBox from '../../components/CheckBox'
+import { useNavigate } from 'react-router-dom'
 
 ChartJS.register(
 	ArcElement,
@@ -32,6 +34,7 @@ ChartJS.register(
 	CategoryScale,
 	LinearScale,
 	PointElement,
+	BarElement,
 )
 
 interface IStatistics {}
@@ -77,7 +80,7 @@ const options = {
 			display: false,
 		},
 		tooltip: {
-			enabled: false,
+			enabled: true,
 		},
 
 		//плавнее
@@ -103,8 +106,49 @@ const options = {
 	},
 }
 
+const optionsBar = {
+	responsive: true,
+	maintainAspectRatio: false,
+	plugins: {
+		legend: {
+			//off
+			display: false,
+		},
+		title: {
+			display: true,
+			text: 'Chart.js Bar Chart - Stacked',
+		},
+	},
+	scales: {
+		x: {
+			stacked: true,
+		},
+		y: {
+			stacked: true,
+		},
+	},
+	//width and height
+	aspectRatio: 2,
+}
+const labels = [
+	'January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+	'January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+]
+
 let data = {
-	labels: getLabels(),
+	labels: labels,
 	datasets: [
 		{
 			label: 'Dataset 1',
@@ -173,18 +217,58 @@ const StyledPickersLayout = styled('span')({
 	},
 })
 const Statistics = ({}: IStatistics) => {
+
+	const navigate = useNavigate();
+
+
+	const names = [
+		'Все предметы',
+		'Математика',
+		'Русский язык',
+		'Информатика',
+		'Физика',
+		'Химия',
+	]
+	const generateData = (
+		count: number,
+	): Array<{
+		name: string
+		lessons: string
+		cancel: string
+		income: string
+		consumption: string
+		duty: string
+	}> => {
+		const data: Array<{
+			name: string
+			lessons: string
+			cancel: string
+			income: string
+			consumption: string
+			duty: string
+		}> = []
+		for (let i = 0; i < count; i++) {
+			data.push({
+				name: Math.random().toString(36).substring(2, 10),
+				lessons: Math.floor(Math.random() * 100).toString(),
+				cancel: Math.floor(Math.random() * 10).toString(),
+				income: (Math.floor(Math.random() * 10000) + 5000).toString(),
+				consumption: (Math.floor(Math.random() * 2000) + 1000).toString(),
+				duty: (Math.floor(Math.random() * 10000) + 500).toString(),
+			})
+		}
+		return data
+	}
+	const dataTable = generateData(50)
+
 	const [chooseGraphic, setChooseGraphic] = useState<number>(0)
 
-	const [studFinItem, setStudFinItem] = useState<number>(0)
+	const [studFinItem, setStudFinItem] = useState<string[]>(['Все предметы'])
 	const [studFinDate, setStudFinDate] = useState<number>(0)
 	const [studFinDateStart, setStudFinDateStart] = useState<Date>()
 	const [studFinDateEnd, setStudFinDateEnd] = useState<Date>()
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
-	const [studFinData1, setStudFinData1] = useState<string>('')
-	const [studFinData2, setStudFinData2] = useState<string>('')
-	const [studFinData3, setStudFinData3] = useState<string>('')
-	const [studFinData4, setStudFinData4] = useState<string>('')
 
 	const [studAmItem, setStudAmItem] = useState<number>(0)
 	const [studAmDate, setStudAmDate] = useState<number>(0)
@@ -192,10 +276,6 @@ const Statistics = ({}: IStatistics) => {
 	const [studAmDateEnd, setStudAmDateEnd] = useState<Date>()
 	const [studAmCheck2, setStudAmCheck2] = useState<boolean>(true)
 	const [studAmCheck1, setStudAmCheck1] = useState<boolean>(true)
-	const [studAmData1, setStudAmData1] = useState<string>('')
-	const [studAmData2, setStudAmData2] = useState<string>('')
-	const [studAmData3, setStudAmData3] = useState<string>('')
-	const [studAmData4, setStudAmData4] = useState<string>('')
 
 	const [studLesItem, setStudLesItem] = useState<number>(0)
 	const [studLesDate, setStudLesDate] = useState<number>(0)
@@ -203,10 +283,6 @@ const Statistics = ({}: IStatistics) => {
 	const [studLesDateEnd, setStudLesDateEnd] = useState<Date>()
 	const [studLesCheck2, setStudLesCheck2] = useState<boolean>(true)
 	const [studLesCheck1, setStudLesCheck1] = useState<boolean>(true)
-	const [studLesData1, setStudLesData1] = useState<string>('')
-	const [studLesData2, setStudLesData2] = useState<string>('')
-	const [studLesData3, setStudLesData3] = useState<string>('')
-	const [studLesData4, setStudLesData4] = useState<string>('')
 
 	const [cliFinItem, setCliFinItem] = useState<number>(0)
 	const [cliFinDate, setCliFinDate] = useState<number>(0)
@@ -214,10 +290,6 @@ const Statistics = ({}: IStatistics) => {
 	const [cliFinDateEnd, setCliFinDateEnd] = useState<Date>()
 	const [cliFinCheck2, setCliFinCheck2] = useState<boolean>(true)
 	const [cliFinCheck1, setCliFinCheck1] = useState<boolean>(true)
-	const [cliFinData1, setCliFinData1] = useState<string>('')
-	const [cliFinData2, setCliFinData2] = useState<string>('')
-	const [cliFinData3, setCliFinData3] = useState<string>('')
-	const [cliFinData4, setCliFinData4] = useState<string>('')
 
 	const [cliAmItem, setCliAmItem] = useState<number>(0)
 	const [cliAmDate, setCliAmDate] = useState<number>(0)
@@ -225,10 +297,6 @@ const Statistics = ({}: IStatistics) => {
 	const [cliAmDateEnd, setCliAmDateEnd] = useState<Date>()
 	const [cliAmCheck2, setCliAmCheck2] = useState<boolean>(true)
 	const [cliAmCheck1, setCliAmCheck1] = useState<boolean>(true)
-	const [cliAmData1, setCliAmData1] = useState<string>('')
-	const [cliAmData2, setCliAmData2] = useState<string>('')
-	const [cliAmData3, setCliAmData3] = useState<string>('')
-	const [cliAmData4, setCliAmData4] = useState<string>('')
 
 	const [cliWorkItem, setCliWorkItem] = useState<number>(0)
 	const [cliWorkDate, setCliWorkDate] = useState<number>(0)
@@ -236,10 +304,6 @@ const Statistics = ({}: IStatistics) => {
 	const [cliWorkDateEnd, setCliWorkDateEnd] = useState<Date>()
 	const [cliWorkCheck2, setCliWorkCheck2] = useState<boolean>(true)
 	const [cliWorkCheck1, setCliWorkCheck1] = useState<boolean>(true)
-	const [cliWorkData1, setCliWorkData1] = useState<string>('')
-	const [cliWorkData2, setCliWorkData2] = useState<string>('')
-	const [cliWorkData3, setCliWorkData3] = useState<string>('')
-	const [cliWorkData4, setCliWorkData4] = useState<string>('')
 
 	const [studRelatItem, setStudRelatItem] = useState<number>(0)
 	const [studRelatDate, setStudRelatDate] = useState<number>(0)
@@ -247,10 +311,6 @@ const Statistics = ({}: IStatistics) => {
 	const [studRelatDateEnd, setStudRelatDateEnd] = useState<Date>()
 	const [studRelatCheck2, setStudRelatCheck2] = useState<boolean>(true)
 	const [studRelatCheck1, setStudRelatCheck1] = useState<boolean>(true)
-	const [studRelatData1, setStudRelatData1] = useState<string>('')
-	const [studRelatData2, setStudRelatData2] = useState<string>('')
-	const [studRelatData3, setStudRelatData3] = useState<string>('')
-	const [studRelatData4, setStudRelatData4] = useState<string>('')
 
 	return (
 		<>
@@ -260,15 +320,19 @@ const Statistics = ({}: IStatistics) => {
 						onClick={() => {
 							setChooseGraphic(0)
 						}}>
-						<ShowChartIcon className={`${s.activeIcon} ${s.Icon}`} />
+						<ShowChartIcon
+							className={`${chooseGraphic === 0 && s.activeIcon} ${s.Icon}`}
+						/>
 					</button>
 					<button
 						onClick={() => {
 							setChooseGraphic(1)
 						}}>
-						<BarChartIcon className={`${s.Icon}`} />
+						<BarChartIcon
+							className={`${chooseGraphic === 1 && s.activeIcon} ${s.Icon}`}
+						/>
 					</button>
-					<button>
+					<button onClick={() => navigate('../')}>
 						<CloseIcon className={s.CloseIcon} />
 					</button>
 				</div>
@@ -276,15 +340,173 @@ const Statistics = ({}: IStatistics) => {
 					<div className={s.GraphicBlock}>
 						<div className={s.MenuForGraphic}>
 							<Select
+								multiple
 								className={s.muiSelect}
 								value={studFinItem}
+								renderValue={(selected) => selected.join(', ')}
 								onChange={(e: any) => setStudFinItem(e.target.value)}
 								variant={'standard'}>
+								{names.map((name, index) => (
+									<MenuItem value={name} key={index}>
+										<Checkbox checked={studFinItem.indexOf(name) > -1} />
+										<ListItemText primary={name} />
+									</MenuItem>
+								))}
+							</Select>
+							<Line width="260px" />
+							<Select
+								className={s.muiSelect}
+								value={studFinDate}
+								onChange={(e: any) => setStudFinDate(e.target.value)}
+								variant={'standard'}>
 								<MenuItem value={0}>
-									<p>Все предметы</p>
+									<p>За последние 30 дней</p>
+								</MenuItem>
+								<MenuItem value={1}>
+									<p>С начала месяца</p>
+								</MenuItem>
+								<MenuItem value={2}>
+									<p>С начала года</p>
+								</MenuItem>
+								<MenuItem value={3}>
+									<p>За всё время</p>
+								</MenuItem>
+								<MenuItem value={4}>
+									<p>Задать период</p>
 								</MenuItem>
 							</Select>
 							<Line width="260px" />
+							<div className={s.Dates}>
+								<div className={s.DatePicker}>
+									<LocalizationProvider
+										dateAdapter={AdapterDateFns}
+										adapterLocale={ru}>
+										<DatePicker
+											value={studFinDateStart}
+											onChange={(e:any) => setStudFinDateStart(e)}
+											slots={{
+												layout: StyledPickersLayout,
+											}}
+											sx={{
+												input: {
+													paddingTop: '0px',
+													paddingBottom: '0px',
+													paddingLeft: '4px',
+													fontWeight: '500',
+												},
+												svg: {
+													width: '18px',
+													height: '18px',
+												},
+											}}
+											timezone="system"
+											showDaysOutsideCurrentMonth
+										/>
+									</LocalizationProvider>
+								</div>
+								<Line width="20px" className={s.LineDate} />
+								<div className={s.DatePicker}>
+									<LocalizationProvider
+										dateAdapter={AdapterDateFns}
+										adapterLocale={ru}>
+										<DatePicker
+										value={studFinDateEnd}
+										onChange={(e:any) => setStudFinDateEnd(e)}
+											slots={{
+												layout: StyledPickersLayout,
+											}}
+											sx={{
+												input: {
+													paddingTop: '0px',
+													paddingBottom: '0px',
+													paddingLeft: '4px',
+													fontWeight: '500',
+												},
+												svg: {
+													width: '18px',
+													height: '18px',
+												},
+											}}
+											timezone="system"
+											showDaysOutsideCurrentMonth
+										/>
+									</LocalizationProvider>
+								</div>
+							</div>
+							<div className={s.DataBlock}>
+								<p></p>
+								<p></p>
+								<p style={{fontWeight: '500', textAlign: 'center'}}>Рубли</p>
+								<p style={{fontWeight: '500', textAlign: 'center'}}>%</p>
+								<CheckBox size="16px" color="red" />
+								<p>Всего</p>
+								<p style={{textAlign: 'center'}}>2000</p>
+								<p style={{textAlign: 'center'}}>100</p>
+								<CheckBox size="16px" color="blue" />
+								<p
+									style={{
+										textAlign: 'center',
+										display: 'flex',
+										alignItems: 'center',
+									}}>
+									На дому
+								</p>
+								<p
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+									}}>
+									2000
+								</p>
+								<p
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+									}}>
+									100
+								</p>
+							</div>
+						</div>
+						{(() => {
+							switch (chooseGraphic) {
+								case 0: {
+									return (
+										<div className={s.ChartWrap}>
+											<p>Ученики-финансы</p>
+											<div className={s.chart_container}>
+												<LineGraph
+													className={s.Graphic}
+													data={data}
+													options={options}
+												/>
+											</div>
+										</div>
+									)
+								}
+
+								case 1: {
+									return (
+										<div className={s.ChartWrap}>
+											<p>Ученики-финансы</p>
+											<div className={s.chart_container}>
+												<Bar
+													className={s.Graphic}
+													data={data}
+													options={optionsBar}
+												/>
+											</div>
+										</div>
+									)
+								}
+							}
+						})()}
+					</div>
+					<Line width="100%" className={s.Line} />
+					<div className={s.GraphicBlock}>
+						<div className={s.MenuForGraphic}>
+							<p className={s.TitleTable}>Ученики сводная таблица</p>
 							<Select
 								className={s.muiSelect}
 								value={studFinDate}
@@ -396,34 +618,60 @@ const Statistics = ({}: IStatistics) => {
 								</p>
 							</div>
 						</div>
-						{(() => {
-							switch (chooseGraphic) {
-								case 0: {
-									return (
-										<div className={s.chart_container}>
-											<LineGraph
-												className={s.Graphic}
-												data={data}
-												options={options}
-											/>
-										</div>
-									)
-								}
-								
-								case 1: {
-									return (
-										<div className={s.chart_container}>
-											<Bar
-												className={s.Graphic}
-												data={data}
-												options={options}
-											/>
-										</div>
-									)
-								}
-							}
-						})()}
+						<div className={s.TableWrap}>
+							<table className={s.Table}>
+								<thead className={s.Thead}>
+									<tr className={s.Tr}>
+										<th className={s.Th}>Учеников:</th>
+										<th className={s.Th}>Занятия:</th>
+										<th className={s.Th}>Средняя стоимость занятия:</th>
+										<th className={s.Th}>Отмененные:</th>
+										<th className={s.Th}>Доход:</th>
+										<th className={s.Th}>Расход:</th>
+										<th className={s.Th}>Долг:</th>
+										<th className={s.Th}>Итог:</th>
+									</tr>
+								</thead>
+								<tbody className={s.Tbody}>
+									{dataTable.map((item, index) => (
+										<tr className={s.Tr} key={index}>
+											<td className={s.Td}>
+												<p>{item.name}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.lessons}</p>
+											</td>
+											<td className={s.Td}>
+												<p>?</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.cancel}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.income}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.consumption}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.duty}</p>
+											</td>
+											<td className={s.Td}>
+												<p>
+													{String(
+														Number(item.income) -
+															Number(item.duty) -
+															Number(item.consumption),
+													)}
+												</p>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
 					</div>
+					<Line width="100%" className={s.Line} />
 				</div>
 			</div>
 		</>

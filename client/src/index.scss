@@ -105,6 +105,12 @@ input {
 	font-style: italic;
 }
 
+@media screen and (max-width: 1024px) {
+	body {
+		overflow: scroll !important;
+	}
+}
+
 body {
 	background-color: #f9f9fd;
 	overflow: hidden;
