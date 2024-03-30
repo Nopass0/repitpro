@@ -20,19 +20,37 @@ export enum ELeftMenuPage {
 	MyCabinet = 'MyCabinet',
 }
 
-export interface IItemCard {
-	itemName: string | null | undefined
-	tryLessonCheck: boolean | null | undefined
-	tryLessonCost: string | null | undefined
+export interface ITimeLine {
+	id: number
+	day: string
+	active: boolean
+	startTime: {
+		hour: number
+		minute: number
+	}
+	endTime: {
+		hour: number
+		minute: number
+	}
+	editingStart: boolean
+	editingEnd: boolean
+}
 
-	todayProgramStudent: string | null | undefined
-	targetLesson: string | null | undefined
-	programLesson: string | null | undefined
-	typeLesson: string | null | undefined
-	placeLesson: string | null | undefined
-	timeLesson: string | null | undefined
-	valueMuiSelectArchive: number | null | undefined
-	startLesson: string | null | undefined
-	endLesson: string | null | undefined
-	nowLevel: number | null | undefined
+// Обновленный тип для IItemCard
+export interface IItemCard {
+	itemName: string
+	tryLessonCheck: boolean
+	tryLessonCost: string
+	todayProgramStudent: string
+	targetLesson: string
+	lessonDuration: number | null
+	programLesson: string
+	typeLesson: string
+	placeLesson: string
+	timeLesson: string
+	valueMuiSelectArchive: number
+	startLesson: Date | null
+	endLesson: Date | null
+	nowLevel: number | undefined
+	timeLinesArray: ITimeLine[]
 }

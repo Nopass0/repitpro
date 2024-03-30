@@ -5,7 +5,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useState} from 'react'
+import {useCallback, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
@@ -29,7 +29,7 @@ import uploadFile from '../../assets/UploadFile.svg'
 import TimePicker from '../Timer/index'
 import NowLevel from '../NowLevel'
 import Input from '../Input'
-import {IItemCard} from '../../types'
+import {IItemCard, ITimeLine} from '../../types'
 import socket from '../../socket'
 
 interface IAddStudent {}
@@ -62,42 +62,46 @@ const AddStudent = ({}: IAddStudent) => {
 	// const [storyLesson, setStoryLesson] = useState<string>('')
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
 
+	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+	const [currentItemIndex, setCurrentItemIndex] = useState(0)
+
+	//get week
+	const getVoidWeek = (): ITimeLine[] => {
+		const week = daysOfWeek.map((day, index) => ({
+			id: (index + 1) * (currentItemIndex > 0 ? currentItemIndex : 1),
+			day,
+			active: false,
+			startTime: {hour: 0, minute: 0},
+			endTime: {hour: 0, minute: 0},
+			editingStart: false,
+			editingEnd: false,
+		}))
+
+		return week
+	}
+
+	const [timeLines, setTimeLines] = useState<ITimeLine[]>(getVoidWeek())
+
 	// Block item
-	const [itemName, setItemName] = useState<string>('')
-	const [tryLessonCheck, setTryLessonCheck] = useState<boolean>(false)
-	const [tryLessonCost, setTryLessonCost] = useState<string>('')
-
-	const [todayProgramStudent, setTodayProgramStudent] = useState<string>('')
-	const [targetLesson, setTargetLesson] = useState<string>('')
-	const [programLesson, setProgramLesson] = useState<string>('')
-	const [typeLesson, setTypeLesson] = useState<string>('')
-	const [placeLesson, setPlaceLesson] = useState<string>('')
-	const [timeLesson, setTimeLesson] = useState<string>('')
-	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(1)
-	const [startLesson, setStartLesson] = useState<string>('')
-	const [endLesson, setEndLesson] = useState<string>('')
-	const [nowLevel, setNowLevel] = useState<number>()
-
-	///////////////////////////////////////////////////////
-	const [currentItem, setCurrentItem] = useState<number>(0)
-	//////////////////////////////////////////////////////
-
-	const [items, setItems] = useState([
+	const [items, setItems] = useState<IItemCard[]>([
 		{
-			endLesson: null,
-			startLesson: null,
-			targetLesson: null,
-			programLesson: null,
-			typeLesson: null,
-			placeLesson: null,
-			timeLesson: null,
-			itemName: null,
+			itemName: '',
 			tryLessonCheck: false,
-			tryLessonCost: null,
-			todayProgramStudent: null,
-			nowLevel: null,
-			valueMuiSelectArchive: null,
-		} as IItemCard,
+			tryLessonCost: '',
+			todayProgramStudent: '',
+			targetLesson: '',
+			programLesson: '',
+			typeLesson: '1',
+			placeLesson: '',
+			timeLesson: '',
+			valueMuiSelectArchive: 1,
+			startLesson: null,
+			endLesson: null,
+			nowLevel: undefined,
+			lessonDuration: null,
+			timeLinesArray: getVoidWeek() as ITimeLine[],
+		},
 	])
 
 	//add item function
@@ -105,38 +109,36 @@ const AddStudent = ({}: IAddStudent) => {
 		setItems([
 			...items,
 			{
-				endLesson: null,
-				startLesson: null,
-				targetLesson: null,
-				programLesson: null,
-				typeLesson: null,
-				placeLesson: null,
-				timeLesson: null,
-				itemName: null,
+				itemName: '',
 				tryLessonCheck: false,
-				tryLessonCost: null,
-				todayProgramStudent: null,
-				nowLevel: null,
-				valueMuiSelectArchive: null,
+				tryLessonCost: '',
+				todayProgramStudent: '',
+				targetLesson: '',
+				programLesson: '',
+				typeLesson: '1',
+				placeLesson: '',
+				timeLesson: '',
+				valueMuiSelectArchive: 1,
+				startLesson: null,
+				endLesson: null,
+				nowLevel: undefined,
+				lessonDuration: null,
+				timeLinesArray: getVoidWeek() as ITimeLine[],
 			},
 		])
 	}
 
 	//change item function by name of value
-	const changeItem = (
+	const changeItemValue = (
 		itemIndex: number,
 		name: string,
-		value: string | boolean | number | Date,
+		value: string | boolean | number | Date | null,
 	) => {
-		setItems([
-			...items,
-			(items[itemIndex] = {
-				...items[itemIndex],
-				[name]: value,
-			}),
-		])
-
-		console.log(items)
+		setItems(
+			items.map((item, index) =>
+				index === itemIndex ? {...item, [name]: value} : item,
+			),
+		)
 	}
 
 	const sendData = () => {
@@ -150,6 +152,8 @@ const AddStudent = ({}: IAddStudent) => {
 			prePayCost,
 			prePayDate,
 			costOneLesson,
+			items,
+			phoneNumber,
 		})
 	}
 
@@ -184,84 +188,105 @@ const AddStudent = ({}: IAddStudent) => {
 	})
 	const [open, setOpen] = useState(true)
 
-	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-
-	const [timeLines, setTimeLines] = useState(
-		daysOfWeek.map((day, index) => ({
-			id: index,
-			day,
-			active: false,
-			startTime: {hour: 0, minute: 0},
-			endTime: {hour: 0, minute: 0},
-			editingStart: false,
-			editingEnd: false,
-		})),
-	)
-
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
 	const [lessonDuration, setLessonDuration] = useState()
 
-	const handleClick_delete = (id: number) => {
-		//remove startTime and endTime from timeLines[id]
-		setTimeLines((prevTimeLines) =>
-			prevTimeLines.map((timeline) =>
-				timeline.id === id
+	const handleClick_delete = (itemIndex: number, id: number) => {
+		setItems((prevItems) =>
+			prevItems.map((item, index) =>
+				index === itemIndex
 					? {
-							...timeline,
-							startTime: {hour: 0, minute: 0},
-							endTime: {hour: 0, minute: 0},
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											startTime: {hour: 0, minute: 0},
+											endTime: {hour: 0, minute: 0},
+									  }
+									: timeline,
+							),
 					  }
-					: timeline,
+					: item,
 			),
 		)
 	}
 
-	const handleClick_dp = (id: number) => {
-		setTimeLines((prevTimeLines) =>
-			prevTimeLines.map((timeline) =>
-				timeline.id === id
+	const handleClick_dp = (itemIndex: number, id: number) => {
+		console.log(itemIndex, id, items)
+		setItems((prevItems) =>
+			prevItems.map((item, index) =>
+				index === itemIndex
 					? {
-							...timeline,
-							active: !timeline.active,
-							editingStart: !timeline.active,
-							editingEnd: false,
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											active: !timeline.active,
+											editingStart: !timeline.active,
+											editingEnd: false,
+									  }
+									: {
+											...timeline,
+											active: false,
+											editingStart: false,
+											editingEnd: false,
+									  },
+							),
 					  }
-					: {
-							...timeline,
-							active: false,
-							editingStart: false,
-							editingEnd: false,
-					  },
+					: item,
 			),
 		)
 		setShowEndTimePicker(-1)
 	}
 
-	const handleStartTimeChange = (id: number, hour: number, minute: number) => {
-		setTimeLines((prevTimeLines) =>
-			prevTimeLines.map((timeline) =>
-				timeline.id === id
+	const handleStartTimeChange = (
+		itemIndex: number,
+		id: number,
+		hour: number,
+		minute: number,
+	) => {
+		console.log('start', itemIndex, id, hour, minute)
+		setItems((prevItems) =>
+			prevItems.map((item, index) =>
+				index === itemIndex
 					? {
-							...timeline,
-							startTime: {hour, minute},
-							editingEnd: lessonDuration! > 0 ? false : true,
-							editingStart: false,
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											startTime: {hour, minute},
+											editingEnd: item.lessonDuration! > 0 ? false : true,
+											editingStart: false,
+									  }
+									: timeline,
+							),
 					  }
-					: timeline,
+					: item,
 			),
 		)
-		if (lessonDuration! > 0) {
-			const endHour = hour + Math.floor(lessonDuration! / 60)
-			const endMinute = (minute + (lessonDuration! % 60)) % 60
-			setTimeLines((prevTimeLines) =>
-				prevTimeLines.map((timeline) =>
-					timeline.id === id
+
+		if (items[itemIndex].lessonDuration! > 0) {
+			const endHour = hour + Math.floor(items[itemIndex].lessonDuration! / 60)
+			const endMinute = (minute + (items[itemIndex].lessonDuration! % 60)) % 60
+			setItems((prevItems) =>
+				prevItems.map((item, index) =>
+					index === itemIndex
 						? {
-								...timeline,
-								endTime: {hour: endHour, minute: endMinute},
-								editingEnd: false,
+								...item,
+								timeLinesArray: item.timeLinesArray.map((timeline) =>
+									timeline.id === id
+										? {
+												...timeline,
+												endTime: {hour: endHour, minute: endMinute},
+												editingEnd: false,
+										  }
+										: timeline,
+								),
 						  }
-						: timeline,
+						: item,
 				),
 			)
 		} else {
@@ -269,70 +294,45 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	const handleEndTimeChange = (id: number, hour: number, minute: number) => {
-		const timelineToUpdate = timeLines.find((timeline) => timeline.id === id)
+	const handleEndTimeChange = (
+		itemIndex: number,
+		id: number,
+		hour: number,
+		minute: number,
+	) => {
+		const timelineToUpdate = items[itemIndex].timeLinesArray.find(
+			(timeline) => timeline.id === id,
+		)
 		if (
 			timelineToUpdate &&
 			(hour > timelineToUpdate.startTime.hour ||
 				(hour === timelineToUpdate.startTime.hour &&
 					minute > timelineToUpdate.startTime.minute))
 		) {
-			setTimeLines((prevTimeLines) =>
-				prevTimeLines.map((timeline) =>
-					timeline.id === id
-						? {...timeline, endTime: {hour, minute}, editingEnd: false}
-						: timeline,
+			setItems((prevItems) =>
+				prevItems.map((item, index) =>
+					index === itemIndex
+						? {
+								...item,
+								timeLinesArray: item.timeLinesArray.map((timeline) =>
+									timeline.id === id
+										? {...timeline, endTime: {hour, minute}, editingEnd: false}
+										: timeline,
+								),
+						  }
+						: item,
 				),
 			)
 			setShowEndTimePicker(-1)
 		} else {
-			// Handle case where end time is not greater than start time
-			// For example, show an error message or take appropriate action
 			console.log('End time must be greater than start time')
 		}
 	}
 
 	const handleLessonDurationChange = (e: any) => {
 		const value = parseInt(e.target.value, 10)
-		setLessonDuration(isNaN(value) ? 0 : value)
+		changeItemValue(currentItemIndex, 'lessonDuration', value)
 	}
-	const weekDays = [
-		{
-			day: 'Пн',
-			timerElement: <ScheduleTimer id={1} />,
-			isOpened: false,
-		},
-		{
-			day: 'Вт',
-			timerElement: <ScheduleTimer id={2} />,
-			isOpened: false,
-		},
-		{
-			day: 'Ср',
-			timerElement: <ScheduleTimer id={3} />,
-			isOpened: false,
-		},
-		{
-			day: 'Чт',
-			timerElement: <ScheduleTimer id={4} />,
-			isOpened: false,
-		},
-		{
-			day: 'Пт',
-			timerElement: <ScheduleTimer id={5} />,
-			isOpened: false,
-		},
-		{
-			day: 'Сб',
-			timerElement: <ScheduleTimer id={6} />,
-			isOpened: false,
-		},
-		{
-			day: 'Вс',
-			timerElement: <ScheduleTimer id={7} />,
-			isOpened: false,
-		},
-	]
 
 	const handleClick = () => {
 		setOpen(!open)
@@ -491,7 +491,7 @@ const AddStudent = ({}: IAddStudent) => {
 						timeout="auto"
 						unmountOnExit>
 						<mui.List className={s.MuiList} component="div" disablePadding>
-							<div className={s.ListObjectWrapper}>
+							{/* <div className={s.ListObjectWrapper}>
 								<div className={s.ListObject}>
 									<p
 										style={{
@@ -526,7 +526,7 @@ const AddStudent = ({}: IAddStudent) => {
 										<CreateIcon style={{width: '18px', height: '18px'}} />
 									</button>
 								</div>
-							</div>
+							</div> */}
 						</mui.List>
 					</mui.Collapse>
 
@@ -569,7 +569,8 @@ const AddStudent = ({}: IAddStudent) => {
 						<div className={s.dataSlidePicker}>
 							<button
 								onClick={() =>
-									currentItem > 0 && setCurrentItem(currentItem - 1)
+									currentItemIndex > 0 &&
+									setCurrentItemIndex(currentItemIndex - 1)
 								}
 								className={s.btn}>
 								<span>
@@ -577,12 +578,12 @@ const AddStudent = ({}: IAddStudent) => {
 								</span>
 							</button>
 							<p className={s.btnText}>
-								Предмет {currentItem + 1} / {items.length};
+								Предмет {currentItemIndex + 1} / {items.length};
 							</p>
 							<button
 								onClick={() =>
-									currentItem < items.length + 1 &&
-									setCurrentItem(currentItem + 1)
+									currentItemIndex < items.length - 1 &&
+									setCurrentItemIndex(currentItemIndex + 1)
 								}
 								className={s.btn}>
 								<span>
@@ -601,13 +602,15 @@ const AddStudent = ({}: IAddStudent) => {
 						<>
 							<div
 								key={index}
-								className={currentItem === index ? s.ItemActive : s.ItemMain}>
+								className={
+									currentItemIndex === index ? s.ItemActive : s.ItemMain
+								}>
 								<div className={s.StudentCard}>
 									<input
 										type="text"
 										value={String(item.itemName)}
 										onChange={(e) =>
-											changeItem(index, 'itemName', e.target.value)
+											changeItemValue(index, 'itemName', e.target.value)
 										}
 										placeholder="Наименование"
 									/>
@@ -617,13 +620,22 @@ const AddStudent = ({}: IAddStudent) => {
 									<div className={s.CardCheckBox}>
 										<p>Пробное занятие:</p>
 									</div>
-									<CheckBox className={s.CheckBox} size="20px" />
+									<CheckBox
+										className={s.CheckBox}
+										size="20px"
+										checked={item.tryLessonCheck!}
+										onChange={(e) =>
+											changeItemValue(index, 'tryLessonCheck', e.target.checked)
+										}
+									/>
 									<p>Стоимость:</p>
 									<Input
 										num
 										type="text"
-										value={tryLessonCost}
-										onChange={(e) => setTryLessonCost(e.target.value)}
+										value={item.tryLessonCost!}
+										onChange={(e) =>
+											changeItemValue(index, 'tryLessonCost', e.target.value)
+										}
 									/>
 									<p>₽</p>
 								</div>
@@ -634,18 +646,25 @@ const AddStudent = ({}: IAddStudent) => {
 									</div>
 
 									<NowLevel
-										onChange={(val) => setNowLevel(val)}
+										onChange={(val) => changeItemValue(index, 'nowLevel', val)}
+										value={item.nowLevel!}
 										amountInputs={5}
 									/>
 								</div>
 								<Line width="296px" className={s.Line} />
-								{/* Level */}
+
 								<div className={s.StudentCard}>
 									<p>Текущая программа ученика:</p>
 									<input
 										type="text"
-										value={todayProgramStudent}
-										onChange={(e) => setTodayProgramStudent(e.target.value)}
+										value={item.todayProgramStudent}
+										onChange={(e) =>
+											changeItemValue(
+												index,
+												'todayProgramStudent',
+												e.target.value,
+											)
+										}
 									/>
 								</div>
 								<Line width="296px" className={s.Line} />
@@ -653,8 +672,10 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>Цель занятий:</p>
 									<input
 										type="text"
-										value={targetLesson}
-										onChange={(e) => setTargetLesson(e.target.value)}
+										value={item.targetLesson!}
+										onChange={(e) =>
+											changeItemValue(index, 'targetLesson', e.target.value)
+										}
 									/>
 								</div>
 								<Line width="296px" className={s.Line} />
@@ -662,8 +683,10 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>Программа ученика:</p>
 									<input
 										type="text"
-										value={programLesson}
-										onChange={(e) => setProgramLesson(e.target.value)}
+										value={item.programLesson!}
+										onChange={(e) =>
+											changeItemValue(index, 'programLesson', e.target.value)
+										}
 									/>
 								</div>
 								<Line width="296px" className={s.Line} />
@@ -679,10 +702,9 @@ const AddStudent = ({}: IAddStudent) => {
 										<mui.Select
 											className={s.muiSelect__menu}
 											variant={'standard'}
-											value={valueMuiSelectArchive}
-											// defaultValue={1}
+											value={item.typeLesson}
 											onChange={(e) => {
-												setValueMuiSelectArchive(e.target.value)
+												changeItemValue(index, 'typeLesson', e.target.value)
 											}}>
 											<mui.MenuItem value={1}>
 												<svg
@@ -783,8 +805,10 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>Место проведения:</p>
 									<input
 										type="text"
-										value={placeLesson}
-										onChange={(e) => setPlaceLesson(e.target.value)}
+										value={item.placeLesson!}
+										onChange={(e) => {
+											changeItemValue(index, 'placeLesson', e.target.value)
+										}}
 									/>
 								</div>
 								<Line width="296px" className={s.Line} />
@@ -794,7 +818,7 @@ const AddStudent = ({}: IAddStudent) => {
 										num
 										type="text"
 										value={lessonDuration}
-										onChange={handleLessonDurationChange}
+										onChange={(e: any) => handleLessonDurationChange(e, index)}
 									/>
 									<p>мин</p>
 								</div>
@@ -813,6 +837,10 @@ const AddStudent = ({}: IAddStudent) => {
 													paddingTop: '0px',
 													paddingBottom: '0px',
 												},
+											}}
+											value={item.startLesson || new Date()}
+											onChange={(newValue) => {
+												changeItemValue(index, 'startLesson', newValue!)
 											}}
 											timezone="system"
 											showDaysOutsideCurrentMonth
@@ -835,6 +863,10 @@ const AddStudent = ({}: IAddStudent) => {
 													paddingBottom: '0px',
 												},
 											}}
+											value={item.endLesson || new Date()}
+											onChange={(newValue) => {
+												changeItemValue(index, 'endLesson', newValue!)
+											}}
 											timezone="system"
 											showDaysOutsideCurrentMonth
 										/>
@@ -846,158 +878,172 @@ const AddStudent = ({}: IAddStudent) => {
 									</div>
 									<Line width="303px" className={s.LineGreen} />
 									<div className={s.Schedule}>
-										{timeLines.map((timeline, index) => (
-											<>
-												<div
-													id={String(timeline.id)}
-													key={timeline.id}
-													className={
-														s.ScheduleItem +
-														' ' +
-														((timeline.startTime.hour !== 0 ||
-															timeline.startTime.minute !== 0 ||
-															timeline.endTime.hour !== 0 ||
-															timeline.endTime.minute !== 0) &&
-															s.active_s)
-													}>
+										{items[currentItemIndex].timeLinesArray.map(
+											(timeline, index) => (
+												<>
 													<div
-														style={{
-															width: '200px',
-															display: 'flex',
-															flexDirection: 'row',
-															alignItems: 'center',
-														}}>
-														<ScheduleDate
-															weekend={
-																timeline.day === 'Сб' || timeline.day === 'Вс'
-															}
-															active={
-																timeline.startTime.hour !== 0 ||
+														id={String(timeline.id)}
+														key={timeline.id}
+														className={
+															s.ScheduleItem +
+															' ' +
+															((timeline.startTime.hour !== 0 ||
 																timeline.startTime.minute !== 0 ||
 																timeline.endTime.hour !== 0 ||
-																timeline.endTime.minute !== 0
-															}>
-															<p>{timeline.day}</p>
-														</ScheduleDate>
-														{(timeline.startTime.hour !== 0 ||
-															timeline.startTime.minute !== 0 ||
-															timeline.endTime.hour !== 0 ||
-															timeline.endTime.minute !== 0) && (
-															<p
-																style={{marginLeft: '10px', fontWeight: '400'}}>
-																{`${timeline.startTime.hour
-																	.toString()
-																	.padStart(2, '0')}:${timeline.startTime.minute
-																	.toString()
-																	.padStart(2, '0')} - ${timeline.endTime.hour
-																	.toString()
-																	.padStart(2, '0')}:${timeline.endTime.minute
-																	.toString()
-																	.padStart(2, '0')}`}
-															</p>
-														)}
-													</div>
-													<button
-														onClick={() => handleClick_delete(timeline.id)}
-														className={s.ScheduleBtn_Delete}>
-														<DeleteIcon />
-													</button>
-													<button
-														onClick={() => handleClick_dp(timeline.id)}
-														className={s.ScheduleBtn}>
-														<ScheduleIcon />
-													</button>
-
-													{(timeline.active ||
-														timeline.id === showEndTimePicker) && (
+																timeline.endTime.minute !== 0) &&
+																s.active_s)
+														}>
 														<div
-															className={s.timePickerWrapper}
 															style={{
-																transform: `translateY(${
-																	index * 40
-																}px) translateX(-50%)`,
+																width: '200px',
+																display: 'flex',
+																flexDirection: 'row',
+																alignItems: 'center',
 															}}>
-															{timeline.active && !timeline.editingEnd && (
-																<TimePicker
-																	title="Начало"
-																	onTimeChange={(hour, minute) =>
-																		handleStartTimeChange(
-																			timeline.id,
-																			hour,
-																			minute,
-																		)
-																	}
-																/>
-															)}
-															{timeline.editingEnd && (
-																<TimePicker
-																	title="Конец"
-																	onTimeChange={(hour, minute) =>
-																		handleEndTimeChange(
-																			timeline.id,
-																			hour,
-																			minute,
-																		)
-																	}
-																/>
+															<ScheduleDate
+																weekend={
+																	timeline.day === 'Сб' || timeline.day === 'Вс'
+																}
+																active={
+																	timeline.startTime.hour !== 0 ||
+																	timeline.startTime.minute !== 0 ||
+																	timeline.endTime.hour !== 0 ||
+																	timeline.endTime.minute !== 0
+																}>
+																<p>{timeline.day}</p>
+															</ScheduleDate>
+															{(timeline.startTime.hour !== 0 ||
+																timeline.startTime.minute !== 0 ||
+																timeline.endTime.hour !== 0 ||
+																timeline.endTime.minute !== 0) && (
+																<p
+																	style={{
+																		marginLeft: '10px',
+																		fontWeight: '400',
+																	}}>
+																	{`${timeline.startTime.hour
+																		.toString()
+																		.padStart(
+																			2,
+																			'0',
+																		)}:${timeline.startTime.minute
+																		.toString()
+																		.padStart(2, '0')} - ${timeline.endTime.hour
+																		.toString()
+																		.padStart(2, '0')}:${timeline.endTime.minute
+																		.toString()
+																		.padStart(2, '0')}`}
+																</p>
 															)}
 														</div>
-													)}
-												</div>
+														<button
+															onClick={() =>
+																handleClick_delete(
+																	currentItemIndex,
+																	timeline.id,
+																)
+															}
+															className={s.ScheduleBtn_Delete}>
+															<DeleteIcon />
+														</button>
+														<button
+															onClick={() =>
+																handleClick_dp(currentItemIndex, timeline.id)
+															}
+															className={s.ScheduleBtn}>
+															<ScheduleIcon />
+														</button>
 
-												{timeLines.length - 1 !== index && (
-													<Line width="303px" className={s.Line} />
-												)}
-											</>
-										))}
+														{(timeline.active ||
+															timeline.id === showEndTimePicker) && (
+															<div
+																className={s.timePickerWrapper}
+																style={{
+																	transform: `translateY(${
+																		index * 40
+																	}px) translateX(-50%)`,
+																}}>
+																{timeline.active && !timeline.editingEnd && (
+																	<TimePicker
+																		title="Начало"
+																		onTimeChange={(hour, minute) =>
+																			handleStartTimeChange(
+																				currentItemIndex,
+																				timeline.id,
+																				hour,
+																				minute,
+																			)
+																		}
+																	/>
+																)}
+																{timeline.editingEnd && (
+																	<TimePicker
+																		title="Конец"
+																		onTimeChange={(hour, minute) =>
+																			handleEndTimeChange(
+																				currentItemIndex,
+																				timeline.id,
+																				hour,
+																				minute,
+																			)
+																		}
+																	/>
+																)}
+															</div>
+														)}
+													</div>
+
+													{items[currentItemIndex].timeLinesArray.length - 1 !==
+														index && <Line width="303px" className={s.Line} />}
+												</>
+											),
+										)}
 									</div>
 								</div>
-								<div className={s.MathBlock}>
-									<div className={s.MathObjectsList}>
-										<div className={s.MathObject}>
-											<p>Всего занятий: 0</p>
-											<p>Сумма: 0₽</p>
-										</div>
-										<Line width="294px" className={s.Line} />
-										<div className={s.MathObject}>
-											<p>Прошло: 0</p>
-											<p>Оплачено: 0 (0₽)</p>
-										</div>
-										<Line width="294px" className={s.Line} />
-										<div className={s.MathObject}>
-											<p>Не оплачено: 0</p>
-											<p style={{display: 'flex', flexDirection: 'row'}}>
-												<p style={{marginRight: '5px'}}>Долг:</p>
-												<p style={{color: 'red'}}>0</p>
-												<p>₽</p>
-											</p>
-										</div>
-									</div>
-								</div>
-								<mui.ListItemButton
-									style={{marginTop: '10px'}}
-									onClick={handleClick}>
-									<img src={uploadFile} alt={uploadFile} />
-									<mui.ListItemText primary="Файлы/ссылки" />
-									{open ? <ExpandLess /> : <ExpandMore />}
-								</mui.ListItemButton>
-								<mui.Collapse in={open} timeout="auto" unmountOnExit>
-									<mui.List
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-											flexDirection: 'column',
-										}}
-										component="div"
-										disablePadding>
-										<Line width="296px" className={s.Line} />
-										<p>Список пока пуст</p>
-									</mui.List>
-								</mui.Collapse>
 							</div>
 						</>
 					))}
+					<div className={s.MathBlock}>
+						<div className={s.MathObjectsList}>
+							<div className={s.MathObject}>
+								<p>Всего занятий: 0</p>
+								<p>Сумма: 0₽</p>
+							</div>
+							<Line width="294px" className={s.Line} />
+							<div className={s.MathObject}>
+								<p>Прошло: 0</p>
+								<p>Оплачено: 0 (0₽)</p>
+							</div>
+							<Line width="294px" className={s.Line} />
+							<div className={s.MathObject}>
+								<p>Не оплачено: 0</p>
+								<p style={{display: 'flex', flexDirection: 'row'}}>
+									<p style={{marginRight: '5px'}}>Долг:</p>
+									<p style={{color: 'red'}}>0</p>
+									<p>₽</p>
+								</p>
+							</div>
+						</div>
+					</div>
+					<mui.ListItemButton style={{marginTop: '10px'}} onClick={handleClick}>
+						<img src={uploadFile} alt={uploadFile} />
+						<mui.ListItemText primary="Файлы/ссылки" />
+						{open ? <ExpandLess /> : <ExpandMore />}
+					</mui.ListItemButton>
+					<mui.Collapse in={open} timeout="auto" unmountOnExit>
+						<mui.List
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								flexDirection: 'column',
+							}}
+							component="div"
+							disablePadding>
+							<Line width="296px" className={s.Line} />
+							<p>Список пока пуст</p>
+						</mui.List>
+					</mui.Collapse>
 				</div>
 			</div>
 			<div className={s.FooterWrapper}>

@@ -8,10 +8,19 @@ interface ILine {
 	size: string
 	className?: string
 	func?: () => void
+	checked?: boolean // Добавлен пропс для определения состояния "checked"
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void // Добавлен пропс для обработчика изменения состояния
 	color?: string
 }
 
-const CheckBox: React.FC<ILine> = ({size, className, func, color}: ILine) => {
+const CheckBox: React.FC<ILine> = ({
+	size,
+	className,
+	func,
+	checked,
+	color,
+	onChange,
+}: ILine) => {
 	const BpIcon = styled('span')(({theme}) => ({
 		borderRadius: 3,
 		width: size,
@@ -48,7 +57,7 @@ const CheckBox: React.FC<ILine> = ({size, className, func, color}: ILine) => {
 	}))
 
 	const BpCheckedIcon = styled(BpIcon)({
-		backgroundColor: color ||'#25991C',
+		backgroundColor: color || '#25991C',
 		backgroundImage:
 			'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
 		'&::before': {
@@ -62,22 +71,23 @@ const CheckBox: React.FC<ILine> = ({size, className, func, color}: ILine) => {
 			content: '""',
 		},
 		'input:hover ~ &': {
-			backgroundColor: color ||'#25991C',
+			backgroundColor: color || '#25991C',
 		},
 	})
+
 	return (
 		<mui.Checkbox
 			sx={{
 				'&:hover': {bgcolor: 'transparent'},
 			}}
 			className={className}
-			// onChange={func}
+			checked={checked} // Передаем значение "checked" из пропсов
+			onChange={onChange} // Передаем обработчик изменения состояния из пропсов
 			disableRipple
 			color="default"
 			checkedIcon={<BpCheckedIcon />}
 			icon={<BpIcon />}
 			inputProps={{'aria-label': 'Checkbox demo'}}
-			// {...props}
 		/>
 	)
 }
