@@ -43,6 +43,7 @@ export interface IItemCard {
 	tryLessonCost: string
 	todayProgramStudent: string
 	targetLesson: string
+	lessonDuration: number | null
 	programLesson: string
 	typeLesson: string
 	placeLesson: string
