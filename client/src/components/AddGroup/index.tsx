@@ -110,6 +110,7 @@ const AddGroup = ({}: IAddGroup) => {
 			storyLesson: string
 			costOneLesson: string
 			targetLessonStudent: string
+			todayProgramStudent: string
 		}[]
 	>([
 		{
@@ -127,6 +128,7 @@ const AddGroup = ({}: IAddGroup) => {
 			storyLesson: '',
 			costOneLesson: '',
 			targetLessonStudent: '',
+			todayProgramStudent: '',
 		},
 	])
 
@@ -187,6 +189,7 @@ const AddGroup = ({}: IAddGroup) => {
 				storyLesson: '',
 				costOneLesson: '',
 				targetLessonStudent: '',
+				todayProgramStudent: '',
 			},
 		])
 	}
@@ -414,6 +417,7 @@ const AddGroup = ({}: IAddGroup) => {
 				storyLesson: '',
 				costOneLesson: '',
 				targetLessonStudent: '',
+				todayProgramStudent: '',
 			},
 		])
 	}
@@ -1120,22 +1124,22 @@ const AddGroup = ({}: IAddGroup) => {
 
 									<p>₽</p>
 								</div>
-								{/* <Line width="296px" className={s.Line} />
-						<div className={s.StudentCardCheckBox}>
-							<div className={s.CardCheckBox}>
-								<p>Пробное занятие:</p>
-							</div>
-							<CheckBox className={s.CheckBox} size="20px" />
-							<p>Стоимость:</p>
-							<Input
-								num
-								type="text"
-								value={students[currentStudentIndex].tryLessonCost}
-								onChange={(e) => setTryLessonCost(e.target.value)}
-							/>
-							<p>₽</p>
-						</div>
-						<Line width="296px" className={s.Line} /> */}
+								<Line width="296px" className={s.Line} />
+								<div className={s.StudentCardCheckBox}>
+									<div className={s.CardCheckBox}>
+										<p>Пробное занятие:</p>
+									</div>
+									<CheckBox className={s.CheckBox} size="20px" />
+									<p>Стоимость:</p>
+									<Input
+										num
+										type="text"
+										value={students[currentStudentIndex].tryLessonCost}
+										onChange={(e) => setTryLessonCost(e.target.value)}
+									/>
+									<p>₽</p>
+								</div>
+								<Line width="296px" className={s.Line} />
 								{/* NO DATA */}
 								<div className={s.StudentCardCheckBox}>
 									<div className={s.CardCheckBoxLevel}>
@@ -1144,23 +1148,21 @@ const AddGroup = ({}: IAddGroup) => {
 
 									<NowLevel amountInputs={5} />
 								</div>
-								{/* <Line width="296px" className={s.Line} />
-						<div className={s.StudentCard}>
-							<p>Текущая программа ученика:</p>
-							<input
-								type="text"
-								value={item.todayProgramStudent}
-								onChange={(e) => 
-								{
-									changeItemValue(
-										currentItemIndex,
-										'todayProgramStudent',
-										e.target.value
-									)
-								}
-								}
-							/>
-						</div> */}
+								<Line width="296px" className={s.Line} />
+								<div className={s.StudentCard}>
+									<p>Текущая программа ученика:</p>
+									<input
+										type="text"
+										value={student.todayProgramStudent}
+										onChange={(e) => {
+											changeStudentValue(
+												index,
+												'todayProgramStudent',
+												e.target.value,
+											)
+										}}
+									/>
+								</div>
 								<Line width="296px" className={s.Line} />
 
 								<div className={s.StudentCard}>
@@ -1180,62 +1182,64 @@ const AddGroup = ({}: IAddGroup) => {
 								<Line width="296px" className={s.Line} />
 
 								{/* NO DATA */}
-								{/* <div className={s.StudentCard}>
-							<p>Начало занятий:</p>
-							<LocalizationProvider
-								dateAdapter={AdapterDateFns}
-								adapterLocale={ru}>
-								<DatePicker
-									slots={{
-										layout: StyledPickersLayout,
-									}}
-									sx={{
-										input: {
-											paddingTop: '0px',
-											paddingBottom: '0px',
-										},
-									}}
-									timezone="system"
-									showDaysOutsideCurrentMonth
-								/>
-							</LocalizationProvider>
+								<div className={s.StudentCard}>
+									<p>Начало занятий:</p>
+									<LocalizationProvider
+										dateAdapter={AdapterDateFns}
+										adapterLocale={ru}>
+										<DatePicker
+											slots={{
+												layout: StyledPickersLayout,
+											}}
+											sx={{
+												input: {
+													paddingTop: '0px',
+													paddingBottom: '0px',
+												},
+											}}
+											timezone="system"
+											showDaysOutsideCurrentMonth
+										/>
+									</LocalizationProvider>
 
-							<p style={{color: 'red'}}>*</p>
-						</div>
-						<Line width="296px" className={s.Line} />
-						<div style={{marginBottom: '10px'}} className={s.StudentCard}>
-							<p>Окончание занятий:</p>
-							<LocalizationProvider
-								dateAdapter={AdapterDateFns}
-								adapterLocale={ru}>
-								<DatePicker
-									slots={{
-										layout: StyledPickersLayout,
-									}}
-									sx={{
-										input: {
-											paddingTop: '0px',
-											paddingBottom: '0px',
-										},
-									}}
-									timezone="system"
-									showDaysOutsideCurrentMonth
-								/>
-							</LocalizationProvider>
-							<p style={{color: 'red'}}>*</p>
-						</div> */}
+									<p style={{color: 'red'}}>*</p>
+								</div>
+								<Line width="296px" className={s.Line} />
+								<div style={{marginBottom: '10px'}} className={s.StudentCard}>
+									<p>Окончание занятий:</p>
+									<LocalizationProvider
+										dateAdapter={AdapterDateFns}
+										adapterLocale={ru}>
+										<DatePicker
+											slots={{
+												layout: StyledPickersLayout,
+											}}
+											sx={{
+												input: {
+													paddingTop: '0px',
+													paddingBottom: '0px',
+												},
+											}}
+											timezone="system"
+											showDaysOutsideCurrentMonth
+										/>
+									</LocalizationProvider>
+									<p style={{color: 'red'}}>*</p>
+								</div>
 
-								{/* <Line width="296px" className={s.Line} />
-						<div className={s.StudentCard}>
-							<p>Стоимость одного занятия:</p>
-							<Input
-								num
-								type="text"
-								value={costOneLesson}
-								onChange={(e) => setCostOneLesson(e.target.value)}
-							/>
-							<p>₽</p>
-						</div> */}
+								<Line width="296px" className={s.Line} />
+								<div className={s.StudentCard}>
+									<p>Стоимость одного занятия:</p>
+									<Input
+										num
+										type="text"
+										value={student.costOneLesson}
+										onChange={(e) => {
+											changeStudentValue(index, 'costOneLesson', e.target.value)
+										}}
+									/>
+									<p>₽</p>
+								</div>
 								<div className={s.MathBlockStudent}>
 									<div className={s.MathObjectsList}>
 										<div className={s.MathObject}>
