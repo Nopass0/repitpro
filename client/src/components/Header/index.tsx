@@ -4,7 +4,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import * as mui from '@mui/material'
 import s from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
-import logo from '../../assets/logo.png'
+import logo from '../../assets/Logo.svg'
 import Eye from '../../assets/eye'
 import Doc from '../../assets/doc'
 import DataSlidePicker from '../DataSlidePicker'
@@ -13,6 +13,8 @@ import {Link, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {useState} from 'react'
 import {ELeftMenuPage} from '../../types'
+import mobileLogo from '../../assets/mobileLogo.svg'
+import { slide as Menu } from 'react-burger-menu'
 
 interface IHeader {}
 
@@ -31,17 +33,11 @@ const Header = ({}: IHeader) => {
 		<header className={s.header}>
 			<div className={s.wrapperHeader}>
 				<div className={s.HeaderLeft}>
-					<div className={s.logoContainer}>
-						<img
-							src={logo}
-							alt="logo"
-							width={36}
-							height={36}
-							className={s.logo}
-						/>
-						<h1 className={s.title}>КАБИНЕТ РЕПЕТИТОРА</h1>
-					</div>
-
+					<button className={s.LogoWrapper} onClick={() => navigate('../')}>
+						<img src={logo} alt="logo" className={s.logo} />
+						<img src={mobileLogo} alt="mobileLogo" className={s.mobileLogo} />
+					</button>
+					{/* <Menu width={'200px'} className={s.BurgerMenu}  /> */}
 					<mui.Select
 						className={s.muiSelect__menu}
 						renderValue={(option: SelectOption<number> | null) => {

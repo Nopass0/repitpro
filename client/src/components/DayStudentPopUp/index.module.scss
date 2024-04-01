@@ -1,0 +1,208 @@
+button,
+input {
+	cursor: pointer;
+	border: none;
+	background: none;
+	outline: none;
+}
+
+.wrapper {
+	width: 1158px;
+	height: fit-content;
+
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	border-radius: 20px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+
+	padding: 20px 20px 0 20px;
+
+	.InfoBlock {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		.Header {
+			width: 100%;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-start;
+
+			margin-bottom: 20px;
+
+			.MainHeader {
+				width: 100%;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+
+				padding: 10px 20px;
+				border: 1px solid #25991c;
+				border-radius: 8px;
+				background-color: #f9f9fd;
+
+				.IconHeader {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+
+					img {
+						margin-right: 8px;
+					}
+
+					p {
+						word-break: break-all;
+						max-width: 120px;
+					}
+				}
+				.AddressHeader {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+
+					p:first-child {
+						font-weight: 700;
+						font-size: 16px;
+						color: rgb(0, 0, 0, 0.6);
+					}
+				}
+
+				.Devider {
+					width: 1px;
+					height: 64px;
+					background-color: rgb(0, 0, 0, 0.2);
+				}
+			}
+		}
+
+		.MainBlock {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+
+			h1 {
+				font-size: 16px;
+				font-weight: 700;
+				color: rgb(0, 0, 0, 0.6);
+				margin-bottom: 20px;
+			}
+
+			.TextArea {
+				width: 100%;
+				min-height: 80px;
+				border-radius: 8px;
+				border-color: #bababa;
+				resize: none;
+				outline: none;
+				margin-bottom: 20px;
+
+				&::placeholder {
+					font-size: 16px;
+					color: rgb(0, 0, 0, 0.6);
+					padding: 13px;
+				}
+			}
+
+			.MediaBlock {
+				display: flex;
+				flex-direction: row;
+				align-items: flex-start;
+
+				.InputFile {
+					display: none;
+				}
+
+				.LabelFile {
+					cursor: pointer;
+
+					border: 1px solid #25991c;
+					border-radius: 8px;
+					height: 45px;
+				}
+
+				.Select {
+					position: relative;
+					bottom: 5px;
+					right: 15px;
+					padding: 0 !important;
+				}
+			}
+
+			.HomeWorkWrapper {
+				width: 35%;
+				margin-right: 30px;
+			}
+
+			.Devider {
+				width: 1px;
+				min-height: 100%;
+				background-color: rgb(0, 0, 0, 0.2);
+				margin-right: 30px;
+			}
+
+			.LessonWrapper {
+				width: 65%;
+
+				.PrePay {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+				}
+			}
+		}
+	}
+
+	.buttons {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+	}
+	.closeIcon {
+		// position: relative;
+		// left: 10px;
+		padding: 5px;
+		color: red;
+		cursor: pointer;
+
+		border-radius: 8px;
+		&:hover {
+			background-color: red;
+			color: #fff;
+			transition: all 0.2s;
+		}
+	}
+
+	.btn {
+		position: absolute;
+	}
+	.btnRight, .btnLeft {
+		background: #fff;
+		border: 1px solid #179417;
+		border-radius: 180px;
+		cursor: pointer;
+		padding: 8px 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+
+		top: 190px;
+		&:hover {
+			background: #eee;
+			transition: all 0.3s ease;
+		}
+	}
+
+	.btnLeft {
+		top: 156px;
+		right: 1166px;
+	}
+
+	.btnRight {
+		left: 40px;
+	}
+}

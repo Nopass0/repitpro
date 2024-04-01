@@ -157,9 +157,23 @@ body {
 	body {
 		zoom: 1;
 	}
+
+	.container {
+		padding: 70px 0 0 0;
+
+		display: block !important;
+	}
 }
 @media screen and (max-width: 350px) {
 	body {
 		zoom: 0.8;
 	}
 }
+
+.container {
+	max-width: 1920px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: row;
+}
+

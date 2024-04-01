@@ -89,14 +89,7 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 							window.location.pathname !== '/register' ? (
 								<>
 									<Header />
-									<div
-										style={{
-											display: 'flex',
-											flexDirection: 'row',
-											// width: '100%',
-											maxWidth: '1920px',
-											margin: '0 auto 0 auto',
-										}}>
+									<div className="container">
 										<LeftMenu />
 										{[router_element]}
 									</div>

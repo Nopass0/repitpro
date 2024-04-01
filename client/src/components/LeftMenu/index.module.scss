@@ -1,3 +1,4 @@
+
 .wrapper {
 	width: 336px;
 	height: 872px; // на сайте 833 | в фигме 872
@@ -46,7 +47,8 @@
 				margin: 14px 16px;
 			}
 
-			.muiSelectArchive::before, .muiSelectArchive::before {
+			.muiSelectArchive::before,
+			.muiSelectArchive::before {
 				border: none !important;
 			}
 		}
@@ -74,7 +76,7 @@
 			}
 
 			.SearchIconDiv {
-				background: #F3FDF2;
+				background: #f3fdf2;
 				border-radius: 8px;
 
 				.SearchIcon {
@@ -88,7 +90,6 @@
 		}
 	}
 }
-
 @media screen and (max-width: 1024px) {
 	.wrapper {
 		display: none;

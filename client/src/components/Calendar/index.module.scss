@@ -4,7 +4,7 @@
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
 	max-width: 1490px;
-	height: 751px;
+	max-height: 751px;
 	margin-top: 20px;
 
 	.table {
@@ -246,7 +246,7 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		width: 1005px;
+		max-width: 1005px;
 		height: 90px;
 		background-color: #fff;
 		border-radius: 20px;
@@ -271,7 +271,6 @@
 				flex-direction: row;
 
 				.infoImg {
-					width: 135px;
 					display: flex;
 					align-items: center;
 					margin-right: 42px;
@@ -287,6 +286,10 @@
 
 				.infoImg:last-child {
 					margin-right: 62px;
+				}
+
+				.infoImgMobile {
+					display: none;
 				}
 			}
 		}
@@ -304,7 +307,7 @@
 	}
 
 	.IncomeNPrognosisWrapper {
-		width: 386px;
+		max-width: 386px;
 		height: 112px;
 		background: #f3fdf2; //f3fdf2
 		border: 1px solid #e2e2e9;
@@ -343,7 +346,6 @@
 			height: 97px;
 
 			padding: 8px 12px;
-			border-right: 1px solid #e2e2e9;
 			.Lessons,
 			.Works,
 			.Income {
@@ -351,7 +353,7 @@
 				flex-direction: row;
 				justify-content: space-between;
 				font-size: 14px;
-				color: #9296AD;
+				color: #9296ad;
 			}
 
 			.Works {
@@ -376,4 +378,69 @@
 	right: 2px;
 	// bottom: 12px;
 	margin: 0 !important;
+}
+
+@media screen and (max-width: 1024px) {
+	.calendar {
+		overflow-x: scroll;
+	}
+
+	.footer {
+		
+
+		.info {
+			height: fit-content;
+			.Title {
+				display: none;
+			}
+			.ImgWrapper {
+				flex-wrap: wrap;
+				
+				.infoImg {
+					margin-right: 20px !important;
+					margin-bottom: 10px;
+					p {
+						font-size: 14px;
+						margin-left: 10px !important;
+					}
+	
+					img {
+						width: 36px !important;
+						height: 36px !important;
+					}
+				}
+	
+				.infoImgMobile {
+					display: flex !important;
+					align-items: center;
+	
+					p {
+						font-size: 14px;
+						margin-left: 10px !important;
+					}
+					img {
+						width: 36px;
+						height: 36px;
+					}
+				}
+			}
+		}
+
+
+		.devider {
+			display: none;
+		}
+
+		.ClientWrapper {
+			display: none !important;
+		}
+	}
+}
+
+@media screen and (min-width: 1024px) {
+	.ImgWrapper {
+		.infoImg {
+			min-width: 135px;
+		}
+	}
 }

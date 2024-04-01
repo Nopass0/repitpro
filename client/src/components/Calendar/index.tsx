@@ -452,6 +452,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 								<img src={GroupOnline} alt={GroupOnline} />
 								<p>Группа онлайн</p>
 							</div>
+							<div className={s.infoImgMobile}>
+								<img src={Client} alt={Client} />
+								<p>Заказчики</p>
+							</div>
 							<div className={s.devider}></div>
 						</div>
 					</div>
