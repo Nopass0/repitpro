@@ -17,7 +17,7 @@ export enum ELeftMenuPage {
 	AddStudent = 'AddStudent',
 	AddGroup = 'AddGroup',
 	AddClient = 'AddClient',
-	MyCabinet = 'MyCabinet',
+	MainPage = 'MainPage',
 }
 
 export interface ITimeLine {

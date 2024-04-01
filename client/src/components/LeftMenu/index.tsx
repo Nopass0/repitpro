@@ -9,9 +9,10 @@ import {useSelector} from 'react-redux'
 import {ELeftMenuPage} from '../../types'
 import AddGroup from '../AddGroup'
 import AddClient from '../AddClient'
+import MyCabinet from '../MyCabinet'
 interface ILeftMenu {}
 
-const MyCabinet = () => {
+const MainPage = () => {
 	const [type, setType] = useState<string>('')
 	const [archive, setArchive] = useState<string>('')
 	const [search, setSearch] = useState<string>('')
@@ -117,8 +118,8 @@ const LeftMenu = ({}: ILeftMenu) => {
 	const Page = useSelector((state: any) => state.leftMenu)
 
 	switch (Page) {
-		case ELeftMenuPage.MyCabinet:
-			return <MyCabinet />
+		case ELeftMenuPage.MainPage:
+			return <MainPage />
 
 		case ELeftMenuPage.AddStudent:
 			return <AddStudent />
