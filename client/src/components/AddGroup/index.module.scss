@@ -196,6 +196,7 @@
 				margin-right: 2px;
 			}
 		}
+
 		.ItemWrapper {
 			display: flex;
 			flex-direction: column;
@@ -442,7 +443,6 @@
 		font-weight: 400 !important;
 		font-size: 16px !important;
 		justify-content: space-between;
-
 	}
 }
 
@@ -527,4 +527,25 @@
 	}
 }
 
+.ScheduleSelect {
+	background-color: #179417;
+	width: 32px;
+	height: 32px;
+	position: relative;
+}
 
+.timePickerWrapper {
+	position: absolute;
+	left: 460px;
+	top: 300px;
+	width: 190px;
+	height: 190px;
+}
+
+.ItemMain {
+	display: none;
+}
+
+.ItemActive {
+	display: block;
+}
