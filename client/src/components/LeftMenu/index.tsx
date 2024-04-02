@@ -68,9 +68,8 @@ const MainPage = () => {
 						className={s.muiSelectType}
 						variant={'standard'}
 						value={valueMuiSelectArchive}
-						onChange={(e:any) => {
+						onChange={(e: any) => {
 							setValueMuiSelectArchive(e.target.value)
-							
 						}}>
 						<mui.MenuItem value={0}>
 							<div
@@ -95,7 +94,6 @@ const MainPage = () => {
 							</div>
 						</mui.MenuItem>
 					</mui.Select>
-					
 				</div>
 				<div className={s.SearchInput}>
 					<input
@@ -128,8 +126,11 @@ const LeftMenu = ({}: ILeftMenu) => {
 		case ELeftMenuPage.AddClient:
 			return <AddClient />
 
-		default:
+		case ELeftMenuPage.MyCabinet:
 			return <MyCabinet />
+
+		default:
+			return <MainPage />
 	}
 }
 

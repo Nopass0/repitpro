@@ -32,6 +32,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const currentYear = useSelector((state: any) => state.currentYear)
 
 	let token = useSelector((state: any) => state.user.token)
+	const hiddenNum = useSelector((state: any) => state.hiddenNum)
+	const details = useSelector((state: any) => state.details)
 
 	let currentPartOfMonth = 1 // 0 - previous month, 1 - current month, 2 - next month
 
@@ -242,61 +244,80 @@ export const Calendar = ({className, cells}: ICalendar) => {
 													className={
 														s.data + ' ' + (currentPartOfMonth !== 1 && s.grey)
 													}>
-													<p className={s.dataField}>
-														<p>
-															Занятий:{' '}
-															<b>
-																{cell
-																	? cell.lessonsCount.toString().slice(0, 2)
-																	: 0}
-															</b>
-														</p>
-														<p>
-															<b>
-																{cell
-																	? toMoneyFormat(cell.lessonsPrice)
-																			.toString()
-																			.slice(0, 8)
-																	: 0}
-																₽
-															</b>
-														</p>
-													</p>
-													<p className={s.dataField}>
-														<p>
-															Работ:
-															<b>
-																{cell
-																	? cell.workCount.toString().slice(0, 2)
-																	: 0}
-															</b>
-														</p>
-														<p>
-															<b>
-																{cell
-																	? toMoneyFormat(cell.workPrice)
-																			.toString()
-																			.slice(0, 8)
-																	: 0}
-																₽
-															</b>
-														</p>
-													</p>
-													<p className={s.dataField}>
-														<p>Доход</p>
-														<p>
-															<b>
-																{cell
-																	? toMoneyFormat(
-																			cell.workPrice + cell.lessonsPrice,
-																	  )
-																			.toString()
-																			.slice(0, 12)
-																	: 0}
-																₽
-															</b>
-														</p>
-													</p>
+													{details ? (
+														<>
+															<p className={s.dataField}>
+																<p>
+																	Занятий:{' '}
+																	<b>
+																		{cell
+																			? cell.lessonsCount.toString().slice(0, 2)
+																			: 0}
+																	</b>
+																</p>
+																<p style={{display: hiddenNum ? 'none' : ''}}>
+																	<b>
+																		{cell
+																			? toMoneyFormat(cell.lessonsPrice)
+																					.toString()
+																					.slice(0, 8)
+																			: 0}
+																		₽
+																	</b>
+																</p>
+															</p>
+															<p className={s.dataField}>
+																<p>
+																	Работ:
+																	<b>
+																		{cell
+																			? cell.workCount.toString().slice(0, 2)
+																			: 0}
+																	</b>
+																</p>
+																<p style={{display: hiddenNum ? 'none' : ''}}>
+																	<b>
+																		{cell
+																			? toMoneyFormat(cell.workPrice)
+																					.toString()
+																					.slice(0, 8)
+																			: 0}
+																		₽
+																	</b>
+																</p>
+															</p>
+															<p className={s.dataField}>
+																<p>Доход</p>
+																<p style={{display: hiddenNum ? 'none' : ''}}>
+																	<b>
+																		{cell
+																			? toMoneyFormat(
+																					cell.workPrice + cell.lessonsPrice,
+																			  )
+																					.toString()
+																					.slice(0, 12)
+																			: 0}
+																		₽
+																	</b>
+																</p>
+															</p>
+														</>
+													) : (
+														<>
+															<div className={s.LineWrapper}>
+																{cell &&
+																	Array.from({
+																		length: Math.min(55, cell.lessonsCount),
+																	}).map((_, i) => (
+																		<Line
+																			key={i}
+																			width="30px"
+																			className={s.LineLesson}
+																		/>
+																	))}
+															</div>
+														</>
+													)}
 												</div>
 												{/* )} */}
 											</div>
@@ -360,7 +381,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 																		{item.lessonsCount.toString().slice(0, 2)}
 																	</b>
 																</p>
-																<p>
+																<p style={{display: hiddenNum ? 'none' : ''}}>
 																	<b>
 																		{toMoneyFormat(item.lessonsPrice)
 																			.toString()
@@ -378,7 +399,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 																	Работ:{' '}
 																	<b>{item.workCount.toString().slice(0, 2)}</b>
 																</p>
-																<p>
+																<p style={{display: hiddenNum ? 'none' : ''}}>
 																	<b>
 																		{toMoneyFormat(item.workPrice)
 																			.toString()
@@ -399,7 +420,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 																	.slice(0, 2)}
 															</b>
 														</p>
-														<p>
+														<p style={{display: hiddenNum ? 'none' : ''}}>
 															<b>
 																{toMoneyFormat(
 																	item.workPrice + item.lessonsPrice,
@@ -473,17 +494,23 @@ export const Calendar = ({className, cells}: ICalendar) => {
 							<p>
 								Занятий: <b>1</b>
 							</p>
-							<b>{toMoneyFormat(168555)} ₽</b>
+							<b style={{display: hiddenNum ? 'none' : ''}}>
+								{toMoneyFormat(168555)} ₽
+							</b>
 						</div>
 						<div className={s.Works}>
 							<p>
 								Работ: <b>1</b>
 							</p>
-							<b>{toMoneyFormat(168555)} ₽</b>
+							<b style={{display: hiddenNum ? 'none' : ''}}>
+								{toMoneyFormat(168555)} ₽
+							</b>
 						</div>
 						<div className={s.Income}>
 							<p>Доход</p>
-							<b>{toMoneyFormat(168555)} ₽</b>
+							<b style={{display: hiddenNum ? 'none' : ''}}>
+								{toMoneyFormat(168555)} ₽
+							</b>
 						</div>
 					</div>
 					<div className={s.PrognosisWrapper}>
@@ -492,17 +519,23 @@ export const Calendar = ({className, cells}: ICalendar) => {
 							<p>
 								Занятий: <b>1</b>
 							</p>
-							<b>{toMoneyFormat(168555)} ₽</b>
+							<b style={{display: hiddenNum ? 'none' : ''}}>
+								{toMoneyFormat(168555)} ₽
+							</b>
 						</div>
 						<div className={s.Works}>
 							<p>
 								Работ: <b>1</b>
 							</p>
-							<b>{toMoneyFormat(168555)} ₽</b>
+							<b style={{display: hiddenNum ? 'none' : ''}}>
+								{toMoneyFormat(168555)} ₽
+							</b>
 						</div>
 						<div className={s.Income}>
 							<p>Доход</p>
-							<b>{toMoneyFormat(168555)} ₽</b>
+							<b style={{display: hiddenNum ? 'none' : ''}}>
+								{toMoneyFormat(168555)} ₽
+							</b>
 						</div>
 					</div>
 				</div>

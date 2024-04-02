@@ -14,7 +14,7 @@ import {useDispatch, useSelector} from 'react-redux'
 import {useState} from 'react'
 import {ELeftMenuPage} from '../../types'
 import mobileLogo from '../../assets/mobileLogo.svg'
-import { slide as Menu } from 'react-burger-menu'
+import {slide as Menu} from 'react-burger-menu'
 
 interface IHeader {}
 
@@ -22,6 +22,9 @@ const Header = ({}: IHeader) => {
 	const navigate = useNavigate()
 	const dispatch = useDispatch()
 	const currentMonth = useSelector((state: any) => state.currentMonth) // new Date().getMonth()
+	const hiddenNum = useSelector((state: any) => state.hiddenNum)
+	const details = useSelector((state: any) => state.details)
+
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 	const handleLogout = () => {
@@ -33,7 +36,15 @@ const Header = ({}: IHeader) => {
 		<header className={s.header}>
 			<div className={s.wrapperHeader}>
 				<div className={s.HeaderLeft}>
-					<button className={s.LogoWrapper} onClick={() => navigate('../')}>
+					<button
+						className={s.LogoWrapper}
+						onClick={() => {
+							navigate('../')
+							dispatch({
+								type: 'SET_LEFT_MENU_PAGE',
+								payload: ELeftMenuPage.MainPage,
+							})
+						}}>
 						<img src={logo} alt="logo" className={s.logo} />
 						<img src={mobileLogo} alt="mobileLogo" className={s.mobileLogo} />
 					</button>
@@ -85,13 +96,28 @@ const Header = ({}: IHeader) => {
 					</mui.Select>
 
 					<div className={s.calendarBtns}>
-						<button className={s.hideBtn + ' ' + s.HiddenBtn}>
-							<p className={s.btnText}>Скрыть</p>
+						<button
+							style={{color: hiddenNum ? '#25991c' : ''}}
+							onClick={() => {
+								dispatch({
+									type: 'SET_HIDDEN_NUM',
+									payload: !hiddenNum,
+								})
+								console.log(hiddenNum)
+							}}
+							className={s.hideBtn + ' ' + s.HiddenBtn}>
+							<p className={s.btnText}>{hiddenNum ? 'Показать' : 'Скрыть'}</p>
 							<p className={s.rub}>₽</p>
 							{/* <Eye className={s.eye} /> */}
 						</button>
 
-						<button className={s.hideBtn + ' ' + s.DetailsBtn}>
+						<button
+							onClick={() => {
+								dispatch({type: 'SET_DETAILS', payload: !details})
+								console.log(details)
+							}}
+							style={{color: details ? '#25991c' : ''}}
+							className={s.hideBtn + ' ' + s.DetailsBtn}>
 							<p className={s.btnText}>Подробно</p>
 
 							<Doc className={s.eye} />

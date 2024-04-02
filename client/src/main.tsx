@@ -26,7 +26,9 @@ let defaultState = {
 	} as IUser,
 	currentMonth: new Date().getMonth(),
 	currentYear: new Date(Date.now()).getFullYear(),
-	leftMenu: ELeftMenuPage.MyCabinet,
+	leftMenu: ELeftMenuPage.MainPage,
+	hiddenNum: false,
+	details: false,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -65,6 +67,12 @@ const reducer = (state = defaultState, action: any) => {
 			localStorage.removeItem('token')
 
 			return {...state, user: {...state.user, token: ''}}
+		case 'SET_HIDDEN_NUM': 
+			return {...state, hiddenNum: action.payload}
+
+		case 'SET_DETAILS':
+			return {...state, details: action.payload}
+			
 		default:
 			return state
 	}

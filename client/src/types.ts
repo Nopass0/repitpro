@@ -1,5 +1,7 @@
 export interface IUser {
 	token: string
+	hiddenNum: boolean
+	details: boolean
 }
 
 export interface ICell {
@@ -17,6 +19,7 @@ export enum ELeftMenuPage {
 	AddStudent = 'AddStudent',
 	AddGroup = 'AddGroup',
 	AddClient = 'AddClient',
+	MyCabinet = 'MyCabinet',
 	MainPage = 'MainPage',
 }
 
