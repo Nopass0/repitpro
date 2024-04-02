@@ -42,6 +42,15 @@ const AddClient = ({}: IAddClient) => {
 	const [typePayment, setTypePayment] = useState<boolean>(false) // Предоплата
 	const [generalComment, setGeneralComment] = useState<string>('')
 
+	const [jobs, setJobs] = useState([
+		{
+			jobName: '',
+			itemName: '',
+			typePayment: false, // Предоплата false - оплата true
+			cost: 0,
+		},
+	])
+
 	// Stage One
 	const [totalCostStageOne, setTotalCostStageOne] = useState<number>()
 

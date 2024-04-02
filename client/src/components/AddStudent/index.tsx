@@ -31,6 +31,7 @@ import NowLevel from '../NowLevel'
 import Input from '../Input'
 import {IItemCard, ITimeLine} from '../../types'
 import socket from '../../socket'
+import {useSelector} from 'react-redux'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -141,6 +142,9 @@ const AddStudent = ({}: IAddStudent) => {
 		)
 	}
 
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
+
 	const sendData = () => {
 		socket.emit('addStudent', {
 			nameStudent,
@@ -153,6 +157,7 @@ const AddStudent = ({}: IAddStudent) => {
 			prePayDate,
 			costOneLesson,
 			items,
+			token,
 			phoneNumber,
 		})
 	}

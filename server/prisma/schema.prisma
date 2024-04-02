@@ -14,8 +14,8 @@ datasource db {
   // url      = env("DATABASE_URL")
 
   //sqlite3 dev
-  provider = "sqlite"
-  url      = "file:./db.sqlite"
+  provider = "postgresql"
+  url      = "postgresql://postgres:root@localhost:5432/repitpro"
 }
 
 
@@ -72,7 +72,7 @@ model TimeLine {
   endTimeHour  Int
   endTimeMinute  Int
 
-  Item  Item[]
+  userId String
 }
 
 model Item {
@@ -91,9 +91,9 @@ model Item {
   endLesson  DateTime
   nowLevel  Int
   lessonDuration  Int
-  timeLinesArray  TimeLine[]
+  timeLinesArray String //Objects
 
-  Student  Student[]
+  userId String
 }
 
 model Student {
@@ -108,5 +108,8 @@ model Student {
   commentStudent String
   link String
   cost String
-  items Item[]
+  items String[] //id's "1,2,3"
+  isArchived Boolean @default(false)
+
+  userId String
 }

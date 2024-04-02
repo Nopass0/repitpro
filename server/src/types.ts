@@ -39,7 +39,7 @@ export interface IItemCard {
   timeLinesArray: ITimeLine[];
 }
 
-export interface IStudentCard {
+export interface IStudentCardResponse {
   nameStudent: string;
   phoneNumber: string;
   contactFace: string;
@@ -51,4 +51,5 @@ export interface IStudentCard {
   link: string;
   cost: string;
   items: IItemCard[];
+  token: string;
 }

@@ -2,7 +2,7 @@ import s from './index.module.scss'
 import * as mui from '@mui/material'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import './index.css'
 import AddStudent from '../AddStudent'
 import {useSelector} from 'react-redux'
@@ -10,6 +10,7 @@ import {ELeftMenuPage} from '../../types'
 import AddGroup from '../AddGroup'
 import AddClient from '../AddClient'
 import MyCabinet from '../MyCabinet'
+import socket from '../../socket'
 interface ILeftMenu {}
 
 const MainPage = () => {
@@ -18,11 +19,28 @@ const MainPage = () => {
 	const [search, setSearch] = useState<string>('')
 	const [valueMuiSelectType, setValueMuiSelectType] = useState<number>(0)
 	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
+	const [students, setStudents] = useState([])
+
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
+
+	console.log('Token: ', token)
+
+	socket.emit('getStudentList', token)
+
+	useEffect(() => {
+		socket.once('getStudentList', (data: any) => {
+			console.log('Students', data)
+			setStudents(data)
+		})
+	}, [])
+
+	console.log('STUDENTS: ', students)
 
 	const data_muiSelectType = [
 		{
 			label: 'Все',
-			value: '40',
+			value: students.length,
 		},
 		{
 			label: 'Заказчики',
@@ -30,7 +48,7 @@ const MainPage = () => {
 		},
 		{
 			label: 'Ученики',
-			value: '20',
+			value: students.length,
 		},
 	]
 
@@ -107,7 +125,16 @@ const MainPage = () => {
 					</div>
 				</div>
 			</div>
-			<div className={s.MainLeftMenu}></div>
+			<div className={s.MainLeftMenu}>
+				{students.map((item: any) => (
+					<div>
+						<p>
+							Имя {item.nameStudent} - Номер {item.phoneNumber} - Is Archive{' '}
+							{String(item.isArchived)}
+						</p>
+					</div>
+				))}
+			</div>
 		</div>
 	)
 }

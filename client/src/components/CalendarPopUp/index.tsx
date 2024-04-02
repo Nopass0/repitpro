@@ -12,6 +12,21 @@ const CalendarPopUp: React.FC<
 	const currentYear = useSelector((state: any) => state.currentYear)
 	const currentMonth = useSelector((state: any) => state.currentMonth)
 
+	const setYear = (year: number) => {
+		dispath({
+			type: 'SET_CURRENT_YEAR',
+			payload: year,
+		})
+	}
+
+	const handlePrevYear = () => {
+		setYear(currentYear - 1)
+	}
+
+	const handleNextYear = () => {
+		setYear(currentYear + 1)
+	}
+
 	const setMonth = (mounth: number) => {
 		dispath({
 			type: 'SET_CURRENT_MONTH',
@@ -22,11 +37,11 @@ const CalendarPopUp: React.FC<
 	return (
 		<div className={s.wrapper}>
 			<div className={s.Header}>
-				<button className={s.ArrowBtn}>
+				<button className={s.ArrowBtn} onClick={handlePrevYear}>
 					<Arrow direction={ArrowType.left} />
 				</button>
-				<h1 className={s.Year}>2024</h1>
-				<button className={s.ArrowBtn}>
+				<h1 className={s.Year}>{currentYear}</h1>
+				<button className={s.ArrowBtn} onClick={handleNextYear}>
 					<Arrow direction={ArrowType.right} />
 				</button>
 			</div>

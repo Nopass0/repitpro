@@ -5,7 +5,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
@@ -28,6 +28,8 @@ import Input from '../Input'
 import FileNLinks from '../FileNLinks'
 import EyeT from '../../assets/EyeVisibilityT.svg'
 import EyeF from '../../assets/EyeVisibilityF.svg'
+import socket from '../../socket'
+import {useSelector} from 'react-redux'
 
 interface IMyCabinet {}
 
@@ -37,6 +39,7 @@ const MyCabinet = ({}: IMyCabinet) => {
 	const [password, setPassword] = useState<string>('')
 	const [repeatPassword, setRepeatPassword] = useState<string>('')
 	const [edit, setEdit] = useState<number>(1)
+
 	const [comment, setComment] = useState<string>('')
 
 	const [showPassword, setShowPassword] = useState<boolean>(false)
@@ -47,10 +50,29 @@ const MyCabinet = ({}: IMyCabinet) => {
 	const [fileOpen, setFileOpen] = useState<boolean>(false)
 	const [questionOpen, setQuestionOpen] = useState<boolean>(false)
 
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
+
+	useEffect(() => {
+		socket.emit('getUserData', token)
+		socket.once('getUserData', (data) => {
+			console.log(data)
+			setName(data.userName)
+			setEmail(data.email)
+		})
+	}, [])
+
 	const saveFunc = () => {
 		if (password !== repeatPassword) {
 			return setErrorPwd(true)
 		}
+		socket.emit('setUserData', {
+			token: token,
+			name: name,
+			email: email,
+			password: password,
+		})
+
 		setEdit(1)
 		setErrorPwd(false)
 	}
@@ -59,7 +81,7 @@ const MyCabinet = ({}: IMyCabinet) => {
 			<div className={s.Header}>
 				<h1 className={s.Title}>Личный кабинет</h1>
 				{/* USERNAME */}
-				<p className={s.GrayTitle}>admin</p>
+				<p className={s.GrayTitle}>{name}</p>
 			</div>
 			<div className={s.MainBlock}>
 				<div className={s.InputBlock}>
@@ -230,7 +252,7 @@ const MyCabinet = ({}: IMyCabinet) => {
 				<div className={s.CallBack}>
 					<p className={s.GrayTitle}>Обратная связь</p>
 					<Line width="336px" className={s.Line} />
-					<textarea className={s.TextArea}  placeholder='Написать'/>
+					<textarea className={s.TextArea} placeholder="Написать" />
 				</div>
 				<button className={s.Send}>Отправить</button>
 			</div>
