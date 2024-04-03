@@ -26,6 +26,8 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import TimeSelector from '../Timer/index'
 import uploadFile from '../../assets/UploadFile.svg'
 import Input from '../Input'
+import socket from '../../socket'
+import {useSelector} from 'react-redux'
 interface IAddClient {}
 
 const AddClient = ({}: IAddClient) => {
@@ -42,14 +44,74 @@ const AddClient = ({}: IAddClient) => {
 	const [typePayment, setTypePayment] = useState<boolean>(false) // Предоплата
 	const [generalComment, setGeneralComment] = useState<string>('')
 
+	const [currentJobIndex, setCurrentJobIndex] = useState(0)
+	const [currentStageIndex, setCurrentStageIndex] = useState(0)
+
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
+
 	const [jobs, setJobs] = useState([
 		{
 			jobName: '',
 			itemName: '',
-			typePayment: false, // Предоплата false - оплата true
 			cost: 0,
+			stages: [
+				{
+					totalCost: 0,
+					name: '',
+					typePayment: false, // Предоплата false - оплата true
+					paymentDate: Date.now(),
+					startDate: Date.now(),
+				},
+			],
 		},
 	])
+
+	const addJob = () => {
+		setJobs([
+			...jobs,
+			{
+				jobName: '',
+				itemName: '',
+				cost: 0,
+				stages: [
+					{
+						totalCost: 0,
+						name: '',
+						typePayment: false, // Предоплата false - оплата true
+						paymentDate: Date.now(),
+						startDate: Date.now(),
+					},
+				],
+			},
+		])
+	}
+
+	const changeJob = (index: number, name: string, value: any) => {
+		setJobs(jobs.map((job, i) => (i === index ? {...job, [name]: value} : job)))
+	}
+
+	const addStage = (jobIndex: number) => {
+		setJobs(
+			jobs.map((job, i) =>
+				i === jobIndex
+					? {
+							...job,
+							stages: [
+								...job.stages,
+								{
+									totalCost: 0,
+									name: '',
+									typePayment: false,
+									paymentDate: Date.now(),
+									startDate: Date.now(),
+								},
+							],
+					  }
+					: job,
+			),
+		)
+	}
 
 	// Stage One
 	const [totalCostStageOne, setTotalCostStageOne] = useState<number>()
@@ -59,6 +121,18 @@ const AddClient = ({}: IAddClient) => {
 	const [nameStageTwo, setNameStageTwo] = useState<string>('')
 	const [costStageTwo, setCostStageTwo] = useState<number>()
 	const [commentStageTwo, setCommentStageTwo] = useState<string>('')
+
+	const sendInfo = () => {
+		socket.emit('addClient', {
+			nameStudent: nameStudent,
+			phoneNumber: phoneNumber,
+			email: email,
+			costStudent: costStudent,
+			commentClient: commentClient,
+			jobs: jobs,
+			token: token,
+		})
+	}
 
 	const StyledPickersLayout = styled('span')({
 		'.MuiDateCalendar-root': {
@@ -135,7 +209,7 @@ const AddClient = ({}: IAddClient) => {
 							mask="+7 (999) 999-99-99"
 							maskChar="_"
 							value={phoneNumber}
-							onChange={(e) => setPhoneNumber(e.target.value)}
+							onChange={(e: any) => setPhoneNumber(e.target.value)}
 						/>
 						<div className={s.PhoneIcons}></div>
 					</div>
@@ -145,7 +219,7 @@ const AddClient = ({}: IAddClient) => {
 						<input
 							type="email"
 							value={email}
-							onChange={(e) => setEmail(e.target.value)}
+							onChange={(e: any) => setEmail(e.target.value)}
 						/>
 					</div>
 					<Line width="296px" className={s.Line} />
@@ -186,269 +260,430 @@ const AddClient = ({}: IAddClient) => {
 				<div className={s.ItemWrapper}>
 					<div className={s.ItemHeader}>
 						<div className={s.dataSlidePicker}>
-							<button className={s.btn}>
+							<button
+								className={s.btn}
+								onClick={() => setCurrentJobIndex(currentJobIndex - 1)}>
 								<span>
 									<Arrow direction={ArrowType.left} />
 								</span>
 							</button>
 							{/* NO DATA */}
-							<p className={s.btnText}>Работа &frac14;</p>
-							<button className={s.btn}>
+							<p className={s.btnText}>
+								Работа {currentJobIndex + 1} / {jobs.length}
+							</p>
+							<button
+								className={s.btn}
+								onClick={() => setCurrentJobIndex(currentJobIndex + 1)}>
 								<span>
 									<Arrow direction={ArrowType.right} />
 								</span>
 							</button>
 						</div>
-						<button className={s.ItemPlus}>
+						<button className={s.ItemPlus} onClick={addJob}>
 							<img src={Plus} alt={Plus} />
 						</button>
 					</div>
 
 					<Line width="296px" className={s.Line} />
 
-					<div className={s.ItemMain}>
-						<div className={s.StudentCard}>
-							<p>Предмет:</p>
-							<input
-								type="text"
-								value={itemName}
-								onChange={(e) => setItemName(e.target.value)}
-							/>
-						</div>
+					{jobs.map((job, index) => (
+						<div
+							className={
+								currentJobIndex === index ? s.ItemActive_ : s.ItemMain_
+							}>
+							<div className={s.StudentCard}>
+								<p>Предмет:</p>
+								<input
+									type="text"
+									value={job.itemName}
+									onChange={(e) => {
+										changeJob(index, 'itemName', e.target.value)
+									}}
+								/>
+							</div>
 
-						<Line width="296px" className={s.Line} />
+							<Line width="296px" className={s.Line} />
 
-						<div className={s.StudentCard}>
-							<p>Название работы:</p>
-							<input
-								type="text"
-								// value={workName}
-								// onChange={(e) => setWorkName(e.target.value)}
-							/>
-						</div>
+							<div className={s.StudentCard}>
+								<p>Название работы:</p>
+								<input
+									type="text"
+									value={job.jobName}
+									onChange={(e) => {
+										changeJob(index, 'jobName', e.target.value)
+									}}
+								/>
+							</div>
 
-						<Line width="296px" className={s.Line} />
-						<div className={s.StudentCard}>
-							<mui.Select
-								variant={'standard'}
-								// defaultValue={1}
-								value={stages}
-								onChange={(e) => {
-									setStages(e.target.value)
-								}}>
-								<mui.MenuItem value={1}>
-									<p>Стандартная работа</p>
-								</mui.MenuItem>
-								<mui.MenuItem value={2}>
-									<p>Многоэтапная работа</p>
-								</mui.MenuItem>
-							</mui.Select>
-						</div>
+							<Line width="296px" className={s.Line} />
+							<div className={s.StudentCard}>
+								<mui.Select
+									variant={'standard'}
+									// defaultValue={1}
+									value={stages}
+									onChange={(e) => {
+										setStages(e.target.value)
+									}}>
+									<mui.MenuItem value={1}>
+										<p>Стандартная работа</p>
+									</mui.MenuItem>
+									<mui.MenuItem value={2}>
+										<p>Многоэтапная работа</p>
+									</mui.MenuItem>
+								</mui.Select>
+							</div>
 
-						<Line width="296px" className={s.Line} />
+							<Line width="296px" className={s.Line} />
 
-						{stages === 1 && (
-							<>
-								<div className={s.StudentCard}>
-									<p>Общая стоимость работы:</p>
-									<Input
-										num
-										type="text"
-										value={totalCostStageOne}
-										onChange={(e) => setTotalCostStageOne(e.target.value)}
-									/>
-									<p>₽</p>
-								</div>
+							{stages === 1 && (
+								<>
+									<div className={s.StudentCard}>
+										<p>Общая стоимость работы:</p>
+										<Input
+											num
+											type="text"
+											value={job.stages[0].totalCost}
+											onChange={(e) => {
+												changeJob(index, 'stages.0.totalCost', e.target.value)
+											}}
+										/>
+										<p>₽</p>
+									</div>
 
-								<Line width="296px" className={s.Line} />
-							</>
-						)}
-						{stages === 2 && (
-							<>
-								<div className={s.StudentCard}>
-									<p>Общая стоимость работы:</p>
-									<Input
-										num
-										type="text"
-										value={totalCostStageTwo}
-										onChange={(e) => setTotalCostStageTwo(e.target.value)}
-									/>
-									<p>₽</p>
-								</div>
-								<Line width="296px" className={s.Line} />
-								<div className={s.StudentCard}>
-									<p>Комментарий:</p>
-									<textarea
-										value={commentStageTwo}
-										onChange={(e) => setCommentStageTwo(e.target.value)}
-									/>
-								</div>
-								<Line width="296px" className={s.Line} />
+									<Line width="296px" className={s.Line} />
+								</>
+							)}
+							{stages === 2 && (
+								<>
+									<div className={s.StudentCard}>
+										<p>Общая стоимость работы:</p>
+										<Input
+											num
+											type="text"
+											value={job.cost}
+											onChange={(e) => {
+												changeJob(index, 'cost', e.target.value)
+											}}
+										/>
+										<p>₽</p>
+									</div>
+									<Line width="296px" className={s.Line} />
+									<div className={s.StudentCard}>
+										<p>Комментарий:</p>
+										<textarea
+											value={commentStageTwo}
+											onChange={(e) => setCommentStageTwo(e.target.value)}
+										/>
+									</div>
+									<Line width="296px" className={s.Line} />
 
-								<div className={s.RecordNListen}>
-									<button className={s.Record}>
-										<p>Аудио</p>
-										<img src={microSVG} alt={microSVG} />
-									</button>
-									<button className={s.Listen}>
-										<p>Прослушать</p>
-										<img src={Listen} alt={Listen} />
-									</button>
-								</div>
-								<div className={s.ItemHeader}>
-									<div className={s.dataSlidePicker}>
-										<button className={s.btn}>
-											<span>
-												<Arrow direction={ArrowType.left} />
-											</span>
+									<div className={s.RecordNListen}>
+										<button className={s.Record}>
+											<p>Аудио</p>
+											<img src={microSVG} alt={microSVG} />
 										</button>
-										{/* NO DATA */}
-										<p className={s.btnText}>Этапы &frac14;</p>
-										<button className={s.btn}>
-											<span>
-												<Arrow direction={ArrowType.right} />
-											</span>
+										<button className={s.Listen}>
+											<p>Прослушать</p>
+											<img src={Listen} alt={Listen} />
 										</button>
 									</div>
-									<button className={s.ItemPlus}>
-										<img src={Plus} alt={Plus} />
-									</button>
-								</div>
-								<div className={s.StudentCard}>
-									<p>Название:</p>
-									<input
-										type="text"
-										value={nameStageTwo}
-										onChange={(e) => setNameStageTwo(e.target.value)}
-									/>
-								</div>
-								<Line width="296px" className={s.Line} />
-								<div className={s.StudentCard}>
-									<p>Стоимость этапа:</p>
-									<Input
-										style={{borderBottom: '1px solid #e2e2e9'}}
-										num
-										type="text"
-										value={costStageTwo}
-										onChange={(e) => setCostStageTwo(e.target.value)}
-									/>
-									<p>₽</p>
-								</div>
-								<Line width="296px" className={s.Line} />
-							</>
-						)}
-						{/* NO DATA */}
-						<div className={s.TypePaymentWrapper}>
-							<div className={s.PrevPay}>
-								<p>Предоплата</p>
-								<CheckBox size="18px" />
-							</div>
-							<div className={s.NextPay}>
-								<p>Постоплата</p>
-								<CheckBox size="18px" />
-							</div>
-						</div>
-						<div className={s.PaymentTable}>
-							<div className={s.PaymentRow}>
-								<LocalizationProvider
-									dateAdapter={AdapterDateFns}
-									adapterLocale={ru}>
-									<DatePicker
-										className={s.DatePickerPayment}
-										slots={{
-											layout: StyledPickersLayout,
-										}}
-										sx={{
-											input: {
-												paddingTop: '0px',
-												paddingBottom: '0px',
-												paddingLeft: '0px',
-											},
-										}}
-										timezone="system"
-										showDaysOutsideCurrentMonth
-									/>
-								</LocalizationProvider>
-								<div className={s.PayInput}>
-									<p>Оплата</p>
-									<Input num type="text" />
-									<p>₽</p>
-								</div>
-								<CheckBox size="18px" />
-								<p style={{width: '33px'}}>0%</p>
-							</div>
-							<Line width="268px" className={s.Line} />
-							<div className={s.PaymentRow}>
-								<LocalizationProvider
-									dateAdapter={AdapterDateFns}
-									adapterLocale={ru}>
-									<DatePicker
-										className={s.DatePickerPayment}
-										slots={{
-											layout: StyledPickersLayout,
-										}}
-										sx={{
-											input: {
-												paddingTop: '0px',
-												paddingBottom: '0px',
-												paddingLeft: '0px',
-											},
-										}}
-										timezone="system"
-										showDaysOutsideCurrentMonth
-									/>
-								</LocalizationProvider>
-								<div className={s.PayText}>
-									<p>Начало работы</p>
-								</div>
-								<CheckBox size="18px" />
-								<p style={{width: '33px'}}></p>
-							</div>
-							<Line width="268px" className={s.Line} />
-						</div>
-						<mui.ListItemButton
-							style={{marginTop: '10px'}}
-							onClick={handleClick}>
-							<img src={uploadFile} alt={uploadFile} />
-							<mui.ListItemText primary="Файлы/ссылки" />
-							{open ? <ExpandLess /> : <ExpandMore />}
-						</mui.ListItemButton>
+									<div className={s.ItemHeader}>
+										<div className={s.dataSlidePicker}>
+											<button
+												className={s.btn}
+												onClick={() =>
+													setCurrentStageIndex(currentStageIndex - 1)
+												}>
+												<span>
+													<Arrow direction={ArrowType.left} />
+												</span>
+											</button>
+											{/* NO DATA */}
+											<p className={s.btnText}>
+												Этапы {currentStageIndex + 1} / {job.stages.length}
+											</p>
+											<button
+												className={s.btn}
+												onClick={() =>
+													setCurrentStageIndex(currentStageIndex + 1)
+												}>
+												<span>
+													<Arrow direction={ArrowType.right} />
+												</span>
+											</button>
+										</div>
+										<button
+											className={s.ItemPlus}
+											onClick={() => addStage(index)}>
+											<img src={Plus} alt={Plus} />
+										</button>
+									</div>
+									{job.stages.map((item, index) => (
+										<>
+											<div
+												className={
+													currentStageIndex === index
+														? s.ItemActive_
+														: s.ItemMain_
+												}>
+												<p>Название:</p>
+												<input
+													type="text"
+													value={item.name}
+													onChange={(e) => {
+														changeJob(
+															index,
+															'stages.' + index + '.name',
+															e.target.value,
+														)
+													}}
+												/>
+											</div>
+											<Line width="296px" className={s.Line} />
+											<div className={s.StudentCard}>
+												<p>Стоимость этапа:</p>
+												<Input
+													style={{borderBottom: '1px solid #e2e2e9'}}
+													num
+													type="text"
+													value={item.totalCost}
+													onChange={(e) => {
+														changeJob(
+															index,
+															'stages.' + index + '.totalCost',
+															e.target.value,
+														)
+													}}
+												/>
+												<p>₽</p>
+											</div>
+											<Line width="296px" className={s.Line} />
+											<div className={s.TypePaymentWrapper}>
+												<div className={s.PrevPay}>
+													<p>Предоплата</p>
+													<CheckBox size="18px" />
+												</div>
+												<div className={s.NextPay}>
+													<p>Постоплата</p>
+													<CheckBox size="18px" />
+												</div>
+											</div>
+											<div className={s.PaymentTable}>
+												<div className={s.PaymentRow}>
+													<LocalizationProvider
+														dateAdapter={AdapterDateFns}
+														adapterLocale={ru}>
+														<DatePicker
+															className={s.DatePickerPayment}
+															slots={{
+																layout: StyledPickersLayout,
+															}}
+															sx={{
+																input: {
+																	paddingTop: '0px',
+																	paddingBottom: '0px',
+																	paddingLeft: '0px',
+																},
+															}}
+															timezone="system"
+															showDaysOutsideCurrentMonth
+														/>
+													</LocalizationProvider>
+													<div className={s.PayInput}>
+														<p>Оплата</p>
+														<Input num type="text" />
+														<p>₽</p>
+													</div>
+													<CheckBox size="18px" />
+													<p style={{width: '33px'}}>0%</p>
+												</div>
+												<Line width="268px" className={s.Line} />
+												<div className={s.PaymentRow}>
+													<LocalizationProvider
+														dateAdapter={AdapterDateFns}
+														adapterLocale={ru}>
+														<DatePicker
+															className={s.DatePickerPayment}
+															slots={{
+																layout: StyledPickersLayout,
+															}}
+															sx={{
+																input: {
+																	paddingTop: '0px',
+																	paddingBottom: '0px',
+																	paddingLeft: '0px',
+																},
+															}}
+															timezone="system"
+															showDaysOutsideCurrentMonth
+														/>
+													</LocalizationProvider>
+													<div className={s.PayText}>
+														<p>Начало работы</p>
+													</div>
+													<CheckBox size="18px" />
+													<p style={{width: '33px'}}></p>
+												</div>
+												<Line width="268px" className={s.Line} />
+											</div>
+										</>
+									))}
+									<></>
+								</>
+							)}
+							{stages == 1 && (
+								<>
+									<div className={s.TypePaymentWrapper}>
+										<div className={s.PrevPay}>
+											<p>Предоплата</p>
+											<CheckBox
+												checked={
+													job.stages[0].typePayment === true ? false : true
+												}
+												onChange={(e) => {
+													changeJob(
+														0,
+														'stages.0.typePayment',
+														!job.stages[0].typePayment,
+													)
+												}}
+												size="18px"
+											/>
+										</div>
+										<div className={s.NextPay}>
+											<p>Постоплата</p>
+											<CheckBox
+												checked={
+													job.stages[0].typePayment === true ? true : false
+												}
+												onChange={(e) => {
+													changeJob(
+														0,
+														'stages.0.typePayment',
+														!job.stages[0].typePayment,
+													)
+												}}
+												size="18px"
+											/>
+										</div>
+									</div>
+									<div className={s.PaymentTable}>
+										<div className={s.PaymentRow}>
+											<LocalizationProvider
+												dateAdapter={AdapterDateFns}
+												adapterLocale={ru}>
+												<DatePicker
+													className={s.DatePickerPayment}
+													slots={{
+														layout: StyledPickersLayout,
+													}}
+													sx={{
+														input: {
+															paddingTop: '0px',
+															paddingBottom: '0px',
+															paddingLeft: '0px',
+														},
+													}}
+													value={job.stages[0].paymentDate}
+													onChange={(newValue) => {
+														changeJob(0, 'stages.0.paymentDate', newValue)
+													}}
+													timezone="system"
+													showDaysOutsideCurrentMonth
+												/>
+											</LocalizationProvider>
+											<div className={s.PayInput}>
+												<p>Оплата</p>
+												<Input
+													num
+													type="text"
+													value={job.stages[0].paymentDate}
+													onChange={(e) =>
+														changeJob(0, 'stages.0.payment', e.target.value)
+													}
+												/>
+												<p>₽</p>
+											</div>
+											<CheckBox size="18px" />
+											<p style={{width: '33px'}}>0%</p>
+										</div>
+										<Line width="268px" className={s.Line} />
+										<div className={s.PaymentRow}>
+											<LocalizationProvider
+												dateAdapter={AdapterDateFns}
+												adapterLocale={ru}>
+												<DatePicker
+													className={s.DatePickerPayment}
+													slots={{
+														layout: StyledPickersLayout,
+													}}
+													sx={{
+														input: {
+															paddingTop: '0px',
+															paddingBottom: '0px',
+															paddingLeft: '0px',
+														},
+													}}
+													timezone="system"
+													showDaysOutsideCurrentMonth
+												/>
+											</LocalizationProvider>
+											<div className={s.PayText}>
+												<p>Начало работы</p>
+											</div>
+											<CheckBox size="18px" />
+											<p style={{width: '33px'}}></p>
+										</div>
+										<Line width="268px" className={s.Line} />
+									</div>
+								</>
+							)}
+							{/* NO DATA */}
 
-						<mui.Collapse in={open} timeout="auto" unmountOnExit>
-							<mui.List
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									flexDirection: 'column',
-								}}
-								component="div"
-								disablePadding>
-								<Line width="296px" className={s.Line} />
-								<p>Список пока пуст</p>
-							</mui.List>
-						</mui.Collapse>
-						<Line width="296px" className={s.Line} />
+							<mui.ListItemButton
+								style={{marginTop: '10px'}}
+								onClick={handleClick}>
+								<img src={uploadFile} alt={uploadFile} />
+								<mui.ListItemText primary="Файлы/ссылки" />
+								{open ? <ExpandLess /> : <ExpandMore />}
+							</mui.ListItemButton>
 
-						<div className={s.StudentCard}>
-							<p>Комментарий:</p>
-							<textarea
-								value={generalComment}
-								onChange={(e) => setGeneralComment(e.target.value)}
-							/>
+							<mui.Collapse in={open} timeout="auto" unmountOnExit>
+								<mui.List
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										flexDirection: 'column',
+									}}
+									component="div"
+									disablePadding>
+									<Line width="296px" className={s.Line} />
+									<p>Список пока пуст</p>
+								</mui.List>
+							</mui.Collapse>
+							<Line width="296px" className={s.Line} />
+
+							<div className={s.StudentCard}>
+								<p>Комментарий:</p>
+								<textarea
+									value={generalComment}
+									onChange={(e) => setGeneralComment(e.target.value)}
+								/>
+							</div>
+							<Line width="296px" className={s.Line} />
+							<div className={s.RecordNListen}>
+								<button className={s.Record}>
+									<p>Аудио</p>
+									<img src={microSVG} alt={microSVG} />
+								</button>
+								<button className={s.Listen}>
+									<p>Прослушать</p>
+									<img src={Listen} alt={Listen} />
+								</button>
+							</div>
 						</div>
-						<Line width="296px" className={s.Line} />
-						<div className={s.RecordNListen}>
-							<button className={s.Record}>
-								<p>Аудио</p>
-								<img src={microSVG} alt={microSVG} />
-							</button>
-							<button className={s.Listen}>
-								<p>Прослушать</p>
-								<img src={Listen} alt={Listen} />
-							</button>
-						</div>
-					</div>
+					))}
 				</div>
 			</div>
 			<div className={s.FooterWrapper}>
@@ -457,7 +692,7 @@ const AddClient = ({}: IAddClient) => {
 						<button className={s.Edit}>
 							<p>Редактировать</p>
 						</button>
-						<button className={s.Save}>
+						<button className={s.Save} onClick={sendInfo}>
 							<p>Сохранить</p>
 						</button>
 					</div>

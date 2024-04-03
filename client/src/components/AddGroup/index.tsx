@@ -32,6 +32,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 import {IItemCard, ITimeLine} from '../../types'
 import TimePicker from '../Timer/index'
+import {useSelector} from 'react-redux'
+import socket from '../../socket'
 interface IAddGroup {}
 
 const AddGroup = ({}: IAddGroup) => {
@@ -56,6 +58,9 @@ const AddGroup = ({}: IAddGroup) => {
 
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
+
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
 
 	const getVoidWeek = (): ITimeLine[] => {
 		const week = daysOfWeek.map((day, index) => ({
@@ -131,6 +136,15 @@ const AddGroup = ({}: IAddGroup) => {
 			todayProgramStudent: '',
 		},
 	])
+
+	const sendInfo = () => {
+		socket.emit('addGroup', {
+			groupName: groupName,
+			items: items,
+			students: students,
+			token: token,
+		})
+	}
 
 	//add item function
 	const addItem = () => {
@@ -1383,7 +1397,7 @@ const AddGroup = ({}: IAddGroup) => {
 						<button className={s.Edit}>
 							<p>Редактировать</p>
 						</button>
-						<button className={s.Save}>
+						<button className={s.Save} onClick={sendInfo}>
 							<p>Сохранить</p>
 						</button>
 					</div>

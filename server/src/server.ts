@@ -6,6 +6,8 @@ import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
 import { addStudent, getStudentList } from "./cards/student";
 import { getUserData, setUserData } from "./auth/user";
+import { addGroup } from "./cards/group";
+import { addClient } from "./cards/client";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -15,7 +17,11 @@ io.on("connection", (socket) => {
   socket.on("register", (data) => register(data));
   socket.on("upload", (file, callback) => upload(file, callback));
   socket.on("getMonth", (data) => calendar(data));
+
   socket.on("addStudent", (data) => addStudent(data));
+  socket.on("addGroup", (data) => addGroup(data));
+  socket.on("addClient", (data) => addClient(data));
+
   socket.on("getStudentList", (token) => getStudentList(token));
   socket.on("getUserData", (token) => getUserData(token));
   socket.on("setUserData", (data) => setUserData(data));
