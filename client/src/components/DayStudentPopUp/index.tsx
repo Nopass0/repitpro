@@ -22,6 +22,8 @@ interface IDayStudentPopUp {
 	address?: string
 	date?: string
 	time?: string
+	style?: React.CSSProperties
+	onExit?: () => void
 }
 const DayStudentPopUp = ({
 	icon,
@@ -29,9 +31,11 @@ const DayStudentPopUp = ({
 	address,
 	date,
 	time,
+	style,
+	onExit
 }: IDayStudentPopUp) => {
 	return (
-		<div className={s.wrapper}>
+		<div style={style} className={s.wrapper}>
 			<div className={s.InfoBlock}>
 				<div className={s.Header}>
 					<div className={s.MainHeader}>
@@ -95,7 +99,7 @@ const DayStudentPopUp = ({
 				</div>
 			</div>
 			<div className={s.buttons}>
-				<button>
+				<button onClick={onExit}>
 					<CloseIcon className={s.closeIcon} />
 				</button>
 				<div className={s.btn}>

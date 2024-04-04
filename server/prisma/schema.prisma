@@ -103,13 +103,12 @@ model Student {
   contactFace String
   email       String
   prePayCost  String
-  prePayDate  DateTime
+  prePayDate DateTime?
   costOneLesson String
   commentStudent String
   link String
   cost String
   items String[] //id's "1,2,3"
   isArchived Boolean @default(false)
-
   userId String
 }

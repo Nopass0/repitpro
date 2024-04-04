@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {ICell} from '../../types'
 import s from './index.module.scss'
 import {Select, SelectOption, OptionGroup, Option} from '@mui/base'
@@ -12,6 +12,8 @@ import Group from '../../assets/4.svg'
 import Home from '../../assets/5.svg'
 import Client from '../../assets/6.svg'
 import Line from '../Line'
+import DayCalendarPopUp from '../DayCalendarPopUp/index'
+import DayStudentPopUp from '../DayStudentPopUp/index'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -25,8 +27,14 @@ interface ICalendar {
 	cells?: ICell[]
 }
 
+enum PagePopup {
+	DayCalendar,
+	DayStudent,
+	None,
+}
+
 export const Calendar = ({className, cells}: ICalendar) => {
-	const [currentCells, setCurrentCells] = React.useState<ICell[]>()
+	const [currentCells, setCurrentCells] = useState<ICell[]>()
 	let currentMonth = useSelector((state: any) => state.currentMonth)
 	let cacheMonth = currentMonth
 	const currentYear = useSelector((state: any) => state.currentYear)
@@ -36,7 +44,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const details = useSelector((state: any) => state.details)
 
 	let currentPartOfMonth = 1 // 0 - previous month, 1 - current month, 2 - next month
-
+	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
 	let sumParamsOfWeeks = [
 		{
 			lessonsCount: 0,
@@ -225,7 +233,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 									)
 
 									return (
-										<td className={s.td} key={dayIndex}>
+										<td
+											className={s.td}
+											onClick={() => setPagePopup(PagePopup.DayCalendar)}
+											key={dayIndex}>
 											<div className={s.content}>
 												<p
 													id="day"
@@ -540,6 +551,54 @@ export const Calendar = ({className, cells}: ICalendar) => {
 					</div>
 				</div>
 			</div>
+			{pagePopup === PagePopup.DayCalendar && (
+				<div
+					style={{
+						position: 'absolute',
+						top: '80px',
+						margin: '0 auto 0 auto',
+						maxWidth: '1300px',
+						width: '100%',
+						maxHeight: '751px',
+						height: '100%',
+					}}>
+					<DayCalendarPopUp
+						style={{
+							position: 'relative',
+							top: '50px',
+							margin: 'auto',
+						}}
+						onExit={() => setPagePopup(PagePopup.None)}
+						LineClick={() => setPagePopup(PagePopup.DayStudent)}
+					/>
+				</div>
+			)}
+			{pagePopup === PagePopup.DayStudent && (
+				<div
+					style={{
+						position: 'absolute',
+						top: '80px',
+						margin: '0 auto 0 auto',
+						maxWidth: '1300px',
+						width: '100%',
+						maxHeight: '751px',
+						height: '100%',
+					}}>
+					<DayStudentPopUp
+						style={{
+							position: 'relative',
+							top: '150px',
+							margin: 'auto',
+						}}
+						icon={Home}
+						name="Группа Бэтта 1 Математика"
+						address="г. Москва, ул. Мясницкая, 4"
+						date="4 марта 2024"
+						time="Пн 10:00 - 12:00"
+						onExit={() => setPagePopup(PagePopup.None)}
+					/>
+				</div>
+			)}
 		</div>
 	)
 }

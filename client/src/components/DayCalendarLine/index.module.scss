@@ -6,8 +6,6 @@ input {
 	outline: none;
 }
 
-
-
 .wrapper {
 	width: 700px;
 	height: 40px;
@@ -20,14 +18,16 @@ input {
 	white-space: nowrap;
 	font-size: 16px;
 
-		.Icon {
-			margin-right: 20px;
-			img {
-				width: 32px;
-				height: 32px;
-			}
+	.Icon {
+		margin-right: 20px;
+		img {
+			width: 32px;
+			height: 32px;
 		}
-
+	}
+	.ClickWrapper {
+		display: flex;
+		flex-direction: row;
 		.Time {
 			margin-right: 10px;
 			width: 100px;
@@ -50,10 +50,11 @@ input {
 			display: flex;
 			justify-content: flex-end;
 		}
-		.Checkbox {
-			margin-right: 10px;
-		}
-		.BtnDelete {
-			color: #9296AD;
-		}
+	}
+	.Checkbox {
+		margin-right: 10px;
+	}
+	.BtnDelete {
+		color: #9296ad;
+	}
 }

@@ -10,14 +10,24 @@ import Group from '../../assets/4.svg'
 import Home from '../../assets/5.svg'
 import Client from '../../assets/6.svg'
 import Plus from '../../assets/ItemPlus.svg'
-interface IDayCalendarPopUp {}
-const DayCalendarPopUp = ({}: IDayCalendarPopUp) => {
+interface IDayCalendarPopUp {
+	style?: React.CSSProperties
+	onExit?: () => void
+	iconClick?: () => void
+	LineClick?: () => void
+}
+const DayCalendarPopUp = ({
+	style,
+	onExit,
+	iconClick,
+	LineClick,
+}: IDayCalendarPopUp) => {
 	return (
-		<div className={s.wrapper}>
+		<div style={style} className={s.wrapper}>
 			<header className={s.Header}>
 				<div className={s.HeaderItems}>
 					<DataSlidePicker className={s.dataSlidePicker} dateMode />
-					<button>
+					<button onClick={onExit}>
 						<CloseIcon className={s.closeIcon} />
 					</button>
 				</div>
@@ -25,6 +35,8 @@ const DayCalendarPopUp = ({}: IDayCalendarPopUp) => {
 			<Line width="700px" className={s.LineHeader} />
 			<section className={s.MainBlock}>
 				<DayCalendarLine
+					LineClick={LineClick}
+					iconClick={iconClick}
 					icon={GroupOnline}
 					timeStart="12:00"
 					timeEnd="13:00"
@@ -105,16 +117,22 @@ const DayCalendarPopUp = ({}: IDayCalendarPopUp) => {
 			<footer className={s.Footer}>
 				<div className={s.Left}>
 					<div className={s.Lessons}>
-						<p>Занятий: <b>1</b></p>
+						<p>
+							Занятий: <b>1</b>
+						</p>
 						<b>2 000 ₽</b>
 					</div>
 					<div className={s.works}>
-						<p>Работ: <b>1</b></p>
+						<p>
+							Работ: <b>1</b>
+						</p>
 						<b>2 000 ₽</b>
 					</div>
 				</div>
 				<div className={s.income}>
-					<p>Доход: <b>2 000 ₽</b></p>
+					<p>
+						Доход: <b>2 000 ₽</b>
+					</p>
 				</div>
 			</footer>
 		</div>

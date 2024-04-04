@@ -19,7 +19,11 @@ export async function addStudent(data: IStudentCardResponse) {
     token,
   } = data;
 
-  const userId = await validateTokenAndGetUserId(token);
+  const userId = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
   if (!userId) {
     throw new Error("Invalid token");
   }
@@ -29,21 +33,22 @@ export async function addStudent(data: IStudentCardResponse) {
     const createdItem = await db.item.create({
       data: {
         itemName: item.itemName,
-        tryLessonCheck: item.tryLessonCheck,
-        tryLessonCost: item.tryLessonCost,
-        todayProgramStudent: item.todayProgramStudent,
-        targetLesson: item.targetLesson,
-        programLesson: item.programLesson,
-        typeLesson: item.typeLesson,
-        placeLesson: item.placeLesson,
-        timeLesson: item.timeLesson,
-        valueMuiSelectArchive: item.valueMuiSelectArchive,
-        startLesson: new Date(item.startLesson),
-        endLesson: new Date(item.endLesson),
-        nowLevel: item.nowLevel,
+        tryLessonCheck: item.tryLessonCheck || false,
+        tryLessonCost: item.tryLessonCost || "",
+        todayProgramStudent: item.todayProgramStudent || "",
+        targetLesson: item.targetLesson || "",
+        programLesson: item.programLesson || "",
+        typeLesson: Number(item.typeLesson) || 0,
+        placeLesson: item.placeLesson || "",
+        timeLesson: item.timeLesson || "",
+        valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
+        startLesson: new Date(item.startLesson) || null,
+        endLesson: new Date(item.endLesson) || null,
+        nowLevel: item.nowLevel || 0,
         lessonDuration: item.lessonDuration || 0,
-        timeLinesArray: JSON.stringify(item.timeLinesArray),
-        userId,
+        timeLinesArray: JSON.stringify(item.timeLinesArray) || "{}",
+        // userId.userId,
+        userId: userId.userId,
       },
     });
     createdIds.push(String(createdItem.id));
@@ -59,13 +64,14 @@ export async function addStudent(data: IStudentCardResponse) {
       contactFace,
       email,
       prePayCost,
-      prePayDate,
+      prePayDate: prePayDate ? new Date(prePayDate) : null, // в случае null, поле не заполняется
       costOneLesson,
       commentStudent,
       link: link ? link : "",
       cost: cost ? cost : "",
       items: createdIds,
-      userId,
+      // userId,
+      userId: userId.userId,
     },
   });
 }

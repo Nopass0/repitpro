@@ -13,6 +13,8 @@ interface IDayCalendarLine {
 	item: string
 	price: string
 	prevpay?: boolean
+	iconClick?: () => void
+	LineClick?: () => void
 }
 const DayCalendarLine = ({
 	icon,
@@ -22,13 +24,16 @@ const DayCalendarLine = ({
 	item,
 	price,
 	prevpay,
+	iconClick,
+	LineClick,
 }: IDayCalendarLine) => {
 	return (
 		<>
 			<div className={s.wrapper}>
-					<button className={s.Icon}>
-						<img src={icon} alt={icon} />
-					</button>
+				<button onClick={iconClick} className={s.Icon}>
+					<img src={icon} alt={icon} />
+				</button>
+				<div onClick={LineClick} className={s.ClickWrapper}>
 					<div className={s.Time}>
 						<p>
 							{timeStart}-{timeEnd}
@@ -40,19 +45,20 @@ const DayCalendarLine = ({
 						</p>
 					</div>
 					<div className={s.Item}>
-					<p title={item}>
+						<p title={item}>
 							{item.length > 13 ? item.slice(0, 13) + '...' : item}
 						</p>
 					</div>
 					<div className={s.Price}>
-					<p title={price}>
+						<p title={price}>
 							{price.length > 5 ? price.slice(0, 5) + '>' : price} ₽
 						</p>
 					</div>
-					<CheckBox className={s.Checkbox} size="20px" />
-					<button className={s.BtnDelete}>
-						<DeleteOutlineIcon />
-					</button>
+				</div>
+				<CheckBox className={s.Checkbox} size="20px" />
+				<button className={s.BtnDelete}>
+					<DeleteOutlineIcon />
+				</button>
 			</div>
 		</>
 	)

@@ -3,75 +3,75 @@ import io from "../socket";
 import { mockData } from "./mock";
 import { ICell } from "types";
 
-export async function getCells(userId: string): Promise<ICell[]> {
-  try {
-    // Получаем данные о студентах
-    const students = await db.student.findMany({
-      where: {
-        userId: userId,
-      },
-    });
+// export async function getCells(userId: string): Promise<ICell[]> {
+//   try {
+//     // Получаем данные о студентах
+//     const students = await db.student.findMany({
+//       where: {
+//         userId: userId,
+//       },
+//     });
 
-    const cells: ICell[] = [];
+//     const cells: ICell[] = [];
 
-    // Для каждого студента получаем данные о его предметах
-    for (const student of students) {
-      const costOneLesson = parseFloat(student.costOneLesson || "0");
+//     // Для каждого студента получаем данные о его предметах
+//     for (const student of students) {
+//       const costOneLesson = parseFloat(student.costOneLesson || "0");
 
-      // Фильтруем предметы по идентификаторам, содержащимся в массиве предметов студента
-      const items = await db.item.findMany({
-        where: {
-          id: {
-            in: student.items,
-          },
-        },
-        select: {
-          id: true,
-          lessonDuration: true,
-          startLesson: true,
-          endLesson: true,
-        },
-      });
+//       // Фильтруем предметы по идентификаторам, содержащимся в массиве предметов студента
+//       const items = await db.item.findMany({
+//         where: {
+//           id: {
+//             in: student.items,
+//           },
+//         },
+//         select: {
+//           id: true,
+//           lessonDuration: true,
+//           startLesson: true,
+//           endLesson: true,
+//         },
+//       });
 
-      for (const item of items) {
-        const startDate = new Date(item.startLesson);
-        const endDate = new Date(item.endLesson);
+//       for (const item of items) {
+//         const startDate = new Date(item.startLesson);
+//         const endDate = new Date(item.endLesson);
 
-        const lessonDuration = item.lessonDuration || 0;
+//         const lessonDuration = item.lessonDuration || 0;
 
-        const daysInRange = Math.ceil(
-          (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
+//         const daysInRange = Math.ceil(
+//           (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+//         );
 
-        for (let i = 0; i < daysInRange; i++) {
-          const date = new Date(
-            startDate.getTime() + i * (24 * 60 * 60 * 1000)
-          ); // Исправлено вычисление даты
-          const workCount = lessonDuration;
-          const lessonsCount = 1;
-          const lessonsPrice = costOneLesson;
-          const workPrice = workCount * lessonsPrice;
+//         for (let i = 0; i < daysInRange; i++) {
+//           const date = new Date(
+//             startDate.getTime() + i * (24 * 60 * 60 * 1000)
+//           ); // Исправлено вычисление даты
+//           const workCount = lessonDuration;
+//           const lessonsCount = 1;
+//           const lessonsPrice = costOneLesson;
+//           const workPrice = workCount * lessonsPrice;
 
-          cells.push({
-            workCount,
-            id: item.id.charCodeAt(0),
-            day: date.getDate(),
-            month: date.getMonth() + 1,
-            year: date.getFullYear(),
-            lessonsCount,
-            lessonsPrice,
-            workPrice,
-          });
-        }
-      }
-    }
+//           cells.push({
+//             workCount,
+//             id: item.id.charCodeAt(0),
+//             day: date.getDate(),
+//             month: date.getMonth() + 1,
+//             year: date.getFullYear(),
+//             lessonsCount,
+//             lessonsPrice,
+//             workPrice,
+//           });
+//         }
+//       }
+//     }
 
-    return cells;
-  } catch (error) {
-    console.error("Error fetching cells:", error);
-    throw error;
-  }
-}
+//     return cells;
+//   } catch (error) {
+//     console.error("Error fetching cells:", error);
+//     throw error;
+//   }
+// }
 
 export const calendar = async (data) => {
   let mock = mockData;
@@ -92,7 +92,9 @@ export const calendar = async (data) => {
   let endDate = new Date(new Date().getFullYear(), data.currentMonth + 2, 0); // последний день текущего месяца
 
   // console.log(startDate.getTime(), endDate.getTime());
-  const cls = await getCells(userId.userId);
+  
+  
+  // const cls = await getCells(userId.userId);
   // console.log(cls);
 
   // //
