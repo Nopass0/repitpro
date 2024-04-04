@@ -503,24 +503,40 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						<p className={s.Title}>Доход с начала месяца</p>
 						<div className={s.Lessons}>
 							<p>
-								Занятий: <b>1</b>
+								Занятий:{' '}
+								<b>
+									{sumParamsOfWeeks.reduce((a, b) => a + b.lessonsCount, 0)}
+								</b>
 							</p>
 							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(168555)} ₽
+								{toMoneyFormat(
+									sumParamsOfWeeks.reduce((a, b) => a + b.lessonsPrice, 0),
+								)}{' '}
+								₽
 							</b>
 						</div>
 						<div className={s.Works}>
 							<p>
-								Работ: <b>1</b>
+								Работ:{' '}
+								<b>{sumParamsOfWeeks.reduce((a, b) => a + b.workCount, 0)}</b>
 							</p>
 							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(168555)} ₽
+								{toMoneyFormat(
+									sumParamsOfWeeks.reduce((a, b) => a + b.workPrice, 0),
+								)}{' '}
+								₽
 							</b>
 						</div>
 						<div className={s.Income}>
 							<p>Доход</p>
 							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(168555)} ₽
+								{toMoneyFormat(
+									sumParamsOfWeeks.reduce(
+										(a, b) => a + b.lessonsPrice + b.workPrice,
+										0,
+									),
+								)}{' '}
+								₽
 							</b>
 						</div>
 					</div>
@@ -528,24 +544,40 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						<p className={s.Title}>Прогноз на</p>
 						<div className={s.Lessons}>
 							<p>
-								Занятий: <b>1</b>
+								Занятий:{' '}
+								<b>
+									{sumParamsOfWeeks.reduce((a, b) => a + b.lessonsCount, 0)}
+								</b>
 							</p>
 							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(168555)} ₽
+								{toMoneyFormat(
+									sumParamsOfWeeks.reduce((a, b) => a + b.lessonsPrice, 0),
+								)}{' '}
+								₽
 							</b>
 						</div>
 						<div className={s.Works}>
 							<p>
-								Работ: <b>1</b>
+								Работ:{' '}
+								<b>{sumParamsOfWeeks.reduce((a, b) => a + b.workCount, 0)}</b>
 							</p>
 							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(168555)} ₽
+								{toMoneyFormat(
+									sumParamsOfWeeks.reduce((a, b) => a + b.workPrice, 0),
+								)}{' '}
+								₽
 							</b>
 						</div>
 						<div className={s.Income}>
 							<p>Доход</p>
 							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(168555)} ₽
+								{toMoneyFormat(
+									sumParamsOfWeeks.reduce(
+										(a, b) => a + b.lessonsPrice + b.workPrice,
+										0,
+									),
+								)}{' '}
+								₽
 							</b>
 						</div>
 					</div>
