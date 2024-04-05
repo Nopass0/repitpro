@@ -236,7 +236,9 @@ export async function getStudentList(token) {
     return students;
   } catch (error) {
     console.error("Error fetching student list:", error);
-    throw error;
+    io.emit("getStudentList", {
+      error: "Error fetching student list",
+    });
   }
 }
 
@@ -256,6 +258,91 @@ export async function getStudentWithItems(studentId: string) {
     return student;
   } catch (error) {
     console.error("Error fetching student with items:", error);
-    throw error;
+    io.emit("getStudentWithItems", {
+      error: "Error fetching student with items",
+    });
   }
+}
+
+export async function getStudentsByDate(data: {
+  day: string;
+  month: string;
+  year: string;
+  token: string;
+}) {
+  const { day, month, year, token } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  console.log(day, month, year, userId);
+
+  if (!userId) {
+    io.emit("getStudentsByDate", {
+      error: "Invalid token",
+    });
+  }
+
+  const dayOfWeekIndex = getDay(
+    new Date(Number(year), Number(month) - 1, Number(day))
+  );
+
+  //get students names, and item for this day, month, year by studentSchedule
+  const studentSchedules = await db.studentSchedule.findMany({
+    where: {
+      day,
+      month,
+      year,
+      userId,
+    },
+    include: {
+      item: {
+        select: {
+          itemName: true,
+          timeLinesArray: true,
+          tryLessonCheck: true,
+          group: {
+            include: {
+              students: {
+                select: {
+                  nameStudent: true,
+                  costOneLesson: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const dataToEmit = studentSchedules.map((schedule) => {
+    const { item } = schedule;
+    const student = item.group.students[0]; // Assuming there's only one student per group
+    const timeLinesArray = item.timeLinesArray;
+
+    const daySchedule = timeLinesArray[dayOfWeekIndex];
+    console.log(" daySchedule", daySchedule, "dayOfWeekIndex", dayOfWeekIndex);
+
+    return {
+      nameStudent: student.nameStudent,
+      costOneLesson: student.costOneLesson,
+      studentId: student.id,
+      itemName: item.itemName,
+      tryLessonCheck: item.tryLessonCheck,
+      startTime: daySchedule?.startTime,
+      endTime: daySchedule?.endTime,
+    };
+  });
+
+  console.log(studentSchedules);
+  console.log(dataToEmit);
+
+  io.emit("getStudentsByDate", dataToEmit);
 }

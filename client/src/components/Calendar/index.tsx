@@ -4,7 +4,7 @@ import s from './index.module.scss'
 import {Select, SelectOption, OptionGroup, Option} from '@mui/base'
 import Arrow from '../../assets/arrow'
 import socket from '../../socket'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import GroupOnline from '../../assets/1.svg'
 import Online from '../../assets/2.svg'
 import HomeStudent from '../../assets/3.svg'
@@ -42,6 +42,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	let token = useSelector((state: any) => state.user.token)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const details = useSelector((state: any) => state.details)
+
+	const dispatch = useDispatch()
 
 	let currentPartOfMonth = 1 // 0 - previous month, 1 - current month, 2 - next month
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
@@ -235,7 +237,25 @@ export const Calendar = ({className, cells}: ICalendar) => {
 									return (
 										<td
 											className={s.td}
-											onClick={() => setPagePopup(PagePopup.DayCalendar)}
+											onClick={() => {
+												dispatch({
+													type: 'SET_CALENDAR_NOW_POPUP',
+													payload: {
+														day: String(day),
+														month: String(
+															(currentPartOfMonth == 1
+																? currentMonth + 1
+																: currentPartOfMonth == 0
+																? currentMonth - 1
+																: currentPartOfMonth == 2
+																? currentMonth + 2
+																: currentMonth) - 1,
+														),
+														year: String(currentYear),
+													},
+												})
+												setPagePopup(PagePopup.DayCalendar)
+											}}
 											key={dayIndex}>
 											<div className={s.content}>
 												<p
