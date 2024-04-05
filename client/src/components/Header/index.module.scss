@@ -111,9 +111,11 @@
 		font-size: 16px;
 		margin-left: 4px;
 
-		font-weight: 600;
+		font-weight: 400;
 	}
 	.eye {
+		width: 16px;
+		height: 16px;
 		margin-left: 7px;
 	}
 
@@ -203,10 +205,13 @@
 	padding: 0px 16px;
 	margin-left: 26px;
 }
+
+.muiSelect__Buttons {
+	display: none !important;
+}
 @media screen and (max-width: 1024px) {
 	.header {
 		width: 100%;
-		position: fixed;
 		z-index: 100;
 	}
 	.logo {
@@ -238,6 +243,51 @@
 
 @media screen and (max-width: 678px) {
 	.header {
+		position: fixed;
 		bottom: 0;
+	}
+
+	.greenBtn {
+		display: none;
+	}
+
+	.muiSelect__menu {
+		display: none !important;
+	}
+
+	.muiSelect__Buttons {
+		display: block !important;
+	}
+	.ItemTwoBtns {
+		border: none;
+		cursor: pointer;
+		color: #1f2133;
+		font-family: 'Roboto';
+		font-size: 16px;
+		font-weight: 400;
+
+		font-style: none;
+		text-decoration: none;
+	}
+	.Mui_AddIcon {
+		width: 24px;
+		height: 22px;
+		border-radius: 50%;
+		border: 1px solid #25991c;
+		display: flex;
+		align-items: center;
+		padding: 5px 5px;
+	}
+
+	.rub {
+		font-family: 'Roboto';
+		font-size: 24px !important;
+		margin-left: 4px;
+
+		font-weight: 400;
+	}
+	.eye {
+		width: 22px !important;
+		height: 22px !important;
 	}
 }

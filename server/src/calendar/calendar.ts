@@ -98,87 +98,92 @@ import { ICell } from "types";
 // };
 
 export const calendar = async (data) => {
-  const token = data?.token;
+  try {
+    const token = data?.token;
 
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  const userId = await token_.userId;
-
-  if (!userId) {
-    throw new Error("Invalid token");
-  }
-
-  // Определение начальной и конечной даты месяца
-  let currentDate = new Date(data.currentYear, data.currentMonth, 1);
-  let startDate = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() - 1,
-    1
-  );
-  let endDate = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  );
-
-  // Получение данных из таблицы StudentSchedule
-  const studentSchedules = await db.studentSchedule.findMany({
-    where: {
-      userId,
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
       },
-    },
-  });
+    });
 
-  // Преобразование данных в формат ICell и суммирование при совпадении дня, месяца и года
-  const result = studentSchedules.reduce((acc, schedule) => {
-    const date = new Date(
-      parseInt(schedule.year),
-      parseInt(schedule.month) - 1,
-      parseInt(schedule.day)
-    );
-    const existingCell = acc.find(
-      (cell) =>
-        cell.day === schedule.day &&
-        cell.month === schedule.month &&
-        cell.year === schedule.year
-    );
+    const userId = await token_.userId;
 
-    if (existingCell) {
-      existingCell.workCount += schedule.workCount;
-      existingCell.lessonsCount += schedule.lessonsCount;
-      existingCell.lessonsPrice += schedule.lessonsPrice;
-      existingCell.workPrice += schedule.workPrice;
-    } else {
-      acc.push({
-        workCount: schedule.workCount,
-        id: schedule.id,
-        day: schedule.day,
-        month: schedule.month,
-        year: schedule.year,
-        lessonsCount: schedule.lessonsCount,
-        lessonsPrice: schedule.lessonsPrice,
-        workPrice: schedule.workPrice,
-        date,
-      });
+    if (!userId) {
+      throw new Error("Invalid token");
     }
 
-    return acc;
-  }, []);
+    // Определение начальной и конечной даты месяца
+    let currentDate = new Date(data.currentYear, data.currentMonth, 1);
+    let startDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    );
+    let endDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    );
 
-  // Сортировка по дате
-  result.sort((a, b) => {
-    return a.date.getTime() - b.date.getTime();
-  });
+    // Получение данных из таблицы StudentSchedule
+    const studentSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
 
-  console.log(result);
+    // Преобразование данных в формат ICell и суммирование при совпадении дня, месяца и года
+    const result = studentSchedules.reduce((acc, schedule) => {
+      const date = new Date(
+        parseInt(schedule.year),
+        parseInt(schedule.month) - 1,
+        parseInt(schedule.day)
+      );
+      const existingCell = acc.find(
+        (cell) =>
+          cell.day === schedule.day &&
+          cell.month === schedule.month &&
+          cell.year === schedule.year
+      );
 
-  // Отправка данных через сокеты
-  io.emit("getMonth", result);
+      if (existingCell) {
+        existingCell.workCount += schedule.workCount;
+        existingCell.lessonsCount += schedule.lessonsCount;
+        existingCell.lessonsPrice += schedule.lessonsPrice;
+        existingCell.workPrice += schedule.workPrice;
+      } else {
+        acc.push({
+          workCount: schedule.workCount,
+          id: schedule.id,
+          day: schedule.day,
+          month: schedule.month,
+          year: schedule.year,
+          lessonsCount: schedule.lessonsCount,
+          lessonsPrice: schedule.lessonsPrice,
+          workPrice: schedule.workPrice,
+          date,
+        });
+      }
+
+      return acc;
+    }, []);
+
+    // Сортировка по дате
+    result.sort((a, b) => {
+      return a.date.getTime() - b.date.getTime();
+    });
+
+    console.log(result);
+
+    // Отправка данных через сокеты
+    io.emit("getMonth", result);
+  } catch (error) {
+    console.log("ERROR");
+    return io.emit("getMonth", { error: error.message });
+  }
 };

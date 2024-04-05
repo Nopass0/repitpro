@@ -15,7 +15,8 @@ import {useState} from 'react'
 import {ELeftMenuPage} from '../../types'
 import mobileLogo from '../../assets/mobileLogo.svg'
 import {slide as Menu} from 'react-burger-menu'
-
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import AddIcon from '@mui/icons-material/Add'
 interface IHeader {}
 
 const Header = ({}: IHeader) => {
@@ -126,7 +127,52 @@ const Header = ({}: IHeader) => {
 				</div>
 
 				<DataSlidePicker className={s.dataSlidePicker} dateMode />
-
+				<mui.Select
+					className={`${s.muiSelect__Buttons}`}
+					IconComponent={''}
+					renderValue={(option: SelectOption<number> | null) => {
+						return (
+							<div className={s.Mui_AddIcon}>
+								<AddIcon />
+							</div>
+						)
+					}}
+					variant={'standard'}
+					// @ts-ignore
+					defaultValue={1}
+					// value={valueMuiSelectArchive}
+				>
+					<mui.MenuItem
+						onClick={() => {
+							dispatch({
+								type: 'SET_LEFT_MENU_PAGE',
+								payload: ELeftMenuPage.AddStudent,
+							})
+						}}
+						value={1}>
+						Ученика
+					</mui.MenuItem>
+					<mui.MenuItem
+						onClick={() => {
+							dispatch({
+								type: 'SET_LEFT_MENU_PAGE',
+								payload: ELeftMenuPage.AddGroup,
+							})
+						}}
+						value={2}>
+						Группу
+					</mui.MenuItem>
+					<mui.MenuItem
+						onClick={() => {
+							dispatch({
+								type: 'SET_LEFT_MENU_PAGE',
+								payload: ELeftMenuPage.AddClient,
+							})
+						}}
+						value={3}>
+						Заказчика
+					</mui.MenuItem>
+				</mui.Select>
 				<div className={s.Buttons}>
 					<Link
 						to={'/statistics'}
@@ -145,7 +191,37 @@ const Header = ({}: IHeader) => {
 							Личный кабинет
 						</p>
 					</Link>
-					
+					<mui.Select
+						className={s.muiSelect__Buttons}
+						IconComponent={''}
+						renderValue={(option: SelectOption<number> | null) => {
+							return <MoreVertIcon />
+						}}
+						variant={'standard'}
+						// @ts-ignore
+						defaultValue={1}
+						// value={valueMuiSelectArchive}
+					>
+						<mui.MenuItem value={1}>
+							<Link className={s.ItemTwoBtns} to={'/statistics'}>
+								<p className={s.btnText}>Статистика</p>
+							</Link>
+						</mui.MenuItem>
+						<mui.MenuItem value={2}>
+							<Link className={s.ItemTwoBtns} to={'/'}>
+								<p
+									onClick={() => {
+										dispatch({
+											type: 'SET_LEFT_MENU_PAGE',
+											payload: ELeftMenuPage.MyCabinet,
+										})
+									}}
+									className={s.btnText}>
+									Личный кабинет
+								</p>
+							</Link>
+						</mui.MenuItem>
+					</mui.Select>
 					<button onClick={handleLogout} className={s.exitBtn}>
 						<p className={s.btnText}>Выход</p>
 						<Exit />
