@@ -29,12 +29,13 @@ import uploadFile from '../../assets/UploadFile.svg'
 import TimePicker from '../Timer/index'
 import NowLevel from '../NowLevel'
 import Input from '../Input'
-import {IItemCard, ITimeLine} from '../../types'
+import {ELeftMenuPage, IItemCard, ITimeLine} from '../../types'
 import socket from '../../socket'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 
 import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
+import {useNavigate} from 'react-router-dom'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -76,7 +77,7 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
-
+	const dispatch = useDispatch()
 	//get week
 	const getVoidWeek = (): ITimeLine[] => {
 		const week = daysOfWeek.map((day, index) => ({
@@ -175,6 +176,7 @@ const AddStudent = ({}: IAddStudent) => {
 			token,
 			phoneNumber,
 		})
+		window.location.reload()
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -211,6 +213,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
 	const [lessonDuration, setLessonDuration] = useState()
 
+	const navigate = useNavigate()
 	const handleClick_delete = (itemIndex: number, id: number) => {
 		setItems((prevItems) =>
 			prevItems.map((item, index) =>
@@ -376,7 +379,42 @@ const AddStudent = ({}: IAddStudent) => {
 	return (
 		<>
 			<button
-				onClick={() => setPagePopup(PagePopup.Exit)}
+				onClick={() => {
+					if (
+						items.some((item) => {
+							return (
+								item.itemName !== '' ||
+								item.tryLessonCheck !== false ||
+								item.tryLessonCost !== '' ||
+								item.todayProgramStudent !== '' ||
+								item.targetLesson !== '' ||
+								item.programLesson !== '' ||
+								item.typeLesson !== '1' ||
+								item.placeLesson !== '' ||
+								item.timeLesson !== '' ||
+								item.valueMuiSelectArchive !== 1 ||
+								item.nowLevel !== undefined ||
+								item.lessonDuration !== null
+							)
+						}) ||
+						nameStudent !== '' ||
+						contactFace !== '' ||
+						email !== '' ||
+						linkStudent !== '' ||
+						costStudent !== '' ||
+						commentStudent !== '' ||
+						phoneNumber !== '' ||
+						prePayCost !== '' ||
+						costOneLesson !== ''
+					) {
+						setPagePopup(PagePopup.Exit)
+					} else {
+						dispatch({
+							type: 'SET_LEFT_MENU_PAGE',
+							payload: ELeftMenuPage.MainPage,
+						})
+					}
+				}}
 				style={{position: 'absolute', zIndex: '100'}}>
 				<CloseIcon
 					style={{
@@ -1195,38 +1233,21 @@ const AddStudent = ({}: IAddStudent) => {
 				</div>
 			</div>
 
-			{pagePopup === PagePopup.Exit &&
-				items.some((item) => {
-					return console.log(
-						item.itemName === '' ||
-							item.tryLessonCheck === false ||
-							item.tryLessonCost === '' ||
-							item.todayProgramStudent === '' ||
-							item.targetLesson === '' ||
-							item.programLesson === '' ||
-							item.typeLesson === '1' ||
-							item.placeLesson === '' ||
-							item.timeLesson === '' ||
-							item.valueMuiSelectArchive === 1 ||
-							item.startLesson === null ||
-							item.endLesson === null ||
-							item.nowLevel === undefined ||
-							item.lessonDuration === null,
-						'123134531',
-						item.itemName,
-					)
-				}) && (
-					<div style={{position: 'absolute', zIndex: '100'}}>
-						<ExitPopUp
-							style={{position: 'relative', top: '20px', left: '400px'}}
-							title="Закрыть без сохранения?"
-							yes={() => {
-								setPagePopup(PagePopup.None)
-							}}
-							no={() => setPagePopup(PagePopup.None)}
-						/>
-					</div>
-				)}
+			{pagePopup === PagePopup.Exit && (
+				<div style={{position: 'absolute', zIndex: '100'}}>
+					<ExitPopUp
+						style={{position: 'relative', top: '20px', left: '400px'}}
+						title="Закрыть без сохранения?"
+						yes={() => {
+							dispatch({
+								type: 'SET_LEFT_MENU_PAGE',
+								payload: ELeftMenuPage.MainPage,
+							})
+						}}
+						no={() => setPagePopup(PagePopup.None)}
+					/>
+				</div>
+			)}
 		</>
 	)
 }

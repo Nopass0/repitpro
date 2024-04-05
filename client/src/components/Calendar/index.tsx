@@ -360,7 +360,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						))}
 					</tbody>
 				</table>
-				<div className={s.sum}>
+				{/* <div className={s.sum}> */}
 					<table className={s.sumTable}>
 						<thead className={s.head}>
 							<tr>
@@ -390,7 +390,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										</OptionGroup>
 									</Select> */}
 									<p className={s.sumText}>Расчёт дохода</p>
-									<Line width="190px" className={s.Line} />
+									{/* <Line width="190px" className={s.Line} /> */}
 								</th>
 							</tr>
 						</thead>
@@ -465,16 +465,16 @@ export const Calendar = ({className, cells}: ICalendar) => {
 													</p>
 												</div>
 											</div>
-											{index <= 4 && (
+											{/* {index <= 4 && (
 												<Line width="190px" className={s.LineSumTr} />
-											)}
+											)} */}
 										</td>
 									</tr>
 								</>
 							))}
 						</tbody>
 					</table>
-				</div>
+				{/* </div> */}
 			</div>
 
 			{/* TODO */}

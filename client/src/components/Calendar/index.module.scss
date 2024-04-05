@@ -132,99 +132,102 @@
 		}
 	}
 
-	.sum {
-		max-width: 190px;
-		height: 751px;
-		background-color: #f3fdf2;
-		border-top-right-radius: 20px;
-		border-bottom-right-radius: 20px;
-
+	// .sum {
+		
 		.sumTable {
 			max-width: 190px;
-		}
-		.sumText {
-			font-size: 16px;
-			font-weight: 400;
-			border: 1px solid #25991c;
-			background-color: #fff;
-			width: 168px;
-			border-radius: 8px;
-			padding: 5px;
-		}
-
-		.head {
-			display: block !important;
-
-			max-width: 190px;
-
-			.th {
-				width: 158px;
-				height: 48px;
+			height: 751px;
+			background-color: #f3fdf2;
+			border-top-right-radius: 20px;
+			border-bottom-right-radius: 20px;
+			// max-width: 190px;
+			border-collapse: collapse;
+			.sumText {
+				font-size: 16px;
+				font-weight: 400;
+				border: 1px solid #25991c;
+				background-color: #fff;
+				width: 168px;
+				border-radius: 8px;
+				padding: 5px;
 			}
-		}
-
-		.body {
-			max-width: 190px;
-
-			border-top: none;
-
-			.tr {
-				.td {
+	
+			.head {
+				display: block !important;
+	
+				max-width: 190px;
+				border-bottom: 1px solid #e2e2e9;
+	
+				.th {
 					width: 158px;
-					height: 116px;
-					// border-right: 1px solid #e2e2e9;
-					padding: 0;
-					margin: 0;
-					display: table-cell;
+					height: 48px;
 				}
 			}
-			.tr:not(:last-child) {
-				.td {
-					// border-bottom: 1px solid #e2e2e9;
+	
+			.body {
+				max-width: 190px;
+	
+				border-top: none;
+	
+				.tr {
+					.td {
+						width: 158px;
+						height: 116px;
+						// border-right: 1px solid #e2e2e9;
+						padding: 0;
+						margin: 0;
+						display: table-cell;
+					}
+	
 				}
-			}
-
-			.content {
-				padding: 0px 12px;
-				height: 100%;
-				// position: relative;
-				.dayIndex {
-					font-family: 'Roboto';
-					font-weight: 500;
-					font-size: 14px;
-					margin-top: 8px;
-					margin-bottom: 6px;
-					// position: absolute;
-					// bottom: 24px;
-					// left: 12px;
+				.tr:not(:last-child) {
+					border-bottom: 1px solid #e2e2e9;
+					.td {
+					}
 				}
-
-				.data {
-					// position: absolute;
-					// top: -16px;
-					// left: 11px;
-					// width: 80%;
-					font-weight: 400;
-
-					.dataField {
-						display: flex;
-						flex-direction: row;
-						justify-content: space-between;
+	
+				.content {
+					padding: 0px 12px;
+					height: 80%;
+					// position: relative;
+					.dayIndex {
+						font-family: 'Roboto';
+						font-weight: 500;
 						font-size: 14px;
-						// width: 100%;
+						// margin-top: 8px;
+						margin-bottom: 6px;
+						// position: absolute;
+						// bottom: 24px;
+						// left: 12px;
 					}
-
-					.dataField:first-child {
-						margin-bottom: 2px;
-					}
-
-					.dataField:last-child {
-						margin-top: 12px;
+	
+					.data {
+						// position: absolute;
+						// top: -16px;
+						// left: 11px;
+						// width: 80%;
+						font-weight: 400;
+	
+						.dataField {
+							display: flex;
+							flex-direction: row;
+							justify-content: space-between;
+							font-size: 14px;
+							// width: 100%;
+						}
+	
+						.dataField:first-child {
+							margin-bottom: 2px;
+						}
+	
+						.dataField:last-child {
+							margin-top: 12px;
+						}
 					}
 				}
 			}
 		}
-	}
+	// }
 }
 
 .select {
@@ -506,12 +509,12 @@
 	}
 
 	.footer {
-		.infoImg, .infoImgMobile {
+		.infoImg,
+		.infoImgMobile {
 			p {
 				font-size: 12px !important;
 			}
 		}
-		
 
 		margin-bottom: 100px;
 	}
