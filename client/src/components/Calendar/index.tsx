@@ -14,6 +14,7 @@ import Client from '../../assets/6.svg'
 import Line from '../Line'
 import DayCalendarPopUp from '../DayCalendarPopUp/index'
 import DayStudentPopUp from '../DayStudentPopUp/index'
+import DataSlidePicker from '../DataSlidePicker'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -114,6 +115,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	return (
 		<div className={' ' + (className || '')}>
+			<DataSlidePicker className={s.dataSlidePicker} dateMode />
 			<div className={s.calendar}>
 				<table className={s.table}>
 					<thead className={s.head}>

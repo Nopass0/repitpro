@@ -56,56 +56,6 @@ const DayCalendarPopUp = ({
 				/>
 
 				<Line className={s.Line} width="700px" />
-				<DayCalendarLine
-					icon={GroupOnline}
-					timeStart="12:00"
-					timeEnd="13:00"
-					name="Константинова Александра"
-					item="Русский языка"
-					price="2000000"
-				/>
-
-				<Line className={s.Line} width="700px" />
-				<DayCalendarLine
-					icon={GroupOnline}
-					timeStart="12:00"
-					timeEnd="13:00"
-					name="Константинова Александра"
-					item="Русский языка"
-					price="2000000"
-				/>
-
-				<Line className={s.Line} width="700px" />
-				<DayCalendarLine
-					icon={GroupOnline}
-					timeStart="12:00"
-					timeEnd="13:00"
-					name="Константинова Александра"
-					item="Русский языка"
-					price="2000000"
-				/>
-
-				<Line className={s.Line} width="700px" />
-				<DayCalendarLine
-					icon={GroupOnline}
-					timeStart="12:00"
-					timeEnd="13:00"
-					name="Константинова Александра"
-					item="Русский языка"
-					price="2000000"
-				/>
-
-				<Line className={s.Line} width="700px" />
-				<DayCalendarLine
-					icon={GroupOnline}
-					timeStart="12:00"
-					timeEnd="13:00"
-					name="Константинова Александра"
-					item="Русский языка"
-					price="2000000"
-				/>
-
-				<Line className={s.Line} width="700px" />
 			</section>
 			<section className={s.ThreeBtnWrapper}>
 				<button className={`${s.EditBtn} ${s.active}`}>Редактировать</button>

@@ -145,7 +145,7 @@ const Header = ({}: IHeader) => {
 							Личный кабинет
 						</p>
 					</Link>
-
+					
 					<button onClick={handleLogout} className={s.exitBtn}>
 						<p className={s.btnText}>Выход</p>
 						<Exit />

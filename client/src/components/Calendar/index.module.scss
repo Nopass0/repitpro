@@ -466,3 +466,15 @@
 		}
 	}
 }
+
+@media screen and (min-width: 900px) {
+	.dataSlidePicker {
+		display: none !important;
+	}
+}
+
+.dataSlidePicker {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}

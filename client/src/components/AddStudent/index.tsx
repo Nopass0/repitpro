@@ -613,7 +613,7 @@ const AddStudent = ({}: IAddStudent) => {
 									</span>
 								</button>
 								<p className={s.btnText}>
-									Предмет {currentItemIndex + 1} / {items.length};
+									Предмет {currentItemIndex + 1} / {items.length}
 								</p>
 								<button
 									onClick={() =>
@@ -1012,10 +1012,11 @@ const AddStudent = ({}: IAddStudent) => {
 																		transform: `translateY(${
 																			index * 40
 																		}px) translateX(-50%)`,
-																	}}>
+																	}}
+																	>
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker
-																			title="Начало"
+																			title="Начало занятий"
 																			onTimeChange={(hour, minute) =>
 																				handleStartTimeChange(
 																					currentItemIndex,
@@ -1028,7 +1029,7 @@ const AddStudent = ({}: IAddStudent) => {
 																	)}
 																	{timeline.editingEnd && (
 																		<TimePicker
-																			title="Конец"
+																			title="Конец занятий"
 																			onTimeChange={(hour, minute) =>
 																				handleEndTimeChange(
 																					currentItemIndex,

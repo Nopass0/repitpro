@@ -205,7 +205,7 @@
 }
 @media screen and (max-width: 1024px) {
 	.header {
-		// width: 100%;
+		width: 100%;
 		position: fixed;
 		z-index: 100;
 	}
@@ -227,5 +227,17 @@
 		.btnText {
 			display: none;
 		}
+	}
+}
+
+@media screen and (max-width: 900px) {
+	.dataSlidePicker {
+		display: none !important;
+	}
+}
+
+@media screen and (max-width: 678px) {
+	.header {
+		bottom: 0;
 	}
 }

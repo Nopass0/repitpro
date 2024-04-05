@@ -2,15 +2,17 @@ import React, {useState} from 'react'
 import s from './index.module.scss'
 import * as mui from '@mui/material'
 import Arrow, {ArrowType} from '../../assets/arrow'
-
+import CloseIcon from '@mui/icons-material/Close'
 interface TimePickerProps {
 	onTimeChange: (hours: number, minutes: number) => void
 	title: string
+	onExit?: () => void
 }
 
 const TimePicker: React.FC<TimePickerProps> = ({
 	onTimeChange,
 	title,
+	onExit,
 }: TimePickerProps) => {
 	const [selectedHours, setSelectedHours] = useState<number>(0)
 	const [selectedMinutes, setSelectedMinutes] = useState<number>(0)
@@ -38,7 +40,13 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
 	return (
 		<div className={s.timePicker}>
-			<h1 className={s.Title}>{title}</h1>
+			<div
+				style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+				<h1 className={s.Title}>{title}</h1>
+				<button onClick={onExit} style={{position: 'relative', left: '10px'}}>
+					<CloseIcon style={{color: 'red'}} />
+				</button>
+			</div>
 			<div className={s.Pick}>
 				<div className={s.hourPicker}>
 					<button
@@ -47,16 +55,20 @@ const TimePicker: React.FC<TimePickerProps> = ({
 						{/* SVG for up arrow */}
 						<Arrow direction={ArrowType.up} />
 					</button>
-					<div className={s.PrevNextTime}>{
-						selectedHours - 1 < 0 ? 23 : (selectedHours - 1).toString().padStart(2, '0')
-					}</div>
-					<div className={s.timeDisplay}>{
-						selectedHours.toString().padStart(2, '0')
-					}</div>
-					<div className={s.PrevNextTime}>{
-						selectedHours + 1 > 23 ? '00' : (selectedHours + 1).toString().padStart(2, '0')
-					}</div>
-					
+					<div className={s.PrevNextTime}>
+						{selectedHours - 1 < 0
+							? 23
+							: (selectedHours - 1).toString().padStart(2, '0')}
+					</div>
+					<div className={s.timeDisplay}>
+						{selectedHours.toString().padStart(2, '0')}
+					</div>
+					<div className={s.PrevNextTime}>
+						{selectedHours + 1 > 23
+							? '00'
+							: (selectedHours + 1).toString().padStart(2, '0')}
+					</div>
+
 					<button className={s.arrowButton} onClick={() => handleHourChange(1)}>
 						{/* SVG for down arrow */}
 						<Arrow direction={ArrowType.down} />
@@ -72,10 +84,28 @@ const TimePicker: React.FC<TimePickerProps> = ({
 						{/* SVG for up arrow */}
 						<Arrow direction={ArrowType.up} />
 					</button>
-					
-					<div className={s.PrevNextTime}>{selectedMinutes === 0 ? 55 : (selectedMinutes === 5 ? '00' : selectedMinutes - 5)}</div>
-					<div className={s.timeDisplay}>{selectedMinutes === 0 ? "00" : (selectedMinutes === 5 ? "05" : selectedMinutes)}</div>
-					<div className={s.PrevNextTime}>{selectedMinutes === 0 ? '05' : (selectedMinutes === 55 ? '00' : selectedMinutes + 5)}</div>
+
+					<div className={s.PrevNextTime}>
+						{selectedMinutes === 0
+							? 55
+							: selectedMinutes === 5
+							? '00'
+							: selectedMinutes - 5}
+					</div>
+					<div className={s.timeDisplay}>
+						{selectedMinutes === 0
+							? '00'
+							: selectedMinutes === 5
+							? '05'
+							: selectedMinutes}
+					</div>
+					<div className={s.PrevNextTime}>
+						{selectedMinutes === 0
+							? '05'
+							: selectedMinutes === 55
+							? '00'
+							: selectedMinutes + 5}
+					</div>
 					{/* <div className={s.timeOptions}>
 						{renderTimeOption(selectedMinutes - 5)}
 						{renderTimeOption(selectedMinutes)}
@@ -90,7 +120,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				</div>
 			</div>
 			<button
-			className={s.SaveBtn}
+				className={s.SaveBtn}
 				onClick={() => {
 					onTimeChange(selectedHours, selectedMinutes)
 				}}>
