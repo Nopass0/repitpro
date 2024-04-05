@@ -408,8 +408,6 @@
 	}
 
 	.footer {
-		
-
 		.info {
 			height: fit-content;
 			.Title {
@@ -417,7 +415,7 @@
 			}
 			.ImgWrapper {
 				flex-wrap: wrap;
-				
+
 				.infoImg {
 					margin-right: 20px !important;
 					margin-bottom: 10px;
@@ -425,17 +423,17 @@
 						font-size: 14px;
 						margin-left: 10px !important;
 					}
-	
+
 					img {
 						width: 36px !important;
 						height: 36px !important;
 					}
 				}
-	
+
 				.infoImgMobile {
 					display: flex !important;
 					align-items: center;
-	
+
 					p {
 						font-size: 14px;
 						margin-left: 10px !important;
@@ -447,7 +445,6 @@
 				}
 			}
 		}
-
 
 		.devider {
 			display: none;
@@ -477,4 +474,57 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+@media screen and (max-width: 678px) {
+	.calendar {
+		width: 100%;
+
+		.table {
+			font-size: 12px !important;
+			tr {
+				th {
+					min-width: 189px;
+					min-height: 116px;
+				}
+			}
+		}
+	}
+
+	.sumTable {
+		.sumText {
+			font-size: 12px !important;
+		}
+		.body {
+			.dayIndex {
+				font-size: 12px !important;
+			}
+			.dataField {
+				font-size: 12px !important;
+			}
+		}
+	}
+
+	.footer {
+		.infoImg, .infoImgMobile {
+			p {
+				font-size: 12px !important;
+			}
+		}
+		
+
+		margin-bottom: 100px;
+	}
+
+	.IncomeNPrognosisWrapper {
+		.Title {
+			font-size: 12px !important;
+		}
+	}
+
+	.Lessons,
+	.Works,
+	.Income {
+		font-size: 12px !important;
+	}
 }

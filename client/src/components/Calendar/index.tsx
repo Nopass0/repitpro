@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {ICell} from '../../types'
 import s from './index.module.scss'
-import {Select, SelectOption, OptionGroup, Option} from '@mui/base'
 import Arrow from '../../assets/arrow'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'

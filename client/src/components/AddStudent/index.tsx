@@ -107,8 +107,8 @@ const AddStudent = ({}: IAddStudent) => {
 			placeLesson: '',
 			timeLesson: '',
 			valueMuiSelectArchive: 1,
-			startLesson: null,
-			endLesson: null,
+			startLesson: new Date(Date.now()),
+			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 			nowLevel: undefined,
 			lessonDuration: null,
 			timeLinesArray: getVoidWeek() as ITimeLine[],
@@ -135,8 +135,8 @@ const AddStudent = ({}: IAddStudent) => {
 				placeLesson: '',
 				timeLesson: '',
 				valueMuiSelectArchive: 1,
-				startLesson: null,
-				endLesson: null,
+				startLesson: new Date(Date.now()),
+				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // adds one month to the current date using the Date library
 				nowLevel: undefined,
 				lessonDuration: null,
 				timeLinesArray: getVoidWeek() as ITimeLine[],
@@ -881,7 +881,7 @@ const AddStudent = ({}: IAddStudent) => {
 														paddingBottom: '0px',
 													},
 												}}
-												value={item.startLesson || new Date()}
+												value={item.startLesson}
 												onChange={(newValue) => {
 													changeItemValue(
 														index,
@@ -910,7 +910,7 @@ const AddStudent = ({}: IAddStudent) => {
 														paddingBottom: '0px',
 													},
 												}}
-												value={item.endLesson || new Date()}
+												value={item.endLesson}
 												onChange={(newValue) => {
 													changeItemValue(index, 'endLesson', String(newValue!))
 												}}
@@ -1016,8 +1016,7 @@ const AddStudent = ({}: IAddStudent) => {
 																		transform: `translateY(${
 																			index * 40
 																		}px) translateX(-50%)`,
-																	}}
-																	>
+																	}}>
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker
 																			title="Начало занятий"
