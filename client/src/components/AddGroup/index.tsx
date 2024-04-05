@@ -736,13 +736,14 @@ const AddGroup = ({}: IAddGroup) => {
 												},
 											}}
 											value={item.startLesson}
-											onChange={(e) =>
+											onChange={(newValue) => {
 												changeItemValue(
 													currentItemIndex,
 													'startLesson',
-													e.target.value,
+													String(newValue!),
 												)
-											}
+												console.log(newValue!)
+											}}
 											timezone="system"
 											showDaysOutsideCurrentMonth
 										/>
@@ -767,11 +768,11 @@ const AddGroup = ({}: IAddGroup) => {
 												},
 											}}
 											value={item.endLesson}
-											onChange={(e) =>
+											onChange={(newValue) =>
 												changeItemValue(
 													currentItemIndex,
 													'endLesson',
-													e.target.value,
+													String(newValue!),
 												)
 											}
 											timezone="system"

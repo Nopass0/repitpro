@@ -55,7 +55,7 @@ const DayCalendarLine = ({
 						</p>
 					</div>
 				</div>
-				<CheckBox className={s.Checkbox} size="20px" />
+				<CheckBox checked={prevpay} className={s.Checkbox} size="20px" />
 				<button className={s.BtnDelete}>
 					<DeleteOutlineIcon />
 				</button>

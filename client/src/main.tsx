@@ -27,6 +27,9 @@ let defaultState = {
 	currentMonth: new Date().getMonth(),
 	currentYear: new Date(Date.now()).getFullYear(),
 	leftMenu: ELeftMenuPage.MainPage,
+	calendarNowPopupDay: '0',
+	calendarNowPopupMonth: '0',
+	calendarNowPopupYear: '0',
 	hiddenNum: false,
 	details: false,
 }
@@ -57,8 +60,17 @@ const reducer = (state = defaultState, action: any) => {
 				currentYear: action.payload.year,
 				token: defaultState.user.token,
 			})
+
 			// alert('year' + action.payload.year + 'month' + action.payload.month)
 			return {...state, currentMonth: action.payload.month}
+		case 'SET_CALENDAR_NOW_POPUP':
+			console.log('SET_CALENDAR_NOW_POPUP', action.payload)
+			return {
+				...state,
+				calendarNowPopupDay: action.payload.day,
+				calendarNowPopupMonth: action.payload.month,
+				calendarNowPopupYear: action.payload.year,
+			}
 		case 'SET_CURRENT_YEAR':
 			return {...state, currentYear: action.payload}
 		case 'SET_LEFT_MENU_PAGE':
@@ -67,12 +79,12 @@ const reducer = (state = defaultState, action: any) => {
 			localStorage.removeItem('token')
 
 			return {...state, user: {...state.user, token: ''}}
-		case 'SET_HIDDEN_NUM': 
+		case 'SET_HIDDEN_NUM':
 			return {...state, hiddenNum: action.payload}
 
 		case 'SET_DETAILS':
 			return {...state, details: action.payload}
-			
+
 		default:
 			return state
 	}

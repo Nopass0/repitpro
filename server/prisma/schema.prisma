@@ -64,6 +64,14 @@ model Token {
 //   };
 // }
 
+model Group {
+  id              String      @id @default(cuid())
+  groupName       String
+  items           Item[]
+  students        Student[]
+  userId          String
+}
+
 model TimeLine {
   id  String @id @default(cuid())
   day  String
@@ -89,26 +97,56 @@ model Item {
   valueMuiSelectArchive  Int
   startLesson  DateTime
   endLesson  DateTime
-  nowLevel  Int
-  lessonDuration  Int
-  timeLinesArray String //Objects
+  nowLevel  Int?
+  lessonDuration  Int?
+  timeLinesArray Json //Objects
+
+  group             Group?       @relation(fields: [groupId], references: [id])
+  groupId           String?
+  studentSchedules  StudentSchedule[]
 
   userId String
 }
 
 model Student {
-  id         String   @id @default(cuid())
-  nameStudent String
-  phoneNumber String
-  contactFace String
-  email       String
-  prePayCost  String
-  prePayDate DateTime?
-  costOneLesson String
-  commentStudent String
-  link String
-  cost String
-  items String[] //id's "1,2,3"
-  isArchived Boolean @default(false)
+  id              String   @id @default(cuid())
+  nameStudent     String
+  contactFace     String
+  phoneNumber     String
+  email           String
+  address         String
+  linkStudent     String
+  costStudent     String
+  commentStudent  String
+  prePayCost      String
+  prePayDate      DateTime?
+  selectedDate    DateTime?
+  storyLesson     String
+  costOneLesson   String
+  targetLessonStudent String
+  todayProgramStudent String
+  isArchived      Boolean @default(false)
+  group           Group    @relation(fields: [groupId], references: [id])
+  groupId         String
+
   userId String
+}
+
+model StudentSchedule {
+  id           String   @id @default(cuid())
+  day          String
+  groupId      String
+  studentId    String?
+  clientId     String?
+  workCount    Int
+  lessonsCount Int
+  lessonsPrice Int
+  workPrice    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String
+  month        String
+  year         String
+  item         Item     @relation(fields: [itemId], references: [id])
+  itemId       String
 }

@@ -883,7 +883,11 @@ const AddStudent = ({}: IAddStudent) => {
 												}}
 												value={item.startLesson || new Date()}
 												onChange={(newValue) => {
-													changeItemValue(index, 'startLesson', newValue!)
+													changeItemValue(
+														index,
+														'startLesson',
+														String(newValue!),
+													)
 												}}
 												timezone="system"
 												showDaysOutsideCurrentMonth
@@ -908,7 +912,7 @@ const AddStudent = ({}: IAddStudent) => {
 												}}
 												value={item.endLesson || new Date()}
 												onChange={(newValue) => {
-													changeItemValue(index, 'endLesson', newValue!)
+													changeItemValue(index, 'endLesson', String(newValue!))
 												}}
 												timezone="system"
 												showDaysOutsideCurrentMonth
@@ -1127,7 +1131,7 @@ const AddStudent = ({}: IAddStudent) => {
 			{pagePopup === PagePopup.Exit &&
 				items.some((item) => {
 					return console.log(
-							item.itemName === '' ||
+						item.itemName === '' ||
 							item.tryLessonCheck === false ||
 							item.tryLessonCost === '' ||
 							item.todayProgramStudent === '' ||
@@ -1141,8 +1145,8 @@ const AddStudent = ({}: IAddStudent) => {
 							item.endLesson === null ||
 							item.nowLevel === undefined ||
 							item.lessonDuration === null,
-						'123134531', item.itemName
-						
+						'123134531',
+						item.itemName,
 					)
 				}) && (
 					<div style={{position: 'absolute', zIndex: '100'}}>
