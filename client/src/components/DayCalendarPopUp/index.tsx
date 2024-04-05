@@ -73,80 +73,86 @@ const DayCalendarPopUp = ({
 
 	return (
 		<div style={style} className={s.wrapper}>
-			<header className={s.Header}>
-				<div className={s.HeaderItems}>
-					<DataSlidePicker className={s.dataSlidePicker} dateMode />
-					<button onClick={onExit}>
-						<CloseIcon className={s.closeIcon} />
+			<div>
+				<header className={s.Header}>
+					<div className={s.HeaderItems}>
+						<DataSlidePicker className={s.dataSlidePicker} dateMode />
+						<button onClick={onExit}>
+							<CloseIcon className={s.closeIcon} />
+						</button>
+					</div>
+				</header>
+				<section className={s.MainBlock}>
+					<Line width="700px" className={s.LineHeader} />
+					{students &&
+						students.map((student: any) => (
+							<>
+								<DayCalendarLine
+									key={student._id}
+									LineClick={LineClick}
+									iconClick={iconClick}
+									icon={GroupOnline}
+									timeStart={
+										timeNormalize(student.startTime.hour) +
+										':' +
+										timeNormalize(student.startTime.minute)
+									}
+									timeEnd={
+										timeNormalize(student.endTime.hour) +
+										':' +
+										timeNormalize(student.endTime.minute)
+									}
+									name={student.nameStudent}
+									item={student.itemName}
+									price={student.costOneLesson}
+									prevpay={student.tryLessonCheck}
+								/>
+							</>
+						))}
+					<Line className={s.Line} width="700px" />
+					<DayCalendarLine
+						icon={GroupOnline}
+						timeStart="12:00"
+						timeEnd="13:00"
+						name="Константинова Александра"
+						item="Русский языка"
+						price="2000000"
+					/>
+
+					<Line className={s.Line} width="700px" />
+				</section>
+			</div>
+			<div>
+				<section className={s.ThreeBtnWrapper}>
+					<button className={`${s.EditBtn} ${s.active}`}>Редактировать</button>
+					<button className={`${s.SaveBtn}`}>Сохранить</button>
+					<button className={s.PlusBtn}>
+						<img src={Plus} alt={Plus} />
 					</button>
-				</div>
-			</header>
-			<Line width="700px" className={s.LineHeader} />
-			<section className={s.MainBlock}>
-				{students &&
-					students.map((student: any) => (
-						<>
-							<DayCalendarLine
-								key={student._id}
-								LineClick={LineClick}
-								iconClick={iconClick}
-								icon={GroupOnline}
-								timeStart={
-									timeNormalize(student.startTime.hour) +
-									':' +
-									timeNormalize(student.startTime.minute)
-								}
-								timeEnd={
-									timeNormalize(student.endTime.hour) +
-									':' +
-									timeNormalize(student.endTime.minute)
-								}
-								name={student.nameStudent}
-								item={student.itemName}
-								price={student.costOneLesson}
-								prevpay={student.tryLessonCheck}
-							/>
-
-				<Line className={s.Line} width="700px" />
-				<DayCalendarLine
-					icon={GroupOnline}
-					timeStart="12:00"
-					timeEnd="13:00"
-					name="Константинова Александра"
-					item="Русский языка"
-					price="2000000"
-				/>
-
-				<Line className={s.Line} width="700px" />
-			</section>
-			<section className={s.ThreeBtnWrapper}>
-				<button className={`${s.EditBtn} ${s.active}`}>Редактировать</button>
-				<button className={`${s.SaveBtn}`}>Сохранить</button>
-				<button className={s.PlusBtn}>
-					<img src={Plus} alt={Plus} />
-				</button>
-			</section>
-			<footer className={s.Footer}>
-				<div className={s.Left}>
-					<div className={s.Lessons}>
-						<p>
-							Занятий: <b>{students.length}</b>
-						</p>
-						<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+				</section>
+				<footer className={s.Footer}>
+					<div className={s.Left}>
+						<div className={s.Lessons}>
+							<p>
+								Занятий: <b>{students.length}</b>
+							</p>
+							<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+						</div>
+						<div className={s.works}>
+							<p>
+								Работ: <b>0</b>
+							</p>
+							<b>0₽</b>
+						</div>
 					</div>
-					<div className={s.works}>
+					<div className={s.income}>
 						<p>
-							Работ: <b>0</b>
+							Доход:{' '}
+							<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
 						</p>
-						<b>0₽</b>
 					</div>
-				</div>
-				<div className={s.income}>
-					<p>
-						Доход: <b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
-					</p>
-				</div>
-			</footer>
+				</footer>
+			</div>
 		</div>
 	)
 }
