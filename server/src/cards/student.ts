@@ -306,6 +306,7 @@ export async function getStudentsByDate(data: {
           itemName: true,
           timeLinesArray: true,
           tryLessonCheck: true,
+          typeLesson: true,
           group: {
             include: {
               students: {
@@ -335,6 +336,7 @@ export async function getStudentsByDate(data: {
       costOneLesson: student.costOneLesson,
       studentId: student.id,
       itemName: item.itemName,
+      typeLesson: item.typeLesson,
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,

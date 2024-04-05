@@ -36,6 +36,8 @@ const DayCalendarPopUp = ({
 		(state: any) => state.calendarNowPopupYear,
 	)
 
+	const [editMode, setEditMode] = React.useState(false)
+
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
 
@@ -91,7 +93,8 @@ const DayCalendarPopUp = ({
 									key={student._id}
 									LineClick={LineClick}
 									iconClick={iconClick}
-									icon={GroupOnline}
+									icon={student.typeLesson}
+									editMode={editMode}
 									timeStart={
 										timeNormalize(student.startTime.hour) +
 										':' +
@@ -107,25 +110,23 @@ const DayCalendarPopUp = ({
 									price={student.costOneLesson}
 									prevpay={student.tryLessonCheck}
 								/>
+								<Line className={s.Line} width="700px" />
 							</>
 						))}
-					<Line className={s.Line} width="700px" />
-					<DayCalendarLine
-						icon={GroupOnline}
-						timeStart="12:00"
-						timeEnd="13:00"
-						name="Константинова Александра"
-						item="Русский языка"
-						price="2000000"
-					/>
-
-					<Line className={s.Line} width="700px" />
 				</section>
 			</div>
 			<div>
 				<section className={s.ThreeBtnWrapper}>
-					<button className={`${s.EditBtn} ${s.active}`}>Редактировать</button>
-					<button className={`${s.SaveBtn}`}>Сохранить</button>
+					<button
+						onClick={() => editMode === false && setEditMode(!editMode)}
+						className={`${s.EditBtn} ${!editMode && s.active}`}>
+						Редактировать
+					</button>
+					<button
+						onClick={() => editMode === true && setEditMode(!editMode)}
+						className={`${s.SaveBtn} ${editMode && s.active}`}>
+						Сохранить
+					</button>
 					<button className={s.PlusBtn}>
 						<img src={Plus} alt={Plus} />
 					</button>
