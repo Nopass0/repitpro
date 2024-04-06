@@ -352,3 +352,249 @@ export async function getStudentsByDate(data: {
 
   io.emit("getStudentsByDate", dataToEmit);
 }
+
+//temp
+export async function updateStudents(data) {
+  try {
+    const { students, token } = data;
+    const userId = await validateTokenAndGetUserId(token);
+
+    if (!userId) {
+      throw new Error("Invalid token");
+    }
+
+    const updatedStudents = await Promise.all(
+      students.map(async (student) => {
+        if (student.isDelete) {
+          // Delete student if isDelete is true
+          await db.student.delete({
+            where: {
+              id: student.studentId,
+            },
+          });
+          return null;
+        }
+
+        const {
+          studentId,
+          nameStudent,
+          costOneLesson,
+          itemName,
+          typeLesson,
+          tryLessonCheck,
+          startTime,
+          endTime,
+        } = student;
+
+        // Update student and associated item
+        const updatedStudent = await db.student.update({
+          where: {
+            id: studentId,
+          },
+          data: {
+            nameStudent,
+            costOneLesson,
+          },
+          include: {
+            group: {
+              include: {
+                items: true,
+              },
+            },
+          },
+        });
+
+        const updatedItem = await db.item.update({
+          where: {
+            id: updatedStudent.group.items.find(
+              (item) => item.itemName === itemName
+            )?.id,
+          },
+          data: {
+            itemName,
+            typeLesson,
+            tryLessonCheck,
+            timeLinesArray: {
+              [getDay(new Date())]: {
+                startTime,
+                endTime,
+              },
+            },
+          },
+        });
+
+        return {
+          ...student,
+          updatedItem,
+        };
+      })
+    );
+
+    const filteredStudents = updatedStudents.filter(
+      (student) => student !== null
+    );
+    io.emit("updateStudents", filteredStudents);
+  } catch (error) {
+    console.error("Error updating students:", error);
+    io.emit("updateStudents", {
+      error: "Error updating students",
+    });
+  }
+}
+
+// export async function updateStudents(data) {
+//   try {
+//     const { students, token } = data;
+//     const userId = await validateTokenAndGetUserId(token);
+
+//     if (!userId) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const currentDate = new Date();
+//     const day = currentDate.getDate().toString();
+//     const month = (currentDate.getMonth() + 1).toString();
+//     const year = currentDate.getFullYear().toString();
+//     const dayOfWeekIndex = getDay(currentDate);
+
+//     const updatedStudentSchedules = await Promise.all(
+//       students.map(async (student) => {
+//         if (student.isDelete) {
+//           // Delete student schedule if isDelete is true
+//           await db.studentSchedule.deleteMany({
+//             where: {
+//               day,
+//               month,
+//               year,
+//               userId,
+//               itemId: student.itemId,
+//             },
+//           });
+//           return null;
+//         }
+
+//         const {
+//           studentId,
+//           nameStudent,
+//           costOneLesson,
+//           itemName,
+//           typeLesson,
+//           tryLessonCheck,
+//           startTime,
+//           endTime,
+//           itemId,
+//         } = student;
+
+//         // Find or create the item
+//         let item = await db.item.findUnique({
+//           where: {
+//             id: itemId,
+//           },
+//         });
+
+//         if (!item) {
+//           item = await db.item.create({
+//             data: {
+//               itemName,
+//               typeLesson,
+//               tryLessonCheck,
+//               timeLinesArray: {
+//                 [dayOfWeekIndex]: {
+//                   startTimeHour: startTime.hour,
+//                   startTimeMinute: startTime.minute,
+//                   endTimeHour: endTime.hour,
+//                   endTimeMinute: endTime.minute,
+//                 },
+//               },
+//               userId,
+//             },
+//           });
+//         } else {
+//           item = await db.item.update({
+//             where: {
+//               id: itemId,
+//             },
+//             data: {
+//               itemName,
+//               typeLesson,
+//               tryLessonCheck,
+//               timeLinesArray: {
+//                 [dayOfWeekIndex]: {
+//                   startTimeHour: startTime.hour,
+//                   startTimeMinute: startTime.minute,
+//                   endTimeHour: endTime.hour,
+//                   endTimeMinute: endTime.minute,
+//                 },
+//               },
+//             },
+//           });
+//         }
+
+//         // Update or create student schedule
+//         let updatedSchedule = await db.studentSchedule.findUnique({
+//           where: {
+//             day_month_year_userId_itemId: {
+//               day,
+//               month,
+//               year,
+//               userId,
+//               itemId: item.id,
+//             },
+//           },
+//         });
+
+//         if (updatedSchedule) {
+//           updatedSchedule = await db.studentSchedule.update({
+//             where: {
+//               id: updatedSchedule.id,
+//             },
+//             data: {
+//               lessonsPrice: parseFloat(costOneLesson),
+//               lessonsCount: 1,
+//             },
+//           });
+//         } else {
+//           updatedSchedule = await db.studentSchedule.create({
+//             data: {
+//               day,
+//               month,
+//               year,
+//               userId,
+//               itemId: item.id,
+//               lessonsPrice: parseFloat(costOneLesson),
+//               lessonsCount: 1,
+
+//             },
+//           });
+//         }
+
+//         // Update student
+//         const updatedStudent = await db.student.update({
+//           where: {
+//             id: studentId,
+//           },
+//           data: {
+//             nameStudent,
+//             costOneLesson,
+//           },
+//         });
+
+//         return {
+//           ...student,
+//           updatedSchedule,
+//           updatedItem: item,
+//         };
+//       })
+//     );
+
+//     const filteredStudents = updatedStudentSchedules.filter(
+//       (student) => student !== null
+//     );
+//     io.emit("updateStudents", filteredStudents);
+//   } catch (error) {
+//     console.error("Error updating students:", error);
+//     io.emit("updateStudents", {
+//       error: "Error updating students",
+//     });
+//   }
+// }

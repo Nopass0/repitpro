@@ -4,7 +4,12 @@ import { register } from "./auth/register";
 import db from "./db";
 import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
-import { addStudent, getStudentList, getStudentsByDate } from "./cards/student";
+import {
+  addStudent,
+  getStudentList,
+  getStudentsByDate,
+  updateStudents,
+} from "./cards/student";
 import { getUserData, setUserData } from "./auth/user";
 import { addGroup } from "./cards/group";
 import { addClient } from "./cards/client";
@@ -25,6 +30,8 @@ io.on("connection", (socket) => {
   socket.on("getStudentList", (token) => getStudentList(token));
   socket.on("getStudentsByDate", (token) => getStudentsByDate(token));
   socket.on("getUserData", (token) => getUserData(token));
+
+  socket.on("updateStudents", (data) => updateStudents(data));
 
   socket.on("setUserData", (data) => setUserData(data));
 

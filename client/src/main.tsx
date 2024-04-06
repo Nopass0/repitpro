@@ -32,6 +32,7 @@ let defaultState = {
 	calendarNowPopupYear: '0',
 	hiddenNum: false,
 	details: false,
+	students: [],
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -70,6 +71,12 @@ const reducer = (state = defaultState, action: any) => {
 				calendarNowPopupDay: action.payload.day,
 				calendarNowPopupMonth: action.payload.month,
 				calendarNowPopupYear: action.payload.year,
+			}
+		case 'UPDATE_STUDENTS':
+			console.log('UPDATE_STUDENTS', action.payload)
+			return {
+				...state,
+				students: action.payload,
 			}
 		case 'SET_CURRENT_YEAR':
 			return {...state, currentYear: action.payload}
