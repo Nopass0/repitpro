@@ -5,7 +5,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useCallback, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
@@ -36,6 +36,7 @@ import {useDispatch, useSelector} from 'react-redux'
 import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
 import {useNavigate} from 'react-router-dom'
+import {addDays, differenceInDays, differenceInCalendarDays} from 'date-fns'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -375,6 +376,70 @@ const AddStudent = ({}: IAddStudent) => {
 		setPrePayDate(new Date(newValue))
 		console.log('from state', prePayDate)
 	}
+	function getDay(date: any) {
+		const dayIndex = date.getDay() - 1
+		return dayIndex === -1 ? 6 : dayIndex
+	}
+
+	const [allLessons, setAllLessons] = useState<number>(0)
+	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
+	useEffect(() => {
+		let countLessons = 0
+		let countLessonsPrice = 0
+		for (let i = 0; i < items.length; i++) {
+			let differenceDays = differenceInDays(
+				items[i].endLesson,
+				items[i].startLesson,
+			)
+			// console.log(endLessonsDate)
+			const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+				addDays(items[i].startLesson, j),
+			)
+			console.log(dateRange, 'dateRange', differenceDays, 'differenceDays')
+
+			for (const date of dateRange) {
+				const dayOfWeek = getDay(date)
+				const scheduleForDay = items[i].timeLinesArray[dayOfWeek] // Здесь укажите переменную, содержащую ваше недельное расписание
+
+				const cond =
+					scheduleForDay.startTime.hour === 0 &&
+					scheduleForDay.startTime.minute === 0 &&
+					scheduleForDay.endTime.hour === 0 &&
+					scheduleForDay.endTime.minute === 0
+
+				const dayOfMonth = date.getDate()
+
+				if (!cond) {
+					countLessons++
+					countLessonsPrice = countLessons * Number(costOneLesson)
+				}
+			}
+
+			// for (let j = 0; j < items[i].timeLinesArray.length; j++) {
+			// 	if (
+			// 		items[i].timeLinesArray[j].endTime.hour === 0 &&
+			// 		items[i].timeLinesArray[j].endTime.minute === 0 &&
+			// 		items[i].timeLinesArray[j].startTime.hour === 0 &&
+			// 		items[i].timeLinesArray[j].startTime.minute === 0
+			// 	) {
+			// 		continue
+			// 	} else {
+			// 		countWeekLesson++
+			// 	}
+			// }
+		}
+		setAllLessons(countLessons)
+		setAllLessonsPrice(countLessonsPrice)
+		// console.log(differenceDays, 'differenceWeeks')
+
+		console.log(
+			countLessons,
+			'countLessons',
+			countLessonsPrice,
+			'countLessonsPrice',
+		)
+		console.log('items', items)
+	}, [items, costOneLesson])
 
 	return (
 		<>
@@ -1169,8 +1234,8 @@ const AddStudent = ({}: IAddStudent) => {
 						<div className={s.MathBlock}>
 							<div className={s.MathObjectsList}>
 								<div className={s.MathObject}>
-									<p>Всего занятий: 0</p>
-									<p>Сумма: 0₽</p>
+									<p>Всего занятий: {allLessons}</p>
+									<p>Сумма: {allLessonsPrice}₽</p>
 								</div>
 								<Line width="294px" className={s.Line} />
 								<div className={s.MathObject}>
