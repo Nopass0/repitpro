@@ -134,6 +134,9 @@ const DayCalendarPopUp = ({
 		socket.emit('updateStudents', {
 			students: students,
 			token: token,
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
 		})
 	}
 
@@ -160,8 +163,10 @@ const DayCalendarPopUp = ({
 							<>
 								<DayCalendarLine
 									key={student._id}
+									id={student.id}
 									studentId={student.studentId}
 									onUpdate={(
+										id,
 										editIcon,
 										editName,
 										editTimeStart,
@@ -172,6 +177,7 @@ const DayCalendarPopUp = ({
 										studentId,
 									) =>
 										onUpdate(
+											id,
 											editIcon,
 											editName,
 											editTimeStart,

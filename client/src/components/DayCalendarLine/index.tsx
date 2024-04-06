@@ -27,6 +27,7 @@ export const updateStudents = (students: any) => ({
 
 interface IDayCalendarLine {
 	// Base
+	id: string
 	icon: string
 	timeStart: string
 	key: number
@@ -41,6 +42,7 @@ interface IDayCalendarLine {
 	iconClick?: () => void
 	LineClick?: () => void
 	onUpdate?: (
+		id: string,
 		editIcon: string,
 		editName: string,
 		editTimeStart: string,
@@ -52,6 +54,7 @@ interface IDayCalendarLine {
 	) => void
 }
 const DayCalendarLine = ({
+	id,
 	icon,
 	timeStart,
 	timeEnd,
@@ -138,6 +141,7 @@ const DayCalendarLine = ({
 	const handleUpdate = () => {
 		console.log(
 			'handleUpdate',
+			id,
 			editIcon,
 			editName,
 			editTimeStart,
@@ -149,6 +153,7 @@ const DayCalendarLine = ({
 		)
 		if (onUpdate) {
 			onUpdate(
+				id,
 				editIcon,
 				editName,
 				editTimeStart,

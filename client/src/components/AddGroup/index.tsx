@@ -5,7 +5,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
@@ -34,30 +34,22 @@ import {IItemCard, ITimeLine} from '../../types'
 import TimePicker from '../Timer/index'
 import {useSelector} from 'react-redux'
 import socket from '../../socket'
+import {addDays, differenceInDays} from 'date-fns'
 interface IAddGroup {}
 
 const AddGroup = ({}: IAddGroup) => {
 	const [groupName, setGroupName] = useState<string>('')
 	// Block Student
-	const [nameStudent, setNameStudent] = useState<string>('')
-	const [contactFace, setContactFace] = useState<string>('')
-	const [phoneNumber, setPhoneNumber] = useState<string>('')
-	const [email, setEmail] = useState<string>('')
-	const [address, setAddress] = useState<string>('')
-	const [linkStudent, setLinkStudent] = useState<string>('')
-	const [costStudent, setCostStudent] = useState<string>('')
+
 	const [commentStudent, setCommentStudent] = useState<string>('')
-	const [prePayCost, setPrePayCost] = useState<string>('')
-	const [prePayDate, setPrePayDate] = useState<string>('')
-	const [selectedDate, setSelectedDate] = useState(null)
-	const [storyLesson, setStoryLesson] = useState<string>('')
-	const [costOneLesson, setCostOneLesson] = useState<string>('')
-	const [targetLessonStudent, setTargetLessonStudent] = useState<string>('')
 
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
+	const [costOneLesson, setCostOneLesson] = useState<number>(0)
+
+	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
 
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
@@ -113,7 +105,6 @@ const AddGroup = ({}: IAddGroup) => {
 			prePayDate: string
 			selectedDate: null
 			storyLesson: string
-			costOneLesson: string
 			targetLessonStudent: string
 			todayProgramStudent: string
 		}[]
@@ -131,7 +122,6 @@ const AddGroup = ({}: IAddGroup) => {
 			prePayDate: '',
 			selectedDate: null,
 			storyLesson: '',
-			costOneLesson: '',
 			targetLessonStudent: '',
 			todayProgramStudent: '',
 		},
@@ -145,6 +135,120 @@ const AddGroup = ({}: IAddGroup) => {
 			token: token,
 		})
 	}
+
+	const [historyLesson, setHistoryLesson] = useState<any>([])
+
+	// Function to get the total sum of paid prices
+	const getTotalPaidPrice = (data) => {
+		return data.reduce((total, item) => {
+			if (item.isPaid) {
+				total += Number(item.price)
+			}
+			return total
+		}, 0)
+	}
+
+	// Function to get the count of paid objects
+	const getCountOfPaidObjects = (data) => {
+		return data.reduce((count, item) => {
+			if (item.isPaid) {
+				count++
+			}
+			return count
+		}, 0)
+	}
+
+	// Function to get the count of objects where isDone is true
+	const getCountOfDoneObjects = (data) => {
+		return data.reduce((count, item) => {
+			if (item.isDone) {
+				count++
+			}
+			return count
+		}, 0)
+	}
+
+	const setHistoryLessonIsDone = (index: number, value: boolean) => {
+		setHistoryLesson((prevHistoryLesson: any) => [
+			...prevHistoryLesson.slice(0, index),
+			{...prevHistoryLesson[index], isDone: value},
+			...prevHistoryLesson.slice(index + 1),
+		])
+	}
+
+	const setHistoryLessonIsPaid = (index: number, value: boolean) => {
+		setHistoryLesson((prevHistoryLesson: any) => [
+			...prevHistoryLesson.slice(0, index),
+			{...prevHistoryLesson[index], isPaid: value},
+			...prevHistoryLesson.slice(index + 1),
+		])
+	}
+
+	function getDay(date: any) {
+		const dayIndex = date.getDay() - 1
+		return dayIndex === -1 ? 6 : dayIndex
+	}
+
+	const [allLessons, setAllLessons] = useState<number>(0)
+	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
+	useEffect(() => {
+		let countLessons = 0
+		let countLessonsPrice = 0
+		let historyLessons_ = []
+		for (let i = 0; i < items.length; i++) {
+			let differenceDays = differenceInDays(
+				items[i].endLesson,
+				items[i].startLesson,
+			)
+			// console.log(endLessonsDate)
+			const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+				addDays(items[i].startLesson, j),
+			)
+			console.log(dateRange, 'dateRange', differenceDays, 'differenceDays')
+
+			for (const date of dateRange) {
+				const dayOfWeek = getDay(date)
+				const scheduleForDay = items[i].timeLinesArray[dayOfWeek] // Здесь укажите переменную, содержащую ваше недельное расписание
+
+				const cond =
+					scheduleForDay.startTime.hour === 0 &&
+					scheduleForDay.startTime.minute === 0 &&
+					scheduleForDay.endTime.hour === 0 &&
+					scheduleForDay.endTime.minute === 0
+
+				const dayOfMonth = date.getDate()
+
+				if (!cond) {
+					let hl = {
+						date: date,
+						itemName: items[i].itemName,
+						isDone: date <= new Date(Date.now()) ? true : false,
+						price: costOneLesson,
+						isPaid: false,
+					}
+					console.log('hl', hl)
+
+					historyLessons_.push(hl)
+
+					countLessons++
+					countLessonsPrice = countLessons * Number(costOneLesson)
+				}
+			}
+		}
+		console.log('historyLessons_', historyLessons_)
+		setHistoryLesson(historyLessons_)
+		setAllLessons(countLessons)
+		setAllLessonsPrice(countLessonsPrice)
+		// console.log(differenceDays, 'differenceWeeks')
+
+		console.log(
+			countLessons,
+			'countLessons',
+			countLessonsPrice,
+			'countLessonsPrice',
+		)
+		console.log('items AAAAAAAAAA', items)
+	}, [items, costOneLesson])
 
 	//add item function
 	const addItem = () => {
@@ -201,7 +305,6 @@ const AddGroup = ({}: IAddGroup) => {
 				prePayDate: '',
 				selectedDate: null,
 				storyLesson: '',
-				costOneLesson: '',
 				targetLessonStudent: '',
 				todayProgramStudent: '',
 			},
@@ -378,6 +481,65 @@ const AddGroup = ({}: IAddGroup) => {
 		}
 	}
 
+	const compareDates = (a, b) => {
+		return a.date - b.date
+	}
+
+	// Function to hash a string using a custom hash function
+	const hashString = (str: string) => {
+		let hash = 0
+		for (let i = 0; i < str.length; i++) {
+			const char = str.charCodeAt(i)
+			hash = (hash << 5) - hash + char
+			hash = hash & hash // Convert to 32bit integer
+		}
+		return Math.abs(hash) // Ensure positive integer
+	}
+
+	const formatDate = (date: Date) => {
+		const day = String(date.getDate()).padStart(2, '0')
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const year = String(date.getFullYear()).slice(-2) // Take last 2 digits of the year
+
+		return `${day}.${month}.${year}`
+	}
+
+	// Function to convert a hash value to a hexadecimal color code with fixed saturation and brightness
+	const hashToColor = (hash: number) => {
+		const saturation = 0.6 // Fixed saturation
+		const brightness = 0.7 // Fixed brightness
+
+		// Vary hue based on hash
+		const hue = hash % 360
+
+		// Convert HSB to RGB
+		const h = hue / 60
+		const c = brightness * saturation
+		const x = c * (1 - Math.abs((h % 2) - 1))
+		const m = brightness - c
+		let r, g, b
+		if (h >= 0 && h < 1) {
+			;[r, g, b] = [c, x, 0]
+		} else if (h >= 1 && h < 2) {
+			;[r, g, b] = [x, c, 0]
+		} else if (h >= 2 && h < 3) {
+			;[r, g, b] = [0, c, x]
+		} else if (h >= 3 && h < 4) {
+			;[r, g, b] = [0, x, c]
+		} else if (h >= 4 && h < 5) {
+			;[r, g, b] = [x, 0, c]
+		} else {
+			;[r, g, b] = [c, 0, x]
+		}
+
+		// Convert RGB to hexadecimal color code
+		const rgb = [(r + m) * 255, (g + m) * 255, (b + m) * 255]
+		const hexColor = rgb
+			.map((value) => Math.round(value).toString(16).padStart(2, '0'))
+			.join('')
+		return `#${hexColor}`
+	}
+
 	const handleAddItem = () => {
 		setItems([
 			...items,
@@ -429,7 +591,6 @@ const AddGroup = ({}: IAddGroup) => {
 				prePayDate: '',
 				selectedDate: null,
 				storyLesson: '',
-				costOneLesson: '',
 				targetLessonStudent: '',
 				todayProgramStudent: '',
 			},
@@ -466,6 +627,16 @@ const AddGroup = ({}: IAddGroup) => {
 		},
 	})
 	const [open, setOpen] = useState(true)
+	const [openHistory, setOpenHistory] = useState(false)
+
+	useEffect(() => {
+		//sum all costStudent and write to allCost
+		let sum = 0
+		students.forEach((student) => {
+			sum += Number(student.costStudent)
+		})
+		setAllCostForGroup(sum)
+	}, [students])
 
 	const handleClick = () => {
 		setOpen(!open)
@@ -915,7 +1086,7 @@ const AddGroup = ({}: IAddGroup) => {
 									<div className={s.MathObjectsList}>
 										<div className={s.MathHeader}>
 											<p>Общая стоимость 1-го занятия:</p>
-											<p>0₽</p>
+											<p>{costOneLesson * students.length}₽</p>
 										</div>
 										<Line width="294px" className={s.Line} />
 										<div className={s.MathObject}>
@@ -929,7 +1100,7 @@ const AddGroup = ({}: IAddGroup) => {
 										</div>
 										<Line width="294px" className={s.Line} />
 										<div className={s.MathObject}>
-											<p>Оплачено: 0</p>
+											<p>Не оплачено: 0</p>
 											<p style={{display: 'flex', flexDirection: 'row'}}>
 												<p style={{marginRight: '5px'}}>Долг:</p>
 												<p style={{color: 'red'}}>0</p>
@@ -939,7 +1110,7 @@ const AddGroup = ({}: IAddGroup) => {
 										<Line width="294px" className={s.Line} />
 										<div className={s.MathObject}>
 											<p>Общие расходы по группе:</p>
-											<p>0₽</p>
+											<p>{allCostForGroup}₽</p>
 										</div>
 									</div>
 								</div>
@@ -1248,9 +1419,9 @@ const AddGroup = ({}: IAddGroup) => {
 									<Input
 										num
 										type="text"
-										value={student.costOneLesson}
+										value={String(costOneLesson)}
 										onChange={(e) => {
-											changeStudentValue(index, 'costOneLesson', e.target.value)
+											setCostOneLesson(Number(e.target.value))
 										}}
 									/>
 									<p>₽</p>
@@ -1258,27 +1429,38 @@ const AddGroup = ({}: IAddGroup) => {
 								<div className={s.MathBlockStudent}>
 									<div className={s.MathObjectsList}>
 										<div className={s.MathObject}>
-											<p>Всего занятий: 0</p>
-											<p>Сумма: 0₽</p>
+											<p>Всего занятий: {allLessons}</p>
+											<p>Сумма: {allLessonsPrice}₽</p>
 										</div>
 										<Line width="294px" className={s.Line} />
 										<div className={s.MathObject}>
-											<p>Прошло: 0</p>
-											<p>Оплачено: 0 (0₽)</p>
-										</div>
-										<Line width="294px" className={s.Line} />
-										<div className={s.MathObject}>
-											<p>Оплачено: 0</p>
-											<p style={{display: 'flex', flexDirection: 'row'}}>
-												<p style={{marginRight: '5px'}}>Долг:</p>
-												<p style={{color: 'red'}}>0</p>
-												<p>₽</p>
+											<p>Прошло: {getCountOfDoneObjects(historyLesson)}</p>
+											<p>
+												Оплачено: {getCountOfPaidObjects(historyLesson)} (
+												{getTotalPaidPrice(historyLesson)}₽)
 											</p>
 										</div>
 										<Line width="294px" className={s.Line} />
 										<div className={s.MathObject}>
-											<p>Общие расходы по группе:</p>
-											<p>0₽</p>
+											<p>
+												Не оплачено:{' '}
+												{Math.abs(
+													getCountOfPaidObjects(historyLesson) -
+														historyLesson.length,
+												)}
+											</p>
+											<p style={{display: 'flex', flexDirection: 'row'}}>
+												<p style={{marginRight: '5px'}}>Долг:</p>
+												<p style={{color: 'red'}}>
+													{historyLesson
+														.filter((i) => !i.isPaid)
+														.reduce(
+															(total, item) => total + Number(item.price),
+															0,
+														)}
+												</p>
+												<p>₽</p>
+											</p>
 										</div>
 									</div>
 								</div>
@@ -1288,14 +1470,15 @@ const AddGroup = ({}: IAddGroup) => {
 									<p>Пропущено: 0</p>
 								</div>
 								<Line width="296px" className={s.Line} />
-								<mui.ListItemButton onClick={handleClick}>
+								<mui.ListItemButton
+									onClick={() => setOpenHistory(!openHistory)}>
 									<mui.ListItemText primary="История занятий и оплат" />
-									{open ? <ExpandLess /> : <ExpandMore />}
+									{openHistory ? <ExpandLess /> : <ExpandMore />}
 								</mui.ListItemButton>
 
 								<mui.Collapse
 									className={s.MuiCollapse}
-									in={open}
+									in={openHistory}
 									timeout="auto"
 									unmountOnExit>
 									<mui.List
@@ -1303,44 +1486,49 @@ const AddGroup = ({}: IAddGroup) => {
 										component="div"
 										disablePadding>
 										<div className={s.ListObjectWrapper}>
-											<div className={s.ListObject}>
-												<p
+											{historyLesson.sort(compareDates).map((lesson) => (
+												<div
+													className={s.ListObject}
 													style={{
-														fontWeight: '500',
-														fontSize: '14px',
-														marginRight: '5px',
+														backgroundColor: hashToColor(
+															hashString(lesson.itemName),
+														),
 													}}>
-													12.03.2024
-												</p>
-												<p style={{fontWeight: '300', fontSize: '12px'}}>
-													Занятия
-												</p>
-												<CheckBox size="16px" />
-												<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
-												<CheckBox size="16px" />
-												<button className={s.ButtonEdit}>
-													<CreateIcon style={{width: '18px', height: '18px'}} />
-												</button>
-											</div>
-											<div className={s.ListObject}>
-												<p
-													style={{
-														fontWeight: '500',
-														fontSize: '14px',
-														marginRight: '5px',
-													}}>
-													12.03.2024
-												</p>
-												<p style={{fontWeight: '300', fontSize: '12px'}}>
-													Занятия
-												</p>
-												<CheckBox size="16px" />
-												<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
-												<CheckBox size="16px" />
-												<button className={s.ButtonEdit}>
-													<CreateIcon style={{width: '18px', height: '18px'}} />
-												</button>
-											</div>
+													<p
+														style={{
+															fontWeight: '500',
+															fontSize: '14px',
+															marginRight: '5px',
+														}}>
+														{formatDate(lesson.date)}
+													</p>
+													<p style={{fontWeight: '300', fontSize: '12px'}}>
+														{lesson.itemName}
+													</p>
+													<CheckBox
+														checked={lesson.isDone}
+														size="16px"
+														onChange={() =>
+															setHistoryLessonIsDone(index, !lesson.isDone)
+														}
+													/>
+													<p style={{marginLeft: '55px', fontSize: '14px'}}>
+														{lesson.price}₽
+													</p>
+													<CheckBox
+														checked={lesson.isPaid}
+														size="16px"
+														onChange={() =>
+															setHistoryLessonIsPaid(index, !lesson.isPaid)
+														}
+													/>
+													<button className={s.ButtonEdit}>
+														<CreateIcon
+															style={{width: '18px', height: '18px'}}
+														/>
+													</button>
+												</div>
+											))}
 										</div>
 									</mui.List>
 								</mui.Collapse>

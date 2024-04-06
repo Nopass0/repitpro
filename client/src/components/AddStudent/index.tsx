@@ -74,6 +74,8 @@ const AddStudent = ({}: IAddStudent) => {
 	// const [storyLesson, setStoryLesson] = useState<string>('')
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
 
+	const [historyLesson, setHistoryLesson] = useState<any>([])
+
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
@@ -92,6 +94,14 @@ const AddStudent = ({}: IAddStudent) => {
 		}))
 
 		return week
+	}
+
+	const formatDate = (date: Date) => {
+		const day = String(date.getDate()).padStart(2, '0')
+		const month = String(date.getMonth() + 1).padStart(2, '0')
+		const year = String(date.getFullYear()).slice(-2) // Take last 2 digits of the year
+
+		return `${day}.${month}.${year}`
 	}
 
 	const [timeLines, setTimeLines] = useState<ITimeLine[]>(getVoidWeek())
@@ -313,9 +323,89 @@ const AddStudent = ({}: IAddStudent) => {
 						: item,
 				),
 			)
+			setShowEndTimePicker(-1)
 		} else {
 			setShowEndTimePicker(id)
 		}
+	}
+
+	// Function to hash a string using a custom hash function
+	const hashString = (str: string) => {
+		let hash = 0
+		for (let i = 0; i < str.length; i++) {
+			const char = str.charCodeAt(i)
+			hash = (hash << 5) - hash + char
+			hash = hash & hash // Convert to 32bit integer
+		}
+		return Math.abs(hash) // Ensure positive integer
+	}
+
+	// Function to convert a hash value to a hexadecimal color code with fixed saturation and brightness
+	const hashToColor = (hash: number) => {
+		const saturation = 0.6 // Fixed saturation
+		const brightness = 0.7 // Fixed brightness
+
+		// Vary hue based on hash
+		const hue = hash % 360
+
+		// Convert HSB to RGB
+		const h = hue / 60
+		const c = brightness * saturation
+		const x = c * (1 - Math.abs((h % 2) - 1))
+		const m = brightness - c
+		let r, g, b
+		if (h >= 0 && h < 1) {
+			;[r, g, b] = [c, x, 0]
+		} else if (h >= 1 && h < 2) {
+			;[r, g, b] = [x, c, 0]
+		} else if (h >= 2 && h < 3) {
+			;[r, g, b] = [0, c, x]
+		} else if (h >= 3 && h < 4) {
+			;[r, g, b] = [0, x, c]
+		} else if (h >= 4 && h < 5) {
+			;[r, g, b] = [x, 0, c]
+		} else {
+			;[r, g, b] = [c, 0, x]
+		}
+
+		// Convert RGB to hexadecimal color code
+		const rgb = [(r + m) * 255, (g + m) * 255, (b + m) * 255]
+		const hexColor = rgb
+			.map((value) => Math.round(value).toString(16).padStart(2, '0'))
+			.join('')
+		return `#${hexColor}`
+	}
+
+	const handlePrePayment = () => {
+		if (prePayDate && prePayCost) {
+			const prePaymentDate = new Date(prePayDate)
+			let remainingPrePayment = Number(prePayCost)
+
+			const updatedHistoryLesson = historyLesson.map((lesson) => {
+				const lessonDate = new Date(lesson.date)
+
+				if (
+					lessonDate >= prePaymentDate &&
+					remainingPrePayment >= Number(lesson.price)
+				) {
+					remainingPrePayment -= Number(lesson.price)
+					return {...lesson, isPaid: true}
+				}
+
+				return lesson
+			})
+
+			setHistoryLesson(updatedHistoryLesson)
+		}
+	}
+
+	useEffect(() => {
+		handlePrePayment()
+	}, [prePayDate, prePayCost, historyLesson])
+
+	// Function to compare dates for sorting
+	const compareDates = (a, b) => {
+		return a.date - b.date
 	}
 
 	const handleEndTimeChange = (
@@ -353,6 +443,36 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
+	// Function to get the total sum of paid prices
+	const getTotalPaidPrice = (data) => {
+		return data.reduce((total, item) => {
+			if (item.isPaid) {
+				total += Number(item.price)
+			}
+			return total
+		}, 0)
+	}
+
+	// Function to get the count of paid objects
+	const getCountOfPaidObjects = (data) => {
+		return data.reduce((count, item) => {
+			if (item.isPaid) {
+				count++
+			}
+			return count
+		}, 0)
+	}
+
+	// Function to get the count of objects where isDone is true
+	const getCountOfDoneObjects = (data) => {
+		return data.reduce((count, item) => {
+			if (item.isDone) {
+				count++
+			}
+			return count
+		}, 0)
+	}
+
 	const handleLessonDurationChange = (e: any) => {
 		const value = parseInt(e.target.value, 10)
 		changeItemValue(currentItemIndex, 'lessonDuration', value)
@@ -386,6 +506,7 @@ const AddStudent = ({}: IAddStudent) => {
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
+		let historyLessons_ = []
 		for (let i = 0; i < items.length; i++) {
 			let differenceDays = differenceInDays(
 				items[i].endLesson,
@@ -410,6 +531,24 @@ const AddStudent = ({}: IAddStudent) => {
 				const dayOfMonth = date.getDate()
 
 				if (!cond) {
+					// setHistoryLesson((prevHistoryLesson) => [
+					// 	...prevHistoryLesson,
+					// 	{
+					// 		date: date,
+					// 		itemName: items[i].itemName,
+					// 	},
+					// ])
+					let hl = {
+						date: date,
+						itemName: items[i].itemName,
+						isDone: date <= new Date(Date.now()) ? true : false,
+						price: costOneLesson,
+						isPaid: false,
+					}
+					console.log('hl', hl)
+
+					historyLessons_.push(hl)
+
 					countLessons++
 					countLessonsPrice = countLessons * Number(costOneLesson)
 				}
@@ -428,6 +567,8 @@ const AddStudent = ({}: IAddStudent) => {
 			// 	}
 			// }
 		}
+		console.log('historyLessons_', historyLessons_)
+		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
 		// console.log(differenceDays, 'differenceWeeks')
@@ -440,6 +581,22 @@ const AddStudent = ({}: IAddStudent) => {
 		)
 		console.log('items', items)
 	}, [items, costOneLesson])
+
+	const setHistoryLessonIsDone = (index: number, value: boolean) => {
+		setHistoryLesson((prevHistoryLesson: any) => [
+			...prevHistoryLesson.slice(0, index),
+			{...prevHistoryLesson[index], isDone: value},
+			...prevHistoryLesson.slice(index + 1),
+		])
+	}
+
+	const setHistoryLessonIsPaid = (index: number, value: boolean) => {
+		setHistoryLesson((prevHistoryLesson: any) => [
+			...prevHistoryLesson.slice(0, index),
+			{...prevHistoryLesson[index], isPaid: value},
+			...prevHistoryLesson.slice(index + 1),
+		])
+	}
 
 	return (
 		<>
@@ -629,42 +786,52 @@ const AddStudent = ({}: IAddStudent) => {
 							timeout="auto"
 							unmountOnExit>
 							<mui.List className={s.MuiList} component="div" disablePadding>
-								{/* <div className={s.ListObjectWrapper}>
-								<div className={s.ListObject}>
-									<p
-										style={{
-											fontWeight: '500',
-											fontSize: '14px',
-											marginRight: '5px',
-										}}>
-										12.03.2024
-									</p>
-									<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
-									<CheckBox size="16px" />
-									<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
-									<CheckBox size="16px" />
-									<button className={s.ButtonEdit}>
-										<CreateIcon style={{width: '18px', height: '18px'}} />
-									</button>
+								<div className={s.ListObjectWrapper}>
+									{historyLesson
+										.sort(compareDates)
+										.map((lesson: any, index: number) => (
+											<div
+												key={index}
+												className={s.ListObject}
+												style={{
+													backgroundColor: hashToColor(
+														hashString(lesson.itemName),
+													),
+												}}>
+												<p
+													style={{
+														fontWeight: '500',
+														fontSize: '14px',
+														marginRight: '5px',
+													}}>
+													{formatDate(lesson.date)}
+												</p>
+												<p style={{fontWeight: '300', fontSize: '12px'}}>
+													{lesson.itemName}
+												</p>
+												<CheckBox
+													onChange={() =>
+														setHistoryLessonIsDone(index, !lesson.isDone)
+													}
+													size="16px"
+													checked={lesson.isDone}
+												/>
+												<p style={{marginLeft: '55px', fontSize: '14px'}}>
+													{lesson.price}₽
+												</p>
+												<CheckBox
+													onChange={() =>
+														setHistoryLessonIsPaid(index, !lesson.isPaid)
+													}
+													size="16px"
+													checked={lesson.isPaid}
+												/>
+												<button className={s.ButtonEdit}>
+													<CreateIcon style={{width: '18px', height: '18px'}} />
+												</button>
+											</div>
+										))}
 								</div>
-								<div className={s.ListObject}>
-									<p
-										style={{
-											fontWeight: '500',
-											fontSize: '14px',
-											marginRight: '5px',
-										}}>
-										12.03.2024
-									</p>
-									<p style={{fontWeight: '300', fontSize: '12px'}}>Занятия</p>
-									<CheckBox size="16px" />
-									<p style={{marginLeft: '55px', fontSize: '14px'}}>0₽</p>
-									<CheckBox size="16px" />
-									<button className={s.ButtonEdit}>
-										<CreateIcon style={{width: '18px', height: '18px'}} />
-									</button>
-								</div>
-							</div> */}
 							</mui.List>
 						</mui.Collapse>
 
@@ -1029,7 +1196,7 @@ const AddStudent = ({}: IAddStudent) => {
 										<Input
 											num
 											type="text"
-											value={lessonDuration}
+											value={item.lessonDuration}
 											onChange={(e: any) =>
 												handleLessonDurationChange(e, index)
 											}
@@ -1239,15 +1406,26 @@ const AddStudent = ({}: IAddStudent) => {
 								</div>
 								<Line width="294px" className={s.Line} />
 								<div className={s.MathObject}>
-									<p>Прошло: 0</p>
-									<p>Оплачено: 0 (0₽)</p>
+									{/* HistoryLesson isDone count */}
+									<p>Прошло: {getCountOfDoneObjects(historyLesson)}</p>
+									<p>
+										Оплачено: {getCountOfPaidObjects(historyLesson)} (
+										{getTotalPaidPrice(historyLesson)}
+										₽)
+									</p>
 								</div>
 								<Line width="294px" className={s.Line} />
 								<div className={s.MathObject}>
-									<p>Не оплачено: 0</p>
+									<p>
+										Не оплачено: {historyLesson.filter((i) => !i.isPaid).length}
+									</p>
 									<p style={{display: 'flex', flexDirection: 'row'}}>
 										<p style={{marginRight: '5px'}}>Долг:</p>
-										<p style={{color: 'red'}}>0</p>
+										<p style={{color: 'red'}}>
+											{historyLesson
+												.filter((i) => !i.isPaid)
+												.reduce((total, item) => total + Number(item.price), 0)}
+										</p>
 										<p>₽</p>
 									</p>
 								</div>
