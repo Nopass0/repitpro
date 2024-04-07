@@ -17,6 +17,9 @@ import Client from '../../assets/6.svg'
 import {useEffect, useState} from 'react'
 
 import {Input} from '@mui/base'
+import {useDispatch, useSelector} from 'react-redux'
+import {ELeftMenuPage} from '../../types'
+import socket from '../../socket'
 
 export const UPDATE_STUDENTS = 'UPDATE_STUDENTS'
 
@@ -81,6 +84,11 @@ const DayCalendarLine = ({
 	const [editPrice, setEditPrice] = useState<string>(price)
 	const [activeKey, setActiveKey] = useState<number | null>(null)
 
+	const dispatch = useDispatch()
+
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
+
 	const formatTime = (value: string) => {
 		// Remove the mask characters
 		const cleanValue = value.replace(/[^0-9]/g, '')
@@ -138,6 +146,18 @@ const DayCalendarLine = ({
 		return `${formattedStartTime}-${formattedEndTime}`
 	}
 
+	const handleOpenCard = () => {
+		socket.emit('getGroupByStudentId', {
+			token: token,
+			studentId: studentId,
+		})
+
+		//SET_CURRENT_OPENED_STUDENT with studentid
+		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: studentId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
+	}
+
 	const handleUpdate = () => {
 		console.log(
 			'handleUpdate',
@@ -172,6 +192,7 @@ const DayCalendarLine = ({
 				<button
 					onClick={() => {
 						if (!editMode) {
+							handleOpenCard()
 							return iconClick
 						}
 					}}

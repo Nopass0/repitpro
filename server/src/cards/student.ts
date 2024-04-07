@@ -233,8 +233,10 @@ export async function getStudentList(token) {
         nameStudent: true,
         phoneNumber: true,
         isArchived: true,
+        email: true,
       },
     });
+
     console.log(students);
     io.emit("getStudentList", students);
     return students;
@@ -355,6 +357,85 @@ export async function getStudentsByDate(data: {
 }
 
 //temp
-export async function updateStudents(data) {
-  console.log(data);
+
+export async function getGroupByStudentId(data: any) {
+  const { token, studentId } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    const group = await db.student.findUnique({
+      where: {
+        id: studentId,
+        userId: userId,
+      },
+      select: {
+        group: {
+          select: {
+            id: true,
+            items: true,
+            students: true,
+          },
+        },
+      },
+    });
+
+    io.emit("getGroupByStudentId", group);
+    return group.group;
+  } catch (error) {
+    console.error("Error retrieving group:", error);
+    throw error;
+  }
+}
+
+export async function updateStudentAndItems(data: any) {
+  const { id, items } = data;
+
+  try {
+    const updatedStudent = await db.student.update({
+      where: {
+        id: id,
+      },
+      data: {
+        commentStudent: data.commentStudent,
+        prePayCost: data.prePayCost,
+        prePayDate: data.prePayDate,
+        costOneLesson: data.costOneLesson,
+        linkStudent: data.link,
+        costStudent: data.costStudent,
+        phoneNumber: data.phoneNumber,
+        contactFace: data.contactFace,
+        email: data.email,
+        nameStudent: data.nameStudent,
+      },
+    });
+
+    const group = await db.group.findUnique({
+      where: {
+        id: updatedStudent.groupId,
+      },
+    });
+
+    const items_ = db.item.updateMany({
+      where: {
+        groupId: group.id,
+      },
+      data: items.map((itemData) => ({
+        ...itemData,
+      })),
+    });
+
+    io.emit("updateStudentAndItems", updatedStudent);
+
+    return updatedStudent;
+  } catch (error) {
+    console.error("Error updating student and items:", error);
+    throw error;
+  }
 }

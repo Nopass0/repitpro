@@ -60,6 +60,25 @@ const ScheduleTimer = ({id: number}: IScheduleTimer) => {
 }
 
 const AddStudent = ({}: IAddStudent) => {
+	const user = useSelector((state: any) => state.user)
+	const token = useSelector((state: any) => state.user.token)
+	const [data, setData] = useState()
+
+	const currentOpenedStudent = useSelector(
+		(state: any) => state.currentOpenedStudent,
+	)
+
+	useEffect(() => {
+		socket.once('getGroupByStudentId', (data: any) => {
+			console.log(
+				'---------------------------------------------------------\nStudent data (get): ',
+				data.group,
+				'\n---------------------------------------------------------',
+			)
+			setData(data.group)
+		})
+	}, [])
+
 	// Block Student
 	const [nameStudent, setNameStudent] = useState<string>('')
 	const [contactFace, setContactFace] = useState<string>('')
@@ -81,6 +100,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const dispatch = useDispatch()
+
 	//get week
 	const getVoidWeek = (): ITimeLine[] => {
 		const week = daysOfWeek.map((day, index) => ({
@@ -126,11 +146,28 @@ const AddStudent = ({}: IAddStudent) => {
 			timeLinesArray: getVoidWeek() as ITimeLine[],
 		},
 	])
-	console.log(
-		items.some((item) => {
-			console.log(item, item.itemName)
-		}),
-	)
+	// console.log(
+	// 	items.some((item) => {
+	// 		console.log(item, item.itemName)
+	// 	}),
+	// )
+
+	useEffect(() => {
+		if (data) {
+			setNameStudent(data.students[0].nameStudent)
+			setCostOneLesson(data.students[0].costOneLesson)
+			setPrePayCost(data.students[0].prePayCost)
+			setPrePayDate(data.students[0].prePayDate)
+			setContactFace(data.students[0].contactFace)
+			setPhoneNumber(data.students[0].phoneNumber)
+			setEmail(data.students[0].email)
+			setLinkStudent(data.students[0].linkStudent)
+			setCommentStudent(data.students[0].commentStudent)
+			setCostStudent(data.students[0].costStudent)
+			setItems(data.items)
+			console.log(data.items)
+		}
+	}, [data])
 
 	//add item function
 	const addItem = () => {
@@ -169,24 +206,39 @@ const AddStudent = ({}: IAddStudent) => {
 		)
 	}
 
-	const user = useSelector((state: any) => state.user)
-	const token = user?.token
-
 	const sendData = () => {
-		socket.emit('addStudent', {
-			nameStudent,
-			contactFace,
-			email,
-			linkStudent,
-			costStudent,
-			commentStudent,
-			prePayCost,
-			prePayDate,
-			costOneLesson,
-			items,
-			token,
-			phoneNumber,
-		})
+		if (currentOpenedStudent !== '') {
+			socket.emit('updateStudentAndItems', {
+				id: currentOpenedStudent,
+				nameStudent,
+				contactFace,
+				email,
+				linkStudent,
+				costStudent,
+				commentStudent,
+				prePayCost,
+				prePayDate,
+				costOneLesson,
+				items,
+				token,
+				phoneNumber,
+			})
+		} else {
+			socket.emit('addStudent', {
+				nameStudent,
+				contactFace,
+				email,
+				linkStudent,
+				costStudent,
+				commentStudent,
+				prePayCost,
+				prePayDate,
+				costOneLesson,
+				items,
+				token,
+				phoneNumber,
+			})
+		}
 		window.location.reload()
 	}
 

@@ -76,6 +76,7 @@ const DayCalendarPopUp = ({
 	console.log(students)
 
 	const onUpdate = (
+		id: string,
 		editIcon: string,
 		editName: string,
 		editTimeStart: string,

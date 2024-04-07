@@ -33,6 +33,7 @@ let defaultState = {
 	hiddenNum: false,
 	details: false,
 	students: [],
+	currentOpenedStudent: '', //ID of current opened student
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -62,6 +63,9 @@ const reducer = (state = defaultState, action: any) => {
 				token: defaultState.user.token,
 			})
 
+		case 'SET_CURRENT_OPENED_STUDENT':
+			return {...state, currentOpenedStudent: action.payload}
+
 			// alert('year' + action.payload.year + 'month' + action.payload.month)
 			return {...state, currentMonth: action.payload.month}
 		case 'SET_CALENDAR_NOW_POPUP':
@@ -74,10 +78,15 @@ const reducer = (state = defaultState, action: any) => {
 			}
 		case 'UPDATE_STUDENTS':
 			console.log('UPDATE_STUDENTS', action.payload)
+			//change by id
+			const key = action.payload.key
+
 			return {
 				...state,
-				students: action.payload,
+				students: action.payload.students,
+				[key]: action.payload.students,
 			}
+
 		case 'SET_CURRENT_YEAR':
 			return {...state, currentYear: action.payload}
 		case 'SET_LEFT_MENU_PAGE':

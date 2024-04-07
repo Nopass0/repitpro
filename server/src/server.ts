@@ -6,9 +6,11 @@ import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
 import {
   addStudent,
+  getGroupByStudentId,
   getStudentList,
   getStudentsByDate,
-  updateStudents,
+  updateStudentAndItems,
+  // updateStudents,
 } from "./cards/student";
 import { getUserData, setUserData } from "./auth/user";
 import { addGroup } from "./cards/group";
@@ -30,8 +32,10 @@ io.on("connection", (socket) => {
   socket.on("getStudentList", (token) => getStudentList(token));
   socket.on("getStudentsByDate", (token) => getStudentsByDate(token));
   socket.on("getUserData", (token) => getUserData(token));
+  socket.on("getGroupByStudentId", (data) => getGroupByStudentId(data));
 
-  socket.on("updateStudents", (data) => updateStudents(data));
+  // socket.on("updateStudents", (data) => updateStudents(data));
+  socket.on("updateStudentAndItems", (data) => updateStudentAndItems(data));
 
   socket.on("setUserData", (data) => setUserData(data));
 
