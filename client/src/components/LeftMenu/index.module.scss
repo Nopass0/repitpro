@@ -89,6 +89,41 @@
 			}
 		}
 	}
+
+	.MainLeftMenu {
+		margin: 20px;
+		display: flex;
+		flex-direction: column;
+		overflow-x: hidden;
+		max-height: 590px;
+		overflow-y: auto;
+		
+		.muiSelect__menu {
+			margin-bottom: 10px;
+		}
+
+		.ListWrapper {
+			display: flex;
+			flex-direction: row;
+
+			.btn {
+				margin-right: 20px;
+			}
+			p {
+				width: 200px;
+			}
+		}
+
+		.ListItem {
+
+			.Phone {
+				margin-bottom: 5px;
+			}
+
+			.NoData {
+			}
+		}
+	}
 }
 @media screen and (max-width: 1024px) {
 	.wrapper {

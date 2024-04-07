@@ -1,5 +1,6 @@
 import s from './index.module.scss'
 import * as mui from '@mui/material'
+import {SelectOption} from '@mui/base'
 import Line from '../Line'
 import Search from '../../assets/search'
 import {useEffect, useState} from 'react'
@@ -11,6 +12,12 @@ import AddGroup from '../AddGroup'
 import AddClient from '../AddClient'
 import MyCabinet from '../MyCabinet'
 import socket from '../../socket'
+import {ExpandLess, ExpandMore, Telegram} from '@mui/icons-material'
+import phoneIcon from '../../assets/PhoneSVG.svg'
+import EmailIcon from '../../assets/EmailSVG.svg'
+import TelegramIcon from '../../assets/TelegramSVG.svg'
+import WhatsAppIcon from '../../assets/WhatsUPSVG.svg'
+import { Link } from 'react-router-dom'
 interface ILeftMenu {}
 
 const MainPage = () => {
@@ -20,7 +27,7 @@ const MainPage = () => {
 	const [valueMuiSelectType, setValueMuiSelectType] = useState<number>(0)
 	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
 	const [students, setStudents] = useState([])
-
+	const [open, setOpen] = useState<boolean>(false)
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
 
@@ -126,13 +133,78 @@ const MainPage = () => {
 				</div>
 			</div>
 			<div className={s.MainLeftMenu}>
-				{students.map((item: any) => (
-					<div>
-						<p>
-							Имя {item.nameStudent} - Номер {item.phoneNumber} - Is Archive{' '}
-							{String(item.isArchived)}
-						</p>
+				{/* FOR GROUP */}
+
+				{/* <mui.ListItemButton onClick={() => setOpen(!open)}>
+					<div className={s.ListWrapper}>
+						<button className={s.btn}></button>
+
 					</div>
+					{open ? <ExpandLess /> : <ExpandMore />}
+				</mui.ListItemButton>
+
+				<mui.Collapse
+					className={s.MuiCollapse}
+					in={open}
+					timeout="auto"
+					unmountOnExit>
+					<mui.List
+						className={s.MuiList}
+						component="div"
+						disablePadding></mui.List>
+				</mui.Collapse> */}
+
+				{students.map((item: any) => (
+					<>
+						<mui.Select
+							className={s.muiSelect__menu}
+							variant={'standard'}
+							renderValue={() => {
+								return (
+									<>
+										<div className={s.ListWrapper}>
+											<button className={s.btn}>Test</button>
+											<p>{item.nameStudent}</p>
+										</div>
+									</>
+								)
+							}}>
+							<mui.MenuItem>
+								<div className={s.ListItem}>
+									{item.phoneNumber ? (
+									<>
+									<p className={s.Phone}>{item.phoneNumber}</p>
+									<div className={s.Icons}>
+										<Link to={`tel:${item.phoneNumber}`}>
+											<img src={phoneIcon} alt="phoneIcon" />
+										</Link>
+										<Link to={`emailto:2223@mail.ru`}>
+											<img src={EmailIcon} alt="EmailIcon" />
+										</Link>
+										<Link to={`tg://resolve?domain=${item.phoneNumber}`}>
+											<img src={TelegramIcon} alt="TelegramIcon" />
+										</Link>
+										<Link to={`https://wa.me/${item.phoneNumber}`}>
+											<img src={WhatsAppIcon} alt="WhatsApp" />
+										</Link>
+									</div>
+									</>	
+									): (
+										<>
+											<p className={s.NoData}>Данных нет</p>
+										</>
+									)}
+								</div>
+							</mui.MenuItem>
+						</mui.Select>
+						<Line className={s.Line} width="296px" />
+					</>
+					// <div>
+					// 	<p>
+					// 		Имя {item.nameStudent} - Номер {item.phoneNumber} - Is Archive{' '}
+					// 		{String(item.isArchived)}
+					// 	</p>
+					// </div>
 				))}
 			</div>
 		</div>
