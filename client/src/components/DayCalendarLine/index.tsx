@@ -278,7 +278,7 @@ const DayCalendarLine = ({
 				</button>
 				<div
 					onClick={() => {
-						!editMode && LineClick
+						if (!editMode) return LineClick
 					}}
 					className={s.ClickWrapper}
 					style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
@@ -332,7 +332,10 @@ const DayCalendarLine = ({
 					<div className={s.Price}>
 						{!editMode ? (
 							<p title={editPrice}>
-								{editPrice.length > 5 && !isMobile ? price.slice(0, 5) + '>' : editPrice} ₽
+								{editPrice.length > 5 && !isMobile
+									? price.slice(0, 5) + '>'
+									: editPrice}{' '}
+								₽
 							</p>
 						) : (
 							<>

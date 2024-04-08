@@ -49,7 +49,8 @@ const DataSlidePicker = ({
 		setValue(id)
 		if (onChange) onChange(id, data![id])
 	}
-
+	 console.log(months[currentMonth], currentMonth, 'months[currentMonth]');
+	 
 	const handleChangeDate = (id: number) => {
 		//change months for date mode. If month 'Январь' and year 2024 and click first arrow will be 'Декабрь' and year 2023
 		if (id === -1) {

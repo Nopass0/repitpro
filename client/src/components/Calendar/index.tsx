@@ -606,7 +606,6 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				<div className={s.PagePopUpWrap}>
 					<DayCalendarPopUp
 						className={s.DayCalendarPopUp}
-						
 						onExit={() => setPagePopup(PagePopup.None)}
 						LineClick={() => {
 							setPagePopup(PagePopup.DayStudent)
@@ -616,17 +615,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				</div>
 			)}
 			{pagePopup === PagePopup.DayStudent && (
-				<div
-					className={s.PagePopUpWrap}
-					style={{
-						position: 'absolute',
-						top: '80px',
-						margin: '0 auto 0 auto',
-						maxWidth: '1300px',
-						width: '100%',
-						maxHeight: '751px',
-						height: '100%',
-					}}>
+				<div className={s.PagePopUpWrap}>
 					<DayStudentPopUp
 						style={{
 							position: 'relative',

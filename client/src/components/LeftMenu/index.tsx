@@ -1,5 +1,6 @@
 import s from './index.module.scss'
 import * as mui from '@mui/material'
+import * as MUI from '@mui/base'
 import {SelectOption} from '@mui/base'
 import Line from '../Line'
 import Search from '../../assets/search'
@@ -17,7 +18,9 @@ import phoneIcon from '../../assets/PhoneSVG.svg'
 import EmailIcon from '../../assets/EmailSVG.svg'
 import TelegramIcon from '../../assets/TelegramSVG.svg'
 import WhatsAppIcon from '../../assets/WhatsUPSVG.svg'
-import { Link } from 'react-router-dom'
+
+import Home from '../../assets/5.svg'
+import {Link} from 'react-router-dom'
 interface ILeftMenu {}
 
 const MainPage = () => {
@@ -156,7 +159,7 @@ const MainPage = () => {
 
 				{students.map((item: any) => (
 					<>
-						<mui.Select
+						{/* <mui.Select
 							className={s.muiSelect__menu}
 							variant={'standard'}
 							renderValue={() => {
@@ -172,24 +175,95 @@ const MainPage = () => {
 							<mui.MenuItem>
 								<div className={s.ListItem}>
 									{item.phoneNumber ? (
+										<>
+											<p className={s.Phone}>{item.phoneNumber}</p>
+											<div className={s.Icons}>
+												<Link to={`tel:${item.phoneNumber}`}>
+													<img src={phoneIcon} alt="phoneIcon" />
+												</Link>
+												<Link to={`emailto:2223@mail.ru`}>
+													<img src={EmailIcon} alt="EmailIcon" />
+												</Link>
+												<Link to={`tg://resolve?domain=${item.phoneNumber}`}>
+													<img src={TelegramIcon} alt="TelegramIcon" />
+												</Link>
+												<Link to={`https://wa.me/${item.phoneNumber}`}>
+													<img src={WhatsAppIcon} alt="WhatsApp" />
+												</Link>
+											</div>
+										</>
+									) : (
+										<>
+											<p className={s.NoData}>Данных нет</p>
+										</>
+									)}
+								</div>
+							</mui.MenuItem>
+						</mui.Select> */}
+						<mui.Select
+							className={s.muiSelect}
+							renderValue={(option: MUI.SelectOption<number> | null) => {
+								if (option == null || option.value === null) {
+									return (
+										<>
+											<div className={s.ListWrapper}>
+												<button className={s.btn}>
+													<img src={Home} alt="Home" />
+												</button>
+												<p>{item.nameStudent}</p>
+											</div>
+										</>
+									)
+								}
+								return (
 									<>
-									<p className={s.Phone}>{item.phoneNumber}</p>
-									<div className={s.Icons}>
-										<Link to={`tel:${item.phoneNumber}`}>
-											<img src={phoneIcon} alt="phoneIcon" />
-										</Link>
-										<Link to={`emailto:2223@mail.ru`}>
-											<img src={EmailIcon} alt="EmailIcon" />
-										</Link>
-										<Link to={`tg://resolve?domain=${item.phoneNumber}`}>
-											<img src={TelegramIcon} alt="TelegramIcon" />
-										</Link>
-										<Link to={`https://wa.me/${item.phoneNumber}`}>
-											<img src={WhatsAppIcon} alt="WhatsApp" />
-										</Link>
-									</div>
-									</>	
-									): (
+										<div className={s.ListWrapper}>
+											<img
+												src={Home}
+												style={{
+													width: '24px',
+													height: '24px',
+													marginRight: '10px',
+												}}
+												alt="Home"
+											/>
+											<p>{item.nameStudent}</p>
+										</div>
+									</>
+								)
+							}}
+							>
+							{/* <mui.MenuItem value={0}>
+								<div className={s.ListWrapper}>
+									<img
+										src={Home}
+										style={{width: '24px', height: '24px', marginRight: '10px'}}
+										alt="Home"
+									/>
+									<p>{item.nameStudent}</p>
+								</div>
+							</mui.MenuItem> */}
+							<mui.MenuItem className={s.muiOption} value={1}>
+								<div className={s.ListItem}>
+									{item.phoneNumber ? (
+										<>
+											<p className={s.Phone}>{item.phoneNumber}</p>
+											<div className={s.Icons}>
+												<Link to={`tel:${item.phoneNumber}`}>
+													<img src={phoneIcon} alt="phoneIcon" />
+												</Link>
+												<Link to={`mailto:${item.email}`}>
+													<img src={EmailIcon} alt="EmailIcon" />
+												</Link>
+												<Link to={`tg://resolve?domain=${item.phoneNumber}`}>
+													<img src={TelegramIcon} alt="TelegramIcon" />
+												</Link>
+												<Link to={`https://wa.me/${item.phoneNumber}`}>
+													<img src={WhatsAppIcon} alt="WhatsApp" />
+												</Link>
+											</div>
+										</>
+									) : (
 										<>
 											<p className={s.NoData}>Данных нет</p>
 										</>

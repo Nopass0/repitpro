@@ -62,6 +62,7 @@ const reducer = (state = defaultState, action: any) => {
 				currentYear: action.payload.year,
 				token: defaultState.user.token,
 			})
+		return {...state, currentMonth: action.payload.month}
 
 		case 'SET_CURRENT_OPENED_STUDENT':
 			return {...state, currentOpenedStudent: action.payload}

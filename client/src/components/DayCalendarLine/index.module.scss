@@ -26,8 +26,15 @@ input {
 		}
 	}
 	.ClickWrapper {
+		
 		display: flex;
 		flex-direction: row;
+		align-items: center;
+		height: 100%;
+		
+		&:hover {
+			background-color: red;
+		}
 		.Time {
 			margin-right: 10px;
 			width: 100px;
