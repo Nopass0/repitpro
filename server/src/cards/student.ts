@@ -193,6 +193,11 @@ export async function addStudent(data) {
               lessonsPrice: Number(costOneLesson.students[0].costOneLesson),
               workPrice: item.workPrice || 0,
               month: (date.getMonth() + 1).toString(),
+              timeLinesArray: item.timeLinesArray,
+              isChecked: false,
+              itemName: item.itemName,
+              studentName: nameStudent,
+              typeLesson: item.typeLesson,
               year: date.getFullYear().toString(),
               itemId: item.id, // Пример подключения к созданному элементу, замените на нужный вам
               userId: userId,
@@ -204,17 +209,6 @@ export async function addStudent(data) {
   } catch (error) {
     console.error("Error creating group:", error);
   }
-}
-
-// Функция для валидации токена и получения userId
-async function validateTokenAndGetUserId(
-  token: string
-): Promise<string | null> {
-  const tokenData = await db.token.findFirst({
-    where: { token },
-    select: { userId: true },
-  });
-  return tokenData?.userId ?? null;
 }
 
 export async function getStudentList(token) {
@@ -306,6 +300,7 @@ export async function getStudentsByDate(data: {
       year,
       userId,
     },
+
     include: {
       item: {
         select: {
@@ -332,7 +327,7 @@ export async function getStudentsByDate(data: {
   const dataToEmit = studentSchedules.map((schedule) => {
     const { item } = schedule;
     const student = item.group.students[0]; // Assuming there's only one student per group
-    const timeLinesArray = item.timeLinesArray;
+    const timeLinesArray = schedule.timeLinesArray;
 
     const daySchedule = timeLinesArray[dayOfWeekIndex];
     console.log(" daySchedule", daySchedule, "dayOfWeekIndex", dayOfWeekIndex);
@@ -340,10 +335,11 @@ export async function getStudentsByDate(data: {
     return {
       id: schedule.id,
       nameStudent: student.nameStudent,
-      costOneLesson: student.costOneLesson,
+      costOneLesson: schedule.lessonsPrice,
       studentId: student.id,
-      itemName: item.itemName,
-      typeLesson: item.typeLesson,
+      itemName: schedule.itemName,
+      typeLesson: schedule.typeLesson,
+      isCheck: schedule.isChecked,
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,
@@ -356,7 +352,88 @@ export async function getStudentsByDate(data: {
   io.emit("getStudentsByDate", dataToEmit);
 }
 
-//temp
+export async function updateStudentSchedule(data: {
+  id: string;
+  day: string;
+  month: string;
+  year: string;
+  lessonsPrice?: number;
+  itemName?: string;
+  typeLesson?: number;
+  isChecked?: boolean;
+  studentName?: string;
+  startTime?: { hour: number; minute: number };
+  endTime?: { hour: number; minute: number };
+}) {
+  const {
+    id,
+    day,
+    month,
+    year,
+    lessonsPrice,
+    itemName,
+    typeLesson,
+    isChecked,
+    studentName,
+    startTime,
+    endTime,
+  } = data;
+
+  const updatedFields: {
+    lessonsPrice?: number;
+    itemName?: string;
+    typeLesson?: number;
+    isChecked?: boolean;
+    studentName?: string;
+    timeLinesArray?: {
+      [key: number]: {
+        id: number;
+        day: string;
+        active: boolean;
+        endTime: { hour: number; minute: number };
+        startTime: { hour: number; minute: number };
+        editingEnd: boolean;
+        editingStart: boolean;
+      };
+    };
+  } = {};
+
+  if (lessonsPrice !== undefined)
+    updatedFields.lessonsPrice = Number(lessonsPrice);
+  if (itemName !== undefined) updatedFields.itemName = itemName;
+  if (typeLesson !== undefined) updatedFields.typeLesson = typeLesson;
+  if (isChecked !== undefined) updatedFields.isChecked = isChecked;
+  if (studentName !== undefined) updatedFields.studentName = studentName;
+
+  const dayOfWeekIndex = getDay(
+    new Date(Number(year), Number(month) - 1, Number(day))
+  );
+
+  if (startTime !== undefined || endTime !== undefined) {
+    const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+    updatedFields.timeLinesArray = dayNames.map((dayName, index) => ({
+      id: index + 1,
+      day: dayName,
+      active: false,
+      endTime:
+        index === dayOfWeekIndex && endTime ? endTime : { hour: 0, minute: 0 },
+      startTime:
+        index === dayOfWeekIndex && startTime
+          ? startTime
+          : { hour: 0, minute: 0 },
+      editingEnd: false,
+      editingStart: false,
+    }));
+  }
+
+  const updatedSchedule = await db.studentSchedule.update({
+    where: { id, day, month, year },
+    data: updatedFields,
+  });
+
+  console.log(updatedSchedule);
+  return updatedSchedule;
+}
 
 export async function getGroupByStudentId(data: any) {
   const { token, studentId } = data;

@@ -142,6 +142,11 @@ model StudentSchedule {
   lessonsCount Int
   lessonsPrice Int
   workPrice    Int
+  itemName     String?
+  studentName  String?
+  timeLinesArray  Json?
+  typeLesson  Int?
+  isChecked  Boolean?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   userId       String

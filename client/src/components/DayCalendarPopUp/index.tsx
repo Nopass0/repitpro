@@ -84,7 +84,6 @@ const DayCalendarPopUp = ({
 		editItem: string,
 		editPrice: string,
 		isDelete: boolean,
-		studentId: string,
 	) => {
 		// Split the editTimeStart into startHour, startMinute
 		const [startHour, startMinute] = editTimeStart.split(':')
@@ -92,9 +91,9 @@ const DayCalendarPopUp = ({
 		// Split the editTimeEnd into endHour, endMinute
 		const [endHour, endMinute] = editTimeEnd.split(':')
 
-		// Create a new object with the updated student data
+		// Create a new array with the updated student data
 		const updatedStudents = students.map((student) =>
-			student.studentId === studentId
+			student.id === id
 				? {
 						...student,
 						nameStudent: editName,
@@ -111,9 +110,6 @@ const DayCalendarPopUp = ({
 				  }
 				: student,
 		)
-
-		// Log the updated students object to the console
-		console.log('Updated Students:', updatedStudents)
 
 		// Update the students state with the updated data
 		setStudents(updatedStudents)
@@ -132,13 +128,30 @@ const DayCalendarPopUp = ({
 			endTime: {hour: number; minute: number}
 		}[],
 	) {
-		socket.emit('updateStudents', {
-			students: students,
-			token: token,
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-		})
+		console.log(
+			students,
+			'handleSend',
+			token,
+			calendarNowPopupDay,
+			calendarNowPopupMonth,
+			calendarNowPopupYear,
+		)
+		for (let i = 0; i < students.length; i++) {
+			socket.emit('updateStudentSchedule', {
+				id: students[i].id,
+				day: calendarNowPopupDay,
+				month: calendarNowPopupMonth,
+				year: calendarNowPopupYear,
+				lessonsPrice: students[i].costOneLesson,
+				studentName: students[i].nameStudent,
+				itemName: students[i].itemName,
+				typeLesson: students[i].typeLesson,
+				startTime: students[i].startTime,
+				endTime: students[i].endTime,
+				isChecked: students[i].tryLessonCheck,
+				token: token,
+			})
+		}
 	}
 
 	// useEffect(() => {

@@ -15,11 +15,13 @@ import InputMask from 'react-input-mask'
 import TimePicker from '../Timer/index'
 import Client from '../../assets/6.svg'
 import {useEffect, useState} from 'react'
+import {debounce} from 'lodash'
 
 import {Input} from '@mui/base'
 import {useDispatch, useSelector} from 'react-redux'
 import {ELeftMenuPage} from '../../types'
 import socket from '../../socket'
+import DayStudentPopUp from '../DayStudentPopUp'
 
 export const UPDATE_STUDENTS = 'UPDATE_STUDENTS'
 
@@ -74,12 +76,13 @@ const DayCalendarLine = ({
 }: IDayCalendarLine) => {
 	const [editIcon, setEditIcon] = useState<string>(icon)
 	const [editName, setEditName] = useState<string>(name)
-	const [editTimeStart, setEditTimeStart] = useState<string>(
-		`${timeStart}-${timeEnd}`,
-	)
+	const [editTime, setEditTime] = useState<string>(`${timeStart}-${timeEnd}`)
 	const [editPrevpay, setEditPrevpay] = useState<boolean>(prevpay || false)
 	const [isDelete, setIsDelete] = useState<boolean>(false)
+
+	const [editTimeStart, setEditTimeStart] = useState<string>(timeStart)
 	const [editTimeEnd, setEditTimeEnd] = useState<string>(timeEnd)
+
 	const [editItem, setEditItem] = useState<string>(item)
 	const [editPrice, setEditPrice] = useState<string>(price)
 	const [activeKey, setActiveKey] = useState<number | null>(null)
@@ -146,6 +149,12 @@ const DayCalendarLine = ({
 		return `${formattedStartTime}-${formattedEndTime}`
 	}
 
+	useEffect(() => {
+		//set start and end data to format 00:00
+		setEditTimeStart(formatTime(editTime).split('-')[0])
+		setEditTimeEnd(formatTime(editTime).split('-')[1])
+	}, [editTime])
+
 	const handleOpenCard = () => {
 		socket.emit('getGroupByStudentId', {
 			token: token,
@@ -157,6 +166,10 @@ const DayCalendarLine = ({
 		//SET_LEFT_MENU_PAGE
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
 	}
+
+	const debouncedOnUpdate = debounce(onUpdate, 500)
+
+	const [isDetailsShow, setIsDetailsShow] = useState<boolean>(false)
 
 	const handleUpdate = () => {
 		console.log(
@@ -172,7 +185,8 @@ const DayCalendarLine = ({
 			studentId,
 		)
 		if (onUpdate) {
-			onUpdate(
+			console.log(
+				'onUpdate',
 				id,
 				editIcon,
 				editName,
@@ -183,7 +197,21 @@ const DayCalendarLine = ({
 				isDelete,
 				studentId,
 			)
+			debouncedOnUpdate(
+				id,
+				editIcon,
+				editName,
+				editTimeStart,
+				editTimeEnd,
+				editItem,
+				editPrice,
+				isDelete,
+			)
 		}
+	}
+
+	const handleOpenDayPopUp = () => {
+		setIsDetailsShow(true)
 	}
 
 	return (
@@ -239,7 +267,7 @@ const DayCalendarLine = ({
 				</button>
 				<div
 					onClick={() => {
-						!editMode && LineClick
+						!editMode && handleOpenDayPopUp()
 					}}
 					className={s.ClickWrapper}
 					style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
@@ -249,10 +277,11 @@ const DayCalendarLine = ({
 						) : (
 							<InputMask
 								onChange={(e: any) => {
-									setEditTimeStart(formatTime(e.target.value))
+									console.log(e.target.value)
+									setEditTime(formatTime(e.target.value))
 									handleUpdate()
 								}}
-								value={editTimeStart}
+								value={editTime}
 								mask="99:99-99:99"
 							/>
 						)}
@@ -326,6 +355,9 @@ const DayCalendarLine = ({
 					<DeleteOutlineIcon />
 				</button>
 			</div>
+			{isDetailsShow && (
+				<DayStudentPopUp icon={icon} name={editName} time={editTime} />
+			)}
 		</>
 	)
 }
