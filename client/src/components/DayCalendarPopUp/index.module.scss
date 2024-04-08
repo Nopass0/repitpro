@@ -143,3 +143,30 @@ input {
 		}
 	}
 }
+
+@media screen and (max-width: 678px) {
+	.wrapper {
+		max-width: 100%;
+		.HeaderItems {
+		}
+		.closeIcon {
+			left: 50px !important;
+		}
+		.ThreeBtnWrapper {
+			.EditBtn,
+			.SaveBtn
+			 {
+				width: 100px;
+				height: 40px;
+				font-size: 12px;
+			}
+			.PlusBtn {
+				height: 40px;
+				width: 40px;
+			}
+		}
+		.Footer {
+			font-size: 12px;
+		}
+	}
+}

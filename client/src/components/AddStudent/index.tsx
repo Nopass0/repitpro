@@ -858,7 +858,7 @@ const AddStudent = ({}: IAddStudent) => {
 													}}>
 													{formatDate(lesson.date)}
 												</p>
-												<p style={{fontWeight: '300', fontSize: '12px'}}>
+												<p style={{fontWeight: '300', fontSize: '12px', width: '100px'}}>
 													{lesson.itemName}
 												</p>
 												<CheckBox
@@ -868,7 +868,7 @@ const AddStudent = ({}: IAddStudent) => {
 													size="16px"
 													checked={lesson.isDone}
 												/>
-												<p style={{marginLeft: '55px', fontSize: '14px'}}>
+												<p style={{fontSize: '14px', width: '100px', textAlign: 'end'}}>
 													{lesson.price}₽
 												</p>
 												<CheckBox

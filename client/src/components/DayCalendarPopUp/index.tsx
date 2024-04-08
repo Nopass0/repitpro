@@ -19,12 +19,14 @@ interface IDayCalendarPopUp {
 	onExit?: () => void
 	iconClick?: () => void
 	LineClick?: () => void
+	className?: string
 }
 const DayCalendarPopUp = ({
 	style,
 	onExit,
 	iconClick,
 	LineClick,
+	className,
 }: IDayCalendarPopUp) => {
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
@@ -159,7 +161,7 @@ const DayCalendarPopUp = ({
 	// }, [students])
 
 	return (
-		<div style={style} className={s.wrapper}>
+		<div style={style} className={`${s.wrapper} ${className}`}>
 			<div>
 				<header className={s.Header}>
 					<div className={s.HeaderItems}>

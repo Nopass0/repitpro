@@ -4,7 +4,7 @@
 
 .wrapper {
 	margin-top: 20px;
-	width: 100%;
+	// width: 100%;
 	max-width: 1450px;
 	height: 100%;
 	max-height: 820px;
@@ -175,7 +175,6 @@
 									margin: 0;
 									font-size: 14px;
 									font-weight: 400;
-											
 								}
 							}
 							.Td:not(:last-child) {
@@ -194,4 +193,29 @@
 			}
 		}
 	}
+}
+
+@media screen and (max-width: 1024px) {
+	.wrapper {
+		-webkit-overflow-scrolling: touch;
+		overflow-x: auto;
+		margin-bottom: 150px;
+		.Header {
+			min-width: 1000px;
+		}
+		.Line {
+			min-width: 1000px;
+		}
+		.GraphicBlock {
+			min-width: 1000px;
+			overflow-x: scroll;
+		}
+		.Graphic {
+			width: 100%;
+			overflow-x: scroll;
+		}
+	}
+}
+
+@media screen and (max-width: 678px) {
 }

@@ -86,7 +86,18 @@ const DayCalendarLine = ({
 	const [editItem, setEditItem] = useState<string>(item)
 	const [editPrice, setEditPrice] = useState<string>(price)
 	const [activeKey, setActiveKey] = useState<number | null>(null)
+	const [isMobile, setIsMobile] = useState(window.innerWidth <= 678)
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth <= 678)
+		}
 
+		window.addEventListener('resize', handleResize)
+
+		return () => {
+			window.removeEventListener('resize', handleResize)
+		}
+	}, [])
 	const dispatch = useDispatch()
 
 	const user = useSelector((state: any) => state.user)
@@ -267,7 +278,7 @@ const DayCalendarLine = ({
 				</button>
 				<div
 					onClick={() => {
-						!editMode && handleOpenDayPopUp()
+						!editMode && LineClick
 					}}
 					className={s.ClickWrapper}
 					style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
@@ -293,6 +304,7 @@ const DayCalendarLine = ({
 							</p>
 						) : (
 							<Input
+								className={s.InputCstm}
 								onChange={(e: any) => {
 									setEditName(e.target.value)
 									handleUpdate()
@@ -308,6 +320,7 @@ const DayCalendarLine = ({
 							</p>
 						) : (
 							<Input
+								className={s.InputCstm}
 								onChange={(e: any) => {
 									setEditItem(e.target.value)
 									handleUpdate()
@@ -319,11 +332,12 @@ const DayCalendarLine = ({
 					<div className={s.Price}>
 						{!editMode ? (
 							<p title={editPrice}>
-								{editPrice.length > 5 ? price.slice(0, 5) + '>' : editPrice} ₽
+								{editPrice.length > 5 && !isMobile ? price.slice(0, 5) + '>' : editPrice} ₽
 							</p>
 						) : (
 							<>
 								<Input
+									className={s.InputCstm}
 									style={{width: '50px'}}
 									onChange={(e: any) => {
 										setEditPrice(e.target.value)
@@ -344,7 +358,7 @@ const DayCalendarLine = ({
 						handleUpdate()
 					}}
 					className={s.Checkbox}
-					size="20px"
+					size={isMobile ? '12px' : '20px'}
 				/>
 				<button
 					onClick={() => {

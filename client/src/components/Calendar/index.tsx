@@ -115,9 +115,9 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	}
 
 	return (
-		<div className={' ' + (className || '')}>
+		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />
-			<div className={s.calendar}>
+			<div className={`${s.calendar}`}>
 				<table className={s.table}>
 					<thead className={s.head}>
 						<tr>
@@ -361,11 +361,11 @@ export const Calendar = ({className, cells}: ICalendar) => {
 					</tbody>
 				</table>
 				{/* <div className={s.sum}> */}
-					<table className={s.sumTable}>
-						<thead className={s.head}>
-							<tr>
-								<th className={s.th}>
-									{/* <Select
+				<table className={s.sumTable}>
+					<thead className={s.head}>
+						<tr>
+							<th className={s.th}>
+								{/* <Select
 										defaultValue={1}
 										renderValue={(option: SelectOption<number> | null) => {
 											return (
@@ -389,91 +389,89 @@ export const Calendar = ({className, cells}: ICalendar) => {
 											</Option>
 										</OptionGroup>
 									</Select> */}
-									<p className={s.sumText}>Расчёт дохода</p>
-									{/* <Line width="190px" className={s.Line} /> */}
-								</th>
-							</tr>
-						</thead>
-						<tbody className={s.body}>
-							{sumParamsOfWeeks.map((item, index) => (
-								<>
-									<tr className={s.tr}>
-										<td className={s.td}>
-											<div className={s.content}>
-												<p id="day" className={s.dayIndex}>
-													За неделю
-												</p>
-												<div className={s.data}>
-													{item.lessonsCount > 0 && (
-														<>
-															<p className={s.dataField}>
-																<p>
-																	Занятий:{' '}
-																	<b>
-																		{item.lessonsCount.toString().slice(0, 2)}
-																	</b>
-																</p>
-																<p style={{display: hiddenNum ? 'none' : ''}}>
-																	<b>
-																		{toMoneyFormat(item.lessonsPrice)
-																			.toString()
-																			.slice(0, 12)}
-																		₽
-																	</b>
-																</p>
+								<p className={s.sumText}>Расчёт дохода</p>
+								{/* <Line width="190px" className={s.Line} /> */}
+							</th>
+						</tr>
+					</thead>
+					<tbody className={s.body}>
+						{sumParamsOfWeeks.map((item, index) => (
+							<>
+								<tr className={s.tr}>
+									<td className={s.td}>
+										<div className={s.content}>
+											<p id="day" className={s.dayIndex}>
+												За неделю
+											</p>
+											<div className={s.data}>
+												{item.lessonsCount > 0 && (
+													<>
+														<p className={s.dataField}>
+															<p>
+																Занятий:{' '}
+																<b>
+																	{item.lessonsCount.toString().slice(0, 2)}
+																</b>
 															</p>
-														</>
-													)}
-													{item.workCount > 0 && (
-														<>
-															<p className={s.dataField}>
-																<p>
-																	Работ:{' '}
-																	<b>{item.workCount.toString().slice(0, 2)}</b>
-																</p>
-																<p style={{display: hiddenNum ? 'none' : ''}}>
-																	<b>
-																		{toMoneyFormat(item.workPrice)
-																			.toString()
-																			.slice(0, 12)}
-																		₽
-																	</b>
-																</p>
+															<p style={{display: hiddenNum ? 'none' : ''}}>
+																<b>
+																	{toMoneyFormat(item.lessonsPrice)
+																		.toString()
+																		.slice(0, 12)}
+																	₽
+																</b>
 															</p>
-														</>
-													)}
+														</p>
+													</>
+												)}
+												{item.workCount > 0 && (
+													<>
+														<p className={s.dataField}>
+															<p>
+																Работ:{' '}
+																<b>{item.workCount.toString().slice(0, 2)}</b>
+															</p>
+															<p style={{display: hiddenNum ? 'none' : ''}}>
+																<b>
+																	{toMoneyFormat(item.workPrice)
+																		.toString()
+																		.slice(0, 12)}
+																	₽
+																</b>
+															</p>
+														</p>
+													</>
+												)}
 
-													<p className={s.dataField}>
-														<p>
-															Доход:{' '}
-															<b>
-																{(item.workCount + item.lessonsCount)
-																	.toString()
-																	.slice(0, 2)}
-															</b>
-														</p>
-														<p style={{display: hiddenNum ? 'none' : ''}}>
-															<b>
-																{toMoneyFormat(
-																	item.workPrice + item.lessonsPrice,
-																)
-																	.toString()
-																	.slice(0, 12)}
-																₽
-															</b>
-														</p>
+												<p className={s.dataField}>
+													<p>
+														Доход:{' '}
+														<b>
+															{(item.workCount + item.lessonsCount)
+																.toString()
+																.slice(0, 2)}
+														</b>
 													</p>
-												</div>
+													<p style={{display: hiddenNum ? 'none' : ''}}>
+														<b>
+															{toMoneyFormat(item.workPrice + item.lessonsPrice)
+																.toString()
+																.slice(0, 12)}
+															₽
+														</b>
+													</p>
+												</p>
 											</div>
-											{/* {index <= 4 && (
+										</div>
+										{/* {index <= 4 && (
 												<Line width="190px" className={s.LineSumTr} />
 											)} */}
-										</td>
-									</tr>
-								</>
-							))}
-						</tbody>
-					</table>
+									</td>
+								</tr>
+							</>
+						))}
+					</tbody>
+				</table>
 				{/* </div> */}
 			</div>
 
@@ -605,29 +603,21 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				</div>
 			</div>
 			{pagePopup === PagePopup.DayCalendar && (
-				<div
-					style={{
-						position: 'absolute',
-						top: '80px',
-						margin: '0 auto 0 auto',
-						maxWidth: '1300px',
-						width: '100%',
-						maxHeight: '751px',
-						height: '100%',
-					}}>
+				<div className={s.PagePopUpWrap}>
 					<DayCalendarPopUp
-						style={{
-							position: 'relative',
-							top: '50px',
-							margin: 'auto',
-						}}
+						className={s.DayCalendarPopUp}
+						
 						onExit={() => setPagePopup(PagePopup.None)}
-						LineClick={() => setPagePopup(PagePopup.DayStudent)}
+						LineClick={() => {
+							setPagePopup(PagePopup.DayStudent)
+							console.log('123455')
+						}}
 					/>
 				</div>
 			)}
 			{pagePopup === PagePopup.DayStudent && (
 				<div
+					className={s.PagePopUpWrap}
 					style={{
 						position: 'absolute',
 						top: '80px',
