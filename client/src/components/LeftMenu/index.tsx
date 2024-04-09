@@ -33,7 +33,7 @@ const MainPage = () => {
 	const [open, setOpen] = useState<boolean>(false)
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
-
+	const [openSelect, setOpenSelect] = useState<boolean>(false)
 	console.log('Token: ', token)
 
 	socket.emit('getStudentList', token)
@@ -200,8 +200,10 @@ const MainPage = () => {
 								</div>
 							</mui.MenuItem>
 						</mui.Select> */}
-						<mui.Select
+						<MUI.Select
 							className={s.muiSelect}
+							onListboxOpenChange={() => setOpenSelect(!openSelect)}
+							multiple
 							renderValue={(option: MUI.SelectOption<number> | null) => {
 								if (option == null || option.value === null) {
 									return (
@@ -211,6 +213,9 @@ const MainPage = () => {
 													<img src={Home} alt="Home" />
 												</button>
 												<p>{item.nameStudent}</p>
+												<div className={s.Icons}>
+													{openSelect ? <ExpandLess /> : <ExpandMore />}
+												</div>
 											</div>
 										</>
 									)
@@ -218,32 +223,18 @@ const MainPage = () => {
 								return (
 									<>
 										<div className={s.ListWrapper}>
-											<img
-												src={Home}
-												style={{
-													width: '24px',
-													height: '24px',
-													marginRight: '10px',
-												}}
-												alt="Home"
-											/>
+											<button className={s.btn}>
+												<img src={Home} alt="Home" />
+											</button>
 											<p>{item.nameStudent}</p>
+											<div className={s.Icons}>
+												{openSelect ? <ExpandLess /> : <ExpandMore />}
+											</div>
 										</div>
 									</>
 								)
-							}}
-							>
-							{/* <mui.MenuItem value={0}>
-								<div className={s.ListWrapper}>
-									<img
-										src={Home}
-										style={{width: '24px', height: '24px', marginRight: '10px'}}
-										alt="Home"
-									/>
-									<p>{item.nameStudent}</p>
-								</div>
-							</mui.MenuItem> */}
-							<mui.MenuItem className={s.muiOption} value={1}>
+							}}>
+							<MUI.Option className={s.muiOption} value={1}>
 								<div className={s.ListItem}>
 									{item.phoneNumber ? (
 										<>
@@ -269,9 +260,9 @@ const MainPage = () => {
 										</>
 									)}
 								</div>
-							</mui.MenuItem>
-						</mui.Select>
-						<Line className={s.Line} width="296px" />
+							</MUI.Option>
+						</MUI.Select>
+						<Line className={s.LineList} width="296px" />
 					</>
 					// <div>
 					// 	<p>

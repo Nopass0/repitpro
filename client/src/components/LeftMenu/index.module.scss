@@ -1,4 +1,3 @@
-
 .wrapper {
 	width: 336px;
 	height: 872px; // на сайте 833 | в фигме 872
@@ -97,7 +96,7 @@
 		overflow-x: hidden;
 		max-height: 590px;
 		overflow-y: auto;
-		
+
 		.muiSelect__menu {
 			margin-bottom: 10px;
 		}
@@ -114,16 +113,56 @@
 			}
 		}
 
-		.ListItem {
+		
+	}
+}
 
-			.Phone {
-				margin-bottom: 5px;
-			}
+.muiSelect {
+	.ListWrapper {
+		display: flex;
+		align-items: center;
 
-			.NoData {
+		p {
+			text-align: start;
+			font-size: 16px;
+		}
+		.btn {
+			img {
+				width: 32px;
+				height: 32px;
+
+				margin-right: 10px;
 			}
 		}
+
+		.Icons {
+		}
 	}
+}
+.muiOption {
+	background-color: #f9f9fd;
+	width: 296px;
+	height: fit-content;
+	border-radius: 4px;
+	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2),
+		0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+
+	.ListItem {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 10px 20px;
+
+		
+	}
+	.Phone {
+		margin-bottom: 10px;
+	} 
+	}
+
+.LineList {
+	background: #e2e2e9;
 }
 @media screen and (max-width: 1024px) {
 	.wrapper {
