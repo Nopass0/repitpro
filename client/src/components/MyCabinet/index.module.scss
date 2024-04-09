@@ -175,8 +175,32 @@ input {
 		.BuyMemory {
 			display: flex;
 			flex-direction: column;
-			align-items: center;
+			
 			margin-bottom: 20px;
+			.GrayTitle {
+				text-align: center;
+				margin-bottom: 10px;
+			}
+
+			.ChooseMemoryBuyWrap {
+				display: flex;
+				flex-direction: column;
+				font-size: 16px;
+				.ChooseLine {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					justify-content: space-between;
+					
+					button {
+						font-size: 16px;
+						border: 1px solid #25991c;
+						border-radius: 6px;
+						padding: 6px;
+					}
+				}
+			}
+
 			.ListItemButton {
 				width: 100%;
 			}

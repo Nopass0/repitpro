@@ -179,6 +179,33 @@ const MyCabinet = ({}: IMyCabinet) => {
 
 				<div className={s.BuyMemory}>
 					<p className={s.GrayTitle}>Купить память</p>
+					<div className={s.ChooseMemoryBuyWrap}>
+						<div className={s.ChooseLine}>
+							<p>10 мб</p>
+							<p>100 р</p>
+							<button>Купить</button>
+						</div>
+
+						<Line width="100%" className={s.Line} />
+						<div className={s.ChooseLine}>
+							<p>20 мб</p>
+							<p>200 р</p>
+							<button>Купить</button>
+						</div>
+
+						<Line width="100%" className={s.Line} />
+						<div className={s.ChooseLine}>
+							<p>50 мб</p>
+							<p>500 р</p>
+							<button>Купить</button>
+						</div>
+						<Line width="100%" className={s.Line} />
+						<div className={s.ChooseLine}>
+							<p>100 мб</p>
+							<p>1000 р</p>
+							<button>Купить</button>
+						</div>
+					</div>
 					<mui.ListItemButton
 						className={s.ListItemButton}
 						style={{marginTop: '10px'}}
