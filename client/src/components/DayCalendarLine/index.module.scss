@@ -26,15 +26,11 @@ input {
 		}
 	}
 	.ClickWrapper {
-		
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		height: 100%;
-		
-		&:hover {
-			background-color: red;
-		}
+
 		.Time {
 			margin-right: 10px;
 			width: 100px;
@@ -96,7 +92,10 @@ input {
 				max-width: 30px;
 				width: 30px;
 			}
-			.Time, .Name, .Item, .Price {
+			.Time,
+			.Name,
+			.Item,
+			.Price {
 				p {
 					width: inherit;
 					max-width: inherit;

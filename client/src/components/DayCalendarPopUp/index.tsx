@@ -86,12 +86,15 @@ const DayCalendarPopUp = ({
 		editItem: string,
 		editPrice: string,
 		isDelete: boolean,
+		studentId: string,
 	) => {
 		// Split the editTimeStart into startHour, startMinute
 		const [startHour, startMinute] = editTimeStart.split(':')
 
 		// Split the editTimeEnd into endHour, endMinute
 		const [endHour, endMinute] = editTimeEnd.split(':')
+
+		console.log('onUpdate', id, editIcon, editName, editTimeStart, editTimeEnd)
 
 		// Create a new array with the updated student data
 		const updatedStudents = students.map((student) =>
@@ -104,6 +107,7 @@ const DayCalendarPopUp = ({
 						tryLessonCheck: false, // You can update this based on your requirements
 						typeLesson: editIcon,
 						isDelete: isDelete,
+						studentId: studentId,
 						startTime: {
 							hour: parseInt(startHour),
 							minute: parseInt(startMinute),

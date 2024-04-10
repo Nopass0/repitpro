@@ -123,6 +123,7 @@ model Student {
   selectedDate    DateTime?
   storyLesson     String
   costOneLesson   String
+  files           String[]
   targetLessonStudent String
   todayProgramStudent String
   isArchived      Boolean @default(false)
@@ -147,6 +148,15 @@ model StudentSchedule {
   timeLinesArray  Json?
   typeLesson  Int?
   isChecked  Boolean?
+  homeWork  String?
+  classWork  String?
+  address  String?
+  homeFiles      String[]
+  homeAudios     String[]
+  classFiles      String[]
+  classAudios     String[]
+  homeStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
+  classStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   userId       String

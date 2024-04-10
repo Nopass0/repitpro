@@ -157,6 +157,9 @@ const DayCalendarLine = ({
 			.toString()
 			.padStart(2, '0')}:${formattedEndMinutes.toString().padStart(2, '0')}`
 
+		console.log('Formatted time:', formattedStartTime, formattedEndTime)
+		console.table(['Formatted time:', formattedStartTime, formattedEndTime])
+
 		return `${formattedStartTime}-${formattedEndTime}`
 	}
 
@@ -278,13 +281,17 @@ const DayCalendarLine = ({
 				</button>
 				<div
 					onClick={() => {
-						if (!editMode) return LineClick
+						if (!editMode)
+							return dispatch({
+								type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+								payload: id,
+							})
 					}}
 					className={s.ClickWrapper}
 					style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
 					<div className={s.Time} onClick={() => setActiveKey(key)}>
 						{!editMode ? (
-							<p>{editTimeStart}</p>
+							<p>{editTime}</p>
 						) : (
 							<InputMask
 								onChange={(e: any) => {

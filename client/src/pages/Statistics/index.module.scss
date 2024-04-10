@@ -150,6 +150,11 @@
 							font-weight: 400;
 							// width: 189px;
 							height: 60px;
+
+							&:hover {
+								background-color: #eee;
+								cursor: pointer;
+							}
 						}
 
 						.Th:not(:last-child) {

@@ -3,6 +3,7 @@ import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
 import db from "../db";
 import io from "../socket";
 import { addDays, differenceInDays, isWithinInterval } from "date-fns";
+import { upload } from "../files/files";
 
 // Получение дня недели, начиная с понедельника
 function getDay(date) {
@@ -300,14 +301,28 @@ export async function getStudentsByDate(data: {
       year,
       userId,
     },
-
-    include: {
+    select: {
+      id: true,
+      studentName: true,
+      lessonsPrice: true,
+      itemName: true,
+      timeLinesArray: true,
+      typeLesson: true,
+      isChecked: true,
+      homeFiles: true,
+      classFiles: true,
+      homeWork: true,
+      classWork: true,
+      homeStudentsPoints: true,
+      classStudentsPoints: true,
       item: {
         select: {
-          itemName: true,
-          timeLinesArray: true,
           tryLessonCheck: true,
-          typeLesson: true,
+          todayProgramStudent: true,
+          targetLesson: true,
+          programLesson: true,
+          placeLesson: true,
+          timeLesson: true,
           group: {
             include: {
               students: {
@@ -315,6 +330,8 @@ export async function getStudentsByDate(data: {
                   nameStudent: true,
                   costOneLesson: true,
                   id: true,
+                  targetLessonStudent: true,
+                  todayProgramStudent: true,
                 },
               },
             },
@@ -332,13 +349,32 @@ export async function getStudentsByDate(data: {
     const daySchedule = timeLinesArray[dayOfWeekIndex];
     console.log(" daySchedule", daySchedule, "dayOfWeekIndex", dayOfWeekIndex);
 
+    //get homeFiles and classFiles paths from arrays get this files and return array of blobs
+    const homeFiles = schedule.homeFiles
+      ? schedule.homeFiles.map((file) => {
+          return Buffer.from(file);
+        })
+      : [];
+
+    const classFiles = schedule.classFiles
+      ? schedule.classFiles.map((file) => {
+          return Buffer.from(file);
+        })
+      : [];
+
     return {
       id: schedule.id,
-      nameStudent: student.nameStudent,
+      nameStudent: schedule.studentName,
       costOneLesson: schedule.lessonsPrice,
       studentId: student.id,
       itemName: schedule.itemName,
       typeLesson: schedule.typeLesson,
+      homeFiles: homeFiles,
+      classFiles: classFiles,
+      homeWork: schedule.homeWork,
+      classWork: schedule.classWork,
+      homeStudentsPoints: schedule.homeStudentsPoints,
+      classStudentsPoints: schedule.classStudentsPoints,
       isCheck: schedule.isChecked,
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
@@ -360,8 +396,16 @@ export async function updateStudentSchedule(data: {
   lessonsPrice?: number;
   itemName?: string;
   typeLesson?: number;
+  homeFiles?: Buffer[];
+  classFiles?: Buffer[];
+  homeWork?: string;
+  classWork?: string;
   isChecked?: boolean;
+  homeStudentsPoints?: { studentId: string; points: number }[];
+  classStudentsPoints?: { studentId: string; points: number }[];
+  address?: string;
   studentName?: string;
+  token: string;
   startTime?: { hour: number; minute: number };
   endTime?: { hour: number; minute: number };
 }) {
@@ -373,18 +417,70 @@ export async function updateStudentSchedule(data: {
     lessonsPrice,
     itemName,
     typeLesson,
+    homeFiles,
+    classFiles,
+    homeWork,
+    classWork,
+    homeStudentsPoints,
+    classStudentsPoints,
+    address,
+    token,
     isChecked,
     studentName,
     startTime,
     endTime,
   } = data;
 
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  // isChecked  Boolean?
+  // homeWork  String?
+  // classWork  String?
+  // address  String?
+  // homeFiles      String[]
+  // homeAudios     String[]
+  // classFiles      String[]
+  // classAudios     String[]
+  // homeStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
+  // classStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
+
+  console.log("data", data);
+
+  //get exist filenames in db
+  const studentSchedule = await db.studentSchedule.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      homeFiles: true,
+      classFiles: true,
+    },
+  });
+
+  const homeFilePaths: string[] = studentSchedule?.homeFiles || [];
+  const classFilePaths: string[] = studentSchedule?.classFiles || [];
+
+  console.log("homeFiles", homeFiles, "classFiles", classFiles);
+
   const updatedFields: {
     lessonsPrice?: number;
     itemName?: string;
     typeLesson?: number;
     isChecked?: boolean;
+    homeFiles?: string[];
+    classFiles?: string[];
+    address?: string;
     studentName?: string;
+    homeWork?: string;
+    classWork?: string;
+    homeStudentsPoints?: { studentId: string; points: number }[];
+    classStudentsPoints?: { studentId: string; points: number }[];
     timeLinesArray?: {
       [key: number]: {
         id: number;
@@ -404,10 +500,45 @@ export async function updateStudentSchedule(data: {
   if (typeLesson !== undefined) updatedFields.typeLesson = typeLesson;
   if (isChecked !== undefined) updatedFields.isChecked = isChecked;
   if (studentName !== undefined) updatedFields.studentName = studentName;
+  if (homeWork !== undefined) updatedFields.homeWork = homeWork;
+  if (classWork !== undefined) updatedFields.classWork = classWork;
+  if (homeStudentsPoints !== undefined)
+    updatedFields.homeStudentsPoints = homeStudentsPoints;
+  if (classStudentsPoints !== undefined)
+    updatedFields.classStudentsPoints = classStudentsPoints;
+  if (address !== undefined) updatedFields.address = address;
 
   const dayOfWeekIndex = getDay(
     new Date(Number(year), Number(month) - 1, Number(day))
   );
+
+  if (homeFiles) {
+    const uploadPromises = homeFiles.map(async (file: Buffer) => {
+      const filePath = await upload(file).catch((err) => {
+        console.log(err);
+        return null;
+      });
+      return filePath;
+    });
+    const uploadedHomeFiles = await Promise.all(uploadPromises);
+    updatedFields.homeFiles = homeFilePaths.concat(
+      uploadedHomeFiles.filter(Boolean)
+    );
+  }
+
+  if (classFiles) {
+    const uploadPromises = classFiles.map(async (file: Buffer) => {
+      const filePath = await upload(file).catch((err) => {
+        console.log(err);
+        return null;
+      });
+      return filePath;
+    });
+    const uploadedClassFiles = await Promise.all(uploadPromises);
+    updatedFields.classFiles = classFilePaths.concat(
+      uploadedClassFiles.filter(Boolean)
+    );
+  }
 
   if (startTime !== undefined || endTime !== undefined) {
     const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
@@ -426,8 +557,40 @@ export async function updateStudentSchedule(data: {
     }));
   }
 
+  if (id?.startsWith("-")) {
+    const newStudentSchedule = await db.studentSchedule.create({
+      data: {
+        ...updatedFields,
+        day,
+        month,
+        year,
+        userId: userId,
+        // Add the required fields here
+        groupId: "", // Provide a valid groupId or choose a suitable default value
+        workCount: 0, // Choose a suitable default value
+        lessonsCount: 0, // Choose a suitable default value
+        workPrice: 0, // Choose a suitable default value
+        itemId: "", // Provide a valid itemId or choose a suitable default value
+        lessonsPrice: 0, // Choose a suitable default value
+        typeLesson: 1, // Choose a suitable default value
+      },
+    });
+
+    //update new student schedule fields
+    const _updateStudentSchedule = await db.studentSchedule.update({
+      where: { id: newStudentSchedule.id },
+      data: {
+        ...updatedFields,
+        day,
+        month,
+        year,
+        userId: userId,
+      },
+    });
+  }
+
   const updatedSchedule = await db.studentSchedule.update({
-    where: { id, day, month, year },
+    where: { id, day, month, year, userId: userId },
     data: updatedFields,
   });
 

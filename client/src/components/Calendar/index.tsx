@@ -43,6 +43,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const details = useSelector((state: any) => state.details)
 
+	const currentScheduleDay = useSelector(
+		(state: any) => state.currentScheduleDay,
+	)
+
 	const dispatch = useDispatch()
 
 	let currentPartOfMonth = 1 // 0 - previous month, 1 - current month, 2 - next month
@@ -602,7 +606,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 					</div>
 				</div>
 			</div>
-			{pagePopup === PagePopup.DayCalendar && (
+			{pagePopup === PagePopup.DayCalendar && currentScheduleDay === '' && (
 				<div className={s.PagePopUpWrap}>
 					<DayCalendarPopUp
 						className={s.DayCalendarPopUp}
@@ -614,7 +618,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 					/>
 				</div>
 			)}
-			{pagePopup === PagePopup.DayStudent && (
+			{currentScheduleDay !== '' && (
 				<div className={s.PagePopUpWrap}>
 					<DayStudentPopUp
 						style={{
@@ -627,7 +631,9 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						address="г. Москва, ул. Мясницкая, 4"
 						date="4 марта 2024"
 						time="Пн 10:00 - 12:00"
-						onExit={() => setPagePopup(PagePopup.None)}
+						onExit={() =>
+							dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+						}
 					/>
 				</div>
 			)}

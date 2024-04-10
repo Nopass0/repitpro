@@ -34,6 +34,7 @@ let defaultState = {
 	details: false,
 	students: [],
 	currentOpenedStudent: '', //ID of current opened student
+	currentScheduleDay: '', //ID of schedule day
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -56,13 +57,17 @@ const reducer = (state = defaultState, action: any) => {
 			localStorage.setItem('token', action.payload)
 
 			return {...state, user: {...state.user, token: action.payload}}
+
+		case 'SET_CURRENT_OPENED_SCHEDULE_DAY':
+			return {...state, currentScheduleDay: action.payload}
+
 		case 'SET_CURRENT_MONTH':
 			socket.emit('getMonth', {
 				currentMonth: action.payload.month,
 				currentYear: action.payload.year,
 				token: defaultState.user.token,
 			})
-		return {...state, currentMonth: action.payload.month}
+			return {...state, currentMonth: action.payload.month}
 
 		case 'SET_CURRENT_OPENED_STUDENT':
 			return {...state, currentOpenedStudent: action.payload}
