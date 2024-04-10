@@ -6,6 +6,7 @@ import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
 import {
   addStudent,
+  getAllIdStudents,
   getGroupByStudentId,
   getStudentList,
   getStudentsByDate,
@@ -34,6 +35,7 @@ io.on("connection", (socket) => {
   socket.on("getStudentsByDate", (token) => getStudentsByDate(token));
   socket.on("getUserData", (token) => getUserData(token));
   socket.on("getGroupByStudentId", (data) => getGroupByStudentId(data));
+  socket.on("getAllIdStudents", (data) => getAllIdStudents(data));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));

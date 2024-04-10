@@ -679,3 +679,26 @@ export async function updateStudentAndItems(data: any) {
     throw error;
   }
 }
+export async function getAllIdStudents(data: any) {
+  const { token } = data;
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+  const userId = token_.userId;
+
+  const students = await db.student.findMany({
+    where: {
+      userId: userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  io.emit("getAllIdStudents", students);
+  console.log(students, "students");
+
+  return students;
+}

@@ -61,20 +61,28 @@ const ScheduleTimer = ({id: number}: IScheduleTimer) => {
 
 const AddStudent = ({}: IAddStudent) => {
 	const user = useSelector((state: any) => state.user)
-	const token = useSelector((state: any) => state.user.token)
+	const token = user.token
 	const [data, setData] = useState()
-
+	const [allIdStudent, setAllIdStudent] = useState([])
 	const currentOpenedStudent = useSelector(
 		(state: any) => state.currentOpenedStudent,
 	)
 
+	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
+
 	useEffect(() => {
+		socket.emit('getAllIdStudents', {token: token})
+		socket.once('getAllIdStudents', (data: any) => {
+			// Make from object {id: 123}, {id: 2345} to Array Strings ['123', '2345']
+			const arr = Object.values(data).map((item: any) => item.id)
+			const csp = arr.indexOf(currentOpenedStudent)
+			setAllIdStudent(arr)
+			setCurrentStudPosition(csp)
+			console.log(arr, 'arr', csp, 'csp');
+			
+		})
+
 		socket.once('getGroupByStudentId', (data: any) => {
-			console.log(
-				'---------------------------------------------------------\nStudent data (get): ',
-				data.group,
-				'\n---------------------------------------------------------',
-			)
 			setData(data.group)
 		})
 	}, [])
@@ -544,9 +552,7 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	function handlePrePayDate(newValue: any) {
-		console.log('new value', newValue)
 		setPrePayDate(new Date(newValue))
-		console.log('from state', prePayDate)
 	}
 	function getDay(date: any) {
 		const dayIndex = date.getDay() - 1
@@ -568,7 +574,6 @@ const AddStudent = ({}: IAddStudent) => {
 			const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
 				addDays(items[i].startLesson, j),
 			)
-			console.log(dateRange, 'dateRange', differenceDays, 'differenceDays')
 
 			for (const date of dateRange) {
 				const dayOfWeek = getDay(date)
@@ -597,7 +602,6 @@ const AddStudent = ({}: IAddStudent) => {
 						price: costOneLesson,
 						isPaid: false,
 					}
-					console.log('hl', hl)
 
 					historyLessons_.push(hl)
 
@@ -619,19 +623,9 @@ const AddStudent = ({}: IAddStudent) => {
 			// 	}
 			// }
 		}
-		console.log('historyLessons_', historyLessons_)
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		// console.log(differenceDays, 'differenceWeeks')
-
-		console.log(
-			countLessons,
-			'countLessons',
-			countLessonsPrice,
-			'countLessonsPrice',
-		)
-		console.log('items', items)
 	}, [items, costOneLesson])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
@@ -650,6 +644,53 @@ const AddStudent = ({}: IAddStudent) => {
 		])
 	}
 
+	const nextStud = () => {
+		console.log(
+			currentStudPosition,
+			'currentStudPosition',
+			allIdStudent,
+			'allIdStudent',
+			allIdStudent[Number(currentStudPosition)],
+			'allIdStudent[Number(currentStudPosition)]',
+		)
+		if (Number(currentStudPosition) + 1 <= allIdStudent.length) {
+			setCurrentStudPosition(Number(currentStudPosition) + 1)
+			const newId = allIdStudent[Number(currentStudPosition)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			socket.emit('getGroupByStudentId', {
+				token: token,
+				studentId: newId,
+			})
+			socket.once('getGroupByStudentId', (data: any) => {
+				setData(data.group)
+			})
+		}
+	}
+
+	const prevStud = () => {
+		console.log(
+			currentStudPosition,
+			'currentStudPosition',
+			allIdStudent,
+			'allIdStudent',
+			allIdStudent[Number(currentStudPosition)],
+			'allIdStudent[Number(currentStudPosition)]',
+		)
+		if (Number(currentStudPosition) + 1 > 0) {
+			setCurrentStudPosition(Number(currentStudPosition) - 1)
+			const newId = allIdStudent[Number(currentStudPosition)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			socket.emit('getGroupByStudentId', {
+				token: token,
+				studentId: newId,
+			})
+			socket.once('getGroupByStudentId', (data: any) => {
+				setData(data.group)
+			})
+		}
+	}
 	return (
 		<>
 			<button
@@ -705,13 +746,15 @@ const AddStudent = ({}: IAddStudent) => {
 				<div className={s.Header}>
 					<div className={s.HeaderAddStudent}>
 						<div className={s.dataSlidePicker}>
-							<button className={s.btn}>
+							<button onClick={prevStud} className={s.btn}>
 								<span>
 									<Arrow direction={ArrowType.left} />
 								</span>
 							</button>
-							<p className={s.btnText}>Карточка ученика &frac14;</p>
-							<button className={s.btn}>
+							<p className={s.btnText}>
+								Карточка ученика {currentStudPosition + 1}/{allIdStudent.length}
+							</p>
+							<button onClick={nextStud} className={s.btn}>
 								<span>
 									<Arrow direction={ArrowType.right} />
 								</span>
@@ -858,7 +901,12 @@ const AddStudent = ({}: IAddStudent) => {
 													}}>
 													{formatDate(lesson.date)}
 												</p>
-												<p style={{fontWeight: '300', fontSize: '12px', width: '100px'}}>
+												<p
+													style={{
+														fontWeight: '300',
+														fontSize: '12px',
+														width: '100px',
+													}}>
 													{lesson.itemName}
 												</p>
 												<CheckBox
@@ -868,7 +916,12 @@ const AddStudent = ({}: IAddStudent) => {
 													size="16px"
 													checked={lesson.isDone}
 												/>
-												<p style={{fontSize: '14px', width: '100px', textAlign: 'end'}}>
+												<p
+													style={{
+														fontSize: '14px',
+														width: '100px',
+														textAlign: 'end',
+													}}>
 													{lesson.price}₽
 												</p>
 												<CheckBox
