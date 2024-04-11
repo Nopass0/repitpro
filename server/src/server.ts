@@ -10,12 +10,13 @@ import {
   getGroupByStudentId,
   getStudentList,
   getStudentsByDate,
+  getTableData,
   updateStudentAndItems,
   updateStudentSchedule,
   // updateStudents,
 } from "./cards/student";
 import { getUserData, setUserData } from "./auth/user";
-import { addGroup } from "./cards/group";
+import { addGroup, getGroupList } from "./cards/group";
 import { addClient } from "./cards/client";
 
 io.on("connection", (socket) => {
@@ -36,6 +37,8 @@ io.on("connection", (socket) => {
   socket.on("getUserData", (token) => getUserData(token));
   socket.on("getGroupByStudentId", (data) => getGroupByStudentId(data));
   socket.on("getAllIdStudents", (data) => getAllIdStudents(data));
+  socket.on("getGroupList", (data) => getGroupList(data));
+  socket.on("getTableData", (data) => getTableData(data));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));

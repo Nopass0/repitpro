@@ -7,6 +7,7 @@ import Line from '../Line'
 import Search from '../../assets/search'
 import {useCallback, useEffect, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
+import {debounce} from 'lodash'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
 import Plus from '../../assets/ItemPlus.svg'
@@ -78,8 +79,7 @@ const AddStudent = ({}: IAddStudent) => {
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
-			console.log(arr, 'arr', csp, 'csp');
-			
+			console.log(arr, 'arr', csp, 'csp')
 		})
 
 		socket.once('getGroupByStudentId', (data: any) => {
@@ -653,7 +653,7 @@ const AddStudent = ({}: IAddStudent) => {
 			allIdStudent[Number(currentStudPosition)],
 			'allIdStudent[Number(currentStudPosition)]',
 		)
-		if (Number(currentStudPosition) + 1 <= allIdStudent.length) {
+		if (Number(currentStudPosition) + 2 < allIdStudent.length) {
 			setCurrentStudPosition(Number(currentStudPosition) + 1)
 			const newId = allIdStudent[Number(currentStudPosition)]
 
@@ -662,9 +662,9 @@ const AddStudent = ({}: IAddStudent) => {
 				token: token,
 				studentId: newId,
 			})
-			socket.once('getGroupByStudentId', (data: any) => {
-				setData(data.group)
-			})
+			// socket.once('getGroupByStudentId', (data: any) => {
+			// 	setData(data.group)
+			// })
 		}
 	}
 
@@ -677,7 +677,7 @@ const AddStudent = ({}: IAddStudent) => {
 			allIdStudent[Number(currentStudPosition)],
 			'allIdStudent[Number(currentStudPosition)]',
 		)
-		if (Number(currentStudPosition) + 1 > 0) {
+		if (Number(currentStudPosition) - 1 > 0) {
 			setCurrentStudPosition(Number(currentStudPosition) - 1)
 			const newId = allIdStudent[Number(currentStudPosition)]
 
@@ -686,11 +686,15 @@ const AddStudent = ({}: IAddStudent) => {
 				token: token,
 				studentId: newId,
 			})
-			socket.once('getGroupByStudentId', (data: any) => {
-				setData(data.group)
-			})
+			// socket.once('getGroupByStudentId', (data: any) => {
+			// 	setData(data.group)
+			// })
 		}
 	}
+
+	const debouncedNextStud = debounce(nextStud, 500)
+	const debouncedPrevStud = debounce(prevStud, 500)
+
 	return (
 		<>
 			<button
