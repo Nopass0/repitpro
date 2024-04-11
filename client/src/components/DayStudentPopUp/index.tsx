@@ -11,7 +11,7 @@ import Home from '../../assets/5.svg'
 import Client from '../../assets/6.svg'
 import Plus from '../../assets/ItemPlus.svg'
 import RecordNListen from '../RecordNListen'
-import {MenuItem, Select} from '@mui/material'
+import {Option, Select, SelectOption} from '@mui/base'
 import uploadFile from '../../assets/UploadFile.svg'
 import NowLevel from '../NowLevel'
 import CheckBox from '../CheckBox'
@@ -19,6 +19,8 @@ import Arrow, {ArrowType} from '../../assets/arrow'
 import {useSelector} from 'react-redux'
 import {useEffect, useState} from 'react'
 import socket from '../../socket'
+import {ExpandLess, ExpandMore} from '@mui/icons-material'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 interface IDayStudentPopUp {
 	icon?: any
 	name?: string
@@ -58,6 +60,8 @@ const DayStudentPopUp = ({
 
 	const [student, setStudent] = useState<any>({})
 	const [isOpened, setIsOpened] = useState(false)
+	const [openSelect1, setOpenSelect1] = useState(false)
+	const [openSelect2, setOpenSelect2] = useState(false)
 
 	const [homeWorkComment, setHomeWorkComment] = useState(
 		student?.homeWork || '',
@@ -201,15 +205,63 @@ const DayStudentPopUp = ({
 								className={s.InputFile}
 								onChange={handleAddHomeFile}
 							/>
-							<label htmlFor="inputFile1" className={s.LabelFile}>
+							{/* <label htmlFor="inputFile1" className={s.LabelFile}>
 								<img src={uploadFile} alt="uploadFile" />
-							</label>
-							<Select renderValue={() => ''} className={s.Select}>
-								<MenuItem value={0}>
+							</label> */}
+							<Select
+								className={s.Select}
+								multiple
+								onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
+								renderValue={(option: SelectOption<number> | null) => {
+									if (option == null || option.value === null) {
+										return (
+											<>
+												<div className={s.ListWrapper}>
+													<label htmlFor="inputFile1" className={s.LabelFile}>
+														<img src={uploadFile} alt="uploadFile" />
+													</label>
+													<div className={s.Icons}>
+														{openSelect1 ? <ExpandLess /> : <ExpandMore />}
+													</div>
+												</div>
+											</>
+										)
+									}
+									return (
+										<>
+											<div className={s.ListWrapper}>
+												<label htmlFor="inputFile1" className={s.LabelFile}>
+													<img src={uploadFile} alt="uploadFile" />
+												</label>
+												<div className={s.Icons}>
+													{openSelect1 ? <ExpandLess /> : <ExpandMore />}
+												</div>
+											</div>
+										</>
+									)
+								}}>
+								<Option className={s.Option} value={0}>
 									{homeFiles.length === 0
 										? 'Список пока пуст'
-										: homeFiles.map((file: any) => <p>{file.name}</p>)}
-								</MenuItem>
+										: homeFiles.map((file: any) => (
+												<div className={s.FileWrapper}>
+													<p>
+														{file.name.length > 25
+															? file.name.slice(0, 25) + '...'
+															: file.name}
+													</p>
+													<button
+														className={s.DeleteBtn}
+														onClick={() =>
+															setHomeFiles(
+																homeFiles.filter((f: any) => f !== file),
+															)
+														}>
+														<DeleteOutlineIcon />
+													</button>
+												</div>
+										  ))}
+								</Option>
 							</Select>
 						</div>
 						<h1>Выполнение домашней работы</h1>
@@ -235,15 +287,63 @@ const DayStudentPopUp = ({
 								className={s.InputFile}
 								onChange={handleAddClassroomFile}
 							/>
-							<label htmlFor="inputFile1" className={s.LabelFile}>
+							{/* <label htmlFor="inputFile2" className={s.LabelFile}>
 								<img src={uploadFile} alt="uploadFile" />
-							</label>
-							<Select renderValue={() => ''} className={s.Select}>
-								<MenuItem value={0}>
+							</label> */}
+							<Select
+								className={s.Select}
+								multiple
+								onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
+								renderValue={(option: SelectOption<number> | null) => {
+									if (option == null || option.value === null) {
+										return (
+											<>
+												<div className={s.ListWrapper}>
+													<label htmlFor="inputFile2" className={s.LabelFile}>
+														<img src={uploadFile} alt="uploadFile" />
+													</label>
+													<div className={s.Icons}>
+														{openSelect2 ? <ExpandLess /> : <ExpandMore />}
+													</div>
+												</div>
+											</>
+										)
+									}
+									return (
+										<>
+											<div className={s.ListWrapper}>
+												<label htmlFor="inputFile2" className={s.LabelFile}>
+													<img src={uploadFile} alt="uploadFile" />
+												</label>
+												<div className={s.Icons}>
+													{openSelect2 ? <ExpandLess /> : <ExpandMore />}
+												</div>
+											</div>
+										</>
+									)
+								}}>
+								<Option className={s.Option} value={0}>
 									{classroomFiles.length === 0
 										? 'Список пока пуст'
-										: classroomFiles.map((file: any) => <p>{file.name}</p>)}
-								</MenuItem>
+										: classroomFiles.map((file: any) => (
+												<div className={s.FileWrapper}>
+													<p>
+														{file.name.length > 25
+															? file.name.slice(0, 25) + '...'
+															: file.name}
+													</p>
+													<button
+														className={s.DeleteBtn}
+														onClick={() =>
+															setClassroomFiles(
+																classroomFiles.filter((f: any) => f !== file),
+															)
+														}>
+														<DeleteOutlineIcon />
+													</button>
+												</div>
+										  ))}
+								</Option>
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>

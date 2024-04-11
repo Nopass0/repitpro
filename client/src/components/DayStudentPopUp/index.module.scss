@@ -98,11 +98,10 @@ input {
 				resize: none;
 				outline: none;
 				margin-bottom: 20px;
-
+				font-size: 16px;
+				padding: 13px 0 0 13px;
 				&::placeholder {
-					font-size: 16px;
 					color: rgb(0, 0, 0, 0.6);
-					padding: 13px;
 				}
 			}
 
@@ -124,11 +123,14 @@ input {
 				}
 
 				.Select {
-					position: relative;
-					bottom: 5px;
-					right: 15px;
-					padding: 0 !important;
+					.ListWrapper {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+					}
+
 				}
+				
 			}
 
 			.HomeWorkWrapper {
@@ -206,5 +208,23 @@ input {
 
 	.btnRight {
 		left: 40px;
+	}
+}
+
+.Option {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	background-color: #fff;
+	padding: 20px;
+	min-width: 100px;
+	border-radius: 6px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+	.FileWrapper {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
 	}
 }
