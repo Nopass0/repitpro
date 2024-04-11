@@ -702,3 +702,98 @@ export async function getAllIdStudents(data: any) {
 
   return students;
 }
+
+export async function getTableData(data) {
+  const { token, dateRange } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    // Fetch groups for the user
+    const groups = await db.group.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        students: true,
+        items: true,
+      },
+    });
+
+    // Fetch student schedules for the date range
+    const studentSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId,
+        day: {
+          gte: dateRange.start.getDate().toString(),
+          lte: dateRange.end.getDate().toString(),
+        },
+        month: (dateRange.start.getMonth() + 1).toString(),
+        year: dateRange.start.getFullYear().toString(),
+      },
+    });
+
+    const tableData = groups.flatMap((group) => {
+      const groupStudents = group.students;
+      const groupItems = group.items;
+
+      return groupStudents.map((student) => {
+        const studentSchedules_ = studentSchedules.filter(
+          (schedule) =>
+            schedule.groupId === group.id &&
+            schedule.studentName === student.nameStudent
+        );
+
+        const lessons = studentSchedules_.reduce(
+          (count, schedule) => count + schedule.lessonsCount,
+          0
+        );
+        const canceledLessons = studentSchedules_.reduce(
+          (count, schedule) =>
+            count + (schedule.isChecked ? 0 : schedule.lessonsCount),
+          0
+        );
+        const income = studentSchedules_.reduce(
+          (sum, schedule) =>
+            sum + schedule.lessonsPrice * schedule.lessonsCount,
+          0
+        );
+        const consumption = studentSchedules_.reduce(
+          (sum, schedule) => sum + schedule.workPrice,
+          0
+        );
+        const debt = studentSchedules_.reduce(
+          (sum, schedule) =>
+            sum +
+            groupItems.find((item) => item.id === schedule.itemId)
+              ?.lessonDuration *
+              schedule.lessonsCount *
+              Number(student.costOneLesson),
+          0
+        );
+
+        return {
+          name: student.nameStudent,
+          lessons,
+          avgCost: student.costOneLesson,
+          cancel: canceledLessons,
+          income,
+          consumption,
+          duty: debt,
+          total: income - debt - consumption,
+        };
+      });
+    });
+
+    return tableData;
+  } catch (error) {
+    console.error("Error fetching table data:", error);
+    throw error;
+  }
+}

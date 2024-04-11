@@ -30,6 +30,7 @@ const MainPage = () => {
 	const [valueMuiSelectType, setValueMuiSelectType] = useState<number>(0)
 	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
 	const [students, setStudents] = useState([])
+	const [groups, setGroups] = useState([])
 	const [open, setOpen] = useState<boolean>(false)
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
@@ -37,11 +38,16 @@ const MainPage = () => {
 	console.log('Token: ', token)
 
 	socket.emit('getStudentList', token)
+	socket.emit('getGroupList', token)
 
 	useEffect(() => {
 		socket.once('getStudentList', (data: any) => {
 			console.log('Students', data)
 			setStudents(data)
+		})
+		socket.once('getGroupList', (data: any) => {
+			console.log('Groups', data)
+			setGroups(data)
 		})
 	}, [])
 
