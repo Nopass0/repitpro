@@ -15,7 +15,7 @@ import s from './index.module.scss'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import CloseIcon from '@mui/icons-material/Close'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {Checkbox, ListItemText, MenuItem, Select, styled} from '@mui/material'
 import Line from '../../components/Line'
 import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
@@ -25,6 +25,8 @@ import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 
 import CheckBox from '../../components/CheckBox'
 import {useNavigate} from 'react-router-dom'
+import {useSelector} from 'react-redux'
+import socket from '../../socket'
 
 ChartJS.register(
 	ArcElement,
@@ -313,6 +315,13 @@ const Statistics = ({}: IStatistics) => {
 	const [sortColumn, setSortColumn] = useState(null)
 	const [sortDirection, setSortDirection] = useState(null)
 
+	const user = useSelector((state: any) => state.user)
+	const token = user.token
+
+	const [studentsData, setStudentsData] = useState([])
+	const [startData, setStartData] = useState<Date>(new Date(Date.now() + 1))
+	const [endData, setEndData] = useState<Date>(new Date(Date.now() + 86400000))
+
 	const handleSort = (column: any) => {
 		if (sortColumn === column) {
 			if (sortDirection === 'asc') {
@@ -328,6 +337,17 @@ const Statistics = ({}: IStatistics) => {
 			setSortDirection('asc')
 		}
 	}
+
+	useEffect(() => {
+		socket.emit('getTableData', {
+			token: token,
+			dateRange: {start: startData, end: endData},
+		})
+		socket.on('getTableData', (data: any) => {
+			console.log('getTableData', data)
+			setStudentsData(data)
+		})
+	}, [])
 
 	const sortData = (data: any, column: any, direction: any) => {
 		if (direction === 'asc') {
@@ -351,212 +371,15 @@ const Statistics = ({}: IStatistics) => {
 		}
 	}
 
-	const sortedData = sortData(
-		[
-			{
-				name: 'Viva',
-				lessons: 70,
-				cancel: 32,
-				income: 19,
-				consumption: 4,
-				duty: 29,
-			},
-			{
-				name: 'It',
-				lessons: 47,
-				cancel: 53,
-				income: 73,
-				consumption: 87,
-				duty: 35,
-			},
-			{
-				name: 'Fintone',
-				lessons: 25,
-				cancel: 36,
-				income: 34,
-				consumption: 10,
-				duty: 72,
-			},
-			{
-				name: 'Viva',
-				lessons: 56,
-				cancel: 33,
-				income: 30,
-				consumption: 29,
-				duty: 21,
-			},
-			{
-				name: 'Holdlamis',
-				lessons: 48,
-				cancel: 99,
-				income: 57,
-				consumption: 29,
-				duty: 43,
-			},
-			{
-				name: 'Kanlam',
-				lessons: 65,
-				cancel: 77,
-				income: 15,
-				consumption: 93,
-				duty: 30,
-			},
-			{
-				name: 'Otcom',
-				lessons: 76,
-				cancel: 8,
-				income: 64,
-				consumption: 15,
-				duty: 64,
-			},
-			{
-				name: 'Redhold',
-				lessons: 88,
-				cancel: 10,
-				income: 50,
-				consumption: 57,
-				duty: 68,
-			},
-			{
-				name: 'Zontrax',
-				lessons: 36,
-				cancel: 69,
-				income: 75,
-				consumption: 24,
-				duty: 68,
-			},
-			{
-				name: 'Bigtax',
-				lessons: 22,
-				cancel: 32,
-				income: 42,
-				consumption: 31,
-				duty: 60,
-			},
-			{
-				name: 'Rank',
-				lessons: 40,
-				cancel: 89,
-				income: 68,
-				consumption: 14,
-				duty: 57,
-			},
-			{
-				name: 'Konklab',
-				lessons: 82,
-				cancel: 41,
-				income: 100,
-				consumption: 64,
-				duty: 5,
-			},
-			{
-				name: 'Konklab',
-				lessons: 36,
-				cancel: 22,
-				income: 57,
-				consumption: 29,
-				duty: 96,
-			},
-			{
-				name: 'Greenlam',
-				lessons: 64,
-				cancel: 15,
-				income: 14,
-				consumption: 82,
-				duty: 20,
-			},
-			{
-				name: 'Daltfresh',
-				lessons: 40,
-				cancel: 83,
-				income: 37,
-				consumption: 6,
-				duty: 13,
-			},
-			{
-				name: 'Sonsing',
-				lessons: 36,
-				cancel: 81,
-				income: 80,
-				consumption: 46,
-				duty: 94,
-			},
-			{
-				name: 'Job',
-				lessons: 2,
-				cancel: 49,
-				income: 79,
-				consumption: 90,
-				duty: 12,
-			},
-			{
-				name: 'Veribet',
-				lessons: 32,
-				cancel: 51,
-				income: 65,
-				consumption: 23,
-				duty: 97,
-			},
-			{
-				name: 'Transcof',
-				lessons: 42,
-				cancel: 39,
-				income: 2,
-				consumption: 45,
-				duty: 80,
-			},
-			{
-				name: 'Cookley',
-				lessons: 93,
-				cancel: 59,
-				income: 28,
-				consumption: 34,
-				duty: 45,
-			},
-			{
-				name: 'Vagram',
-				lessons: 47,
-				cancel: 16,
-				income: 34,
-				consumption: 40,
-				duty: 76,
-			},
-			{
-				name: 'Cardguard',
-				lessons: 57,
-				cancel: 94,
-				income: 25,
-				consumption: 39,
-				duty: 95,
-			},
-			{
-				name: 'Bitwolf',
-				lessons: 99,
-				cancel: 62,
-				income: 99,
-				consumption: 35,
-				duty: 22,
-			},
-			{
-				name: 'Flowdesk',
-				lessons: 21,
-				cancel: 42,
-				income: 59,
-				consumption: 45,
-				duty: 100,
-			},
-			{
-				name: 'Overhold',
-				lessons: 85,
-				cancel: 41,
-				income: 50,
-				consumption: 84,
-				duty: 72,
-			},
-		],
-		sortColumn,
-		sortDirection,
-	)
+	const sortedData = sortData(studentsData, sortColumn, sortDirection)
+
+	useEffect(() => {
+		socket.emit('getTableData', {
+			token: token,
+			dateRange: {start: startData, end: endData},
+		})
+		console.log(sortedData, 'sortedData')
+	}, [startData, endData])
 
 	return (
 		<>
@@ -628,8 +451,8 @@ const Statistics = ({}: IStatistics) => {
 										dateAdapter={AdapterDateFns}
 										adapterLocale={ru}>
 										<DatePicker
-											value={studFinDateStart}
-											onChange={(e: any) => setStudFinDateStart(e)}
+											value={startData}
+											onChange={(e: any) => setStartData(e)}
 											slots={{
 												layout: StyledPickersLayout,
 											}}
@@ -656,8 +479,8 @@ const Statistics = ({}: IStatistics) => {
 										dateAdapter={AdapterDateFns}
 										adapterLocale={ru}>
 										<DatePicker
-											value={studFinDateEnd}
-											onChange={(e: any) => setStudFinDateEnd(e)}
+											value={endData}
+											onChange={(e: any) => setEndData(e)}
 											slots={{
 												layout: StyledPickersLayout,
 											}}
@@ -984,7 +807,7 @@ const Statistics = ({}: IStatistics) => {
 												<p>{item.lessons}</p>
 											</td>
 											<td className={s.Td}>
-												<p>?</p>
+												<p>{item.avgCost}</p>
 											</td>
 											<td className={s.Td}>
 												<p>{item.cancel}</p>
@@ -999,13 +822,7 @@ const Statistics = ({}: IStatistics) => {
 												<p>{item.duty}</p>
 											</td>
 											<td className={s.Td}>
-												<p>
-													{String(
-														Number(item.income) -
-															Number(item.duty) -
-															Number(item.consumption),
-													)}
-												</p>
+												<p>{item.total}</p>
 											</td>
 										</tr>
 									))}

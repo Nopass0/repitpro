@@ -60,8 +60,8 @@ const AddClient = ({}: IAddClient) => {
 					totalCost: 0,
 					name: '',
 					typePayment: false, // Предоплата false - оплата true
-					paymentDate: Date.now(),
-					startDate: Date.now(),
+					paymentDate: null, // Изначально установлено null, чтобы пользователь мог ввести дату
+					startDate: null, // Изначально установлено null, чтобы пользователь мог ввести дату
 				},
 			],
 		},
@@ -79,8 +79,8 @@ const AddClient = ({}: IAddClient) => {
 						totalCost: 0,
 						name: '',
 						typePayment: false, // Предоплата false - оплата true
-						paymentDate: Date.now(),
-						startDate: Date.now(),
+						paymentDate: null,
+						startDate: null,
 					},
 				],
 			},
@@ -89,6 +89,26 @@ const AddClient = ({}: IAddClient) => {
 
 	const changeJob = (index: number, name: string, value: any) => {
 		setJobs(jobs.map((job, i) => (i === index ? {...job, [name]: value} : job)))
+	}
+
+	const changeStage = (
+		jobIndex: number,
+		stageIndex: number,
+		name: string,
+		value: any,
+	) => {
+		setJobs(
+			jobs.map((job, i) =>
+				i === jobIndex
+					? {
+							...job,
+							stages: job.stages.map((stage, j) =>
+								j === stageIndex ? {...stage, [name]: value} : stage,
+							),
+					  }
+					: job,
+			),
+		)
 	}
 
 	const addStage = (jobIndex: number) => {
@@ -103,8 +123,8 @@ const AddClient = ({}: IAddClient) => {
 									totalCost: 0,
 									name: '',
 									typePayment: false,
-									paymentDate: Date.now(),
-									startDate: Date.now(),
+									paymentDate: null,
+									startDate: null,
 								},
 							],
 					  }
@@ -112,15 +132,6 @@ const AddClient = ({}: IAddClient) => {
 			),
 		)
 	}
-
-	// Stage One
-	const [totalCostStageOne, setTotalCostStageOne] = useState<number>()
-
-	// Stage Two
-	const [totalCostStageTwo, setTotalCostStageTwo] = useState<number>()
-	const [nameStageTwo, setNameStageTwo] = useState<string>('')
-	const [costStageTwo, setCostStageTwo] = useState<number>()
-	const [commentStageTwo, setCommentStageTwo] = useState<string>('')
 
 	const sendInfo = () => {
 		socket.emit('addClient', {
@@ -344,7 +355,7 @@ const AddClient = ({}: IAddClient) => {
 											type="text"
 											value={job.stages[0].totalCost}
 											onChange={(e) => {
-												changeJob(index, 'stages.0.totalCost', e.target.value)
+												changeStage(index, 0, 'totalCost', e.target.value)
 											}}
 										/>
 										<p>₽</p>
@@ -362,7 +373,7 @@ const AddClient = ({}: IAddClient) => {
 											type="text"
 											value={job.cost}
 											onChange={(e) => {
-												changeJob(index, 'cost', e.target.value)
+												changeStage(index, 0, 'cost', e.target.value)
 											}}
 										/>
 										<p>₽</p>
@@ -372,7 +383,9 @@ const AddClient = ({}: IAddClient) => {
 										<p>Комментарий:</p>
 										<textarea
 											value={commentStageTwo}
-											onChange={(e) => setCommentStageTwo(e.target.value)}
+											onChange={(e) =>
+												changeStage(index, 0, 'comment', e.target.value)
+											}
 										/>
 									</div>
 									<Line width="296px" className={s.Line} />

@@ -731,11 +731,11 @@ export async function getTableData(data) {
       where: {
         userId,
         day: {
-          gte: dateRange.start.getDate().toString(),
-          lte: dateRange.end.getDate().toString(),
+          gte: new Date(dateRange.start).getDate().toString(),
+          lte: new Date(dateRange.end).getDate().toString(),
         },
-        month: (dateRange.start.getMonth() + 1).toString(),
-        year: dateRange.start.getFullYear().toString(),
+        month: (new Date(dateRange.start).getMonth() + 1).toString(),
+        year: new Date(dateRange.start).getFullYear().toString(),
       },
     });
 
@@ -791,6 +791,7 @@ export async function getTableData(data) {
       });
     });
 
+    io.emit("getTableData", tableData);
     return tableData;
   } catch (error) {
     console.error("Error fetching table data:", error);
