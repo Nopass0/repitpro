@@ -534,40 +534,38 @@ const AddClient = ({}: IAddClient) => {
 							{stages == 1 && (
 								<>
 									<div className={s.TypePaymentWrapper}>
-										<div className={s.PrevPay}>
+										<div
+											onClick={() => {
+												setTypePayment(false)
+												changeJob(0, 'stages.0.typePayment', typePayment)
+											}}
+											className={s.PrevPay}>
 											<p>Предоплата</p>
 											<CheckBox
-												checked={
-													job.stages[0].typePayment === true ? false : true
-												}
-												onChange={(e) => {
-													changeJob(
-														0,
-														'stages.0.typePayment',
-														!job.stages[0].typePayment,
-													)
-												}}
+												checked={typePayment === false ? true : false}
 												size="18px"
 											/>
 										</div>
-										<div className={s.NextPay}>
+										<div
+											onClick={() => {
+												setTypePayment(true)
+												changeJob(0, 'stages.0.typePayment', typePayment)
+											}}
+											className={s.NextPay}>
 											<p>Постоплата</p>
 											<CheckBox
-												checked={
-													job.stages[0].typePayment === true ? true : false
-												}
-												onChange={(e) => {
-													changeJob(
-														0,
-														'stages.0.typePayment',
-														!job.stages[0].typePayment,
-													)
-												}}
+												checked={typePayment === true ? true : false}
 												size="18px"
 											/>
 										</div>
 									</div>
-									<div className={s.PaymentTable}>
+									<div
+										className={s.PaymentTable}
+										style={
+											typePayment === true
+												? {flexDirection: 'column-reverse'}
+												: undefined
+										}>
 										<div className={s.PaymentRow}>
 											<LocalizationProvider
 												dateAdapter={AdapterDateFns}

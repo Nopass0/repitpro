@@ -11,6 +11,7 @@ interface ILine {
 	checked?: boolean // Добавлен пропс для определения состояния "checked"
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void // Добавлен пропс для обработчика изменения состояния
 	color?: string
+	disabled?: boolean
 }
 
 const CheckBox: React.FC<ILine> = ({
@@ -20,6 +21,7 @@ const CheckBox: React.FC<ILine> = ({
 	checked,
 	color,
 	onChange,
+	disabled
 }: ILine) => {
 	const BpIcon = styled('span')(({theme}) => ({
 		borderRadius: 3,
@@ -85,6 +87,7 @@ const CheckBox: React.FC<ILine> = ({
 			onChange={onChange} // Передаем обработчик изменения состояния из пропсов
 			disableRipple
 			color="default"
+			disabled={disabled}
 			checkedIcon={<BpCheckedIcon />}
 			icon={<BpIcon />}
 			inputProps={{'aria-label': 'Checkbox demo'}}
