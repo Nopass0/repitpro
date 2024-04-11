@@ -18,24 +18,38 @@ import phoneIcon from '../../assets/PhoneSVG.svg'
 import EmailIcon from '../../assets/EmailSVG.svg'
 import TelegramIcon from '../../assets/TelegramSVG.svg'
 import WhatsAppIcon from '../../assets/WhatsUPSVG.svg'
-
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn'
 import Home from '../../assets/5.svg'
+
+import Group from '../../assets/4.svg'
 import {Link} from 'react-router-dom'
 interface ILeftMenu {}
 
 const MainPage = () => {
-	const [type, setType] = useState<string>('')
-	const [archive, setArchive] = useState<string>('')
 	const [search, setSearch] = useState<string>('')
 	const [valueMuiSelectType, setValueMuiSelectType] = useState<number>(0)
 	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
 	const [students, setStudents] = useState([])
 	const [groups, setGroups] = useState([])
-	const [open, setOpen] = useState<boolean>(false)
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
-	const [openSelect, setOpenSelect] = useState<boolean>(false)
-	console.log('Token: ', token)
+	// const [openSelect, setOpenSelect] = useState<boolean>(false)
+	const [openedStudents, setOpenedStudents] = useState<number[]>([])
+	const [openedGroups, setOpenedGroups] = useState<number[]>([])
+	const handleOpenStudent = (index: number) => {
+		if (openedStudents.includes(index)) {
+			setOpenedStudents(openedStudents.filter((item) => item !== index))
+		} else {
+			setOpenedStudents([...openedStudents, index])
+		}
+	}
+	const handelOpenGroups = (index: number) => {
+		if (openedGroups.includes(index)) {
+			setOpenedGroups(openedGroups.filter((item) => item !== index))
+		} else {
+			setOpenedGroups([...openedGroups, index])
+		}
+	}
 
 	socket.emit('getStudentList', token)
 	socket.emit('getGroupList', token)
@@ -51,12 +65,10 @@ const MainPage = () => {
 		})
 	}, [])
 
-	console.log('STUDENTS: ', students)
-
 	const data_muiSelectType = [
 		{
 			label: 'Все',
-			value: students.length,
+			value: students.length + groups.length,
 		},
 		{
 			label: 'Заказчики',
@@ -68,6 +80,39 @@ const MainPage = () => {
 		},
 	]
 
+	const [filteredStudents, setFilteredStudents] = useState([])
+	const [filteredGroups, setFilteredGroups] = useState([])
+
+	useEffect(() => {
+		if (valueMuiSelectArchive === 0) {
+			setFilteredStudents(students)
+			setFilteredGroups(groups)
+		} else {
+			const archivedStudents = students.filter((student) => student.isArchived)
+			const archivedGroups = groups.filter(
+				(group) =>
+					group.isArchived ||
+					group.students.some((student) => student.isArchived),
+			)
+			setFilteredStudents(archivedStudents)
+			setFilteredGroups(archivedGroups)
+		}
+	}, [valueMuiSelectArchive, students, groups])
+
+	const handleSearch = (e) => {
+		const searchValue = e.target.value.toLowerCase()
+
+		const filteredStudentsList = students.filter((student) =>
+			student.nameStudent.toLowerCase().includes(searchValue),
+		)
+		setFilteredStudents(filteredStudentsList)
+
+		const filteredGroupsList = groups.filter((group) =>
+			group.groupName.toLowerCase().includes(searchValue),
+		)
+		setFilteredGroups(filteredGroupsList)
+	}
+
 	return (
 		<div className={s.wrapper}>
 			<div className={s.HeaderLeftMenu}>
@@ -77,7 +122,7 @@ const MainPage = () => {
 						displayEmpty
 						variant={'standard'}
 						value={valueMuiSelectType}
-						onChange={(e) => {
+						onChange={(e: any) => {
 							setValueMuiSelectType(e.target.value)
 						}}>
 						{data_muiSelectType.map((item, index) => (
@@ -133,7 +178,10 @@ const MainPage = () => {
 					<input
 						type="text"
 						value={search}
-						onChange={(e) => setSearch(e.target.value)}
+						onChange={(e) => {
+							handleSearch(e)
+							setSearch(e.target.value)
+						}}
 						placeholder="Имя"
 					/>
 					<div className={s.SearchIconDiv}>
@@ -143,140 +191,245 @@ const MainPage = () => {
 			</div>
 			<div className={s.MainLeftMenu}>
 				{/* FOR GROUP */}
-
-				{/* <mui.ListItemButton onClick={() => setOpen(!open)}>
-					<div className={s.ListWrapper}>
-						<button className={s.btn}></button>
-
-					</div>
-					{open ? <ExpandLess /> : <ExpandMore />}
-				</mui.ListItemButton>
-
-				<mui.Collapse
-					className={s.MuiCollapse}
-					in={open}
-					timeout="auto"
-					unmountOnExit>
-					<mui.List
-						className={s.MuiList}
-						component="div"
-						disablePadding></mui.List>
-				</mui.Collapse> */}
-
-				{students.map((item: any) => (
-					<>
-						{/* <mui.Select
-							className={s.muiSelect__menu}
-							variant={'standard'}
-							renderValue={() => {
-								return (
-									<>
-										<div className={s.ListWrapper}>
-											<button className={s.btn}>Test</button>
-											<p>{item.nameStudent}</p>
-										</div>
-									</>
-								)
-							}}>
-							<mui.MenuItem>
-								<div className={s.ListItem}>
-									{item.phoneNumber ? (
-										<>
-											<p className={s.Phone}>{item.phoneNumber}</p>
-											<div className={s.Icons}>
-												<Link to={`tel:${item.phoneNumber}`}>
-													<img src={phoneIcon} alt="phoneIcon" />
-												</Link>
-												<Link to={`emailto:2223@mail.ru`}>
-													<img src={EmailIcon} alt="EmailIcon" />
-												</Link>
-												<Link to={`tg://resolve?domain=${item.phoneNumber}`}>
-													<img src={TelegramIcon} alt="TelegramIcon" />
-												</Link>
-												<Link to={`https://wa.me/${item.phoneNumber}`}>
-													<img src={WhatsAppIcon} alt="WhatsApp" />
-												</Link>
-											</div>
-										</>
-									) : (
-										<>
-											<p className={s.NoData}>Данных нет</p>
-										</>
-									)}
-								</div>
-							</mui.MenuItem>
-						</mui.Select> */}
-						<MUI.Select
-							className={s.muiSelect}
-							onListboxOpenChange={() => setOpenSelect(!openSelect)}
-							multiple
-							renderValue={(option: MUI.SelectOption<number> | null) => {
-								if (option == null || option.value === null) {
-									return (
-										<>
-											<div className={s.ListWrapper}>
-												<button className={s.btn}>
-													<img src={Home} alt="Home" />
+				{valueMuiSelectType === 0 && (
+					<div className={s.GroupWrapper}>
+						{filteredGroups.map((item: any, index: number) => (
+							<>
+								<mui.ListItemButton
+									className={s.ListGroup}
+									key={index}
+									onClick={() => handelOpenGroups(index)}>
+									<div
+										className={`${s.ListGroupWrapper} ${
+											item.isArchived === true && s.Archive
+										}`}>
+										<button className={s.btn}>
+											<img width="32px" height="32px" src={Group} alt="Group" />
+										</button>
+										<p>{item.groupName}</p>
+										{item.isArchived && (
+											<>
+												<button className={s.Icons}>
+													<KeyboardReturnIcon />
 												</button>
-												<p>{item.nameStudent}</p>
-												<div className={s.Icons}>
-													{openSelect ? <ExpandLess /> : <ExpandMore />}
-												</div>
-											</div>
-										</>
-									)
-								}
-								return (
-									<>
-										<div className={s.ListWrapper}>
-											<button className={s.btn}>
-												<img src={Home} alt="Home" />
-											</button>
-											<p>{item.nameStudent}</p>
-											<div className={s.Icons}>
-												{openSelect ? <ExpandLess /> : <ExpandMore />}
-											</div>
+											</>
+										)}
+										<div className={s.Icons}>
+											{openedGroups.includes(index) ? (
+												<>
+													<ExpandLess />
+												</>
+											) : (
+												<>
+													<ExpandMore />
+												</>
+											)}
 										</div>
-									</>
-								)
-							}}>
-							<MUI.Option className={s.muiOption} value={1}>
-								<div className={s.ListItem}>
-									{item.phoneNumber ? (
-										<>
-											<p className={s.Phone}>{item.phoneNumber}</p>
-											<div className={s.Icons}>
-												<Link to={`tel:${item.phoneNumber}`}>
-													<img src={phoneIcon} alt="phoneIcon" />
-												</Link>
-												<Link to={`mailto:${item.email}`}>
-													<img src={EmailIcon} alt="EmailIcon" />
-												</Link>
-												<Link to={`tg://resolve?domain=${item.phoneNumber}`}>
-													<img src={TelegramIcon} alt="TelegramIcon" />
-												</Link>
-												<Link to={`https://wa.me/${item.phoneNumber}`}>
-													<img src={WhatsAppIcon} alt="WhatsApp" />
-												</Link>
-											</div>
-										</>
-									) : (
-										<>
-											<p className={s.NoData}>Данных нет</p>
-										</>
-									)}
-								</div>
-							</MUI.Option>
-						</MUI.Select>
-						<Line className={s.LineList} width="296px" />
+									</div>
+								</mui.ListItemButton>
+
+								<mui.Collapse
+									className={s.MuiCollapse}
+									in={openedGroups.includes(index)}
+									timeout="auto"
+									unmountOnExit>
+									<mui.List
+										className={s.MuiList}
+										component="div"
+										disablePadding>
+										{item.students.map((student: any, index: number) => (
+											// <p>{student.nameStudent}</p>
+											<MUI.Select
+												key={index}
+												className={`${s.muiSelect}`}
+												onListboxOpenChange={() => handleOpenStudent(index)}
+												multiple
+												renderValue={(
+													option: MUI.SelectOption<number> | null,
+												) => {
+													if (option == null || option.value === null) {
+														return (
+															<>
+																<div className={s.ListWrapper}>
+																	<button className={s.btn}>
+																		<img src={Home} alt="Home" />
+																	</button>
+																	<p>{student.nameStudent}</p>
+																	<div className={s.Icons}>
+																		{openedStudents.includes(index) ? (
+																			<ExpandLess />
+																		) : (
+																			<ExpandMore />
+																		)}
+																	</div>
+																</div>
+															</>
+														)
+													}
+													return (
+														<>
+															<div className={s.ListWrapper}>
+																<button className={s.btn}>
+																	<img src={Home} alt="Home" />
+																</button>
+																<p>{student.nameStudent}</p>
+
+																<div className={s.Icons}>
+																	{openedStudents.includes(index) ? (
+																		<ExpandLess />
+																	) : (
+																		<ExpandMore />
+																	)}
+																</div>
+															</div>
+														</>
+													)
+												}}>
+												<MUI.Option className={s.muiOption} value={1}>
+													<div className={s.ListItem}>
+														{student.phoneNumber ? (
+															<>
+																<p className={s.Phone}>{student.phoneNumber}</p>
+																<div className={s.Icons}>
+																	<Link to={`tel:${student.phoneNumber}`}>
+																		<img src={phoneIcon} alt="phoneIcon" />
+																	</Link>
+																	<Link to={`mailto:${student.email}`}>
+																		<img src={EmailIcon} alt="EmailIcon" />
+																	</Link>
+																	<Link
+																		to={`tg://resolve?domain=${student.phoneNumber}`}>
+																		<img
+																			src={TelegramIcon}
+																			alt="TelegramIcon"
+																		/>
+																	</Link>
+																	<Link
+																		to={`https://wa.me/${student.phoneNumber}`}>
+																		<img src={WhatsAppIcon} alt="WhatsApp" />
+																	</Link>
+																</div>
+															</>
+														) : (
+															<>
+																<p className={s.NoData}>Данных нет</p>
+															</>
+														)}
+													</div>
+												</MUI.Option>
+											</MUI.Select>
+										))}
+									</mui.List>
+								</mui.Collapse>
+
+								<Line className={s.LineList} width="296px" />
+							</>
+						))}
+					</div>
+				)}
+
+				{/* FOR STUDENTS */}
+				{(valueMuiSelectType === 0 || valueMuiSelectType === 2) && (
+					<>
+						{filteredStudents.map((item: any, index: number) => (
+							<>
+								<MUI.Select
+									key={index}
+									className={s.muiSelect}
+									onListboxOpenChange={() => handleOpenStudent(index)}
+									multiple
+									renderValue={(option: MUI.SelectOption<number> | null) => {
+										if (option == null || option.value === null) {
+											return (
+												<>
+													<div
+														className={`${s.ListWrapper} ${
+															item.isArchived === true && s.Archive
+														}`}>
+														<button className={s.btn}>
+															<img src={Home} alt="Home" />
+														</button>
+														<p>{item.nameStudent}</p>
+														{item.isArchived && (
+															<>
+																<button className={s.Icons}>
+																	<KeyboardReturnIcon />
+																</button>
+															</>
+														)}
+														<div className={s.Icons}>
+															{openedStudents.includes(index) ? (
+																<ExpandLess />
+															) : (
+																<ExpandMore />
+															)}
+														</div>
+													</div>
+												</>
+											)
+										}
+										return (
+											<>
+												<div
+													className={`${s.ListWrapper} ${
+														item.isArchived === true && s.Archive
+													}`}>
+													<button className={s.btn}>
+														<img src={Home} alt="Home" />
+													</button>
+													<p>{item.nameStudent}</p>
+													{item.isArchived === true && (
+														<>
+															<button className={s.Icons}>
+																<KeyboardReturnIcon />
+															</button>
+														</>
+													)}
+													<div className={s.Icons}>
+														{openedStudents.includes(index) ? (
+															<ExpandLess />
+														) : (
+															<ExpandMore />
+														)}
+													</div>
+												</div>
+											</>
+										)
+									}}>
+									<MUI.Option className={s.muiOption} value={1}>
+										<div className={s.ListItem}>
+											{item.phoneNumber ? (
+												<>
+													<p className={s.Phone}>{item.phoneNumber}</p>
+													<div className={s.Icons}>
+														<Link to={`tel:${item.phoneNumber}`}>
+															<img src={phoneIcon} alt="phoneIcon" />
+														</Link>
+														<Link to={`mailto:${item.email}`}>
+															<img src={EmailIcon} alt="EmailIcon" />
+														</Link>
+														<Link
+															to={`tg://resolve?domain=${item.phoneNumber}`}>
+															<img src={TelegramIcon} alt="TelegramIcon" />
+														</Link>
+														<Link to={`https://wa.me/${item.phoneNumber}`}>
+															<img src={WhatsAppIcon} alt="WhatsApp" />
+														</Link>
+													</div>
+												</>
+											) : (
+												<>
+													<p className={s.NoData}>Данных нет</p>
+												</>
+											)}
+										</div>
+									</MUI.Option>
+								</MUI.Select>
+								<Line className={s.LineList} width="296px" />
+							</>
+						))}
 					</>
-					// <div>
-					// 	<p>
-					// 		Имя {item.nameStudent} - Номер {item.phoneNumber} - Is Archive{' '}
-					// 		{String(item.isArchived)}
-					// 	</p>
-					// </div>
-				))}
+				)}
 			</div>
 		</div>
 	)

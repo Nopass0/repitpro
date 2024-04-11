@@ -70,6 +70,7 @@ model Group {
   items           Item[]
   students        Student[]
   userId          String
+  isArchived       Boolean @default(false)
 }
 
 model TimeLine {

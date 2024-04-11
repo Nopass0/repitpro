@@ -205,6 +205,7 @@ export async function getGroupList(token) {
       select: {
         id: true,
         groupName: true,
+        isArchived: true,
         items: {
           select: {
             itemName: true,
@@ -214,7 +215,6 @@ export async function getGroupList(token) {
           select: {
             nameStudent: true,
             phoneNumber: true,
-            isArchived: true,
             email: true,
           },
         },
@@ -223,12 +223,6 @@ export async function getGroupList(token) {
 
     const groupsWithName = groups.filter((group) => group.groupName !== "");
 
-    //get groups with only groupName !== ""
-    groups.forEach((group) => {
-      if (group.groupName !== "") {
-        groupsWithName.push(group);
-      }
-    });
 
     console.log(groups);
     io.emit("getGroupList", groupsWithName);

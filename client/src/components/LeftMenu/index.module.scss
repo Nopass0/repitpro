@@ -101,9 +101,35 @@
 			margin-bottom: 10px;
 		}
 
+		.ListGroupWrapper.Archive, .ListWrapper.Archive {
+			p {
+				color: #9296ad !important;
+			}
+
+			.Icons {
+				color: #9296ad !important;
+			}
+		}
+
 		.ListWrapper {
 			display: flex;
 			flex-direction: row;
+
+			.btn {
+				width: 32px;
+				height: 32px;
+				margin-right: 20px;
+			}
+			p {
+				width: 200px;
+			}
+		}
+
+		.ListGroupWrapper {
+			max-width: 276px;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
 
 			.btn {
 				margin-right: 20px;
@@ -112,8 +138,6 @@
 				width: 200px;
 			}
 		}
-
-		
 	}
 }
 
@@ -153,16 +177,15 @@
 		justify-content: center;
 		align-items: center;
 		padding: 10px 20px;
-
-		
 	}
 	.Phone {
 		margin-bottom: 10px;
-	} 
 	}
+}
 
 .LineList {
 	background: #e2e2e9;
+	min-height: 1px;
 }
 @media screen and (max-width: 1024px) {
 	.wrapper {

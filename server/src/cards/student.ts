@@ -223,6 +223,9 @@ export async function getStudentList(token) {
     const students = await db.student.findMany({
       where: {
         userId: userId.userId,
+        group: {
+          groupName: "",
+        },
       },
       select: {
         nameStudent: true,
