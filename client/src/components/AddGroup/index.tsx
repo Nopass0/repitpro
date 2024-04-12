@@ -104,6 +104,7 @@ const AddGroup = ({}: IAddGroup) => {
 			prePayCost: string
 			prePayDate: string
 			selectedDate: null
+			costOneLesson: string
 			storyLesson: string
 			targetLessonStudent: string
 			todayProgramStudent: string
@@ -114,6 +115,7 @@ const AddGroup = ({}: IAddGroup) => {
 			contactFace: '',
 			phoneNumber: '',
 			email: '',
+			costOneLesson: '',
 			address: '',
 			linkStudent: '',
 			costStudent: '',
@@ -223,15 +225,15 @@ const AddGroup = ({}: IAddGroup) => {
 						date: date,
 						itemName: items[i].itemName,
 						isDone: date <= new Date(Date.now()) ? true : false,
-						price: costOneLesson,
+						price: students[currentStudentIndex].costOneLesson,
 						isPaid: false,
 					}
-					console.log('hl', hl)
 
 					historyLessons_.push(hl)
 
 					countLessons++
-					countLessonsPrice = countLessons * Number(costOneLesson)
+					countLessonsPrice =
+						countLessons * Number(students[currentStudentIndex].costOneLesson)
 				}
 			}
 		}
@@ -1086,7 +1088,12 @@ const AddGroup = ({}: IAddGroup) => {
 									<div className={s.MathObjectsList}>
 										<div className={s.MathHeader}>
 											<p>Общая стоимость 1-го занятия:</p>
-											<p>{costOneLesson * students.length}₽</p>
+											<p>
+												{students
+													.map((student) => student.price)
+													.reduce((a, b) => a + b, 0) * items.length}
+												₽
+											</p>
 										</div>
 										<Line width="294px" className={s.Line} />
 										<div className={s.MathObject}>
@@ -1419,9 +1426,13 @@ const AddGroup = ({}: IAddGroup) => {
 									<Input
 										num
 										type="text"
-										value={String(costOneLesson)}
+										value={String(student.costOneLesson)}
 										onChange={(e) => {
-											setCostOneLesson(Number(e.target.value))
+											changeStudentValue(
+												index,
+												'costOneLesson',
+												parseInt(e.target.value, 10),
+											)
 										}}
 									/>
 									<p>₽</p>

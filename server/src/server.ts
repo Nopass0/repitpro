@@ -6,11 +6,13 @@ import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
 import {
   addStudent,
+  deleteStudent,
   getAllIdStudents,
   getGroupByStudentId,
   getStudentList,
   getStudentsByDate,
   getTableData,
+  studentToArhive,
   updateStudentAndItems,
   updateStudentSchedule,
   // updateStudents,
@@ -39,6 +41,8 @@ io.on("connection", (socket) => {
   socket.on("getAllIdStudents", (data) => getAllIdStudents(data));
   socket.on("getGroupList", (data) => getGroupList(data));
   socket.on("getTableData", (data) => getTableData(data));
+  socket.on("deleteStudent", (data) => deleteStudent(data));
+  socket.on("studentToArhive", (data) => studentToArhive(data));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));

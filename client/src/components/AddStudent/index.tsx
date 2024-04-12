@@ -70,6 +70,9 @@ const AddStudent = ({}: IAddStudent) => {
 	)
 
 	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
+	const [isEditMode, setIsEditMode] = useState(
+		currentOpenedStudent ? false : true,
+	)
 
 	useEffect(() => {
 		socket.emit('getAllIdStudents', {token: token})
@@ -86,6 +89,21 @@ const AddStudent = ({}: IAddStudent) => {
 			setData(data.group)
 		})
 	}, [])
+
+	const handleDelete = () => {
+		socket.emit('deleteStudent', {
+			token: token,
+			id: currentOpenedStudent,
+		})
+	}
+
+	const handleToArchive = () => {
+		socket.emit('studentToArhive', {
+			token: token,
+			id: currentOpenedStudent,
+			isArchived: true,
+		})
+	}
 
 	// Block Student
 	const [nameStudent, setNameStudent] = useState<string>('')
@@ -771,6 +789,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<input
 								type="text"
 								value={nameStudent}
+								disabled={isEditMode}
 								onChange={(e) => setNameStudent(e.target.value)}
 							/>
 							<p>*</p>
@@ -786,6 +805,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<input
 								type="text"
 								value={contactFace}
+								disabled={isEditMode}
 								onChange={(e) => setContactFace(e.target.value)}
 							/>
 						</div>
@@ -799,6 +819,7 @@ const AddStudent = ({}: IAddStudent) => {
 								mask="+7 (999) 999-99-99"
 								maskChar="_"
 								value={phoneNumber}
+								disabled={isEditMode}
 								onChange={(e: any) => setPhoneNumber(e.target.value)}
 								placeholder="+7 (___) ___-__"
 							/>
@@ -810,6 +831,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<input
 								type="email"
 								value={email}
+								disabled={isEditMode}
 								onChange={(e) => setEmail(e.target.value)}
 							/>
 						</div>
@@ -820,6 +842,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<input
 								type="text"
 								value={linkStudent}
+								disabled={isEditMode}
 								onChange={(e) => setLinkStudent(e.target.value)}
 							/>
 						</div>
@@ -830,6 +853,7 @@ const AddStudent = ({}: IAddStudent) => {
 								num
 								type="text"
 								value={costStudent}
+								disabled={isEditMode}
 								onChange={(e: any) => setCostStudent(e.target.value)}
 							/>
 							<p>₽</p>
@@ -857,6 +881,7 @@ const AddStudent = ({}: IAddStudent) => {
 										},
 									}}
 									timezone="system"
+									disabled={isEditMode}
 									showDaysOutsideCurrentMonth
 								/>
 							</LocalizationProvider>
@@ -866,6 +891,7 @@ const AddStudent = ({}: IAddStudent) => {
 								className={s.PrePayCostInput}
 								type="text"
 								value={prePayCost}
+								disabled={isEditMode}
 								onChange={(e) => setPrePayCost(e.target.value)}
 							/>
 
@@ -951,6 +977,7 @@ const AddStudent = ({}: IAddStudent) => {
 								num
 								type="text"
 								value={costOneLesson}
+								disabled={isEditMode}
 								onChange={(e) => setCostOneLesson(e.target.value)}
 							/>
 							<p>₽</p>
@@ -961,6 +988,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<p>Комментарий:</p>
 							<textarea
 								value={commentStudent}
+								disabled={isEditMode}
 								onChange={(e) => setCommentStudent(e.target.value)}
 							/>
 						</div>
@@ -1005,7 +1033,10 @@ const AddStudent = ({}: IAddStudent) => {
 									</span>
 								</button>
 							</div>
-							<button onClick={() => addItem()} className={s.ItemPlus}>
+							<button
+								disabled={isEditMode}
+								onClick={() => addItem()}
+								className={s.ItemPlus}>
 								<img src={Plus} alt={Plus} />
 							</button>
 						</div>
@@ -1022,6 +1053,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<div className={s.StudentCard}>
 										<input
 											type="text"
+											disabled={isEditMode}
 											value={String(item.itemName)}
 											onChange={(e) =>
 												changeItemValue(index, 'itemName', e.target.value)
@@ -1051,6 +1083,7 @@ const AddStudent = ({}: IAddStudent) => {
 											num
 											type="text"
 											value={item.tryLessonCost!}
+											disabled={isEditMode}
 											onChange={(e) =>
 												changeItemValue(index, 'tryLessonCost', e.target.value)
 											}
@@ -1068,6 +1101,7 @@ const AddStudent = ({}: IAddStudent) => {
 												changeItemValue(index, 'nowLevel', val)
 											}
 											value={item.nowLevel!}
+											disabled={isEditMode}
 											amountInputs={5}
 										/>
 									</div>
@@ -1078,6 +1112,7 @@ const AddStudent = ({}: IAddStudent) => {
 										<input
 											type="text"
 											value={item.todayProgramStudent}
+											disabled={isEditMode}
 											onChange={(e) =>
 												changeItemValue(
 													index,
@@ -1091,6 +1126,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<div className={s.StudentCard}>
 										<p>Цель занятий:</p>
 										<input
+											disabled={isEditMode}
 											type="text"
 											value={item.targetLesson!}
 											onChange={(e) =>
@@ -1102,6 +1138,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<div className={s.StudentCard}>
 										<p>Программа ученика:</p>
 										<input
+											disabled={isEditMode}
 											type="text"
 											value={item.programLesson!}
 											onChange={(e) =>
@@ -1122,6 +1159,7 @@ const AddStudent = ({}: IAddStudent) => {
 											<mui.Select
 												className={s.muiSelect__menu}
 												variant={'standard'}
+												disabled={isEditMode}
 												value={item.typeLesson}
 												onChange={(e) => {
 													changeItemValue(index, 'typeLesson', e.target.value)
@@ -1293,6 +1331,7 @@ const AddStudent = ({}: IAddStudent) => {
 										<p>Место проведения:</p>
 										<input
 											type="text"
+											disabled={isEditMode}
 											value={item.placeLesson!}
 											onChange={(e) => {
 												changeItemValue(index, 'placeLesson', e.target.value)
@@ -1304,6 +1343,7 @@ const AddStudent = ({}: IAddStudent) => {
 										<p>Продолжительность занятия:</p>
 										<Input
 											num
+											disabled={isEditMode}
 											type="text"
 											value={item.lessonDuration}
 											onChange={(e: any) =>
@@ -1329,6 +1369,7 @@ const AddStudent = ({}: IAddStudent) => {
 													},
 												}}
 												value={item.startLesson}
+												disabled={isEditMode}
 												onChange={(newValue) => {
 													changeItemValue(
 														index,
@@ -1358,6 +1399,7 @@ const AddStudent = ({}: IAddStudent) => {
 													},
 												}}
 												value={item.endLesson}
+												disabled={isEditMode}
 												onChange={(newValue) => {
 													changeItemValue(index, 'endLesson', String(newValue!))
 												}}
@@ -1437,23 +1479,30 @@ const AddStudent = ({}: IAddStudent) => {
 																	</p>
 																)}
 															</div>
-															<button
-																onClick={() =>
-																	handleClick_delete(
-																		currentItemIndex,
-																		timeline.id,
-																	)
-																}
-																className={s.ScheduleBtn_Delete}>
-																<DeleteIcon />
-															</button>
-															<button
-																onClick={() =>
-																	handleClick_dp(currentItemIndex, timeline.id)
-																}
-																className={s.ScheduleBtn}>
-																<ScheduleIcon />
-															</button>
+															{isEditMode && (
+																<>
+																	<button
+																		onClick={() =>
+																			handleClick_delete(
+																				currentItemIndex,
+																				timeline.id,
+																			)
+																		}
+																		className={s.ScheduleBtn_Delete}>
+																		<DeleteIcon />
+																	</button>
+																	<button
+																		onClick={() =>
+																			handleClick_dp(
+																				currentItemIndex,
+																				timeline.id,
+																			)
+																		}
+																		className={s.ScheduleBtn}>
+																		<ScheduleIcon />
+																	</button>
+																</>
+															)}
 
 															{(timeline.active ||
 																timeline.id === showEndTimePicker) && (
@@ -1566,7 +1615,9 @@ const AddStudent = ({}: IAddStudent) => {
 				<div className={s.FooterWrapper}>
 					<div className={s.FooterButton}>
 						<div className={s.EditNSave}>
-							<button className={s.Edit}>
+							<button
+								className={s.Edit}
+								onClick={() => setIsEditMode(!isEditMode)}>
 								<p>Редактировать</p>
 							</button>
 							<button onClick={sendData} className={s.Save}>
@@ -1574,10 +1625,10 @@ const AddStudent = ({}: IAddStudent) => {
 							</button>
 						</div>
 						<div className={s.ArchiveNDelete}>
-							<button className={s.Archive}>
+							<button className={s.Archive} onClick={handleToArchive}>
 								<p>В архив</p>
 							</button>
-							<button className={s.Delete}>
+							<button className={s.Delete} onClick={handleDelete}>
 								<p>Удалить</p>
 							</button>
 						</div>

@@ -60,8 +60,16 @@ const AddClient = ({}: IAddClient) => {
 					totalCost: 0,
 					name: '',
 					typePayment: false, // Предоплата false - оплата true
-					paymentDate: null, // Изначально установлено null, чтобы пользователь мог ввести дату
-					startDate: null, // Изначально установлено null, чтобы пользователь мог ввести дату
+
+					dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
+					cost: 0,
+					prePay: true,
+					postPay: false,
+					payment: 0,
+					payed: false,
+					date: new Date(Date.now()),
+					workStarted: false,
+					paymentDate: new Date(Date.now()),
 				},
 			],
 		},
@@ -79,8 +87,16 @@ const AddClient = ({}: IAddClient) => {
 						totalCost: 0,
 						name: '',
 						typePayment: false, // Предоплата false - оплата true
-						paymentDate: null,
-						startDate: null,
+
+						dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
+						cost: 0,
+						prePay: true,
+						postPay: false,
+						payment: 0,
+						payed: false,
+						date: new Date(Date.now()),
+						workStarted: false,
+						paymentDate: new Date(Date.now()),
 					},
 				],
 			},
@@ -122,9 +138,17 @@ const AddClient = ({}: IAddClient) => {
 								{
 									totalCost: 0,
 									name: '',
-									typePayment: false,
-									paymentDate: null,
-									startDate: null,
+									typePayment: false, // Предоплата false - оплата true
+
+									dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
+									cost: 0,
+									prePay: true,
+									postPay: false,
+									payment: 0,
+									payed: false,
+									date: new Date(Date.now()),
+									workStarted: false,
+									paymentDate: new Date(Date.now()),
 								},
 							],
 					  }
@@ -379,15 +403,15 @@ const AddClient = ({}: IAddClient) => {
 										<p>₽</p>
 									</div>
 									<Line width="296px" className={s.Line} />
-									<div className={s.StudentCard}>
+									{/* <div className={s.StudentCard}>
 										<p>Комментарий:</p>
 										<textarea
-											value={commentStageTwo}
+											value={job.stage.commentStageTwo}
 											onChange={(e) =>
 												changeStage(index, 0, 'comment', e.target.value)
 											}
 										/>
-									</div>
+									</div> */}
 									<Line width="296px" className={s.Line} />
 
 									<div className={s.RecordNListen}>
@@ -431,7 +455,7 @@ const AddClient = ({}: IAddClient) => {
 											<img src={Plus} alt={Plus} />
 										</button>
 									</div>
-									{job.stages.map((item, index) => (
+									{job.stages.map((item, indexStage) => (
 										<>
 											<div
 												className={
@@ -444,9 +468,10 @@ const AddClient = ({}: IAddClient) => {
 													type="text"
 													value={item.name}
 													onChange={(e) => {
-														changeJob(
+														changeStage(
 															index,
-															'stages.' + index + '.name',
+															indexStage,
+															'name',
 															e.target.value,
 														)
 													}}
@@ -461,9 +486,10 @@ const AddClient = ({}: IAddClient) => {
 													type="text"
 													value={item.totalCost}
 													onChange={(e) => {
-														changeJob(
+														changeStage(
 															index,
-															'stages.' + index + '.totalCost',
+															indexStage,
+															'totalCost',
 															e.target.value,
 														)
 													}}
@@ -474,11 +500,33 @@ const AddClient = ({}: IAddClient) => {
 											<div className={s.TypePaymentWrapper}>
 												<div className={s.PrevPay}>
 													<p>Предоплата</p>
-													<CheckBox size="18px" />
+													<CheckBox
+														size="18px"
+														checked={item.prePay}
+														onChange={() =>
+															changeStage(
+																index,
+																indexStage,
+																'prePay',
+																!item.prePay,
+															)
+														}
+													/>
 												</div>
 												<div className={s.NextPay}>
 													<p>Постоплата</p>
-													<CheckBox size="18px" />
+													<CheckBox
+														size="18px"
+														checked={item.postPay}
+														onChange={() =>
+															changeStage(
+																index,
+																indexStage,
+																'postPay',
+																!item.postPay,
+															)
+														}
+													/>
 												</div>
 											</div>
 											<div className={s.PaymentTable}>
@@ -499,15 +547,42 @@ const AddClient = ({}: IAddClient) => {
 																},
 															}}
 															timezone="system"
+															value={item.date}
+															onChange={(e) => {
+																changeStage(index, indexStage, 'date', e)
+															}}
 															showDaysOutsideCurrentMonth
 														/>
 													</LocalizationProvider>
 													<div className={s.PayInput}>
 														<p>Оплата</p>
-														<Input num type="text" />
+														<Input
+															num
+															type="text"
+															value={item.payment}
+															onChange={(e) =>
+																changeStage(
+																	index,
+																	indexStage,
+																	'payment',
+																	e.target.value,
+																)
+															}
+														/>
 														<p>₽</p>
 													</div>
-													<CheckBox size="18px" />
+													<CheckBox
+														size="18px"
+														checked={item.payed}
+														onChange={() =>
+															changeStage(
+																index,
+																indexStage,
+																'payed',
+																!item.payed,
+															)
+														}
+													/>
 													<p style={{width: '33px'}}>0%</p>
 												</div>
 												<Line width="268px" className={s.Line} />
@@ -527,6 +602,10 @@ const AddClient = ({}: IAddClient) => {
 																	paddingLeft: '0px',
 																},
 															}}
+															value={item.dateStart}
+															onChange={(e) => {
+																changeStage(index, indexStage, 'dateStart', e)
+															}}
 															timezone="system"
 															showDaysOutsideCurrentMonth
 														/>
@@ -534,7 +613,18 @@ const AddClient = ({}: IAddClient) => {
 													<div className={s.PayText}>
 														<p>Начало работы</p>
 													</div>
-													<CheckBox size="18px" />
+													<CheckBox
+														size="18px"
+														checked={item.workStarted}
+														onChange={() =>
+															changeStage(
+																index,
+																indexStage,
+																'workStarted',
+																!item.workStarted,
+															)
+														}
+													/>
 													<p style={{width: '33px'}}></p>
 												</div>
 												<Line width="268px" className={s.Line} />
@@ -550,24 +640,28 @@ const AddClient = ({}: IAddClient) => {
 										<div
 											onClick={() => {
 												setTypePayment(false)
-												changeJob(0, 'stages.0.typePayment', typePayment)
+												changeStage(index, 0, 'typePayment', typePayment)
 											}}
 											className={s.PrevPay}>
 											<p>Предоплата</p>
 											<CheckBox
-												checked={typePayment === false ? true : false}
+												checked={
+													job.stages[0].typePayment === false ? true : false
+												}
 												size="18px"
 											/>
 										</div>
 										<div
 											onClick={() => {
 												setTypePayment(true)
-												changeJob(0, 'stages.0.typePayment', typePayment)
+												changeStage(index, 0, 'typePayment', typePayment)
 											}}
 											className={s.NextPay}>
 											<p>Постоплата</p>
 											<CheckBox
-												checked={typePayment === true ? true : false}
+												checked={
+													job.stages[0].typePayment === true ? true : false
+												}
 												size="18px"
 											/>
 										</div>
@@ -575,7 +669,7 @@ const AddClient = ({}: IAddClient) => {
 									<div
 										className={s.PaymentTable}
 										style={
-											typePayment === true
+											job.stages[0].typePayment === true
 												? {flexDirection: 'column-reverse'}
 												: undefined
 										}>
@@ -597,7 +691,7 @@ const AddClient = ({}: IAddClient) => {
 													}}
 													value={job.stages[0].paymentDate}
 													onChange={(newValue) => {
-														changeJob(0, 'stages.0.paymentDate', newValue)
+														changeStage(index, 0, 'paymentDate', newValue)
 													}}
 													timezone="system"
 													showDaysOutsideCurrentMonth
@@ -610,12 +704,18 @@ const AddClient = ({}: IAddClient) => {
 													type="text"
 													value={job.stages[0].paymentDate}
 													onChange={(e) =>
-														changeJob(0, 'stages.0.payment', e.target.value)
+														changeStage(index, 0, 'paymentDate', e.target.value)
 													}
 												/>
 												<p>₽</p>
 											</div>
-											<CheckBox size="18px" />
+											<CheckBox
+												size="18px"
+												checked={job.stages[0].payed}
+												onChange={() =>
+													changeStage(index, 0, 'payed', !job.stages[0].payed)
+												}
+											/>
 											<p style={{width: '33px'}}>0%</p>
 										</div>
 										<Line width="268px" className={s.Line} />
@@ -635,6 +735,10 @@ const AddClient = ({}: IAddClient) => {
 															paddingLeft: '0px',
 														},
 													}}
+													value={job.stages[0].dateStart}
+													onChange={(newValue) => {
+														changeStage(index, 0, 'dateStart', newValue)
+													}}
 													timezone="system"
 													showDaysOutsideCurrentMonth
 												/>
@@ -642,7 +746,18 @@ const AddClient = ({}: IAddClient) => {
 											<div className={s.PayText}>
 												<p>Начало работы</p>
 											</div>
-											<CheckBox size="18px" />
+											<CheckBox
+												size="18px"
+												checked={job.stages[0].workStarted}
+												onChange={() =>
+													changeStage(
+														index,
+														0,
+														'workStarted',
+														!job.stages[0].workStarted,
+													)
+												}
+											/>
 											<p style={{width: '33px'}}></p>
 										</div>
 										<Line width="268px" className={s.Line} />

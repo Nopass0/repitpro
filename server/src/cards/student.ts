@@ -228,6 +228,7 @@ export async function getStudentList(token) {
         },
       },
       select: {
+        id: true,
         nameStudent: true,
         phoneNumber: true,
         isArchived: true,
@@ -800,4 +801,123 @@ export async function getTableData(data) {
     console.error("Error fetching table data:", error);
     throw error;
   }
+}
+
+export async function deleteStudent(data: { token: string; id: string }) {
+  const { token, id } = data; // token is the user's token. id is the student's id
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    const deletedStudent = await db.student.delete({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    //Delete group with this student
+    const group = await db.group.findFirst({
+      where: {
+        id: deletedStudent.groupId,
+      },
+    });
+
+    //Delete student schedule with this student
+    await db.studentSchedule.deleteMany({
+      where: {
+        groupId: group.id,
+      },
+    });
+
+    if (group) {
+      await db.group.update({
+        where: {
+          id: group.id,
+        },
+        data: {
+          students: {
+            disconnect: {
+              id: deletedStudent.id,
+            },
+          },
+        },
+      });
+    }
+
+    io.emit("deleteStudent", {
+      message: "student deleted successfully",
+      deleted: deletedStudent,
+    });
+    return deletedStudent;
+  } catch (error) {
+    console.error("Error deleting student:", error);
+  }
+
+  return null;
+}
+
+export async function studentToArhive(data: {
+  token: string;
+  id: string;
+  isArchived: boolean;
+}) {
+  const { token, id, isArchived } = data; // token is the user's token. id is the student's id
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    const student = await db.student.update({
+      where: {
+        id,
+        userId,
+      },
+      data: {
+        isArchived: isArchived,
+      },
+    });
+
+    //get groupId from student
+    const groupId = await db.student.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        groupId: true,
+      },
+    });
+
+    //Delete student schedule with this student
+    await db.studentSchedule.updateMany({
+      where: {
+        groupId: groupId.groupId,
+      },
+      data: {
+        isArchived: isArchived,
+      },
+    });
+
+    io.emit("studentToArhive", {
+      message: "student archived successfully",
+      archived: student,
+    });
+
+    return student;
+  } catch (error) {
+    console.error("Error deleting student:", error);
+  }
+
+  return null;
 }

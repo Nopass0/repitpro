@@ -7,7 +7,7 @@ import Search from '../../assets/search'
 import {useEffect, useState} from 'react'
 import './index.css'
 import AddStudent from '../AddStudent'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {ELeftMenuPage} from '../../types'
 import AddGroup from '../AddGroup'
 import AddClient from '../AddClient'
@@ -36,6 +36,9 @@ const MainPage = () => {
 	// const [openSelect, setOpenSelect] = useState<boolean>(false)
 	const [openedStudents, setOpenedStudents] = useState<number[]>([])
 	const [openedGroups, setOpenedGroups] = useState<number[]>([])
+
+	const dispatch = useDispatch()
+
 	const handleOpenStudent = (index: number) => {
 		if (openedStudents.includes(index)) {
 			setOpenedStudents(openedStudents.filter((item) => item !== index))
@@ -64,6 +67,26 @@ const MainPage = () => {
 			setGroups(data)
 		})
 	}, [])
+
+	const handleToArchive = () => {
+		socket.emit('studentToArhive', {
+			token: token,
+			id: currentOpenedStudent,
+			isArchived: false,
+		})
+	}
+
+	const handleOpenCard = (studentId: string) => {
+		socket.emit('getGroupByStudentId', {
+			token: token,
+			studentId: studentId,
+		})
+
+		//SET_CURRENT_OPENED_STUDENT with studentid
+		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: studentId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
+	}
 
 	const data_muiSelectType = [
 		{
@@ -346,13 +369,17 @@ const MainPage = () => {
 														className={`${s.ListWrapper} ${
 															item.isArchived === true && s.Archive
 														}`}>
-														<button className={s.btn}>
+														<button
+															className={s.btn}
+															onClick={() => handleOpenCard(item.id)}>
 															<img src={Home} alt="Home" />
 														</button>
 														<p>{item.nameStudent}</p>
 														{item.isArchived && (
 															<>
-																<button className={s.Icons}>
+																<button
+																	className={s.Icons}
+																	onClick={handleToArchive}>
 																	<KeyboardReturnIcon />
 																</button>
 															</>

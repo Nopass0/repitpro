@@ -157,6 +157,7 @@ model StudentSchedule {
   classFiles      String[]
   classAudios     String[]
   homeStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
+  isArchived  Boolean @default(false)
   classStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -10,6 +10,7 @@ interface IInput {
 	onChange?: (e: any) => void
 	onClick?: (e: any) => void
 	num?: boolean
+	disabled?: boolean
 }
 
 const Input: React.FC<IInput> = ({
@@ -20,6 +21,7 @@ const Input: React.FC<IInput> = ({
 	value,
 	onChange,
 	onClick,
+	disabled,
 	num,
 }: IInput) => {
 	const onlyNumbers = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +38,7 @@ const Input: React.FC<IInput> = ({
 			className={`${s.input} ${className}`}
 			type={type ? type : 'text'}
 			value={value}
+			disabled={disabled}
 			onChange={(e) => {
 				if (num) {
 					onlyNumbers(e)
