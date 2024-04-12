@@ -33,6 +33,8 @@ const MainPage = () => {
 	const [groups, setGroups] = useState([])
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
+
+	const dispatch = useDispatch()
 	// const [openSelect, setOpenSelect] = useState<boolean>(false)
 	const [openedStudents, setOpenedStudents] = useState<number[]>([])
 	const [openedGroups, setOpenedGroups] = useState<number[]>([])
@@ -135,7 +137,17 @@ const MainPage = () => {
 		)
 		setFilteredGroups(filteredGroupsList)
 	}
+	const handleOpenCard = (studentId: string) => {
+		socket.emit('getGroupByStudentId', {
+			token: token,
+			studentId: studentId,
+		})
 
+		//SET_CURRENT_OPENED_STUDENT with studentid
+		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: studentId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
+	}
 	return (
 		<div className={s.wrapper}>
 			<div className={s.HeaderLeftMenu}>
@@ -401,7 +413,9 @@ const MainPage = () => {
 													className={`${s.ListWrapper} ${
 														item.isArchived === true && s.Archive
 													}`}>
-													<button className={s.btn}>
+													<button
+														onClick={() => console.log('1234')}
+														className={s.btn}>
 														<img src={Home} alt="Home" />
 													</button>
 													<p>{item.nameStudent}</p>

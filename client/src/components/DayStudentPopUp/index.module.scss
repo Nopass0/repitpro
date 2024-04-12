@@ -128,14 +128,63 @@ input {
 						flex-direction: row;
 						align-items: center;
 					}
-
 				}
-				
 			}
 
 			.HomeWorkWrapper {
 				width: 35%;
 				margin-right: 30px;
+				.HomeWorkGroups {
+					display: flex;
+					flex-direction: column;
+					max-height: 150px;
+					overflow-y: auto;
+					overflow-x: hidden;
+					.HomeWorkStud {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+
+						p {
+							margin-right: 20px;
+						}
+					}
+					.Line {
+						background-color: #bababa;
+						min-height: 1px;
+						margin: 10px 0;
+					}
+				}
+			}
+
+			.WorkClassGroup {
+				display: flex;
+				flex-direction: column;
+				max-height: 150px;
+				overflow-y: auto;
+				overflow-x: hidden;
+				.WorkClassStud {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					p {
+						margin-right: 30px;
+					}
+					.CheckboxComment {
+						margin: 0 0 0 40px;
+					}
+				}
+				.Line {
+					background-color: #bababa;
+					min-height: 1px;
+					margin: 7px 0;
+				}
+			}
+			.Total {
+				width: 100%;
+				display: flex;
+				justify-content: flex-end;
+				margin: 20px 0;
 			}
 
 			.Devider {
