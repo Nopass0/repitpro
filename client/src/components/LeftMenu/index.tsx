@@ -31,6 +31,7 @@ const MainPage = () => {
 	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
 	const [students, setStudents] = useState([])
 	const [groups, setGroups] = useState([])
+	const [clients, setClients] = useState([])
 	const user = useSelector((state: any) => state.user)
 
 	const token = user?.token
@@ -57,6 +58,7 @@ const MainPage = () => {
 
 	socket.emit('getStudentList', token)
 	socket.emit('getGroupList', token)
+	socket.emit('getClientList', token)
 
 	useEffect(() => {
 		socket.once('getStudentList', (data: any) => {
@@ -66,6 +68,10 @@ const MainPage = () => {
 		socket.once('getGroupList', (data: any) => {
 			console.log('Groups', data)
 			setGroups(data)
+		})
+		socket.once('getClientList', (data: any) => {
+			console.log('Clients', data)
+			setClients(data)
 		})
 	}, [])
 
@@ -96,7 +102,7 @@ const MainPage = () => {
 		},
 		{
 			label: 'Заказчики',
-			value: '50',
+			value: clients.length,
 		},
 		{
 			label: 'Ученики',
@@ -106,11 +112,13 @@ const MainPage = () => {
 
 	const [filteredStudents, setFilteredStudents] = useState([])
 	const [filteredGroups, setFilteredGroups] = useState([])
+	const [filteredClients, setFilteredClients] = useState([])
 
 	useEffect(() => {
 		if (valueMuiSelectArchive === 0) {
 			setFilteredStudents(students)
 			setFilteredGroups(groups)
+			setFilteredClients(clients)
 		} else {
 			const archivedStudents = students.filter((student) => student.isArchived)
 			const archivedGroups = groups.filter(
@@ -118,10 +126,12 @@ const MainPage = () => {
 					group.isArchived ||
 					group.students.some((student) => student.isArchived),
 			)
+			const archivedClients = clients.filter((client) => client.isArchived)
 			setFilteredStudents(archivedStudents)
 			setFilteredGroups(archivedGroups)
+			setFilteredClients(archivedClients)
 		}
-	}, [valueMuiSelectArchive, students, groups])
+	}, [valueMuiSelectArchive, students, groups, clients])
 
 	const handleSearch = (e) => {
 		const searchValue = e.target.value.toLowerCase()
@@ -135,6 +145,11 @@ const MainPage = () => {
 			group.groupName.toLowerCase().includes(searchValue),
 		)
 		setFilteredGroups(filteredGroupsList)
+
+		const filteredClientsList = clients.filter((client) =>
+			client.nameStudent.toLowerCase().includes(searchValue),
+		)
+		setFilteredClients(filteredClientsList)
 	}
 	const handleOpenCard = (studentId: string) => {
 		socket.emit('getGroupByStudentId', {
@@ -471,6 +486,19 @@ const MainPage = () => {
 									</MUI.Option>
 								</MUI.Select>
 								<Line className={s.LineList} width="296px" />
+							</>
+						))}
+					</>
+				)}
+				{/* FOR CLIENTS */}
+				{valueMuiSelectType === 0 && (
+					<>
+						{filteredClients.map((item: any, index: number) => (
+							<>
+								<p>
+									{item.nameStudent} - {item.email} - {item.phoneNumber} -{' '}
+									{item.isArchived}
+								</p>
 							</>
 						))}
 					</>

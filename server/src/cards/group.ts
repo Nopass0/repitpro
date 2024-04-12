@@ -223,12 +223,105 @@ export async function getGroupList(token) {
 
     const groupsWithName = groups.filter((group) => group.groupName !== "");
 
-
     console.log(groups);
     io.emit("getGroupList", groupsWithName);
     return groups;
   } catch (error) {
     console.error("Error fetching group list:", error);
     io.emit("getGroupList", { error: "Error fetching group list" });
+  }
+}
+
+export async function deleteGroup(data: any) {
+  const { token, groupId } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    //get group students
+    const groupStudents = await db.student.findMany({
+      where: {
+        groupId: groupId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    //delete all StudentSchedule with this groupId
+    await db.studentSchedule.deleteMany({
+      where: {
+        groupId: groupId,
+      },
+    });
+
+    //delete group items
+    await db.item.deleteMany({
+      where: {
+        groupId: groupId,
+      },
+    });
+
+    //delete group students
+    await db.student.deleteMany({
+      where: {
+        id: {
+          in: groupStudents.map((student) => student.id),
+        },
+      },
+    });
+
+    const group = await db.group.delete({
+      where: {
+        id: groupId,
+        userId,
+      },
+    });
+
+    console.log("Group deleted:", group);
+  } catch (error) {
+    console.error("Error deleting group:", error);
+  }
+}
+
+export async function groupToArchive(data: any) {
+  const { token, groupId, isArchived } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    const group = await db.group.update({
+      where: {
+        id: groupId,
+        userId,
+      },
+      data: {
+        isArchived: isArchived,
+      },
+    });
+
+    //update all StudentSchedule with this groupId
+    await db.studentSchedule.updateMany({
+      where: {
+        groupId: groupId,
+      },
+      data: {
+        isArchived: isArchived,
+      },
+    });
+  } catch (error) {
+    console.error("Error archiving group:", error);
   }
 }

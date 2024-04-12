@@ -18,8 +18,18 @@ import {
   // updateStudents,
 } from "./cards/student";
 import { getUserData, setUserData } from "./auth/user";
-import { addGroup, getGroupList } from "./cards/group";
-import { addClient } from "./cards/client";
+import {
+  addGroup,
+  deleteGroup,
+  getGroupList,
+  groupToArchive,
+} from "./cards/group";
+import {
+  addClient,
+  clientToArhive,
+  deleteClient,
+  getClientList,
+} from "./cards/client";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -43,6 +53,12 @@ io.on("connection", (socket) => {
   socket.on("getTableData", (data) => getTableData(data));
   socket.on("deleteStudent", (data) => deleteStudent(data));
   socket.on("studentToArhive", (data) => studentToArhive(data));
+
+  socket.on("clientToArhive", (data) => clientToArhive(data));
+  socket.on("deleteClient", (data) => deleteClient(data));
+  socket.on("getClientList", (data) => getClientList(data));
+  socket.on("groupToArchive", (data) => groupToArchive(data));
+  socket.on("deleteGroup", (data) => deleteGroup(data));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));

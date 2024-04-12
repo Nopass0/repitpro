@@ -49,8 +49,8 @@ const DataSlidePicker = ({
 		setValue(id)
 		if (onChange) onChange(id, data![id])
 	}
-	 console.log(months[currentMonth], currentMonth, 'months[currentMonth]');
-	 
+	console.log(months[currentMonth], currentMonth, 'months[currentMonth]')
+
 	const handleChangeDate = (id: number) => {
 		//change months for date mode. If month 'Январь' and year 2024 and click first arrow will be 'Декабрь' and year 2023
 		if (id === -1) {
@@ -83,7 +83,6 @@ const DataSlidePicker = ({
 			<mui.Select
 				className={s.muiSelect}
 				multiple={true}
-				
 				renderValue={(option: mui.SelectOption<number> | null) => {
 					if (option == null || option.value === null) {
 						return (
@@ -105,8 +104,7 @@ const DataSlidePicker = ({
 							</p>
 						</>
 					)
-				}}
-				>
+				}}>
 				<mui.Option className={s.muiOption} value={1}>
 					<CalendarPopUp />
 				</mui.Option>

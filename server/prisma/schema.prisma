@@ -167,3 +167,54 @@ model StudentSchedule {
   item         Item     @relation(fields: [itemId], references: [id])
   itemId       String
 }
+
+// Add a new model for Client
+model Client {
+  id            String      @id @default(cuid())
+  nameStudent   String
+  phoneNumber   String
+  email         String
+  costStudent   String
+  commentClient String
+  jobs          Job[]
+  payments      Payment[]
+  isArchived    Boolean @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  userId        String
+}
+
+// Add a new model for Job
+model Job {
+  id        String   @id @default(cuid())
+  jobName   String
+  itemName  String
+  cost      Int
+  stages    Json     // Store stages as JSON
+  client    Client   @relation(fields: [clientId], references: [id])
+  clientId  String
+
+  userId    String
+}
+
+// Add a new model for Payment
+model Payment {
+  id          String   @id @default(cuid())
+  totalCost   String
+  name        String
+  typePayment Boolean  // true for prepay, false for postpay
+  dateStart   DateTime // When the work started
+  cost        Int
+  prePay      Boolean
+  postPay     Boolean
+  payment     Int
+  payed       Boolean
+  date        DateTime
+  workStarted Boolean
+  paymentDate DateTime
+  client      Client   @relation(fields: [clientId], references: [id])
+  clientId    String
+
+  userId      String
+}
