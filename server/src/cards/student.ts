@@ -875,7 +875,8 @@ export async function studentToArhive(data: {
       token,
     },
   });
-
+  console.log(data,'------------------------------------------------------------------------------------------------')
+  
   const userId = token_.userId;
 
   try {

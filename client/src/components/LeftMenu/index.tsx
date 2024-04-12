@@ -32,6 +32,7 @@ const MainPage = () => {
 	const [students, setStudents] = useState([])
 	const [groups, setGroups] = useState([])
 	const user = useSelector((state: any) => state.user)
+
 	const token = user?.token
 
 	const dispatch = useDispatch()
@@ -68,10 +69,22 @@ const MainPage = () => {
 		})
 	}, [])
 
-	const handleToArchive = () => {
+	const handleToArchive = (studentId: string, index: number) => {
+		// Change student.isArchived to false by index in filterStudents
+		const newStudents = students.map((student, i) => {
+			if (i === index) {
+				return {
+					...student,
+					isArchived: false,
+				}
+			}
+			return student
+		})
+		setStudents(newStudents)
+
 		socket.emit('studentToArhive', {
 			token: token,
-			id: currentOpenedStudent,
+			id: studentId,
 			isArchived: false,
 		})
 	}
@@ -134,6 +147,7 @@ const MainPage = () => {
 		//SET_LEFT_MENU_PAGE
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
 	}
+
 	return (
 		<div className={s.wrapper}>
 			<div className={s.HeaderLeftMenu}>
@@ -377,7 +391,9 @@ const MainPage = () => {
 															<>
 																<button
 																	className={s.Icons}
-																	onClick={handleToArchive}>
+																	onClick={() =>
+																		handleToArchive(item.id, index)
+																	}>
 																	<KeyboardReturnIcon />
 																</button>
 															</>
@@ -400,14 +416,16 @@ const MainPage = () => {
 														item.isArchived === true && s.Archive
 													}`}>
 													<button
-														onClick={() => console.log('1234')}
+														onClick={() => handleOpenCard(item.id)}
 														className={s.btn}>
 														<img src={Home} alt="Home" />
 													</button>
 													<p>{item.nameStudent}</p>
 													{item.isArchived === true && (
 														<>
-															<button className={s.Icons}>
+															<button
+																onClick={() => handleToArchive(item.id, index)}
+																className={s.Icons}>
 																<KeyboardReturnIcon />
 															</button>
 														</>

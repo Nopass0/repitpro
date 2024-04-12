@@ -71,8 +71,9 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
 	const [isEditMode, setIsEditMode] = useState(
-		currentOpenedStudent ? false : true,
+		currentOpenedStudent ? true : false,
 	)
+	console.log(currentOpenedStudent, 'currentOpenedStudent')
 
 	useEffect(() => {
 		socket.emit('getAllIdStudents', {token: token})
@@ -103,6 +104,7 @@ const AddStudent = ({}: IAddStudent) => {
 			id: currentOpenedStudent,
 			isArchived: true,
 		})
+		window.location.reload()
 	}
 
 	// Block Student
@@ -1479,7 +1481,7 @@ const AddStudent = ({}: IAddStudent) => {
 																	</p>
 																)}
 															</div>
-															{isEditMode && (
+															{!isEditMode && (
 																<>
 																	<button
 																		onClick={() =>
@@ -1616,7 +1618,7 @@ const AddStudent = ({}: IAddStudent) => {
 					<div className={s.FooterButton}>
 						<div className={s.EditNSave}>
 							<button
-								className={s.Edit}
+								className={`${s.Edit} ${!isEditMode ? s.Save : ''}`}
 								onClick={() => setIsEditMode(!isEditMode)}>
 								<p>Редактировать</p>
 							</button>

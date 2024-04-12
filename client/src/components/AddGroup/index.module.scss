@@ -344,7 +344,10 @@
 			padding: 10px;
 			display: flex;
 			flex-direction: column;
-
+			//if .active_s and .scheduleItem:hover then display: block for .scheduleBtn_Delete
+			.active_s:hover > .ScheduleBtn_Delete {
+				display: block;
+			}
 			.ScheduleItem {
 				display: flex;
 				flex-direction: row;
@@ -361,6 +364,12 @@
 						transition: all 0.2s;
 						color: #b67f15;
 					}
+				}
+				.ScheduleBtn_Delete {
+					cursor: pointer;
+					border: none;
+					background: none;
+					display: none;
 				}
 			}
 		}
