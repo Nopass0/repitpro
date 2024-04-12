@@ -12,6 +12,7 @@ interface ILine {
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void // Добавлен пропс для обработчика изменения состояния
 	color?: string
 	disabled?: boolean
+	borderRadius?: number
 }
 
 const CheckBox: React.FC<ILine> = ({
@@ -21,10 +22,11 @@ const CheckBox: React.FC<ILine> = ({
 	checked,
 	color,
 	onChange,
-	disabled
+	disabled,
+	borderRadius
 }: ILine) => {
 	const BpIcon = styled('span')(({theme}) => ({
-		borderRadius: 3,
+		borderRadius: borderRadius || 3,
 		width: size,
 		height: size,
 		boxShadow:
@@ -81,6 +83,7 @@ const CheckBox: React.FC<ILine> = ({
 		<mui.Checkbox
 			sx={{
 				'&:hover': {bgcolor: 'transparent'},
+
 			}}
 			className={className}
 			checked={checked} // Передаем значение "checked" из пропсов

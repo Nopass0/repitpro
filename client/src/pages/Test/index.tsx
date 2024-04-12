@@ -9,14 +9,15 @@ import Client from '../../assets/6.svg'
 const Test = () => {
 	return (
 		<div>
-			<DayCalendarPopUp/>
-			{/* <DayStudentPopUp
+			{/* <DayCalendarPopUp/> */}
+			<DayStudentPopUp
 				icon={Home}
 				name="Группа Бэтта 1 Математика"
 				address="г. Москва, ул. Мясницкая, 4"
 				date="4 марта 2024"
 				time="Пн 10:00 - 12:00"
-			/> */}
+				isGroup
+			/>
 		</div>
 	)
 }

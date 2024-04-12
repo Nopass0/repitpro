@@ -29,6 +29,7 @@ interface IDayStudentPopUp {
 	time?: string
 	style?: React.CSSProperties
 	onExit?: () => void
+	isGroup?: boolean
 }
 const DayStudentPopUp = ({
 	icon,
@@ -38,6 +39,7 @@ const DayStudentPopUp = ({
 	time,
 	style,
 	onExit,
+	isGroup,
 }: IDayStudentPopUp) => {
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
@@ -265,10 +267,49 @@ const DayStudentPopUp = ({
 							</Select>
 						</div>
 						<h1>Выполнение домашней работы</h1>
-						<NowLevel
-							value={homeStudentsPoints}
-							onChange={(e) => setHomeStudentsPoints(e)}
-						/>
+						{!isGroup ? (
+							<NowLevel
+								value={homeStudentsPoints}
+								onChange={(e) => setHomeStudentsPoints(e)}
+							/>
+						) : (
+							<>
+								<div className={s.HomeWorkGroups}>
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+								</div>
+							</>
+						)}
 					</div>
 					<div className={s.Devider}></div>
 					<div className={s.LessonWrapper}>
@@ -347,14 +388,74 @@ const DayStudentPopUp = ({
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>
-						<NowLevel
-							value={classroomStudentsPoints}
-							onChange={(e) => setClassroomStudentsPoints(e)}
-						/>
-						<div className={s.PrePay}>
-							<p>0 ₽</p>
-							<CheckBox size="16px" />
-						</div>
+						{!isGroup ? (
+							<>
+								<NowLevel
+									value={classroomStudentsPoints}
+									onChange={(e) => setClassroomStudentsPoints(e)}
+								/>
+								<div className={s.PrePay}>
+									<p>0 ₽</p>
+									<CheckBox size="16px" />
+								</div>
+							</>
+						) : (
+							<>
+								<div className={s.WorkClassGroup}>
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+								</div>
+								<div className={s.Total}>
+									<p>Итог: 5555</p>
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
