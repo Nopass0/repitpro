@@ -4,16 +4,21 @@ import DataSlidePicker from '../DataSlidePicker'
 import CloseIcon from '@mui/icons-material/Close'
 import DayCalendarLine from '../DayCalendarLine/index'
 import GroupOnline from '../../assets/1.svg'
+import * as mui from '@mui/base'
+
 import Online from '../../assets/2.svg'
 import HomeStudent from '../../assets/3.svg'
 import Group from '../../assets/4.svg'
 import Home from '../../assets/5.svg'
 import Client from '../../assets/6.svg'
 import Plus from '../../assets/ItemPlus.svg'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {useEffect} from 'react'
 import socket from '../../socket'
 import React from 'react'
+import {debounce} from 'lodash'
+
+import Arrow, {ArrowType} from '../../assets/arrow'
 interface IDayCalendarPopUp {
 	style?: React.CSSProperties
 	onExit?: () => void
@@ -37,6 +42,27 @@ const DayCalendarPopUp = ({
 	const calendarNowPopupYear = useSelector(
 		(state: any) => state.calendarNowPopupYear,
 	)
+
+	const currentMonth = useSelector((state: any) => state.currentMonth)
+	const currentYear = useSelector((state: any) => state.currentYear)
+
+	const dispath = useDispatch()
+
+	//for date mode
+	let months = [
+		'Январь',
+		'Февраль',
+		'Март',
+		'Апрель',
+		'Май',
+		'Июнь',
+		'Июль',
+		'Август',
+		'Сентябрь',
+		'Октябрь',
+		'Ноябрь',
+		'Декабрь',
+	]
 
 	const [editMode, setEditMode] = React.useState(false)
 
@@ -64,11 +90,11 @@ const DayCalendarPopUp = ({
 			year: calendarNowPopupYear,
 			token: token,
 		})
-		socket.once('getStudentsByDate', (data: any) => {
-			console.log('getStudentsByDate', data)
-			setStudents(data)
-		})
 	}, [])
+	socket.once('getStudentsByDate', (data: any) => {
+		console.log('getStudentsByDate', data)
+		setStudents(data)
+	})
 
 	//hour or minute to normal view. Ex: 12:3 to 12:03/ 1:5 to 01:05
 	const timeNormalize = (time: number) => {
@@ -164,13 +190,106 @@ const DayCalendarPopUp = ({
 	// 	console.log('Students upd: ', students)
 	// }, [students])
 
+	const updData = (day: string, month: string, year: string) => {
+		//remove leading 0
+		day = day.replace(/^0+/, '')
+		month = month.replace(/^0+/, '')
+
+		dispath({
+			type: 'SET_CALENDAR_NOW_POPUP',
+			payload: {
+				day: day,
+				month: month,
+				year: year,
+			},
+		})
+
+		socket.emit('getStudentsByDate', {
+			day: day,
+			month: month,
+			year: year,
+			token: token,
+		})
+	}
+
+	const debouncedOnUpdate = debounce(updData, 2)
+
+	const handleAddDay = () => {
+		//get calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear (Ex: '1', '1', "2023") and remake it to Date and add 1 day
+		const newDate = new Date(
+			calendarNowPopupYear,
+			Number(calendarNowPopupMonth) - 1,
+			calendarNowPopupDay,
+		)
+		newDate.setDate(newDate.getDate() + 1)
+
+		//get new day, month, year as string (Ex: '1', '1', "2023") and set it to calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear
+		const newDay = String(newDate.getDate()).padStart(2, '0')
+		const newMonth = String(newDate.getMonth() + 1).padStart(2, '0')
+		const newYear = String(newDate.getFullYear())
+
+		debouncedOnUpdate(newDay, newMonth, newYear)
+	}
+
+	const handlePrevDay = () => {
+		//get calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear (Ex: '1', '1', "2023") and remake it to Date and subtract 1 day
+		const newDate = new Date(
+			calendarNowPopupYear,
+			Number(calendarNowPopupMonth) - 1,
+			calendarNowPopupDay,
+		)
+		newDate.setDate(newDate.getDate() - 1)
+
+		//get new day, month, year as string (Ex: '1', '1', "2023") and set it to calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear
+		const newDay = String(newDate.getDate()).padStart(2, '0')
+		const newMonth = String(newDate.getMonth() + 1).padStart(2, '0')
+		const newYear = String(newDate.getFullYear())
+
+		debouncedOnUpdate(newDay, newMonth, newYear)
+	}
+
 	return (
 		<div style={style} className={`${s.wrapper} ${className}`}>
 			<div>
 				<header className={s.Header}>
 					<div className={s.HeaderItems}>
+						{/* <DataSlidePicker className={s.dataSlidePicker} dateMode /> */}
+						<div className={s.dataSlidePicker + ' ' + (className || '')}>
+							<button
+								className={s.btn}
+								onClick={() => {
+									handlePrevDay()
+								}}>
+								<span>
+									<Arrow direction={ArrowType.left} />
+								</span>
+							</button>
+							<mui.Select
+								className={s.muiSelect}
+								multiple={true}
+								renderValue={(option: mui.SelectOption<number> | null) => {
+									return (
+										<>
+											<p className={s.btnText}>
+												{calendarNowPopupDay}{' '}
+												{months[Number(calendarNowPopupMonth) - 1]}{' '}
+												{calendarNowPopupYear}г.
+											</p>
+										</>
+									)
+								}}></mui.Select>
+
+							<button
+								className={s.btn}
+								onClick={() => {
+									handleAddDay()
+								}}>
+								<span>
+									<Arrow direction={ArrowType.right} />
+								</span>
+							</button>
+						</div>
 						{/* this */}
-						<DataSlidePicker className={s.dataSlidePicker} dateMode />
 						<button onClick={onExit}>
 							<CloseIcon className={s.closeIcon} />
 						</button>
