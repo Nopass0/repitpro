@@ -43,6 +43,7 @@ interface IDayCalendarLine {
 	price: string
 	prevpay?: boolean
 	editMode?: boolean
+	
 
 	iconClick?: () => void
 	LineClick?: () => void

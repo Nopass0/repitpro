@@ -427,14 +427,13 @@ const AddClient = ({}: IAddClient) => {
 											<Input
 												num
 												type="text"
-												value={job.cost}
+												value={job.stages[0].totalCost}
 												onChange={(e) => {
-													changeStage(index, 0, 'cost', e.target.value)
+													changeStage(index, 0, 'totalCost', e.target.value)
 												}}
 											/>
 											<p>₽</p>
 										</div>
-										<Line width="296px" className={s.Line} />
 										{/* <div className={s.StudentCard}>
 										<p>Комментарий:</p>
 										<textarea

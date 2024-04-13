@@ -27,38 +27,36 @@ input {
 	}
 	.ClickWrapper {
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
 		align-items: center;
+		justify-content: flex-start;
 		height: 100%;
 
-		.Time {
-			margin-right: 10px;
-			width: 100px;
-		}
-
-		.Name {
-			margin-right: 10px;
-			width: 220px;
-		}
-
-		.Item {
-			margin-right: 10px;
-			width: 110px;
-		}
-
-		.Price {
-			margin-right: 10px;
-			width: 70px;
-			font-weight: 500;
+		.ClickUp {
 			display: flex;
-			justify-content: flex-end;
+			flex-direction: row;
+			align-items: center;
+			margin-bottom: 10px;
+			.Item {
+				margin-right: 20px;
+			}
+		}
+
+		.ClientDown {
+			display: flex;
+			width: 100%;
+			flex-direction: row;
+			align-items: center;
+
+			.Order, .Price {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				margin-right: 20px;
+			}
 		}
 	}
-	
 
-	.Checkbox {
-		margin-right: 10px;
-	}
 	.BtnDelete {
 		color: #9296ad;
 	}

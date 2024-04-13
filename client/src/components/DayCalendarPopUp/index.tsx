@@ -254,7 +254,7 @@ const DayCalendarPopUp = ({
 				<header className={s.Header}>
 					<div className={s.HeaderItems}>
 						{/* <DataSlidePicker className={s.dataSlidePicker} dateMode /> */}
-						<div className={s.dataSlidePicker + ' ' + (className || '')}>
+						<div className={s.dataSlidePicker}>
 							<button
 								className={s.btn}
 								onClick={() => {
