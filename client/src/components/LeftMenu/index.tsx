@@ -21,6 +21,7 @@ import WhatsAppIcon from '../../assets/WhatsUPSVG.svg'
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn'
 import Home from '../../assets/5.svg'
 
+import Client from '../../assets/6.svg'
 import Group from '../../assets/4.svg'
 import {Link} from 'react-router-dom'
 interface ILeftMenu {}
@@ -40,6 +41,7 @@ const MainPage = () => {
 	// const [openSelect, setOpenSelect] = useState<boolean>(false)
 	const [openedStudents, setOpenedStudents] = useState<number[]>([])
 	const [openedGroups, setOpenedGroups] = useState<number[]>([])
+	const [openedClients, setOpenedClients] = useState<number[]>([])
 
 	const handleOpenStudent = (index: number) => {
 		if (openedStudents.includes(index)) {
@@ -53,6 +55,14 @@ const MainPage = () => {
 			setOpenedGroups(openedGroups.filter((item) => item !== index))
 		} else {
 			setOpenedGroups([...openedGroups, index])
+		}
+	}
+
+	const handleOpenClients = (index: number) => {
+		if (openedClients.includes(index)) {
+			setOpenedClients(openedClients.filter((item) => item !== index))
+		} else {
+			setOpenedClients([...openedClients, index])
 		}
 	}
 
@@ -491,14 +501,113 @@ const MainPage = () => {
 					</>
 				)}
 				{/* FOR CLIENTS */}
-				{valueMuiSelectType === 0 && (
+				{(valueMuiSelectType === 0 || valueMuiSelectType === 1) && (
 					<>
 						{filteredClients.map((item: any, index: number) => (
 							<>
-								<p>
-									{item.nameStudent} - {item.email} - {item.phoneNumber} -{' '}
-									{item.isArchived}
-								</p>
+								<MUI.Select
+									key={index}
+									className={s.muiSelect}
+									onListboxOpenChange={() => handleOpenClients(index)}
+									multiple
+									renderValue={(option: MUI.SelectOption<number> | null) => {
+										if (option == null || option.value === null) {
+											return (
+												<>
+													<div
+														className={`${s.ListWrapper} ${
+															item.isArchived === true && s.Archive
+														}`}>
+														<button
+															className={s.btn}
+															onClick={() => handleOpenCard(item.id)}>
+															<img src={Client} alt="Client" />
+														</button>
+														<p>{item.nameStudent}</p>
+														{item.isArchived && (
+															<>
+																<button
+																	className={s.Icons}
+																	onClick={() =>
+																		handleToArchive(item.id, index)
+																	}>
+																	<KeyboardReturnIcon />
+																</button>
+															</>
+														)}
+														<div className={s.Icons}>
+															{openedClients.includes(index) ? (
+																<ExpandLess />
+															) : (
+																<ExpandMore />
+															)}
+														</div>
+													</div>
+												</>
+											)
+										}
+										return (
+											<>
+												<div
+													className={`${s.ListWrapper} ${
+														item.isArchived === true && s.Archive
+													}`}>
+													<button
+														onClick={() => handleOpenCard(item.id)}
+														className={s.btn}>
+														<img src={Client} alt="Client" />
+													</button>
+													<p>{item.nameStudent}</p>
+													{item.isArchived === true && (
+														<>
+															<button
+																onClick={() => handleToArchive(item.id, index)}
+																className={s.Icons}>
+																<KeyboardReturnIcon />
+															</button>
+														</>
+													)}
+													<div className={s.Icons}>
+														{openedClients.includes(index) ? (
+															<ExpandLess />
+														) : (
+															<ExpandMore />
+														)}
+													</div>
+												</div>
+											</>
+										)
+									}}>
+									<MUI.Option className={s.muiOption} value={1}>
+										<div className={s.ListItem}>
+											{item.phoneNumber ? (
+												<>
+													<p className={s.Phone}>{item.phoneNumber}</p>
+													<div className={s.Icons}>
+														<Link to={`tel:${item.phoneNumber}`}>
+															<img src={phoneIcon} alt="phoneIcon" />
+														</Link>
+														<Link to={`mailto:${item.email}`}>
+															<img src={EmailIcon} alt="EmailIcon" />
+														</Link>
+														<Link
+															to={`tg://resolve?domain=${item.phoneNumber}`}>
+															<img src={TelegramIcon} alt="TelegramIcon" />
+														</Link>
+														<Link to={`https://wa.me/${item.phoneNumber}`}>
+															<img src={WhatsAppIcon} alt="WhatsApp" />
+														</Link>
+													</div>
+												</>
+											) : (
+												<>
+													<p className={s.NoData}>Данных нет</p>
+												</>
+											)}
+										</div>
+									</MUI.Option>
+								</MUI.Select>
+								<Line className={s.LineList} width="296px" />
 							</>
 						))}
 					</>
