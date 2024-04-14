@@ -619,6 +619,8 @@ const Statistics = ({}: IStatistics) => {
 													height: '18px',
 												},
 											}}
+											value={startData}
+											onChange={(date) => setStartData(date)}
 											timezone="system"
 											showDaysOutsideCurrentMonth
 										/>
@@ -645,6 +647,8 @@ const Statistics = ({}: IStatistics) => {
 													height: '18px',
 												},
 											}}
+											value={endData}
+											onChange={(date) => setEndData(date)}
 											timezone="system"
 											showDaysOutsideCurrentMonth
 										/>

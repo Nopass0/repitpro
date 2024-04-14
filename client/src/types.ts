@@ -57,3 +57,29 @@ export interface IItemCard {
 	nowLevel: number | undefined
 	timeLinesArray: ITimeLine[]
 }
+
+export interface IStudent {
+	nameStudent: string
+	contactFace: string
+	phoneNumber: string
+	email: string
+	address: string
+	linkStudent: string
+	costStudent: string
+	commentStudent: string
+	prePayCost: string
+	prePayDate: string
+	selectedDate: null
+	costOneLesson: string
+	storyLesson: string
+	targetLessonStudent: string
+	todayProgramStudent: string
+}
+
+export interface IHistoryLessons {
+	date: Date
+	itemName: string
+	isDone: boolean
+	price: string
+	isPaid: boolean
+}

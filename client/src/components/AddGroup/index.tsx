@@ -30,7 +30,13 @@ import InputPhoneNumber from '../InputPhoneNumber/index'
 import Input from '../Input'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-import {ELeftMenuPage, IItemCard, ITimeLine} from '../../types'
+import {
+	ELeftMenuPage,
+	IHistoryLessons,
+	IItemCard,
+	IStudent,
+	ITimeLine,
+} from '../../types'
 import TimePicker from '../Timer/index'
 import {useDispatch, useSelector} from 'react-redux'
 import socket from '../../socket'
@@ -98,25 +104,7 @@ const AddGroup = ({}: IAddGroup) => {
 		},
 	])
 
-	const [students, setStudents] = useState<
-		{
-			nameStudent: string
-			contactFace: string
-			phoneNumber: string
-			email: string
-			address: string
-			linkStudent: string
-			costStudent: string
-			commentStudent: string
-			prePayCost: string
-			prePayDate: string
-			selectedDate: null
-			costOneLesson: string
-			storyLesson: string
-			targetLessonStudent: string
-			todayProgramStudent: string
-		}[]
-	>([
+	const [students, setStudents] = useState<IStudent[]>([
 		{
 			nameStudent: '',
 			contactFace: '',
@@ -298,28 +286,6 @@ const AddGroup = ({}: IAddGroup) => {
 		console.log(items)
 	}
 
-	const addStudent = () => {
-		setStudents([
-			...students,
-			{
-				nameStudent: '',
-				contactFace: '',
-				phoneNumber: '',
-				email: '',
-				address: '',
-				linkStudent: '',
-				costStudent: '',
-				commentStudent: '',
-				prePayCost: '',
-				prePayDate: '',
-				selectedDate: null,
-				storyLesson: '',
-				targetLessonStudent: '',
-				todayProgramStudent: '',
-			},
-		])
-	}
-
 	const changeStudentValue = (
 		studentIndex: number,
 		name: string,
@@ -333,7 +299,6 @@ const AddGroup = ({}: IAddGroup) => {
 	}
 
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
-	const [lessonDuration, setLessonDuration] = useState()
 
 	const handleClick_delete = (itemIndex: number, id: number) => {
 		setItems((prevItems) =>
@@ -600,6 +565,7 @@ const AddGroup = ({}: IAddGroup) => {
 				prePayDate: '',
 				selectedDate: null,
 				storyLesson: '',
+				costOneLesson: 0,
 				targetLessonStudent: '',
 				todayProgramStudent: '',
 			},
@@ -637,6 +603,72 @@ const AddGroup = ({}: IAddGroup) => {
 	})
 	const [open, setOpen] = useState(true)
 	const [openHistory, setOpenHistory] = useState(false)
+
+	//calulations
+	//Всего занятий - начало + окончание + расписание в предмете
+	const getTotalLessons = (
+		startDate: Date,
+		endDate: Date,
+		timeLinesArray: ITimeLine[],
+	) => {
+		let totalLessons = 0
+		let start = startDate
+		while (start.getTime() < endDate.getTime()) {
+			totalLessons += timeLinesArray.filter((timeLine) => {
+				return timeLine.startTime.hour !== 0 && timeLine.startTime.minute !== 0
+			}).length
+			start = new Date(start.getTime() + 60 * 60 * 1000)
+		}
+		console.log(totalLessons, 'totalLessons')
+		return totalLessons
+	}
+
+	//Сумма - Всего занятия * Общая стоимость 1-го занятия
+	const totalCostForGroup = (totalLessons: number, costPerLesson: number) => {
+		return totalLessons * costPerLesson
+	}
+
+	//Прошло - от календаря, то есть нынешняя дата и начало занятия
+	const passedLessons = (
+		historyLessons: {
+			isDone: boolean
+			isPaid: boolean
+		}[],
+	) => {
+		let passed = 0
+		historyLessons.forEach((historyLesson) => {
+			if (historyLesson.isDone) passed++
+		})
+		return passed
+	}
+
+	//Оплачено - Прошло * Общая стоимость занятия
+	const paidLessons = (
+		historyLessons: {
+			isDone: boolean
+			isPaid: boolean
+		}[],
+	) => {
+		let paid = 0
+		historyLessons.forEach((historyLesson) => {
+			if (historyLesson.isPaid) paid++
+		})
+		return paid
+	}
+
+	//Не оплачено - Всего занятий - оплачено
+	const notPaidLessons = (totalLessons: number, paidLessons: number) => {
+		return totalLessons - paidLessons
+	}
+
+	//Сумма расходов  каждого ученика
+	const costStudent = (students: IStudent[]) => {
+		let cost = 0
+		students.forEach((student) => {
+			cost += Number(student.costStudent)
+		})
+		return cost
+	}
 
 	useEffect(() => {
 		//sum all costStudent and write to allCost
@@ -928,11 +960,11 @@ const AddGroup = ({}: IAddGroup) => {
 										<Input
 											num
 											type="text"
-											value={item.timeLesson}
+											value={item.lessonDuration}
 											onChange={(e) =>
 												changeItemValue(
 													currentItemIndex,
-													'timeLesson',
+													'lessonDuration',
 													e.target.value,
 												)
 											}
@@ -1156,7 +1188,7 @@ const AddGroup = ({}: IAddGroup) => {
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
-												<p>Всего занятий: 0</p>
+												<p>Всего занятий: {allLessons}</p>
 												<p>Сумма: 0₽</p>
 											</div>
 											<Line width="294px" className={s.Line} />
