@@ -27,6 +27,7 @@ import CheckBox from '../../components/CheckBox'
 import {useNavigate} from 'react-router-dom'
 import {useSelector} from 'react-redux'
 import socket from '../../socket'
+import GraphicBlock from '../../components/GraphicBlock/index'
 
 ChartJS.register(
 	ArcElement,
@@ -270,42 +271,42 @@ const Statistics = ({}: IStatistics) => {
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
 
-	const [studAmItem, setStudAmItem] = useState<number>(0)
+	const [studAmItem, setStudAmItem] = useState<string[]>(['Все предметы'])
 	const [studAmDate, setStudAmDate] = useState<number>(0)
 	const [studAmDateStart, setStudAmDateStart] = useState<Date>()
 	const [studAmDateEnd, setStudAmDateEnd] = useState<Date>()
 	const [studAmCheck2, setStudAmCheck2] = useState<boolean>(true)
 	const [studAmCheck1, setStudAmCheck1] = useState<boolean>(true)
 
-	const [studLesItem, setStudLesItem] = useState<number>(0)
+	const [studLesItem, setStudLesItem] = useState<string[]>(['Все предметы'])
 	const [studLesDate, setStudLesDate] = useState<number>(0)
 	const [studLesDateStart, setStudLesDateStart] = useState<Date>()
 	const [studLesDateEnd, setStudLesDateEnd] = useState<Date>()
 	const [studLesCheck2, setStudLesCheck2] = useState<boolean>(true)
 	const [studLesCheck1, setStudLesCheck1] = useState<boolean>(true)
 
-	const [cliFinItem, setCliFinItem] = useState<number>(0)
+	const [cliFinItem, setCliFinItem] = useState<string[]>(['Все предметы'])
 	const [cliFinDate, setCliFinDate] = useState<number>(0)
 	const [cliFinDateStart, setCliFinDateStart] = useState<Date>()
 	const [cliFinDateEnd, setCliFinDateEnd] = useState<Date>()
 	const [cliFinCheck2, setCliFinCheck2] = useState<boolean>(true)
 	const [cliFinCheck1, setCliFinCheck1] = useState<boolean>(true)
 
-	const [cliAmItem, setCliAmItem] = useState<number>(0)
+	const [cliAmItem, setCliAmItem] = useState<string[]>(['Все предметы'])
 	const [cliAmDate, setCliAmDate] = useState<number>(0)
 	const [cliAmDateStart, setCliAmDateStart] = useState<Date>()
 	const [cliAmDateEnd, setCliAmDateEnd] = useState<Date>()
 	const [cliAmCheck2, setCliAmCheck2] = useState<boolean>(true)
 	const [cliAmCheck1, setCliAmCheck1] = useState<boolean>(true)
 
-	const [cliWorkItem, setCliWorkItem] = useState<number>(0)
+	const [cliWorkItem, setCliWorkItem] = useState<string[]>(['Все предметы'])
 	const [cliWorkDate, setCliWorkDate] = useState<number>(0)
 	const [cliWorkDateStart, setCliWorkDateStart] = useState<Date>()
 	const [cliWorkDateEnd, setCliWorkDateEnd] = useState<Date>()
 	const [cliWorkCheck2, setCliWorkCheck2] = useState<boolean>(true)
 	const [cliWorkCheck1, setCliWorkCheck1] = useState<boolean>(true)
 
-	const [studRelatItem, setStudRelatItem] = useState<number>(0)
+	const [studRelatItem, setStudRelatItem] = useState<string[]>(['Все предметы'])
 	const [studRelatDate, setStudRelatDate] = useState<number>(0)
 	const [studRelatDateStart, setStudRelatDateStart] = useState<Date>()
 	const [studRelatDateEnd, setStudRelatDateEnd] = useState<Date>()
@@ -406,7 +407,7 @@ const Statistics = ({}: IStatistics) => {
 					</button>
 				</div>
 				<div className={s.MainBlock}>
-					<div className={s.GraphicBlock}>
+					{/* <div className={s.GraphicBlock}>
 						<div className={s.MenuForGraphic}>
 							<Select
 								multiple
@@ -417,7 +418,7 @@ const Statistics = ({}: IStatistics) => {
 								variant={'standard'}>
 								{names.map((name, index) => (
 									<MenuItem value={name} key={index}>
-										<Checkbox checked={studFinItem.indexOf(name) > -1} />
+										<CheckBox checked={studFinItem.indexOf(name) > -1} />
 										<ListItemText primary={name} />
 									</MenuItem>
 								))}
@@ -571,8 +572,63 @@ const Statistics = ({}: IStatistics) => {
 								}
 							}
 						})()}
-					</div>
+					</div> */}
+					{/* <Line width="100%" className={s.Line} /> */}
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studFinItem}
+						OnChangeItem={(e: any) => setStudFinItem(e.target.value)}
+						DateState={studFinDate}
+						OnChangeDate={(e: any) => setStudFinDate(e.target.value)}
+						DateStartState={studFinDateStart}
+						OnChangeDateStart={(e: any) => setStudFinDateStart(e.target.value)}
+						DateEndState={studFinDateEnd}
+						OnChangeDateEnd={(e: any) => setStudFinDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики-Финансы"
+					/>
 					<Line width="100%" className={s.Line} />
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studAmItem}
+						OnChangeItem={(e: any) => setStudAmItem(e.target.value)}
+						DateState={studAmDate}
+						OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
+						DateStartState={studAmDateStart}
+						OnChangeDateStart={(e: any) => setStudAmDateStart(e.target.value)}
+						DateEndState={studAmDateEnd}
+						OnChangeDateEnd={(e: any) => setStudAmDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики-Количество"
+					/>
+					<Line width="100%" className={s.Line} />
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studLesItem}
+						OnChangeItem={(e: any) => setStudLesItem(e.target.value)}
+						DateState={studLesDate}
+						OnChangeDate={(e: any) => setStudLesDate(e.target.value)}
+						DateStartState={studLesDateStart}
+						OnChangeDateStart={(e: any) => setStudLesDateStart(e.target.value)}
+						DateEndState={studLesDateEnd}
+						OnChangeDateEnd={(e: any) => setStudLesDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики-Занятия"
+					/>
+					<Line width="100%" className={s.Line} />
+					{/* Table */}
 					<div className={s.GraphicBlock}>
 						<div className={s.MenuForGraphic}>
 							<p className={s.TitleTable}>Ученики сводная таблица</p>
@@ -831,6 +887,342 @@ const Statistics = ({}: IStatistics) => {
 						</div>
 					</div>
 					<Line width="100%" className={s.Line} />
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={cliFinItem}
+						OnChangeItem={(e: any) => setCliFinItem(e.target.value)}
+						DateState={cliFinDate}
+						OnChangeDate={(e: any) => setCliFinDate(e.target.value)}
+						DateStartState={cliFinDateStart}
+						OnChangeDateStart={(e: any) => setCliFinDateStart(e.target.value)}
+						DateEndState={cliFinDateEnd}
+						OnChangeDateEnd={(e: any) => setCliFinDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Заказчики-Финансы"
+						isClient
+					/>
+					<Line width="100%" className={s.Line} />
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={cliAmItem}
+						OnChangeItem={(e: any) => setCliAmItem(e.target.value)}
+						DateState={cliAmDate}
+						OnChangeDate={(e: any) => setCliAmDate(e.target.value)}
+						DateStartState={cliAmDateStart}
+						OnChangeDateStart={(e: any) => setCliAmDateStart(e.target.value)}
+						DateEndState={cliAmDateEnd}
+						OnChangeDateEnd={(e: any) => setCliAmDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Заказчики-Количество"
+						isClient
+					/>
+					<Line width="100%" className={s.Line} />
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={cliWorkItem}
+						OnChangeItem={(e: any) => setCliWorkItem(e.target.value)}
+						DateState={cliWorkDate}
+						OnChangeDate={(e: any) => setCliWorkDate(e.target.value)}
+						DateStartState={cliWorkDateStart}
+						OnChangeDateStart={(e: any) => setCliWorkDateStart(e.target.value)}
+						DateEndState={cliWorkDateEnd}
+						OnChangeDateEnd={(e: any) => setCliAmDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Заказчики-Работы"
+						isClient
+					/>
+					<Line width="100%" className={s.Line} />
+					{/* Table */}
+					<div className={s.GraphicBlock}>
+						<div className={s.MenuForGraphic}>
+							<p className={s.TitleTable}>Заказчики сводная таблица</p>
+							<Select
+								className={s.muiSelect}
+								value={studFinDate}
+								onChange={(e: any) => setStudFinDate(e.target.value)}
+								variant={'standard'}>
+								<MenuItem value={0}>
+									<p>За последние 30 дней</p>
+								</MenuItem>
+								<MenuItem value={1}>
+									<p>С начала месяца</p>
+								</MenuItem>
+								<MenuItem value={2}>
+									<p>С начала года</p>
+								</MenuItem>
+								<MenuItem value={3}>
+									<p>За всё время</p>
+								</MenuItem>
+								<MenuItem value={4}>
+									<p>Задать период</p>
+								</MenuItem>
+							</Select>
+							<Line width="260px" />
+							<div className={s.Dates}>
+								<div className={s.DatePicker}>
+									<LocalizationProvider
+										dateAdapter={AdapterDateFns}
+										adapterLocale={ru}>
+										<DatePicker
+											slots={{
+												layout: StyledPickersLayout,
+											}}
+											sx={{
+												input: {
+													paddingTop: '0px',
+													paddingBottom: '0px',
+													paddingLeft: '4px',
+													fontWeight: '500',
+												},
+												svg: {
+													width: '18px',
+													height: '18px',
+												},
+											}}
+											timezone="system"
+											showDaysOutsideCurrentMonth
+										/>
+									</LocalizationProvider>
+								</div>
+								<Line width="20px" className={s.LineDate} />
+								<div className={s.DatePicker}>
+									<LocalizationProvider
+										dateAdapter={AdapterDateFns}
+										adapterLocale={ru}>
+										<DatePicker
+											slots={{
+												layout: StyledPickersLayout,
+											}}
+											sx={{
+												input: {
+													paddingTop: '0px',
+													paddingBottom: '0px',
+													paddingLeft: '4px',
+													fontWeight: '500',
+												},
+												svg: {
+													width: '18px',
+													height: '18px',
+												},
+											}}
+											timezone="system"
+											showDaysOutsideCurrentMonth
+										/>
+									</LocalizationProvider>
+								</div>
+							</div>
+							<div className={s.DataBlock}>
+								<p></p>
+								<p></p>
+								<p style={{fontWeight: '500', textAlign: 'center'}}>Рубли</p>
+								<p style={{fontWeight: '500', textAlign: 'center'}}>%</p>
+								<CheckBox size="16px" color="red" />
+								<p>Всего</p>
+								<p style={{textAlign: 'center'}}>2000</p>
+								<p style={{textAlign: 'center'}}>100</p>
+								<CheckBox size="16px" color="blue" />
+								<p
+									style={{
+										textAlign: 'center',
+										display: 'flex',
+										alignItems: 'center',
+									}}>
+									На дому
+								</p>
+								<p
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+									}}>
+									2000
+								</p>
+								<p
+									style={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+									}}>
+									100
+								</p>
+							</div>
+						</div>
+						<div className={s.TableWrap}>
+							<table className={s.Table}>
+								<thead className={s.Thead}>
+									<tr className={s.Tr}>
+										<th
+											onClick={() => handleSort('name')}
+											style={{
+												borderBottom:
+													sortColumn === 'name'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Учеников:
+										</th>
+										<th
+											onClick={() => handleSort('lessons')}
+											style={{
+												borderBottom:
+													sortColumn === 'lessons'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Занятия:
+										</th>
+										<th
+											onClick={() => handleSort('avg_cost')}
+											style={{
+												borderBottom:
+													sortColumn === 'avg_cost'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Средняя стоимость занятия:
+										</th>
+										<th
+											onClick={() => handleSort('cancel')}
+											style={{
+												borderBottom:
+													sortColumn === 'cancel'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Отмененные:
+										</th>
+										<th
+											onClick={() => handleSort('income')}
+											style={{
+												borderBottom:
+													sortColumn === 'income'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Доход:
+										</th>
+										<th
+											onClick={() => handleSort('consumption')}
+											style={{
+												borderBottom:
+													sortColumn === 'consumption'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Расход:
+										</th>
+										<th
+											onClick={() => handleSort('duty')}
+											style={{
+												borderBottom:
+													sortColumn === 'duty'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Долг:
+										</th>
+										<th
+											onClick={() => handleSort('total')}
+											style={{
+												borderBottom:
+													sortColumn === 'total'
+														? `2px solid ${
+																sortDirection === 'asc' ? 'green' : 'red'
+														  }`
+														: 'none',
+											}}
+											className={s.Th}>
+											Итог:
+										</th>
+									</tr>
+								</thead>
+								<tbody className={s.Tbody}>
+									{sortedData.map((item: any, index: any) => (
+										<tr className={s.Tr} key={index}>
+											<td className={s.Td}>
+												<p>{item.name}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.lessons}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.avgCost}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.cancel}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.income}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.consumption}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.duty}</p>
+											</td>
+											<td className={s.Td}>
+												<p>{item.total}</p>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<Line width="100%" className={s.Line} />
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studRelatItem}
+						OnChangeItem={(e: any) => setStudRelatItem(e.target.value)}
+						DateState={studRelatDate}
+						OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
+						DateStartState={studRelatDateStart}
+						OnChangeDateStart={(e: any) =>
+							setStudRelatDateStart(e.target.value)
+						}
+						DateEndState={studRelatDateEnd}
+						OnChangeDateEnd={(e: any) => setStudAmDateEnd(e.target.value)}
+						chooseGraphic={chooseGraphic}
+						data={data}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики - Заказчики сравнительный график"
+						isClient
+					/>
 				</div>
 			</div>
 		</>
