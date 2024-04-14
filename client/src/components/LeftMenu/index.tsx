@@ -108,7 +108,7 @@ const MainPage = () => {
 	const data_muiSelectType = [
 		{
 			label: 'Все',
-			value: students.length + groups.length,
+			value: students.length + groups.length + clients.length,
 		},
 		{
 			label: 'Заказчики',
