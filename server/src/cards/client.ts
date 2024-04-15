@@ -177,6 +177,81 @@ export async function addClient(data: any) {
   }
 }
 
+export async function getClientById(data: { clientId: string; token: string }) {
+  try {
+    const { clientId, token } = data;
+
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      console.log("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    const client = await db.client.findUnique({
+      where: {
+        userId: userId,
+        id: clientId,
+      },
+    });
+
+    io.emit("getClientById", client);
+    return client;
+  } catch (error) {
+    console.error("Error fetching client:", error);
+  }
+}
+
+export async function updateClient(data: {
+  id: string;
+  nameStudent: string;
+  phoneNumber: string;
+  email: string;
+  costStudent: number;
+  commentClient: string;
+  token: string;
+}) {
+  try {
+    const { id, nameStudent, phoneNumber, email, commentClient, token } = data;
+
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      console.log("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    const client = await db.client.update({
+      where: {
+        id,
+        userId,
+      },
+      data: {
+        nameStudent,
+        phoneNumber,
+        email,
+        commentClient,
+      },
+    });
+
+    io.emit("updateClient", client);
+
+    return client;
+  } catch (error) {
+    console.error("Error updating client:", error);
+  }
+}
+
 export async function getClientList(token) {
   try {
     const token_ = await db.token.findFirst({

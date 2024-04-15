@@ -340,6 +340,11 @@ const Statistics = ({}: IStatistics) => {
 	}
 
 	useEffect(() => {
+		socket.emit('getAllItemsIdsAndNames', token)
+		socket.on('getAllItemsIdsAndNames', (data: any) => {
+			console.log('getAllItemsIdsAndNames', data)
+			// setItemsData(data)
+		})
 		socket.emit('getTableData', {
 			token: token,
 			dateRange: {start: startData, end: endData},

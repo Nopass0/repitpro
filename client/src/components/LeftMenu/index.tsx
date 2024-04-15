@@ -173,6 +173,28 @@ const MainPage = () => {
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
 	}
 
+	const handleOpenClient = (clientId: string) => {
+		socket.emit('getClientById', {
+			token: token,
+			clientId: clientId,
+		})
+		//SET_CURRENT_OPENED_CLIENT with clientid
+		dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: clientId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddClient})
+	}
+
+	const handleOpenGroup = (groupId: string) => {
+		socket.emit('getGroupById', {
+			token: token,
+			groupId: groupId,
+		})
+		//SET_CURRENT_OPENED_GROUP with groupid
+		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: groupId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup})
+	}
+
 	return (
 		<div className={s.wrapper}>
 			<div className={s.HeaderLeftMenu}>
@@ -520,7 +542,7 @@ const MainPage = () => {
 														}`}>
 														<button
 															className={s.btn}
-															onClick={() => handleOpenCard(item.id)}>
+															onClick={() => handleOpenClient(item.id)}>
 															<img src={Client} alt="Client" />
 														</button>
 														<p>{item.nameStudent}</p>

@@ -21,6 +21,7 @@ import { getUserData, setUserData } from "./auth/user";
 import {
   addGroup,
   deleteGroup,
+  getGroupById,
   getGroupList,
   groupToArchive,
 } from "./cards/group";
@@ -30,7 +31,18 @@ import {
   deleteClient,
   getClientList,
   getClientsByDate,
+  updateClient,
 } from "./cards/client";
+import {
+  getAllItemsIdsAndNames,
+  getClientCountData,
+  getClientFinanceData,
+  getClientWorksData,
+  getStudentClientComparisonData,
+  getStudentCountData,
+  getStudentFinanceData,
+  getStudentLessonsData,
+} from "./cards/statistics";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -61,6 +73,19 @@ io.on("connection", (socket) => {
   socket.on("groupToArchive", (data) => groupToArchive(data));
   socket.on("deleteGroup", (data) => deleteGroup(data));
   socket.on("getClientsByDate", (data) => getClientsByDate(data));
+  socket.on("getGroupById", (data) => getGroupById(data));
+  socket.on("updateClient", (data) => updateClient(data));
+
+  socket.on("getStudentFinanceData", (data) => getStudentFinanceData(data));
+  socket.on("getStudentCountData", (data) => getStudentCountData(data));
+  socket.on("getStudentLessonsData", (data) => getStudentLessonsData(data));
+  socket.on("getClientFinanceData", (data) => getClientFinanceData(data));
+  socket.on("getClientCountData", (data) => getClientCountData(data));
+  socket.on("getClientWorksData", (data) => getClientWorksData(data));
+  socket.on("getStudentClientComparisonData", (data) =>
+    getStudentClientComparisonData(data)
+  );
+  socket.on("getAllItemsIdsAndNames", (token) => getAllItemsIdsAndNames(token));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));
