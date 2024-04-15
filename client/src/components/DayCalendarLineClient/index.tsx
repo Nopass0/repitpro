@@ -22,6 +22,7 @@ import {useDispatch, useSelector} from 'react-redux'
 import {ELeftMenuPage} from '../../types'
 import socket from '../../socket'
 import DayStudentPopUp from '../DayStudentPopUp'
+import DayClientPopUp from '../DayClientPopUp'
 
 export const UPDATE_STUDENTS = 'UPDATE_STUDENTS'
 
@@ -183,7 +184,6 @@ const DayCalendarLineClient = ({
 					</div>
 				</div>
 			</div>
-			{isDetailsShow && <DayStudentPopUp />}
 		</>
 	)
 }

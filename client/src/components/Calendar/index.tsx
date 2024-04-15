@@ -30,6 +30,7 @@ interface ICalendar {
 enum PagePopup {
 	DayCalendar,
 	DayStudent,
+	DayClient,
 	None,
 }
 

@@ -17,6 +17,7 @@ import mobileLogo from '../../assets/mobileLogo.svg'
 import {slide as Menu} from 'react-burger-menu'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import AddIcon from '@mui/icons-material/Add'
+import MenuIcon from '@mui/icons-material/Menu'
 interface IHeader {}
 
 const Header = ({}: IHeader) => {
@@ -48,6 +49,16 @@ const Header = ({}: IHeader) => {
 						}}>
 						<img src={logo} alt="logo" className={s.logo} />
 						<img src={mobileLogo} alt="mobileLogo" className={s.mobileLogo} />
+					</button>
+					<button
+						className={s.BurgerMenu}
+						onClick={() => {
+							dispatch({
+								type: 'SET_LEFT_MENU_PAGE',
+								payload: ELeftMenuPage.MainPage,
+							})
+						}}>
+						<MenuIcon />
 					</button>
 					{/* <Menu width={'200px'} className={s.BurgerMenu}  /> */}
 					<mui.Select
@@ -120,8 +131,6 @@ const Header = ({}: IHeader) => {
 							style={{color: details ? '#25991c' : ''}}
 							className={s.hideBtn + ' ' + s.DetailsBtn}>
 							<p className={s.btnText}>Подробно</p>
-
-							<Doc className={s.eye} />
 						</button>
 					</div>
 				</div>
@@ -174,6 +183,15 @@ const Header = ({}: IHeader) => {
 					</mui.MenuItem>
 				</mui.Select>
 				<div className={s.Buttons}>
+					<button
+						onClick={() => {
+							dispatch({type: 'SET_DETAILS', payload: !details})
+							console.log(details)
+						}}
+						style={{color: details ? '#25991c' : ''}}
+						className={s.hideBtn + ' ' + s.DetailsBtn}>
+						<Doc className={s.eye} />
+					</button>
 					<Link
 						to={'/statistics'}
 						className={s.greenBtn + ' ' + s.rightlyLastBtns}>
@@ -192,7 +210,7 @@ const Header = ({}: IHeader) => {
 						</p>
 					</Link>
 					<mui.Select
-						className={s.muiSelect__Buttons}
+						className={s.muiSelect__ButtonsStat}
 						IconComponent={''}
 						renderValue={(option: SelectOption<number> | null) => {
 							return <MoreVertIcon />

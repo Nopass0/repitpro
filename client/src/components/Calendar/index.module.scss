@@ -497,18 +497,31 @@
 
 @media screen and (max-width: 678px) {
 	.calendar {
+		margin-top: 5px !important;
 		width: 100%;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
-
 		.table {
+			.head {
+				border: none !important;
+			}
 			font-size: 12px !important;
 			tr {
 				th {
 					min-width: 140px;
 					min-height: 116px;
+					border: none !important;
+				}
+
+				.td {
+					text-align: center !important;
+					border: none !important;
 				}
 			}
+		}
+
+		.LineWrapper {
+			display: none !important;
 		}
 	}
 

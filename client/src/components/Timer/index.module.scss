@@ -10,7 +10,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-
+	z-index: 100;
 	padding: 14px 0;
 }
 
@@ -43,11 +43,13 @@
 	align-items: center;
 }
 
-.hourPicker button:first-child, .minutePicker button:first-child {
+.hourPicker button:first-child,
+.minutePicker button:first-child {
 	margin-bottom: 20px;
 }
 
-.hourPicker button:last-child, .minutePicker button:last-child {
+.hourPicker button:last-child,
+.minutePicker button:last-child {
 	margin-top: 20px;
 	margin-bottom: 10px;
 }
@@ -63,7 +65,7 @@
 
 .timeDisplay {
 	font-size: 32px;
-	color: #25991C;
+	color: #25991c;
 	font-weight: 500;
 	margin: 20px 0;
 }
@@ -102,10 +104,9 @@
 
 	border: none;
 	border-radius: 5px;
-	background-color: #25991C;
+	background-color: #25991c;
 	font-size: 16px;
 	color: #fff;
 
 	cursor: pointer;
-
 }

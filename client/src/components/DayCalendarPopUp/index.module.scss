@@ -147,15 +147,28 @@ input {
 @media screen and (max-width: 678px) {
 	.wrapper {
 		max-width: 100%;
-		.HeaderItems {
-		}
+		box-shadow: none;
+		border: 1px solid #e2e2e9;
+		margin-top: 5px;
+		padding: 0;
+		max-height: 350px;
+		
 		.closeIcon {
-			left: 50px !important;
+			// left: 50px !important;
+			display: none !important;
 		}
+		.dataSlidePicker {
+			display: none !important;
+		}
+		.LineHeader {
+			display: none !important;
+		}
+
 		.ThreeBtnWrapper {
+			margin-bottom: 10px !important;
 			.EditBtn,
 			.SaveBtn {
-				width: 100px;
+				width: 140px;
 				height: 40px;
 				font-size: 12px;
 			}
@@ -165,7 +178,11 @@ input {
 			}
 		}
 		.Footer {
+			height: 52px !important;
 			font-size: 12px;
+			.Lessons, .works {
+				margin: 0 !important;
+			}
 		}
 	}
 }

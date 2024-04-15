@@ -313,16 +313,30 @@ const DayCalendarPopUp = ({
 					<Line width="700px" className={s.LineHeader} />
 					{clients &&
 						clients.map((client: any) => (
-							<DayCalendarLineClient
-								id={client.id}
-								key={client.id}
-								name={client.studentName}
-								price={client.workPrice}
-								studentId=""
-								item={client.studentName}
-							/>
+							<>
+								<DayCalendarLineClient
+									id={client.id}
+									key={client.id}
+									name={client.studentName}
+									price={client.workPrice}
+									studentId=""
+									item={client.studentName}
+								/>
+
+								<Line className={s.Line} width="700px" />
+							</>
 						))}
-					<Line width="700px" className={s.LineHeader} />
+					<DayCalendarLineClient
+						id="1"
+						key={1}
+						name="Группа 1"
+						item="Математика"
+						price="100"
+						studentId="cluy6blsd0008itfbuk3tz2jw"
+						procent="20"
+					/>
+
+					<Line className={s.Line} width="700px" />
 					{students &&
 						students.map((student: any) => (
 							<>
