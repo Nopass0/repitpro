@@ -76,39 +76,48 @@ export async function addGroup(data) {
           })),
         },
       },
+      select: {
+        _count: true,
+        id: true,
+        groupName: true,
+        userId: true,
+        items: true,
+        isArchived: true,
+        students: true,
+      },
     });
 
-    const createdItems = await Promise.all(
-      items.map((item) =>
-        db.item.create({
-          data: {
-            itemName: item.itemName,
-            tryLessonCheck: item.tryLessonCheck || false,
-            tryLessonCost: item.tryLessonCost || "",
-            todayProgramStudent: item.todayProgramStudent || "",
-            targetLesson: item.targetLesson || "",
-            programLesson: item.programLesson || "",
-            typeLesson: Number(item.typeLesson) || 1,
-            placeLesson: item.placeLesson || "",
-            timeLesson: item.timeLesson || "",
-            valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
-            startLesson: item.startLesson ? new Date(item.startLesson) : null,
-            endLesson: item.endLesson ? new Date(item.endLesson) : null,
-            nowLevel: item.nowLevel || 0,
-            lessonDuration: Number(item.lessonDuration) || null,
-            timeLinesArray: item.timeLinesArray || {},
-            userId: userId,
-            group: {
-              connect: {
-                id: createdGroup.id,
-              },
-            },
-          },
-        })
-      )
-    );
+    // const createdItems = await Promise.all(
+    //   items.map((item) =>
+    //     db.item.create({
+    //       data: {
+    //         itemName: item.itemName,
+    //         tryLessonCheck: item.tryLessonCheck || false,
+    //         tryLessonCost: item.tryLessonCost || "",
+    //         todayProgramStudent: item.todayProgramStudent || "",
+    //         targetLesson: item.targetLesson || "",
+    //         programLesson: item.programLesson || "",
+    //         typeLesson: Number(item.typeLesson) || 1,
+    //         placeLesson: item.placeLesson || "",
+    //         timeLesson: item.timeLesson || "",
+    //         valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
+    //         startLesson: item.startLesson ? new Date(item.startLesson) : null,
+    //         endLesson: item.endLesson ? new Date(item.endLesson) : null,
+    //         nowLevel: item.nowLevel || 0,
+    //         lessonDuration: Number(item.lessonDuration) || null,
+    //         timeLinesArray: item.timeLinesArray || {},
+    //         userId: userId,
+    //         group: {
+    //           connect: {
+    //             id: createdGroup.id,
+    //           },
+    //         },
+    //       },
+    //     })
+    //   )
+    // );
 
-    for (const item of createdItems) {
+    for (const item of createdGroup.items) {
       // Определяем диапазон дат
       const startDate = item.startLesson;
       const endDate = item.endLesson;
@@ -162,10 +171,10 @@ export async function addGroup(data) {
             data: {
               day: dayOfMonth.toString(),
               groupId: createdGroup.id,
-              workCount: item.workCount || 0,
+              workCount: 0,
               lessonsCount: 1,
               lessonsPrice: Number(costOneLesson.students[0].costOneLesson),
-              workPrice: item.workPrice || 0,
+              workPrice: 0,
               month: (date.getMonth() + 1).toString(),
               timeLinesArray: item.timeLinesArray,
               isChecked: false,
@@ -201,6 +210,9 @@ export async function getGroupList(token) {
     const groups = await db.group.findMany({
       where: {
         userId,
+        NOT: {
+          groupName: "",
+        },
       },
       select: {
         id: true,
@@ -343,6 +355,13 @@ export async function getGroupById(data: any) {
       where: {
         id: groupId,
         userId,
+      },
+      select: {
+        id: true,
+        isArchived: true,
+        items: true,
+        groupName: true,
+        students: true,
       },
     });
     io.emit("getGroupById", group);

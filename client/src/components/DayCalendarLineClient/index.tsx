@@ -110,6 +110,29 @@ const DayCalendarLineClient = ({
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
 	}
 
+	const handleOpenClient = (clientId: string) => {
+		console.log(clientId, '----------- handleOpenClient -----------')
+		socket.emit('getClientById', {
+			token: token,
+			clientId: clientId,
+		})
+		//SET_CURRENT_OPENED_CLIENT with clientid
+		dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: clientId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddClient})
+	}
+
+	const handleOpenGroup = (groupId: string) => {
+		socket.emit('getGroupById', {
+			token: token,
+			groupId: groupId,
+		})
+		//SET_CURRENT_OPENED_GROUP with groupid
+		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: groupId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup})
+	}
+
 	// const debouncedOnUpdate = debounce(onUpdate, 500)
 
 	const [isDetailsShow, setIsDetailsShow] = useState<boolean>(false)
@@ -127,7 +150,7 @@ const DayCalendarLineClient = ({
 				<button
 					onClick={() => {
 						if (!editMode) {
-							handleOpenCard()
+							handleOpenClient(id)
 							return iconClick
 						}
 					}}

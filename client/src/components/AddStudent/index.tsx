@@ -77,19 +77,84 @@ const AddStudent = ({}: IAddStudent) => {
 
 	useEffect(() => {
 		socket.emit('getAllIdStudents', {token: token})
-		socket.once('getAllIdStudents', (data: any) => {
+		socket.on('getAllIdStudents', (data: any) => {
 			// Make from object {id: 123}, {id: 2345} to Array Strings ['123', '2345']
 			const arr = Object.values(data).map((item: any) => item.id)
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
-			console.log(arr, 'arr', csp, 'csp')
+			console.log(
+				arr,
+				'\n---------arr-----------\n',
+				csp,
+				'\n--------------csp-------------',
+				currentOpenedStudent,
+				'currentOpenedStudent',
+			)
 		})
 
-		socket.once('getGroupByStudentId', (data: any) => {
+		socket.on('getGroupByStudentId', (data: any) => {
 			setData(data.group)
 		})
 	}, [])
+
+	const nextStud = () => {
+		console.log(
+			currentStudPosition,
+			'currentStudPosition',
+			allIdStudent,
+			'allIdStudent',
+			allIdStudent[Number(currentStudPosition)],
+			'allIdStudent[Number(currentStudPosition)]',
+		)
+		if (Number(currentStudPosition) < allIdStudent.length - 1) {
+			setCurrentStudPosition(Number(currentStudPosition) + 1)
+			const newId = allIdStudent[Number(currentStudPosition)]
+
+			console.log(
+				'\n-------------\n',
+				newId,
+				'newId',
+				currentStudPosition,
+				'currentStudPosition',
+				'\n--------\n',
+			)
+			// console.log(newId, 'newId')
+			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			console.log(currentOpenedStudent, 'newIdDispatch')
+			socket.emit('getGroupByStudentId', {
+				token: token,
+				studentId: newId,
+			})
+		}
+		socket.once('getGroupByStudentId', (data: any) => {
+			setData(data.group)
+		})
+	}
+
+	const prevStud = () => {
+		console.log(
+			currentStudPosition,
+			'currentStudPosition',
+			allIdStudent,
+			'allIdStudent',
+			allIdStudent[Number(currentStudPosition)],
+			'allIdStudent[Number(currentStudPosition)]',
+		)
+		if (Number(currentStudPosition) > 0) {
+			setCurrentStudPosition(Number(currentStudPosition) - 1)
+			const newId = allIdStudent[Number(currentStudPosition)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			socket.emit('getGroupByStudentId', {
+				token: token,
+				studentId: newId,
+			})
+			socket.on('getGroupByStudentId', (data: any) => {
+				setData(data.group)
+			})
+		}
+	}
 
 	const handleDelete = () => {
 		socket.emit('deleteStudent', {
@@ -235,6 +300,23 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	const sendData = () => {
+		console.log(
+			{
+				nameStudent,
+				contactFace,
+				email,
+				linkStudent,
+				costStudent,
+				commentStudent,
+				prePayCost,
+				prePayDate,
+				costOneLesson,
+				items,
+				token,
+				phoneNumber,
+			},
+			'sendData',
+		)
 		if (currentOpenedStudent !== '') {
 			socket.emit('updateStudentAndItems', {
 				id: currentOpenedStudent,
@@ -407,6 +489,26 @@ const AddStudent = ({}: IAddStudent) => {
 		} else {
 			setShowEndTimePicker(id)
 		}
+	}
+
+	const closeTimePicker = (index: number, id: number) => {
+		//change
+		setItems((prevItems) =>
+			prevItems.map((item, itemIndex) =>
+				itemIndex === index
+					? {
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {...timeline, editingEnd: false, active: false}
+									: timeline,
+							),
+					  }
+					: item,
+			),
+		)
+		console.log('close', index, id)
+		setShowEndTimePicker(-1)
 	}
 
 	// Function to hash a string using a custom hash function
@@ -663,57 +765,6 @@ const AddStudent = ({}: IAddStudent) => {
 			...prevHistoryLesson.slice(index + 1),
 		])
 	}
-
-	const nextStud = () => {
-		console.log(
-			currentStudPosition,
-			'currentStudPosition',
-			allIdStudent,
-			'allIdStudent',
-			allIdStudent[Number(currentStudPosition)],
-			'allIdStudent[Number(currentStudPosition)]',
-		)
-		if (Number(currentStudPosition) + 2 < allIdStudent.length) {
-			setCurrentStudPosition(Number(currentStudPosition) + 1)
-			const newId = allIdStudent[Number(currentStudPosition)]
-
-			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-			socket.emit('getGroupByStudentId', {
-				token: token,
-				studentId: newId,
-			})
-			// socket.once('getGroupByStudentId', (data: any) => {
-			// 	setData(data.group)
-			// })
-		}
-	}
-
-	const prevStud = () => {
-		console.log(
-			currentStudPosition,
-			'currentStudPosition',
-			allIdStudent,
-			'allIdStudent',
-			allIdStudent[Number(currentStudPosition)],
-			'allIdStudent[Number(currentStudPosition)]',
-		)
-		if (Number(currentStudPosition) - 1 > 0) {
-			setCurrentStudPosition(Number(currentStudPosition) - 1)
-			const newId = allIdStudent[Number(currentStudPosition)]
-
-			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-			socket.emit('getGroupByStudentId', {
-				token: token,
-				studentId: newId,
-			})
-			// socket.once('getGroupByStudentId', (data: any) => {
-			// 	setData(data.group)
-			// })
-		}
-	}
-
-	const debouncedNextStud = debounce(nextStud, 500)
-	const debouncedPrevStud = debounce(prevStud, 500)
 
 	return (
 		<>
@@ -1518,6 +1569,12 @@ const AddStudent = ({}: IAddStudent) => {
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker
 																			title="Начало занятий"
+																			onExit={() =>
+																				closeTimePicker(
+																					currentItemIndex,
+																					timeline.id,
+																				)
+																			}
 																			onTimeChange={(hour, minute) =>
 																				handleStartTimeChange(
 																					currentItemIndex,
@@ -1531,6 +1588,12 @@ const AddStudent = ({}: IAddStudent) => {
 																	{timeline.editingEnd && (
 																		<TimePicker
 																			title="Конец занятий"
+																			onExit={() =>
+																				closeTimePicker(
+																					currentItemIndex,
+																					timeline.id,
+																				)
+																			}
 																			onTimeChange={(hour, minute) =>
 																				handleEndTimeChange(
 																					currentItemIndex,

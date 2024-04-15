@@ -103,39 +103,18 @@ export async function addStudent(data) {
           ],
         },
       },
+      select: {
+        id: true,
+        _count: true,
+        isArchived: true,
+        groupName: true,
+        students: true,
+        userId: true,
+        items: true,
+      },
     });
 
-    const createdItems = await Promise.all(
-      items.map((item) =>
-        db.item.create({
-          data: {
-            itemName: item.itemName,
-            tryLessonCheck: item.tryLessonCheck || false,
-            tryLessonCost: item.tryLessonCost || "",
-            todayProgramStudent: item.todayProgramStudent || "",
-            targetLesson: item.targetLesson || "",
-            programLesson: item.programLesson || "",
-            typeLesson: Number(item.typeLesson) || 1,
-            placeLesson: item.placeLesson || "",
-            timeLesson: item.timeLesson || "",
-            valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
-            startLesson: item.startLesson ? new Date(item.startLesson) : null,
-            endLesson: item.endLesson ? new Date(item.endLesson) : null,
-            nowLevel: item.nowLevel || 0,
-            lessonDuration: item.lessonDuration || null,
-            timeLinesArray: item.timeLinesArray || {},
-            userId: userId,
-            group: {
-              connect: {
-                id: createdGroup.id,
-              },
-            },
-          },
-        })
-      )
-    );
-
-    for (const item of createdItems) {
+    for (const item of createdGroup.items) {
       // Определяем диапазон дат
       const startDate = item.startLesson;
       const endDate = item.endLesson;
@@ -189,10 +168,10 @@ export async function addStudent(data) {
             data: {
               day: dayOfMonth.toString(),
               groupId: createdGroup.id,
-              workCount: item.workCount || 0, // Здесь укажите данные, которые нужно добавить в запись
+              workCount: 0, // Здесь укажите данные, которые нужно добавить в запись
               lessonsCount: 1,
               lessonsPrice: Number(costOneLesson.students[0].costOneLesson),
-              workPrice: item.workPrice || 0,
+              workPrice: 0,
               month: (date.getMonth() + 1).toString(),
               timeLinesArray: item.timeLinesArray,
               isChecked: false,
@@ -377,8 +356,8 @@ export async function getStudentsByDate(data: {
       select: {
         nameStudent: true,
       },
-    })
-    const type = groupStudentSchedule === '' ? 'Student' : 'Group';
+    });
+    const type = groupStudentSchedule === "" ? "Student" : "Group";
     const isClient = clientSchedule === null ? false : true;
     return {
       id: schedule.id,
@@ -711,6 +690,9 @@ export async function getAllIdStudents(data: any) {
   const students = await db.student.findMany({
     where: {
       userId: userId,
+      group: {
+        groupName: "",
+      },
     },
     select: {
       id: true,

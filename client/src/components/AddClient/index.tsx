@@ -233,6 +233,8 @@ const AddClient = ({}: IAddClient) => {
 			jobs: jobs,
 			token: token,
 		})
+
+		window.location.reload()
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -270,11 +272,87 @@ const AddClient = ({}: IAddClient) => {
 		setOpen(!open)
 	}
 
+	const [data, setData] = useState<any>(null)
+	const [allIdsClient, setAllIdsClient] = useState<string[]>([])
+	const currentOpenedClient = useSelector(
+		(state: any) => state.currentOpenedClient,
+	)
+	const [currentClientPosition, setCurrentClientPosition] = useState<number>(0)
+
 	useEffect(() => {
-		socket.on('getClientById', (data) => {
-			console.log(data)
+		socket.emit('getClientList', token)
+		socket.once('getClientList', (data) => {
+			console.log(data, '------ getClientList --------')
+			const ids = data.map((client: any) => client.id)
+			const position = ids.indexOf(currentOpenedClient)
+			setCurrentClientPosition(position)
+			setAllIdsClient(ids)
+		})
+
+		socket.once('getClientById', (data) => {
+			console.log(data, '------ getClientById --------')
+			setData(data)
+			setJobs(data.jobs)
+			setNameStudent(data.nameStudent)
+			setPhoneNumber(data.phoneNumber)
+			setEmail(data.email)
+			setCostStudent(data.costStudent)
+			setcommentClient(data.commentClient)
 		})
 	}, [])
+
+	useEffect(() => {
+		if (data) {
+			setJobs(data.jobs)
+			setNameStudent(data.nameStudent)
+			setPhoneNumber(data.phoneNumber)
+			setEmail(data.email)
+			setCostStudent(data.costStudent)
+			setcommentClient(data.commentClient)
+		}
+	}, [data])
+
+	const nextClient = () => {
+		if (Number(currentClientPosition) < allIdsClient.length - 1) {
+			setCurrentClientPosition(Number(currentClientPosition) + 1)
+			const newId = allIdsClient[Number(currentClientPosition)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
+			socket.emit('getClientById', {token: token, clientId: newId})
+
+			socket.once('getClientById', (data) => {
+				console.log(data, 'getGroupById')
+				setData(data)
+				setJobs(data.jobs)
+				setNameStudent(data.nameStudent)
+				setPhoneNumber(data.phoneNumber)
+				setEmail(data.email)
+				setCostStudent(data.costStudent)
+				setcommentClient(data.commentClient)
+			})
+		}
+	}
+
+	const prevClient = () => {
+		if (Number(currentClientPosition) > 0) {
+			setCurrentClientPosition(Number(currentClientPosition) - 1)
+			const newId = allIdsClient[Number(currentClientPosition)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
+			socket.emit('getClientById', {token: token, clientId: newId})
+
+			socket.once('getClientById', (data) => {
+				console.log(data, 'getGroupById')
+				setData(data)
+				setJobs(data.jobs)
+				setNameStudent(data.nameStudent)
+				setPhoneNumber(data.phoneNumber)
+				setEmail(data.email)
+				setCostStudent(data.costStudent)
+				setcommentClient(data.commentClient)
+			})
+		}
+	}
 
 	useEffect(() => {
 		console.log(jobs, jobs[0].stages, '<Job stages>')
@@ -308,13 +386,16 @@ const AddClient = ({}: IAddClient) => {
 				<div className={s.Header}>
 					<div className={s.HeaderAddClient}>
 						<div className={s.dataSlidePicker}>
-							<button className={s.btn}>
+							<button className={s.btn} onClick={prevClient}>
 								<span>
 									<Arrow direction={ArrowType.left} />
 								</span>
 							</button>
-							<p className={s.btnText}>Карточка заказчика &frac14;</p>
-							<button className={s.btn}>
+							<p className={s.btnText}>
+								Карточка заказчика {currentClientPosition + 1}/
+								{allIdsClient.length}
+							</p>
+							<button className={s.btn} onClick={nextClient}>
 								<span>
 									<Arrow direction={ArrowType.right} />
 								</span>

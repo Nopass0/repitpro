@@ -131,6 +131,8 @@ const AddGroup = ({}: IAddGroup) => {
 			students: students,
 			token: token,
 		})
+
+		window.location.reload()
 	}
 
 	const [historyLesson, setHistoryLesson] = useState<any>([])
@@ -185,6 +187,196 @@ const AddGroup = ({}: IAddGroup) => {
 		const dayIndex = date.getDay() - 1
 		return dayIndex === -1 ? 6 : dayIndex
 	}
+
+	const [data, setData] = useState()
+	const currentOpenedGroup = useSelector(
+		(state: any) => state.currentOpenedGroup,
+	)
+
+	const [groupsIndexes, setGroupsIndexes] = useState<number[]>([])
+	const [currentGroupIndex, setCurrentGroupIndex] = useState<number>(0)
+
+	useEffect(() => {
+		socket.emit('getGroupById', {
+			token: token,
+			groupId: currentOpenedGroup,
+		})
+		socket.emit('getGroupList', token)
+		socket.once('getGroupList', (data) => {
+			const arr = Object.values(data).map((item: any) => item.id)
+			const cgp = arr.indexOf(currentOpenedGroup)
+			setGroupsIndexes(arr)
+			setCurrentGroupIndex(cgp)
+		})
+
+		socket.once('getGroupById', (data) => {
+			setData(data)
+			setGroupName(data.groupName)
+			setItems(data.items)
+			setStudents(data.students)
+		})
+	}, [])
+
+	useEffect(() => {
+		if (data) {
+			console.log(data, 'getGroupById DATA')
+
+			setGroupName(data.groupName)
+			setItems(data.items)
+			setStudents(data.students)
+		}
+	}, [data])
+
+	const nextGroup = () => {
+		if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
+			setCurrentGroupIndex(Number(currentGroupIndex) + 1)
+			const newId = groupsIndexes[Number(currentGroupIndex)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+			socket.emit('getGroupById', {token: token, groupId: newId})
+
+			socket.once('getGroupById', (data) => {
+				console.log(data, 'getGroupById')
+				setData(data)
+				setGroupName(data.groupName)
+				setItems(data.items)
+				setStudents(data.students)
+			})
+		}
+	}
+
+	const prevGroup = () => {
+		if (Number(currentGroupIndex) > 0) {
+			setCurrentGroupIndex(Number(currentGroupIndex) - 1)
+			const newId = groupsIndexes[Number(currentGroupIndex)]
+
+			dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+			socket.emit('getGroupById', {token: token, groupId: newId})
+
+			socket.once('getGroupById', (data) => {
+				console.log(data, 'getGroupById')
+				setData(data)
+				setGroupName(data.groupName)
+				setItems(data.items)
+				setStudents(data.students)
+			})
+		}
+	}
+
+	// socket.on('getGroupById', (data) => {
+	// 	console.log(data, 'getGroupById')
+	// 	setItems(data.items)
+
+	// 	//get position data.id in groupsIndexes
+	// 	const index = groupsIndexes.indexOf(data.id)
+	// 	setCurrentGroupIndex(index)
+	// 	console.log(
+	// 		'Current index:',
+	// 		index,
+	// 		'groupsIndexes:',
+	// 		groupsIndexes,
+	// 		'data.id:',
+	// 		data.id,
+	// 	)
+
+	// 	setStudents(data.students)
+	// 	setGroupName(data.groupName)
+	// })
+
+	// useEffect(() => {
+	// 	socket.emit('getGroupList', token)
+	// 	socket.on('getGroupList', (data) => {
+	// 		console.log(data, 'getGroupList')
+	// 		const groupIndexes = []
+	// 		data.forEach((element) => {
+	// 			groupIndexes.push(element.id)
+	// 		})
+	// 		setGroupsIndexes(groupIndexes)
+	// 		console.log(groupIndexes, 'groupIndexes')
+	// 	})
+	// 	socket.on('getGroupById', (data) => {
+	// 		console.log(data, 'getGroupById')
+	// 		setItems(data.items)
+
+	// 		//get position data.id in groupsIndexes
+	// 		const index = groupsIndexes.indexOf(data.id)
+	// 		setCurrentGroupIndex(index)
+	// 		setCurrentID
+	// 		console.log(
+	// 			'Current index:',
+	// 			index,
+	// 			'groupsIndexes:',
+	// 			groupsIndexes,
+	// 			'data.id:',
+	// 			data.id,
+	// 		)
+
+	// 		setStudents(data.students)
+	// 		setGroupName(data.groupName)
+	// 	})
+	// }, [])
+
+	// useEffect(() => {
+	// 	socket.emit('getGroupById', {token: token, groupId: currentID})
+	// }, [groupsIndexes, currentOpenedGroup])
+
+	// const handleGroupChange = (index) => {
+	// 	const newId = groupsIndexes[index]
+	// 	dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+	// 	socket.emit('getGroupById', {
+	// 		token: token,
+	// 		groupId: newId,
+	// 	})
+	// }
+	// socket.once('getGroupById', (data) => {
+	// 	setGroupName(data.groupName)
+	// 	setItems(data.items)
+	// 	setStudents(data.students)
+	// 	setCurrentGroupIndex(index) // Установить индекс только здесь
+	// })
+
+	// const nextGroup = () => {
+	// 	if (currentGroupIndex < groupsIndexes.length - 1) {
+	// 		handleGroupChange(currentGroupIndex + 1)
+	// 	}
+	// }
+
+	// const prevGroup = () => {
+	// 	if (currentGroupIndex > 0) {
+	// 		handleGroupChange(currentGroupIndex - 1)
+	// 	}
+	// }
+
+	// useEffect(() => {
+	// 	socket.emit('getGroupList', token)
+	// 	socket.once('getGroupList', (data) => {
+	// 		const groupIndexes = data.map((element) => element.id)
+	// 		setGroupsIndexes(groupIndexes)
+	// 	})
+
+	// 	const getGroupByIdListener = (data) => {
+	// 		console.log(data, 'getGroupById')
+	// 		setItems(data.items)
+	// 		const index = groupsIndexes.indexOf(data.id)
+	// 		setCurrentGroupIndex(index)
+	// 		setStudents(data.students)
+	// 		setGroupName(data.groupName)
+	// 	}
+
+	// 	socket.once('getGroupById', getGroupByIdListener)
+
+	// 	return () => {
+	// 		socket.off('getGroupById', getGroupByIdListener)
+	// 	}
+	// }, [])
+
+	// useEffect(() => {
+	// 	if (currentGroupIndex >= 0 && currentGroupIndex < groupsIndexes.length) {
+	// 		const newId = groupsIndexes[currentGroupIndex]
+	// 		setCurrentID(newId)
+	// 		socket.emit('getGroupById', {token: token, groupId: newId})
+	// 	}
+	// }, [currentGroupIndex, groupsIndexes])
 
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
@@ -683,6 +875,75 @@ const AddGroup = ({}: IAddGroup) => {
 		setOpen(!open)
 	}
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
+
+	// const nextGroup = () => {
+	// 	if (Number(currentGroupPosition) < allIdGroups.length - 1) {
+	// 		setCurrentStudPosition(Number(currentGroupPosition) + 1)
+	// 		const newId = allIdGroups[Number(currentGroupPosition)]
+
+	// 		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+	// 		socket.emit('getGroupByStudentId', {
+	// 			token: token,
+	// 			studentId: newId,
+	// 		})
+	// 		socket.once('getGroupByStudentId', (data: any) => {
+	// 			setData(data.group)
+	// 		})
+	// 	}
+	// }
+
+	// const prevStud = () => {
+	// 	if (Number(currentStudPosition) > 0) {
+	// 		setCurrentStudPosition(Number(currentStudPosition) - 1)
+	// 		const newId = allIdStudent[Number(currentStudPosition)]
+
+	// 		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+	// 		socket.emit('getGroupByStudentId', {
+	// 			token: token,
+	// 			studentId: newId,
+	// 		})
+	// 		socket.once('getGroupByStudentId', (data: any) => {
+	// 			setData(data.group)
+	// 		})
+	// 	}
+	// }
+
+	// const nextGroup = () => {
+	// 	if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
+	// 		setCurrentGroupIndex(Number(currentGroupIndex) + 1)
+	// 		const newId = groupsIndexes[Number(currentGroupIndex)]
+	// 		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+	// 		socket.emit('getGroupById', {
+	// 			token: token,
+	// 			groupId: newId,
+	// 		})
+
+	// 		socket.once('getGroupById', (data: any) => {
+	// 			setGroupName(data.groupName)
+	// 			setItems(data.items)
+	// 			setStudents(data.students)
+	// 		})
+	// 	}
+	// }
+
+	// const prevGroup = () => {
+	// 	if (Number(currentGroupIndex) > 0) {
+	// 		setCurrentGroupIndex(Number(currentGroupIndex) - 1)
+	// 		const newId = groupsIndexes[Number(currentGroupIndex)]
+	// 		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+	// 		socket.emit('getGroupById', {
+	// 			token: token,
+	// 			groupId: newId,
+	// 		})
+
+	// 		socket.once('getGroupById', (data: any) => {
+	// 			setGroupName(data.groupName)
+	// 			setItems(data.items)
+	// 			setStudents(data.students)
+	// 		})
+	// 	}
+	// }
+
 	return (
 		<>
 			<button
@@ -729,13 +990,15 @@ const AddGroup = ({}: IAddGroup) => {
 				<div className={s.Header}>
 					<div className={s.HeaderAddGroup}>
 						<div className={s.dataSlidePicker}>
-							<button className={s.btn}>
+							<button className={s.btn} onClick={() => prevGroup()}>
 								<span>
 									<Arrow direction={ArrowType.left} />
 								</span>
 							</button>
-							<p className={s.btnText}>Карточка группы &frac14;</p>
-							<button className={s.btn}>
+							<p className={s.btnText}>
+								Карточка группы {currentGroupIndex + 1} / {groupsIndexes.length}
+							</p>
+							<button className={s.btn} onClick={() => nextGroup()}>
 								<span>
 									<Arrow direction={ArrowType.right} />
 								</span>

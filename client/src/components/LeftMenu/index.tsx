@@ -174,6 +174,7 @@ const MainPage = () => {
 	}
 
 	const handleOpenClient = (clientId: string) => {
+		console.log(clientId, '----------- handleOpenClient -----------')
 		socket.emit('getClientById', {
 			token: token,
 			clientId: clientId,
@@ -285,7 +286,9 @@ const MainPage = () => {
 										className={`${s.ListGroupWrapper} ${
 											item.isArchived === true && s.Archive
 										}`}>
-										<button className={s.btn}>
+										<button
+											className={s.btn}
+											onClick={() => handleOpenGroup(item.id)}>
 											<img width="32px" height="32px" src={Group} alt="Group" />
 										</button>
 										<p>{item.groupName}</p>
@@ -575,7 +578,7 @@ const MainPage = () => {
 														item.isArchived === true && s.Archive
 													}`}>
 													<button
-														onClick={() => handleOpenCard(item.id)}
+														onClick={() => handleOpenClient(item.id)}
 														className={s.btn}>
 														<img src={Client} alt="Client" />
 													</button>

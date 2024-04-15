@@ -29,6 +29,7 @@ import {
   addClient,
   clientToArhive,
   deleteClient,
+  getClientById,
   getClientList,
   getClientsByDate,
   updateClient,
@@ -75,6 +76,7 @@ io.on("connection", (socket) => {
   socket.on("getClientsByDate", (data) => getClientsByDate(data));
   socket.on("getGroupById", (data) => getGroupById(data));
   socket.on("updateClient", (data) => updateClient(data));
+  socket.on("getClientById", (data) => getClientById(data));
 
   socket.on("getStudentFinanceData", (data) => getStudentFinanceData(data));
   socket.on("getStudentCountData", (data) => getStudentCountData(data));

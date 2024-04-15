@@ -43,7 +43,7 @@ export async function addClient(data: any) {
             cost: job.cost,
             stages: {
               create: job.stages.map((stage) => ({
-                totalCost: stage.totalCost,
+                totalCost: String(stage.totalCost) || "0",
                 name: stage.name,
                 typePayment: stage.typePayment,
                 dateStart: stage.dateStart,
@@ -197,6 +197,27 @@ export async function getClientById(data: { clientId: string; token: string }) {
       where: {
         userId: userId,
         id: clientId,
+      },
+      select: {
+        id: true,
+        nameStudent: true,
+        phoneNumber: true,
+        email: true,
+        commentClient: true,
+        costStudent: true,
+        isArchived: true,
+        jobs: {
+          select: {
+            id: true,
+            jobName: true,
+            stages: true,
+            client: true,
+            clientId: true,
+            cost: true,
+            itemName: true,
+            userId: true,
+          },
+        },
       },
     });
 
