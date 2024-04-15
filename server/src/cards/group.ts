@@ -325,3 +325,34 @@ export async function groupToArchive(data: any) {
     console.error("Error archiving group:", error);
   }
 }
+
+//get group by id
+export async function getGroupById(data: any) {
+  const { token, groupId } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    const group = await db.group.findUnique({
+      where: {
+        id: groupId,
+        userId,
+      },
+    });
+    io.emit("getGroupById", group);
+    return group;
+  } catch (error) {
+    console.error("Error getting group by id:", error);
+  }
+}
+
+//update group (if data exist)
+export async function updateGroup(data: any) {
+  const { token, groupId, groupName, isArchived } = data;
+}

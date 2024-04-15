@@ -34,6 +34,8 @@ let defaultState = {
 	details: false,
 	students: [],
 	currentOpenedStudent: '', //ID of current opened student
+	currentOpenedClient: '', //ID of current opened client
+	currentOpenedGroup: '', //ID of current opened group
 	currentScheduleDay: '', //ID of schedule day
 }
 socket.emit('getMonth', {
@@ -72,8 +74,10 @@ const reducer = (state = defaultState, action: any) => {
 		case 'SET_CURRENT_OPENED_STUDENT':
 			return {...state, currentOpenedStudent: action.payload}
 
-			// alert('year' + action.payload.year + 'month' + action.payload.month)
-			return {...state, currentMonth: action.payload.month}
+		case 'SET_CURRENT_OPENED_CLIENT':
+			return {...state, currentOpenedClient: action.payload}
+		case 'SET_CURRENT_OPENED_GROUP':
+			return {...state, currentOpenedGroup: action.payload}
 		case 'SET_CALENDAR_NOW_POPUP':
 			console.log('SET_CALENDAR_NOW_POPUP', action.payload)
 			return {

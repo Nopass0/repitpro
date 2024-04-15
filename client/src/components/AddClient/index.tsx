@@ -271,6 +271,12 @@ const AddClient = ({}: IAddClient) => {
 	}
 
 	useEffect(() => {
+		socket.on('getClientById', (data) => {
+			console.log(data)
+		})
+	}, [])
+
+	useEffect(() => {
 		console.log(jobs, jobs[0].stages, '<Job stages>')
 	}, [jobs])
 
