@@ -168,7 +168,8 @@ model StudentSchedule {
   itemId       String
 }
 
-// Add a new model for Client
+// ... (остальные модели)
+
 model Client {
   id            String      @id @default(cuid())
   nameStudent   String
@@ -177,44 +178,57 @@ model Client {
   costStudent   String
   commentClient String
   jobs          Job[]
-  payments      Payment[]
-  isArchived    Boolean @default(false)
+  stages        Stage[]
+  isArchived    Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   userId        String
 }
 
-// Add a new model for Job
 model Job {
   id        String   @id @default(cuid())
   jobName   String
   itemName  String
   cost      Int
-  stages    Json     // Store stages as JSON
+  stages    Stage[]  @relation("JobStages")
   client    Client   @relation(fields: [clientId], references: [id])
   clientId  String
 
   userId    String
 }
 
-// Add a new model for Payment
-model Payment {
-  id          String   @id @default(cuid())
-  totalCost   String
-  name        String
-  typePayment Boolean  // true for prepay, false for postpay
-  dateStart   DateTime // When the work started
-  cost        Int
-  prePay      Boolean
-  postPay     Boolean
-  payment     Int
-  payed       Boolean
-  date        DateTime
-  workStarted Boolean
-  paymentDate DateTime
-  client      Client   @relation(fields: [clientId], references: [id])
-  clientId    String
+model Stage {
+  id                String   @id @default(cuid())
+  totalCost         String
+  name              String
+  typePayment       Boolean
+  dateStart         DateTime
+  cost              Int
+  prePay            Boolean
+  postPay           Boolean
+  payment           Int
+  payed             Boolean
+  date              DateTime
+  workStarted       Boolean
+  paymentDate       DateTime
+  endPaymentPrice   Int
+  endPaymentDate    DateTime
+  firstPaymentPayed Boolean
+  startWorkDate     DateTime
+  isStartWork       Boolean
+  firstPaymentDate  DateTime
+  fisrtPaymentPrice Int
+  endPaymentPayed   Boolean
+  endWorkDate       DateTime
+  isEndWork         Boolean
 
-  userId      String
+  job                Job      @relation("JobStages", fields: [jobId], references: [id])
+  jobId              String
+  client             Client?  @relation(fields: [clientId], references: [id])
+  clientId           String?
+
+  userId            String
 }
+
+// ... (остальные модели)

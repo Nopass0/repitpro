@@ -182,11 +182,8 @@ const DayCalendarLineClient = ({
 						</div>
 					</div>
 				</div>
-				
 			</div>
-			{isDetailsShow && (
-				<DayStudentPopUp />
-			)}
+			{isDetailsShow && <DayStudentPopUp />}
 		</>
 	)
 }

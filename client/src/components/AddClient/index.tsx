@@ -5,7 +5,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
@@ -74,6 +74,25 @@ const AddClient = ({}: IAddClient) => {
 					cost: 0,
 					prePay: true,
 					postPay: false,
+
+					// First payment
+					endPaymentPrice: 0,
+					endPaymentDate: new Date(Date.now()),
+					firstPaymentPayed: false,
+
+					// Start work
+					startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+					isStartWork: false,
+
+					// end payment
+					firstPaymentDate: new Date(Date.now()),
+					fisrtPaymentPrice: 0,
+					endPaymentPayed: false,
+
+					// end work
+					endWorkDate: new Date(Date.now()),
+					isEndWork: false,
+
 					payment: 0,
 					payed: false,
 					date: new Date(Date.now()),
@@ -102,6 +121,25 @@ const AddClient = ({}: IAddClient) => {
 						prePay: true,
 						postPay: false,
 						payment: 0,
+
+						// First payment
+						endPaymentPrice: 0,
+						endPaymentDate: new Date(Date.now()),
+						firstPaymentPayed: false,
+
+						// Start work
+						startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+						isStartWork: false,
+
+						// end payment
+						firstPaymentDate: new Date(Date.now()),
+						fisrtPaymentPrice: 0,
+						endPaymentPayed: false,
+
+						// end work
+						endWorkDate: new Date(Date.now()),
+						isEndWork: false,
+
 						payed: false,
 						date: new Date(Date.now()),
 						workStarted: false,
@@ -157,6 +195,25 @@ const AddClient = ({}: IAddClient) => {
 									payed: false,
 									date: new Date(Date.now()),
 									workStarted: false,
+
+									// First payment
+									endPaymentPrice: 0,
+									endPaymentDate: new Date(Date.now()),
+									firstPaymentPayed: false,
+
+									// Start work
+									startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+									isStartWork: false,
+
+									// end payment
+									firstPaymentDate: new Date(Date.now()),
+									fisrtPaymentPrice: 0,
+									endPaymentPayed: false,
+
+									// end work
+									endWorkDate: new Date(Date.now()),
+									isEndWork: false,
+
 									paymentDate: new Date(Date.now()),
 								},
 							],
@@ -212,6 +269,11 @@ const AddClient = ({}: IAddClient) => {
 	const handleClick = () => {
 		setOpen(!open)
 	}
+
+	useEffect(() => {
+		console.log(jobs, jobs[0].stages, '<Job stages>')
+	}, [jobs])
+
 	return (
 		<>
 			<button
@@ -329,7 +391,10 @@ const AddClient = ({}: IAddClient) => {
 							<div className={s.dataSlidePicker}>
 								<button
 									className={s.btn}
-									onClick={() => setCurrentJobIndex(currentJobIndex - 1)}>
+									onClick={() =>
+										currentJobIndex > 0 &&
+										setCurrentJobIndex(currentJobIndex - 1)
+									}>
 									<span>
 										<Arrow direction={ArrowType.left} />
 									</span>
@@ -340,7 +405,10 @@ const AddClient = ({}: IAddClient) => {
 								</p>
 								<button
 									className={s.btn}
-									onClick={() => setCurrentJobIndex(currentJobIndex + 1)}>
+									onClick={() =>
+										currentJobIndex < jobs.length - 1 &&
+										setCurrentJobIndex(currentJobIndex + 1)
+									}>
 									<span>
 										<Arrow direction={ArrowType.right} />
 									</span>
@@ -460,6 +528,7 @@ const AddClient = ({}: IAddClient) => {
 												<button
 													className={s.btn}
 													onClick={() =>
+														currentStageIndex > 0 &&
 														setCurrentStageIndex(currentStageIndex - 1)
 													}>
 													<span>
@@ -473,6 +542,7 @@ const AddClient = ({}: IAddClient) => {
 												<button
 													className={s.btn}
 													onClick={() =>
+														currentStageIndex < job.stages.length - 1 &&
 														setCurrentStageIndex(currentStageIndex + 1)
 													}>
 													<span>
@@ -581,12 +651,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].dateStart}
+																		value={job.stages[0].isStartWork}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'dateStart',
+																				'isStartWork',
 																				newValue,
 																			)
 																		}}
@@ -599,13 +669,13 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].workStarted}
+																	checked={job.stages[0].isStartWork}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'workStarted',
-																			!job.stages[0].workStarted,
+																			'isStartWork',
+																			!job.stages[0].isStartWork,
 																		)
 																	}
 																/>
@@ -628,12 +698,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].paymentDate}
+																		value={item.endPaymentDate!}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'paymentDate',
+																				'endPaymentDate',
 																				newValue,
 																			)
 																		}}
@@ -646,22 +716,27 @@ const AddClient = ({}: IAddClient) => {
 																	<Input
 																		num
 																		type="text"
-																		// value={job.stages[0].paymentDate}
-																		// onChange={(e) =>
-																		// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																		// }
+																		value={String(item.endPaymentPrice!)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'endPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
 																	/>
 																	<p>₽</p>
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].payed}
+																	checked={item.firstPaymentPayed}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'payed',
-																			!job.stages[0].payed,
+																			'firstPaymentPayed',
+																			!item.firstPaymentPayed,
 																		)
 																	}
 																/>
@@ -684,12 +759,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].dateStart}
+																		value={job.stages[0].endWorkDate}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'dateStart',
+																				'endWorkDate',
 																				newValue,
 																			)
 																		}}
@@ -702,13 +777,13 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].workStarted}
+																	checked={job.stages[0].isEndWork}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'workStarted',
-																			!job.stages[0].workStarted,
+																			'isEndWork',
+																			!job.stages[0].isEndWork,
 																		)
 																	}
 																/>
@@ -731,12 +806,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].paymentDate}
+																		value={item.endPaymentDate!}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'paymentDate',
+																				'endPaymentDate',
 																				newValue,
 																			)
 																		}}
@@ -749,22 +824,27 @@ const AddClient = ({}: IAddClient) => {
 																	<Input
 																		num
 																		type="text"
-																		// value={job.stages[0].paymentDate}
-																		// onChange={(e) =>
-																		// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																		// }
+																		value={String(item.endPaymentPrice)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'endPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
 																	/>
 																	<p>₽</p>
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].payed}
+																	checked={item.firstPaymentPayed}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'payed',
-																			!job.stages[0].payed,
+																			'firstPaymentPayed',
+																			!item.firstPaymentPayed,
 																		)
 																	}
 																/>
@@ -789,12 +869,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].paymentDate}
+																		value={item.endPaymentDate}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'paymentDate',
+																				'endPaymentDate',
 																				newValue,
 																			)
 																		}}
@@ -807,22 +887,27 @@ const AddClient = ({}: IAddClient) => {
 																	<Input
 																		num
 																		type="text"
-																		// value={job.stages[0].paymentDate}
-																		// onChange={(e) =>
-																		// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																		// }
+																		value={String(item.endPaymentPrice!)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'endPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
 																	/>
 																	<p>₽</p>
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].payed}
+																	checked={item.firstPaymentPayed}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'payed',
-																			!job.stages[0].payed,
+																			'firstPaymentPayed',
+																			!item.firstPaymentPayed,
 																		)
 																	}
 																/>
@@ -845,12 +930,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].dateStart}
+																		value={item.startWorkDate!}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'dateStart',
+																				'startWorkDate',
 																				newValue,
 																			)
 																		}}
@@ -863,13 +948,13 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].workStarted}
+																	checked={job.stages[0].isStartWork}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'workStarted',
-																			!job.stages[0].workStarted,
+																			'isStartWork',
+																			!job.stages[0].isStartWork,
 																		)
 																	}
 																/>
@@ -892,12 +977,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].paymentDate}
+																		value={item.endPaymentDate!}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'paymentDate',
+																				'endPaymentDate',
 																				newValue,
 																			)
 																		}}
@@ -910,22 +995,27 @@ const AddClient = ({}: IAddClient) => {
 																	<Input
 																		num
 																		type="text"
-																		// value={job.stages[0].paymentDate}
-																		// onChange={(e) =>
-																		// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																		// }
+																		value={String(item.endPaymentPrice)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'endPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
 																	/>
 																	<p>₽</p>
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].payed}
+																	checked={item.firstPaymentPayed}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'payed',
-																			!job.stages[0].payed,
+																			'firstPaymentPayed',
+																			!item.firstPaymentPayed,
 																		)
 																	}
 																/>
@@ -948,12 +1038,12 @@ const AddClient = ({}: IAddClient) => {
 																				paddingLeft: '0px',
 																			},
 																		}}
-																		value={job.stages[0].dateStart}
+																		value={job.stages[0].endWorkDate}
 																		onChange={(newValue) => {
 																			changeStage(
 																				index,
 																				0,
-																				'dateStart',
+																				'endWorkDate',
 																				newValue,
 																			)
 																		}}
@@ -966,13 +1056,13 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<CheckBox
 																	size="18px"
-																	checked={job.stages[0].workStarted}
+																	checked={job.stages[0].isEndWork}
 																	onChange={() =>
 																		changeStage(
 																			index,
 																			0,
-																			'workStarted',
-																			!job.stages[0].workStarted,
+																			'isEndWork',
+																			!job.stages[0].isEndWork,
 																		)
 																	}
 																/>
@@ -1038,9 +1128,14 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].dateStart}
+																value={job.stages[0].startWorkDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'dateStart', newValue)
+																	changeStage(
+																		index,
+																		0,
+																		'startWorkDate',
+																		newValue,
+																	)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1051,13 +1146,13 @@ const AddClient = ({}: IAddClient) => {
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].workStarted}
+															checked={job.stages[0].isStartWork}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'workStarted',
-																	!job.stages[0].workStarted,
+																	'isStartWork',
+																	!job.stages[0].isStartWork,
 																)
 															}
 														/>
@@ -1080,9 +1175,14 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].paymentDate}
+																value={job.stages[0].endPaymentDate!}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'paymentDate', newValue)
+																	changeStage(
+																		index,
+																		0,
+																		'endPaymentDate',
+																		newValue,
+																	)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1093,22 +1193,27 @@ const AddClient = ({}: IAddClient) => {
 															<Input
 																num
 																type="text"
-																// value={job.stages[0].paymentDate}
-																// onChange={(e) =>
-																// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																// }
+																value={String(job.stages[0].fisrtPaymentPrice)}
+																onChange={(e) =>
+																	changeStage(
+																		index,
+																		0,
+																		'fisrtPaymentPrice',
+																		Number(e.target.value),
+																	)
+																}
 															/>
 															<p>₽</p>
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].payed}
+															checked={job.stages[0].endPaymentPayed}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'payed',
-																	!job.stages[0].payed,
+																	'endPaymentPayed',
+																	!job.stages[0].endPaymentPayed,
 																)
 															}
 														/>
@@ -1131,9 +1236,9 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].dateStart}
+																value={job.stages[0].endWorkDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'dateStart', newValue)
+																	changeStage(index, 0, 'endWorkDate', newValue)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1144,13 +1249,13 @@ const AddClient = ({}: IAddClient) => {
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].workStarted}
+															checked={job.stages[0].isEndWork}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'workStarted',
-																	!job.stages[0].workStarted,
+																	'isEndWork',
+																	!job.stages[0].isEndWork,
 																)
 															}
 														/>
@@ -1173,9 +1278,14 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].paymentDate}
+																value={job.stages[0].firstPaymentDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'paymentDate', newValue)
+																	changeStage(
+																		index,
+																		0,
+																		'firstPaymentDate',
+																		newValue,
+																	)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1186,22 +1296,27 @@ const AddClient = ({}: IAddClient) => {
 															<Input
 																num
 																type="text"
-																// value={job.stages[0].paymentDate}
-																// onChange={(e) =>
-																// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																// }
+																value={String(job.stages[0].fisrtPaymentPrice)}
+																onChange={(e) =>
+																	changeStage(
+																		index,
+																		0,
+																		'fisrtPaymentPrice',
+																		Number(e.target.value),
+																	)
+																}
 															/>
 															<p>₽</p>
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].payed}
+															checked={job.stages[0].endPaymentPayed}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'payed',
-																	!job.stages[0].payed,
+																	'endPaymentPayed',
+																	!job.stages[0].endPaymentPayed,
 																)
 															}
 														/>
@@ -1226,9 +1341,14 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].paymentDate}
+																value={job.stages[0].firstPaymentDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'paymentDate', newValue)
+																	changeStage(
+																		index,
+																		0,
+																		'firstPaymentDate',
+																		newValue,
+																	)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1239,22 +1359,27 @@ const AddClient = ({}: IAddClient) => {
 															<Input
 																num
 																type="text"
-																// value={job.stages[0].paymentDate}
-																// onChange={(e) =>
-																// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																// }
+																value={String(job.stages[0].fisrtPaymentPrice)}
+																onChange={(e) =>
+																	changeStage(
+																		index,
+																		0,
+																		'fisrtPaymentPrice',
+																		Number(e.target.value),
+																	)
+																}
 															/>
 															<p>₽</p>
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].payed}
+															checked={job.stages[0].endPaymentPayed}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'payed',
-																	!job.stages[0].payed,
+																	'endPaymentPayed',
+																	!job.stages[0].endPaymentPayed,
 																)
 															}
 														/>
@@ -1277,9 +1402,14 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].dateStart}
+																value={job.stages[0].startWorkDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'dateStart', newValue)
+																	changeStage(
+																		index,
+																		0,
+																		'startWorkDate',
+																		newValue,
+																	)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1290,13 +1420,13 @@ const AddClient = ({}: IAddClient) => {
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].workStarted}
+															checked={job.stages[0].isStartWork}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'workStarted',
-																	!job.stages[0].workStarted,
+																	'isStartWork',
+																	!job.stages[0].isStartWork,
 																)
 															}
 														/>
@@ -1319,9 +1449,14 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].paymentDate}
+																value={job.stages[0].endPaymentDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'paymentDate', newValue)
+																	changeStage(
+																		index,
+																		0,
+																		'endPaymentDate',
+																		newValue,
+																	)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1332,22 +1467,27 @@ const AddClient = ({}: IAddClient) => {
 															<Input
 																num
 																type="text"
-																// value={job.stages[0].paymentDate}
-																// onChange={(e) =>
-																// 	changeStage(index, 0, 'paymentDate', e.target.value)
-																// }
+																value={String(job.stages[0].endPaymentPrice)}
+																onChange={(e) =>
+																	changeStage(
+																		index,
+																		0,
+																		'endPaymentPrice',
+																		Number(e.target.value),
+																	)
+																}
 															/>
 															<p>₽</p>
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].payed}
+															checked={job.stages[0].firstPaymentPayed}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'payed',
-																	!job.stages[0].payed,
+																	'firstPaymentPayed',
+																	!job.stages[0].firstPaymentPayed,
 																)
 															}
 														/>
@@ -1370,9 +1510,9 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].dateStart}
+																value={job.stages[0].endWorkDate}
 																onChange={(newValue) => {
-																	changeStage(index, 0, 'dateStart', newValue)
+																	changeStage(index, 0, 'endWorkDate', newValue)
 																}}
 																timezone="system"
 																showDaysOutsideCurrentMonth
@@ -1383,13 +1523,13 @@ const AddClient = ({}: IAddClient) => {
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].workStarted}
+															checked={job.stages[0].isEndWork}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
-																	'workStarted',
-																	!job.stages[0].workStarted,
+																	'isEndWork',
+																	!job.stages[0].isEndWork,
 																)
 															}
 														/>

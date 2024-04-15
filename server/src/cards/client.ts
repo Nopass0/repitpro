@@ -1,9 +1,8 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
 import db from "../db";
 import io from "../socket";
-
-const prisma = new PrismaClient();
+import { Prisma, Job } from "@prisma/client";
+import { differenceInDays, addDays, getDay } from "date-fns";
 
 export async function addClient(data: any) {
   const {
@@ -12,24 +11,25 @@ export async function addClient(data: any) {
     email,
     costStudent,
     commentClient,
-    jobs,
-    stages,
+    jobs, // Assuming jobs is an array of job objects with nested stages
     token,
   } = data;
 
-  console.log(data);
-
-  const token_ = await db.token.findFirst({
+  const tokenData = await db.token.findFirst({
     where: {
       token,
     },
   });
 
-  const userId = token_.userId;
+  if (!tokenData) {
+    throw new Error("Invalid token");
+  }
+
+  const userId = tokenData.userId;
 
   try {
     // Create a new client
-    const newClient = await prisma.client.create({
+    const newClient = await db.client.create({
       data: {
         nameStudent,
         phoneNumber,
@@ -37,36 +37,141 @@ export async function addClient(data: any) {
         costStudent,
         commentClient,
         jobs: {
-          create: jobs.map((job: any) => ({
+          create: jobs.map((job) => ({
             jobName: job.jobName,
             itemName: job.itemName,
             cost: job.cost,
-            stages: job.stages,
-            userId: userId,
+            stages: {
+              create: job.stages.map((stage) => ({
+                totalCost: stage.totalCost,
+                name: stage.name,
+                typePayment: stage.typePayment,
+                dateStart: stage.dateStart,
+                cost: stage.cost,
+                prePay: stage.prePay,
+                postPay: stage.postPay,
+                payment: stage.payment,
+                payed: stage.payed,
+                date: stage.date,
+                workStarted: stage.workStarted,
+                paymentDate: stage.paymentDate,
+                endPaymentPrice: stage.endPaymentPrice,
+                endPaymentDate: stage.endPaymentDate,
+                firstPaymentPayed: stage.firstPaymentPayed,
+                startWorkDate: stage.startWorkDate,
+                isStartWork: stage.isStartWork,
+                firstPaymentDate: stage.firstPaymentDate,
+                fisrtPaymentPrice: stage.fisrtPaymentPrice,
+                endPaymentPayed: stage.endPaymentPayed,
+                endWorkDate: stage.endWorkDate,
+                isEndWork: stage.isEndWork,
+                userId,
+              })),
+            },
+            userId,
           })),
         },
-        userId: userId,
-        // payments: {
-        //   create: stages.map((payment: any) => ({
-        //     totalCost: payment.totalCost,
-        //     name: payment.name,
-        //     typePayment: payment.typePayment,
-        //     dateStart: payment.dateStart,
-        //     cost: payment.cost,
-        //     prePay: payment.prePay,
-        //     postPay: payment.postPay,
-        //     payment: payment.payment,
-        //     payed: payment.payed,
-        //     date: payment.date,
-        //     workStarted: payment.workStarted,
-        //     paymentDate: payment.paymentDate,
-        //     userId: userId,
-        //   })),
-        // },
+        userId,
       },
     });
 
     console.log("New client created:", newClient);
+
+    // Create StudentSchedule records
+    const jobsWithStages = await db.job.findMany({
+      where: {
+        clientId: newClient.id,
+      },
+      include: {
+        client: true,
+        stages: true, // Тип для stages должен быть указан явно
+      },
+    });
+
+    for (const jobWithStages of jobsWithStages) {
+      const { client, stages } = jobWithStages;
+
+      for (const stage of stages) {
+        const relevantDates = [
+          stage.paymentDate,
+          stage.endPaymentDate,
+          stage.startWorkDate,
+          stage.firstPaymentDate,
+          stage.endWorkDate,
+        ];
+
+        for (const date of relevantDates) {
+          if (date) {
+            const dayOfMonth = date.getDate();
+            const isFirstPayment =
+              date.toDateString() === stage.firstPaymentDate.toDateString();
+            const isEndPayment =
+              date.toDateString() === stage.endPaymentDate.toDateString();
+            const workCount = isFirstPayment && isEndPayment ? 2 : 1;
+            const workPrice = isFirstPayment
+              ? stage.fisrtPaymentPrice
+              : isEndPayment
+              ? stage.endPaymentPrice
+              : 0;
+
+            //create void item
+            const voidItem = await db.item.create({
+              data: {
+                itemName: "void",
+                userId,
+                lessonDuration: 0,
+                endLesson: new Date(Date.now()),
+                placeLesson: "",
+                programLesson: "",
+                startLesson: new Date(Date.now()),
+                targetLesson: "",
+                timeLesson: "",
+                todayProgramStudent: "",
+                typeLesson: 3,
+                tryLessonCheck: false,
+                tryLessonCost: "",
+                valueMuiSelectArchive: 1,
+                timeLinesArray: [],
+                // itemName: "void",
+                nowLevel: 0,
+              },
+            });
+
+            await db.studentSchedule.create({
+              data: {
+                day: dayOfMonth.toString(),
+                clientId: client.id,
+                workCount,
+                lessonsCount: 0,
+                lessonsPrice: 0,
+                workPrice,
+                itemName: jobWithStages.jobName,
+                studentName: client.nameStudent,
+                typeLesson: 0,
+                isChecked: false,
+                month: (date.getMonth() + 1).toString(),
+                year: date.getFullYear().toString(),
+                userId,
+                groupId: "",
+                isArchived: false,
+                address: "",
+                classAudios: [],
+                classFiles: [],
+                classStudentsPoints: {},
+                classWork: "",
+                homeAudios: [],
+                homeFiles: [],
+                homeWork: "",
+                homeStudentsPoints: {},
+                studentId: "",
+                timeLinesArray: [],
+                itemId: voidItem.id,
+              },
+            });
+          }
+        }
+      }
+    }
   } catch (error) {
     console.error("Error creating client:", error);
   }
@@ -86,7 +191,7 @@ export async function getClientList(token) {
 
     const userId = token_.userId;
 
-    const clients = await prisma.client.findMany({
+    const clients = await db.client.findMany({
       where: {
         userId,
       },
@@ -118,6 +223,41 @@ export async function getClientList(token) {
   }
 }
 
+export async function getClientsByDate(data: any) {
+  const { token, day, month, year } = data;
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  const clients = await db.studentSchedule.findMany({
+    where: {
+      userId,
+      day: day.toString(),
+      month: month.toString(),
+      year: year.toString(),
+      NOT: {
+        clientId: null,
+      },
+    },
+    select: {
+      id: true,
+      itemName: true,
+      clientId: true,
+      workCount: true,
+      workPrice: true,
+    },
+  });
+
+  io.emit("getClientsByDate", clients);
+
+  return clients;
+}
+
 export async function clientToArhive(data: any) {
   const { token, id, isArchived } = data;
 
@@ -130,7 +270,7 @@ export async function clientToArhive(data: any) {
   const userId = token_.userId;
 
   try {
-    const client = await prisma.client.update({
+    const client = await db.client.update({
       where: {
         id,
         userId,
@@ -158,7 +298,7 @@ export async function deleteClient(data: any) {
   const userId = token_.userId;
 
   try {
-    const client = await prisma.client.delete({
+    const client = await db.client.delete({
       where: {
         id,
         userId,

@@ -304,6 +304,7 @@ export async function getStudentsByDate(data: {
       month,
       year,
       userId,
+      clientId: null,
     },
     select: {
       id: true,

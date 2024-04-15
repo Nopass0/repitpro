@@ -19,6 +19,7 @@ import React from 'react'
 import {debounce} from 'lodash'
 
 import Arrow, {ArrowType} from '../../assets/arrow'
+import DayCalendarLineClient from '../DayCalendarLineClient'
 interface IDayCalendarPopUp {
 	style?: React.CSSProperties
 	onExit?: () => void
@@ -83,8 +84,16 @@ const DayCalendarPopUp = ({
 		}[]
 	>([])
 
+	const [clients, setClients] = React.useState<any[]>()
+
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+		socket.emit('getClientsByDate', {
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
@@ -94,6 +103,11 @@ const DayCalendarPopUp = ({
 	socket.once('getStudentsByDate', (data: any) => {
 		console.log('getStudentsByDate', data)
 		setStudents(data)
+	})
+
+	socket.once('getClientsByDate', (data: any) => {
+		console.log('getClientsByDate', data)
+		setClients(data)
 	})
 
 	//hour or minute to normal view. Ex: 12:3 to 12:03/ 1:5 to 01:05
@@ -296,6 +310,18 @@ const DayCalendarPopUp = ({
 					</div>
 				</header>
 				<section className={s.MainBlock}>
+					<Line width="700px" className={s.LineHeader} />
+					{clients &&
+						clients.map((client: any) => (
+							<DayCalendarLineClient
+								id={client.id}
+								key={client.id}
+								name={client.studentName}
+								price={client.workPrice}
+								studentId=""
+								item={client.studentName}
+							/>
+						))}
 					<Line width="700px" className={s.LineHeader} />
 					{students &&
 						students.map((student: any) => (
