@@ -112,20 +112,19 @@ export async function getStudentFinanceData(data: {
     });
 
     const userId = token_.userId;
-
-    const data = await db.studentSchedule.findMany({
+    const data_ = await db.studentSchedule.findMany({
       where: {
         year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
+          gte: new Date(startDate).getFullYear().toString(),
+          lte: new Date(endDate).getFullYear().toString(),
         },
         month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
+          gte: (new Date(startDate).getMonth() + 1).toString().padStart(2, "0"),
+          lte: (new Date(endDate).getMonth() + 1).toString().padStart(2, "0"),
         },
         day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
+          gte: new Date(startDate).getDate().toString().padStart(2, "0"),
+          lte: new Date(endDate).getDate().toString().padStart(2, "0"),
         },
         itemId: {
           in: subjectIds.map((id) => id),
@@ -141,12 +140,19 @@ export async function getStudentFinanceData(data: {
         year: true,
       },
     });
-
-    const grouped = groupByMonth(data);
+    console.log(data_, "data_");
+    
+    const grouped = groupByMonth(data_);
+    console.log(grouped, "grouped");
+    
     const labels = Object.keys(grouped);
+    console.log(labels, "labels");
+    
     const datasets = Object.values(grouped).map((group) => {
       const itemName = group[0].itemName; // Предполагается, что все элементы в группе имеют одинаковое itemName
       const values = group.map((item) => item.lessonsPrice);
+      console.log(itemName, values, "itemName, values");
+      
       return {
         label: itemName,
         data: values,
@@ -155,7 +161,11 @@ export async function getStudentFinanceData(data: {
         borderColor: hashToColor(hashString(itemName)),
       };
     });
-
+    console.log(
+      labels,
+      datasets,
+      " --------------------------------------------------"
+    );
     io.emit("getStudentFinanceData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {

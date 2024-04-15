@@ -320,6 +320,8 @@ export async function getStudentsByDate(data: {
       classWork: true,
       homeStudentsPoints: true,
       classStudentsPoints: true,
+      groupId: true,
+      clientId: true,
       item: {
         select: {
           tryLessonCheck: true,
@@ -367,6 +369,17 @@ export async function getStudentsByDate(data: {
         })
       : [];
 
+    const groupStudentSchedule = schedule.item.group.groupName;
+    const clientSchedule = db.client.findFirst({
+      where: {
+        id: schedule.clientId,
+      },
+      select: {
+        nameStudent: true,
+      },
+    })
+    const type = groupStudentSchedule === '' ? 'Student' : 'Group';
+    const isClient = clientSchedule === null ? false : true;
     return {
       id: schedule.id,
       nameStudent: schedule.studentName,
@@ -384,6 +397,8 @@ export async function getStudentsByDate(data: {
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,
+      type: type,
+      isClient: isClient,
     };
   });
 

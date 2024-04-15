@@ -14,7 +14,7 @@ import {elements} from 'chart.js'
 import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
 import Statistics from './pages/Statistics/index.tsx'
-import {ELeftMenuPage} from './types.ts'
+import {ELeftMenuPage, ECurrentDayPopUp} from './types.ts'
 
 socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
@@ -36,7 +36,9 @@ let defaultState = {
 	currentOpenedStudent: '', //ID of current opened student
 	currentOpenedClient: '', //ID of current opened client
 	currentOpenedGroup: '', //ID of current opened group
-	currentScheduleDay: '', //ID of schedule day
+	currentScheduleDay: '', //ID of schedule dayIndex
+
+	currentPopUpType: ECurrentDayPopUp.None,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -62,6 +64,9 @@ const reducer = (state = defaultState, action: any) => {
 
 		case 'SET_CURRENT_OPENED_SCHEDULE_DAY':
 			return {...state, currentScheduleDay: action.payload}
+
+		case 'SET_CURRENT_POPUP_TYPE':
+			return {...state, currentPopUpType: action.payload}
 
 		case 'SET_CURRENT_MONTH':
 			socket.emit('getMonth', {

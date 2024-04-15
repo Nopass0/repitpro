@@ -23,6 +23,12 @@ export enum ELeftMenuPage {
 	MainPage = 'MainPage',
 }
 
+export enum ECurrentDayPopUp {
+	Student = 'Student',
+	Client = 'Client',
+	Group = 'Group',
+	None = 'None',
+}
 export interface ITimeLine {
 	id: number
 	day: string

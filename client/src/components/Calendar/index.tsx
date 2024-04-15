@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {ICell} from '../../types'
+import {ICell, ECurrentDayPopUp} from '../../types'
 import s from './index.module.scss'
 import Arrow from '../../assets/arrow'
 import socket from '../../socket'
@@ -47,6 +47,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
+	const currentPopUpType = useSelector((state: any) => state.currentPopUpType)
 
 	const dispatch = useDispatch()
 
@@ -619,25 +620,53 @@ export const Calendar = ({className, cells}: ICalendar) => {
 					/>
 				</div>
 			)}
-			{currentScheduleDay !== '' && (
-				<div className={s.PagePopUpWrap}>
-					<DayStudentPopUp
-						style={{
-							position: 'relative',
-							top: '150px',
-							margin: 'auto',
-						}}
-						icon={Home}
-						name="Группа Бэтта 1 Математика"
-						address="г. Москва, ул. Мясницкая, 4"
-						date="4 марта 2024"
-						time="Пн 10:00 - 12:00"
-						onExit={() =>
-							dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
-						}
-					/>
-				</div>
-			)}
+			{currentScheduleDay !== '' &&
+				currentPopUpType === ECurrentDayPopUp.Student && (
+					<div className={s.PagePopUpWrap}>
+						<DayStudentPopUp
+							style={{
+								position: 'relative',
+								top: '150px',
+								margin: 'auto',
+							}}
+							icon={Home}
+							name="Группа Бэтта 1 Математика"
+							address="г. Москва, ул. Мясницкая, 4"
+							date="4 марта 2024"
+							time="Пн 10:00 - 12:00"
+							onExit={() =>
+								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+							}
+						/>
+					</div>
+				)}
+			{currentScheduleDay !== '' &&
+				currentPopUpType === ECurrentDayPopUp.Group && (
+					<div className={s.PagePopUpWrap}>
+						<DayStudentPopUp
+							style={{
+								position: 'relative',
+								top: '150px',
+								margin: 'auto',
+							}}
+							icon={Home}
+							name="Группа Бэтта 1 Математика"
+							address="г. Москва, ул. Мясницкая, 4"
+							date="4 марта 2024"
+							time="Пн 10:00 - 12:00"
+							isGroup
+							onExit={() =>
+								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+							}
+						/>
+					</div>
+				)}
+			{currentScheduleDay !== '' &&
+				currentPopUpType === ECurrentDayPopUp.Client && (
+					<div className={s.PagePopUpWrap}>
+						<h1>1235</h1>
+					</div>
+				)}
 		</div>
 	)
 }

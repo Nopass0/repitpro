@@ -133,22 +133,7 @@ const optionsBar = {
 	//width and height
 	aspectRatio: 2,
 }
-const labels = [
-	'January',
-	'February',
-	'March',
-	'April',
-	'May',
-	'June',
-	'July',
-	'January',
-	'February',
-	'March',
-	'April',
-	'May',
-	'June',
-	'July',
-]
+const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July']
 
 let data = {
 	labels: labels,
@@ -222,14 +207,7 @@ const StyledPickersLayout = styled('span')({
 const Statistics = ({}: IStatistics) => {
 	const navigate = useNavigate()
 
-	const names = [
-		'Все предметы',
-		'Математика',
-		'Русский язык',
-		'Информатика',
-		'Физика',
-		'Химия',
-	]
+	const [names, setNames] = useState<string[]>(['Все предметы'])
 	const generateData = (
 		count: number,
 	): Array<{
@@ -266,8 +244,12 @@ const Statistics = ({}: IStatistics) => {
 
 	const [studFinItem, setStudFinItem] = useState<string[]>(['Все предметы'])
 	const [studFinDate, setStudFinDate] = useState<number>(0)
-	const [studFinDateStart, setStudFinDateStart] = useState<Date>()
-	const [studFinDateEnd, setStudFinDateEnd] = useState<Date>()
+	const [studFinDateStart, setStudFinDateStart] = useState<Date>(
+		new Date(Date.now()).getTime() - 30 * 24 * 60 * 60 * 1000,
+	)
+	const [studFinDateEnd, setStudFinDateEnd] = useState<Date>(
+		new Date(Date.now()),
+	)
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
 
@@ -343,7 +325,15 @@ const Statistics = ({}: IStatistics) => {
 		socket.emit('getAllItemsIdsAndNames', token)
 		socket.on('getAllItemsIdsAndNames', (data: any) => {
 			console.log('getAllItemsIdsAndNames', data)
-			// setItemsData(data)
+			const namesTemp = ['Все предметы']
+			// Get all itemName !== 'void'
+			for (let i = 0; i < data.length; i++) {
+				if (data[i].itemName !== 'void') {
+					namesTemp.push(data[i].itemName)
+				}
+			}
+			setNames(namesTemp)
+			console.log(names, 'namesTempnamesTempnamesTemp')
 		})
 		socket.emit('getTableData', {
 			token: token,
@@ -387,6 +377,22 @@ const Statistics = ({}: IStatistics) => {
 		console.log(sortedData, 'sortedData')
 	}, [startData, endData])
 
+	socket.once('getStudentFinanceData', (data: any) => {
+		console.log('getStudentFinanceData', data)
+	})
+	useEffect(() => {
+		socket.emit('getStudentFinanceData', {
+			token: token,
+			startDate: studFinDateStart,
+			endDate: studFinDateEnd,
+			subjectIds: [
+				'clv10ubqx0003fbi91ucd904u',
+				'clv11nno10001346txhqgrqle',
+				'clv12inew000i346t8bdne1c4',
+			],
+		})
+	}, [])
+
 	return (
 		<>
 			<div className={s.wrapper}>
@@ -412,173 +418,6 @@ const Statistics = ({}: IStatistics) => {
 					</button>
 				</div>
 				<div className={s.MainBlock}>
-					{/* <div className={s.GraphicBlock}>
-						<div className={s.MenuForGraphic}>
-							<Select
-								multiple
-								className={s.muiSelect}
-								value={studFinItem}
-								renderValue={(selected) => selected.join(', ')}
-								onChange={(e: any) => setStudFinItem(e.target.value)}
-								variant={'standard'}>
-								{names.map((name, index) => (
-									<MenuItem value={name} key={index}>
-										<CheckBox checked={studFinItem.indexOf(name) > -1} />
-										<ListItemText primary={name} />
-									</MenuItem>
-								))}
-							</Select>
-							<Line width="260px" />
-							<Select
-								className={s.muiSelect}
-								value={studFinDate}
-								onChange={(e: any) => setStudFinDate(e.target.value)}
-								variant={'standard'}>
-								<MenuItem value={0}>
-									<p>За последние 30 дней</p>
-								</MenuItem>
-								<MenuItem value={1}>
-									<p>С начала месяца</p>
-								</MenuItem>
-								<MenuItem value={2}>
-									<p>С начала года</p>
-								</MenuItem>
-								<MenuItem value={3}>
-									<p>За всё время</p>
-								</MenuItem>
-								<MenuItem value={4}>
-									<p>Задать период</p>
-								</MenuItem>
-							</Select>
-							<Line width="260px" />
-							<div className={s.Dates}>
-								<div className={s.DatePicker}>
-									<LocalizationProvider
-										dateAdapter={AdapterDateFns}
-										adapterLocale={ru}>
-										<DatePicker
-											value={startData}
-											onChange={(e: any) => setStartData(e)}
-											slots={{
-												layout: StyledPickersLayout,
-											}}
-											sx={{
-												input: {
-													paddingTop: '0px',
-													paddingBottom: '0px',
-													paddingLeft: '4px',
-													fontWeight: '500',
-												},
-												svg: {
-													width: '18px',
-													height: '18px',
-												},
-											}}
-											timezone="system"
-											showDaysOutsideCurrentMonth
-										/>
-									</LocalizationProvider>
-								</div>
-								<Line width="20px" className={s.LineDate} />
-								<div className={s.DatePicker}>
-									<LocalizationProvider
-										dateAdapter={AdapterDateFns}
-										adapterLocale={ru}>
-										<DatePicker
-											value={endData}
-											onChange={(e: any) => setEndData(e)}
-											slots={{
-												layout: StyledPickersLayout,
-											}}
-											sx={{
-												input: {
-													paddingTop: '0px',
-													paddingBottom: '0px',
-													paddingLeft: '4px',
-													fontWeight: '500',
-												},
-												svg: {
-													width: '18px',
-													height: '18px',
-												},
-											}}
-											timezone="system"
-											showDaysOutsideCurrentMonth
-										/>
-									</LocalizationProvider>
-								</div>
-							</div>
-							<div className={s.DataBlock}>
-								<p></p>
-								<p></p>
-								<p style={{fontWeight: '500', textAlign: 'center'}}>Рубли</p>
-								<p style={{fontWeight: '500', textAlign: 'center'}}>%</p>
-								<CheckBox size="16px" color="red" />
-								<p>Всего</p>
-								<p style={{textAlign: 'center'}}>2000</p>
-								<p style={{textAlign: 'center'}}>100</p>
-								<CheckBox size="16px" color="blue" />
-								<p
-									style={{
-										textAlign: 'center',
-										display: 'flex',
-										alignItems: 'center',
-									}}>
-									На дому
-								</p>
-								<p
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-									}}>
-									2000
-								</p>
-								<p
-									style={{
-										display: 'flex',
-										alignItems: 'center',
-										justifyContent: 'center',
-									}}>
-									100
-								</p>
-							</div>
-						</div>
-						{(() => {
-							switch (chooseGraphic) {
-								case 0: {
-									return (
-										<div className={s.ChartWrap}>
-											<p>Ученики-финансы</p>
-											<div className={s.chart_container}>
-												<LineGraph
-													className={s.Graphic}
-													data={data}
-													options={options}
-												/>
-											</div>
-										</div>
-									)
-								}
-
-								case 1: {
-									return (
-										<div className={s.ChartWrap}>
-											<p>Ученики-финансы</p>
-											<div className={s.chart_container}>
-												<Bar
-													className={s.Graphic}
-													data={data}
-													options={optionsBar}
-												/>
-											</div>
-										</div>
-									)
-								}
-							}
-						})()}
-					</div> */}
-					{/* <Line width="100%" className={s.Line} /> */}
 					<GraphicBlock
 						StyledPickersLayout={StyledPickersLayout}
 						names={names}

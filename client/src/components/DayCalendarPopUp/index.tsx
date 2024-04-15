@@ -81,6 +81,7 @@ const DayCalendarPopUp = ({
 			typeLesson: string
 			startTime: {hour: number; minute: number}
 			endTime: {hour: number; minute: number}
+			type: string
 		}[]
 	>([])
 
@@ -385,6 +386,7 @@ const DayCalendarPopUp = ({
 									item={student.itemName}
 									price={student.costOneLesson}
 									prevpay={student.tryLessonCheck}
+									type={student.type}
 								/>
 								<Line className={s.Line} width="700px" />
 							</>

@@ -19,7 +19,7 @@ import {debounce} from 'lodash'
 
 import {Input} from '@mui/base'
 import {useDispatch, useSelector} from 'react-redux'
-import {ELeftMenuPage} from '../../types'
+import {ECurrentDayPopUp, ELeftMenuPage} from '../../types'
 import socket from '../../socket'
 import DayStudentPopUp from '../DayStudentPopUp'
 
@@ -43,7 +43,9 @@ interface IDayCalendarLine {
 	price: string
 	prevpay?: boolean
 	editMode?: boolean
-	
+	isGroup?: boolean
+
+	type?: string
 
 	iconClick?: () => void
 	LineClick?: () => void
@@ -70,10 +72,12 @@ const DayCalendarLine = ({
 	key,
 	studentId,
 	prevpay,
+	isGroup,
 	editMode,
 	iconClick,
 	LineClick,
 	onUpdate,
+	type,
 }: IDayCalendarLine) => {
 	const [editIcon, setEditIcon] = useState<string>(icon)
 	const [editName, setEditName] = useState<string>(name)
@@ -282,11 +286,27 @@ const DayCalendarLine = ({
 				</button>
 				<div
 					onClick={() => {
-						if (!editMode)
-							return dispatch({
-								type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
-								payload: id,
-							})
+						if (!editMode && type === 'Student')
+							return (
+								dispatch({
+									type: 'SET_CURRENT_POPUP_TYPE',
+									payload: ECurrentDayPopUp.Student,
+								}) &&
+								dispatch({
+									type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+									payload: id,
+								})
+							)
+						else if (!editMode && type === 'Group') {
+							dispatch({
+								type: 'SET_CURRENT_POPUP_TYPE',
+								payload: ECurrentDayPopUp.Group,
+							}) &&
+								dispatch({
+									type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+									payload: id,
+								})
+						}
 					}}
 					className={s.ClickWrapper}
 					style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
@@ -308,7 +328,7 @@ const DayCalendarLine = ({
 					<div className={s.Name}>
 						{!editMode ? (
 							<p title={editName}>
-								{editName.length > 24 ? name.slice(0, 24) + '...' : editName}
+								{editName && (editName.length  > 24 ? name.slice(0, 24) + '...' : editName)}
 							</p>
 						) : (
 							<Input
