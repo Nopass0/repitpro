@@ -45,7 +45,9 @@ import ExitPopUp from '../ExitPopUp'
 import CloseIcon from '@mui/icons-material/Close'
 
 import {useNavigate} from 'react-router-dom'
-interface IAddGroup {className?: string}
+interface IAddGroup {
+	className?: string
+}
 enum PagePopup {
 	Exit,
 	None,
@@ -63,6 +65,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	const [costOneLesson, setCostOneLesson] = useState<number>(0)
 
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
+	const [allPriceGroup, setAllPriceGroup] = useState<number>(0)
 
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
@@ -854,21 +857,26 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	//Сумма расходов  каждого ученика
-	const costStudent = (students: IStudent[]) => {
-		let cost = 0
-		students.forEach((student) => {
-			cost += Number(student.costStudent)
-		})
-		return cost
-	}
+	// const costStudent = (students: IStudent[]) => {
+	// 	let cost = 0
+	// 	students.forEach((student) => {
+	// 		cost += Number(student.costStudent)
+	// 	})
+	// 	return cost
+	// }
 
 	useEffect(() => {
 		//sum all costStudent and write to allCost
-		let sum = 0
+		let sumCost = 0
+		let totalCostGroup = 0
 		students.forEach((student) => {
-			sum += Number(student.costStudent)
+			sumCost += Number(student.costStudent)
+			totalCostGroup += Number(student.costOneLesson)
 		})
-		setAllCostForGroup(sum)
+		console.log(students,'studentsstudentsstudentsstudents' );
+		
+		setAllCostForGroup(sumCost)
+		setAllPriceGroup(totalCostGroup)
 	}, [students])
 
 	const handleClick = () => {
@@ -974,17 +982,8 @@ const AddGroup = ({className}: IAddGroup) => {
 						})
 					}
 				}}
-				style={{position: 'absolute', zIndex: '100'}}>
-				<CloseIcon
-					style={{
-						color: 'red',
-						position: 'relative',
-						left: '360px',
-						top: '10px',
-						width: '26px',
-						height: '26px',
-					}}
-				/>
+				className={s.CloseButton}>
+				<CloseIcon className={s.CloseIcon} />
 			</button>
 			<div className={`${s.wrapper} ${className}`}>
 				<div className={s.Header}>
@@ -1443,16 +1442,14 @@ const AddGroup = ({className}: IAddGroup) => {
 											<div className={s.MathHeader}>
 												<p>Общая стоимость 1-го занятия:</p>
 												<p>
-													{students
-														.map((student) => student.price)
-														.reduce((a, b) => a + b, 0) * items.length}
+													{allPriceGroup}
 													₽
 												</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
 												<p>Всего занятий: {allLessons}</p>
-												<p>Сумма: 0₽</p>
+												<p>Сумма: {allLessons * allPriceGroup}₽</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
@@ -1538,7 +1535,7 @@ const AddGroup = ({className}: IAddGroup) => {
 									</span>
 								</button>
 								<p className={s.btnText}>
-									Ученик {currentStudentIndex + 1} / {students.length};
+									Ученик {currentStudentIndex + 1} / {students.length}
 								</p>
 								<button className={s.btn} onClick={handleNextStudent}>
 									<span>
@@ -1967,9 +1964,9 @@ const AddGroup = ({className}: IAddGroup) => {
 				</div>
 			</div>
 			{pagePopup === PagePopup.Exit && (
-				<div style={{position: 'absolute', zIndex: '100'}}>
+				<div className={s.ExitPopUpWrap}>
 					<ExitPopUp
-						style={{position: 'relative', top: '20px', left: '400px'}}
+						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
 							dispatch({

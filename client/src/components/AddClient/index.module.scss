@@ -344,12 +344,6 @@
 	}
 }
 
-@media screen and (max-width: 1024px) {
-	.wrapper {
-		display: none;
-	}
-}
-
 // Mui Collapse
 
 .MuiCollapse {
@@ -503,4 +497,60 @@
 
 .ItemActive_ {
 	display: block;
+}
+.CloseButton {
+	position: absolute;
+	z-index: 100;
+}
+
+.CloseIcon {
+	position: relative;
+	left: 360px;
+	top: 10px;
+	width: 26px;
+	height: 26px;
+	color: red;
+}
+.ExitPopUpWrap {
+	position: absolute;
+	z-index: 100;
+}
+.ExitPopUp {
+	position: relative;
+	top: 20px;
+	left: 400px;
+}
+
+@media screen and (max-width: 1024px) {
+	.wrapper {
+		position: fixed;
+		left: 0;
+		z-index: 100;
+
+		margin: 0;
+	}
+
+	.CloseButton {
+		position: fixed;
+		z-index: 101;
+	}
+	.CloseIcon {
+		top: 0;
+		left: 300px;
+	}
+	.ExitPopUpWrap {
+		position: fixed;
+		z-index: 101;
+	}
+	.ExitPopUp {
+		position: relative;
+		top: 20px;
+		left: 350px;
+	}
+}
+
+@media screen and (min-width: 678px) and (max-width: 1024px) {
+	.wrapper {
+		max-height: 90%;
+	}
 }

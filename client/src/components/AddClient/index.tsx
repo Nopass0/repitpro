@@ -370,17 +370,8 @@ const AddClient = ({}: IAddClient) => {
 					// 	})
 					// }
 				}}
-				style={{position: 'absolute', zIndex: '100'}}>
-				<CloseIcon
-					style={{
-						color: 'red',
-						position: 'relative',
-						left: '360px',
-						top: '10px',
-						width: '26px',
-						height: '26px',
-					}}
-				/>
+				className={s.CloseButton}>
+				<CloseIcon className={s.CloseIcon} />
 			</button>
 			<div className={s.wrapper}>
 				<div className={s.Header}>
@@ -1698,9 +1689,9 @@ const AddClient = ({}: IAddClient) => {
 				</div>
 			</div>
 			{pagePopup === PagePopup.Exit && (
-				<div style={{position: 'absolute', zIndex: '100'}}>
+				<div className={s.ExitPopUpWrap}>
 					<ExitPopUp
-						style={{position: 'relative', top: '20px', left: '400px'}}
+						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
 							dispatch({

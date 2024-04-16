@@ -612,8 +612,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				</div>
 			</div>
 			{pagePopup === PagePopup.DayCalendar && currentScheduleDay === '' && (
-				<div
-					className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+				<div className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 					<DayCalendarPopUp
 						className={s.DayCalendarPopUp}
 						onExit={() => setPagePopup(PagePopup.None)}
@@ -626,9 +625,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Student && (
 					<div
-						className={`${
-							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
-						}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -649,9 +646,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Group && (
 					<div
-						className={`${
-							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
-						}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -670,24 +665,20 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						/>
 					</div>
 				)}
-			{currentScheduleDay !== '' &&
-				currentPopUpType === ECurrentDayPopUp.Client && (
-					<div
-						className={`${
-							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
-						}`}>
-						<DayClientPopUp
-							style={{
-								position: 'relative',
-								top: '150px',
-								margin: 'auto',
-							}}
-							onExit={() =>
-								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
-							}
-						/>
-					</div>
-				)}
+			{currentScheduleDay !== '' && currentPopUpType === ECurrentDayPopUp.Client && (
+				<div className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+					<DayClientPopUp
+						style={{
+							position: 'relative',
+							top: '150px',
+							margin: 'auto',
+						}}
+						onExit={() =>
+							dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+						}
+					/>
+				</div>
+			)}
 		</div>
 	)
 }
