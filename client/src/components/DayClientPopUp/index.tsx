@@ -84,7 +84,7 @@ const DayClientPopUp = ({
 	return (
 		<div style={style} className={s.wrapper}>
 			<div className={s.Header}>
-				<p>{name}</p>
+				<p>{client?.studentName}</p>
 				<p>{date}</p>
 				<button onClick={onExit}>
 					<CloseIcon className={s.closeIcon} />
@@ -94,7 +94,7 @@ const DayClientPopUp = ({
 			<div className={s.Main}>
 				<img width={'50px'} height={'50px'} src={Client} alt="Client" />
 				<div className={s.info}>
-					<h1>{item}</h1>
+					<h1>{client?.itemName}</h1>
 					{client?.workStages && (
 						<>
 							<div className={s.HeaderInfo}>
@@ -112,7 +112,14 @@ const DayClientPopUp = ({
 									size={'20px'}
 									checked={client.workStages[0].firstPaymentPayed}
 								/>
-								<p>20%</p>
+								<p>
+									{Math.round(
+										(client.workStages[0].firstPaymentPayed /
+											client.totalWorkPrice) *
+											100,
+									)}{' '}
+									%
+								</p>
 							</div>
 							<Line width="100%" className={s.Line} />
 							<div className={s.LineInfo}>
@@ -124,7 +131,7 @@ const DayClientPopUp = ({
 									size={'20px'}
 									checked={client.workStages[0].isStartWork}
 								/>
-								<p>20%</p>
+								<p></p>
 							</div>
 							<Line width="100%" className={s.Line} />
 							<div className={s.LineInfo}>
@@ -136,7 +143,14 @@ const DayClientPopUp = ({
 									size={'20px'}
 									checked={client.workStages[0].endPaymentPayed}
 								/>
-								<p>20%</p>
+								<p>
+									{Math.round(
+										(client.workStages[0].endPaymentPayed /
+											client.totalWorkPrice) *
+											100,
+									)}{' '}
+									%
+								</p>
 							</div>
 							<Line width="100%" className={s.Line} />
 							<div className={s.LineInfo}>
@@ -148,7 +162,18 @@ const DayClientPopUp = ({
 									size={'20px'}
 									checked={client.workStages[0].isEndWork}
 								/>
-								<p>20%</p>
+								<p>
+									{Math.round(
+										(client.workStages[0].endPaymentPayed /
+											client.totalWorkPrice) *
+											100,
+									) +
+										Math.round(
+											(client.workStages[0].firstPaymentPayed /
+												client.totalWorkPrice) *
+												100,
+										)} %
+								</p>
 							</div>
 							<Line width="100%" className={s.Line} />
 						</>

@@ -360,6 +360,7 @@ export async function getGroupsByDate(data: any) {
         },
       },
     },
+    
   });
 
   return groupSchedules.reduce((groups, schedule) => {

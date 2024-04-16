@@ -725,7 +725,25 @@ const AddGroup = ({className}: IAddGroup) => {
 			},
 		])
 	}
-
+	const closeTimePicker = (index: number, id: number) => {
+		//change
+		setItems((prevItems) =>
+			prevItems.map((item, itemIndex) =>
+				itemIndex === index
+					? {
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {...timeline, editingEnd: false, active: false}
+									: timeline,
+							),
+					  }
+					: item,
+			),
+		)
+		console.log('close', index, id)
+		setShowEndTimePicker(-1)
+	}
 	const handleNextStudent = () => {
 		if (currentStudentIndex < students.length - 1) {
 			setCurrentStudentIndex(currentStudentIndex + 1)
@@ -878,74 +896,6 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
 
-	// const nextGroup = () => {
-	// 	if (Number(currentGroupPosition) < allIdGroups.length - 1) {
-	// 		setCurrentStudPosition(Number(currentGroupPosition) + 1)
-	// 		const newId = allIdGroups[Number(currentGroupPosition)]
-
-	// 		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-	// 		socket.emit('getGroupByStudentId', {
-	// 			token: token,
-	// 			studentId: newId,
-	// 		})
-	// 		socket.once('getGroupByStudentId', (data: any) => {
-	// 			setData(data.group)
-	// 		})
-	// 	}
-	// }
-
-	// const prevStud = () => {
-	// 	if (Number(currentStudPosition) > 0) {
-	// 		setCurrentStudPosition(Number(currentStudPosition) - 1)
-	// 		const newId = allIdStudent[Number(currentStudPosition)]
-
-	// 		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-	// 		socket.emit('getGroupByStudentId', {
-	// 			token: token,
-	// 			studentId: newId,
-	// 		})
-	// 		socket.once('getGroupByStudentId', (data: any) => {
-	// 			setData(data.group)
-	// 		})
-	// 	}
-	// }
-
-	// const nextGroup = () => {
-	// 	if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
-	// 		setCurrentGroupIndex(Number(currentGroupIndex) + 1)
-	// 		const newId = groupsIndexes[Number(currentGroupIndex)]
-	// 		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
-	// 		socket.emit('getGroupById', {
-	// 			token: token,
-	// 			groupId: newId,
-	// 		})
-
-	// 		socket.once('getGroupById', (data: any) => {
-	// 			setGroupName(data.groupName)
-	// 			setItems(data.items)
-	// 			setStudents(data.students)
-	// 		})
-	// 	}
-	// }
-
-	// const prevGroup = () => {
-	// 	if (Number(currentGroupIndex) > 0) {
-	// 		setCurrentGroupIndex(Number(currentGroupIndex) - 1)
-	// 		const newId = groupsIndexes[Number(currentGroupIndex)]
-	// 		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
-	// 		socket.emit('getGroupById', {
-	// 			token: token,
-	// 			groupId: newId,
-	// 		})
-
-	// 		socket.once('getGroupById', (data: any) => {
-	// 			setGroupName(data.groupName)
-	// 			setItems(data.items)
-	// 			setStudents(data.students)
-	// 		})
-	// 	}
-	// }
-
 	return (
 		<>
 			<button
@@ -1009,8 +959,6 @@ const AddGroup = ({className}: IAddGroup) => {
 							/>
 							<p>*</p>
 						</div>
-
-						{/* <Line width="296px" className={s.Line} /> */}
 					</div>
 				</div>
 				<div className={s.wrapperMenu}>
@@ -1392,7 +1340,7 @@ const AddGroup = ({className}: IAddGroup) => {
 																	}}>
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker
-																			title="Начало"
+																			title="Начало занятий"
 																			onTimeChange={(hour, minute) =>
 																				handleStartTimeChange(
 																					currentItemIndex,
@@ -1401,17 +1349,29 @@ const AddGroup = ({className}: IAddGroup) => {
 																					minute,
 																				)
 																			}
+																			onExit={() =>
+																				closeTimePicker(
+																					currentItemIndex,
+																					timeline.id,
+																				)
+																			}
 																		/>
 																	)}
 																	{timeline.editingEnd && (
 																		<TimePicker
-																			title="Конец"
+																			title="Конец занятий"
 																			onTimeChange={(hour, minute) =>
 																				handleEndTimeChange(
 																					currentItemIndex,
 																					timeline.id,
 																					hour,
 																					minute,
+																				)
+																			}
+																			onExit={() =>
+																				closeTimePicker(
+																					currentItemIndex,
+																					timeline.id,
 																				)
 																			}
 																		/>
@@ -1439,15 +1399,29 @@ const AddGroup = ({className}: IAddGroup) => {
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
-												<p>Всего занятий: {items.length}</p>
-												<p>Сумма: {items.length * allPriceGroup}₽</p>
+												<p>
+													Всего занятий:{' '}
+													{studentsHistoryLessons[index] &&
+														studentsHistoryLessons[index].length}
+												</p>
+												<p>
+													Сумма:{' '}
+													{studentsHistoryLessons[index] &&
+														studentsHistoryLessons[index].length *
+															allPriceGroup}
+													₽
+												</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
 												<p>Прошло: {items.length}</p>
 												<p>
 													Оплачено: {items.length} (
-													{(items.length * allPriceGroup) / 2}₽)
+													{studentsHistoryLessons[index] &&
+														(studentsHistoryLessons[index].length *
+															allPriceGroup) /
+															2}
+													₽)
 												</p>
 											</div>
 											<Line width="294px" className={s.Line} />
@@ -1786,12 +1760,17 @@ const AddGroup = ({className}: IAddGroup) => {
 										<div className={s.MathObjectsList}>
 											<div className={s.MathObject}>
 												<p>
-													Всего занятий: {studentsHistoryLessons[index].length}
+													Всего занятий:{' '}
+													{studentsHistoryLessons[index]
+														? studentsHistoryLessons[index].length
+														: '0'}
 												</p>
 												<p>
 													Сумма:{' '}
-													{studentsHistoryLessons[index].length *
-														student.costOneLesson}
+													{studentsHistoryLessons[index]
+														? studentsHistoryLessons[index].length *
+														  student.costOneLesson
+														: '0'}
 													₽
 												</p>
 											</div>
@@ -1800,22 +1779,22 @@ const AddGroup = ({className}: IAddGroup) => {
 												{/* count isDone */}
 												<p>
 													Прошло:{' '}
-													{
+													{studentsHistoryLessons[index] &&
 														studentsHistoryLessons[index].filter(
 															(i) => i.isDone,
-														).length
-													}
+														).length}
 												</p>
 												<p>
 													Оплачено:{' '}
-													{
+													{studentsHistoryLessons[index] &&
 														studentsHistoryLessons[index].filter(
 															(i) => i.isPaid,
-														).length
-													}{' '}
+														).length}{' '}
 													(
-													{studentsHistoryLessons[index].filter((i) => i.isPaid)
-														.length * student.costOneLesson}
+													{studentsHistoryLessons[index] &&
+														studentsHistoryLessons[index].filter(
+															(i) => i.isPaid,
+														).length * student.costOneLesson}
 													₽)
 												</p>
 											</div>
@@ -1823,22 +1802,29 @@ const AddGroup = ({className}: IAddGroup) => {
 											<div className={s.MathObject}>
 												<p>
 													Не оплачено:{' '}
-													{studentsHistoryLessons[index].filter((i) => i.isDone)
-														.length -
-														studentsHistoryLessons[index].filter(
-															(i) => i.isPaid,
-														).length}
+													{studentsHistoryLessons[index] &&
+														(studentsHistoryLessons[index].filter(
+															(i) => i.isDone,
+														).length > 0
+															? studentsHistoryLessons[index].filter(
+																	(i) => i.isDone,
+															  ).length -
+															  studentsHistoryLessons[index].filter(
+																	(i) => i.isPaid,
+															  ).length
+															: '0')}
 												</p>
 												<p style={{display: 'flex', flexDirection: 'row'}}>
 													<p style={{marginRight: '5px'}}>Долг:</p>
 													<p style={{color: 'red'}}>
-														{(studentsHistoryLessons[index].filter(
-															(i) => i.isDone,
-														).length -
-															studentsHistoryLessons[index].filter(
-																(i) => i.isPaid,
-															).length) *
-															student.costOneLesson}
+														{studentsHistoryLessons[index] &&
+															(studentsHistoryLessons[index].filter(
+																(i) => i.isDone,
+															).length -
+																studentsHistoryLessons[index].filter(
+																	(i) => i.isPaid,
+																).length) *
+																student.costOneLesson}
 													</p>
 													<p>₽</p>
 												</p>

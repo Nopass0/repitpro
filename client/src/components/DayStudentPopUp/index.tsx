@@ -30,6 +30,7 @@ interface IDayStudentPopUp {
 	style?: React.CSSProperties
 	onExit?: () => void
 	isGroup?: boolean
+	groupId?:string,
 }
 const DayStudentPopUp = ({
 	icon,
@@ -40,6 +41,7 @@ const DayStudentPopUp = ({
 	style,
 	onExit,
 	isGroup,
+	groupId,
 }: IDayStudentPopUp) => {
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
@@ -115,8 +117,11 @@ const DayStudentPopUp = ({
 			const student = data?.find(
 				(student: any) => student.id === currentScheduleDay,
 			)
-			console.log('student', student)
 			setStudent(student || {})
+			console.log(
+				'studentstudentstudentstudentstudentstudentstudentstudentstudent',
+				student,
+			)
 			setHomeWorkComment(student?.homeWork || '')
 			setClassroomComment(student?.classWork || '')
 			setHomeFiles(student?.homeFiles || [])
@@ -126,6 +131,28 @@ const DayStudentPopUp = ({
 		})
 		setIsOpened(true)
 	}, [])
+
+	const [groups, setGroups] = useState<any>([])
+	const [group, setGroup] = useState<any>({})
+
+	useEffect(() => {
+		socket.emit('getGroupsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			userId: token,
+		})
+		socket.once('getGroupsByDate', (data: any) => {
+			console.log('getGroupsByDate', data)
+			setGroups(data)
+
+			//get group where groupId = groupId
+			const group = data.find((group: any) => group.groupId === groupId)
+			setGroup(group)
+		})
+	}, [])
+
+	console.log('groupgroupgroupgroupgroup', group)
 
 	useEffect(() => {
 		if (currentScheduleDay && isOpened) {
@@ -176,7 +203,7 @@ const DayStudentPopUp = ({
 					<div className={s.MainHeader}>
 						<div className={s.IconHeader}>
 							<img src={icon} alt="icon" />
-							<p>{name}</p>
+							<p>{student?.nameStudent}</p>
 						</div>
 						<div className={s.Devider}></div>
 						<div className={s.AddressHeader}>
@@ -463,7 +490,7 @@ const DayStudentPopUp = ({
 				<button onClick={onExit}>
 					<CloseIcon className={s.closeIcon} />
 				</button>
-				<div className={s.btn}>
+				{/* <div className={s.btn}>
 					<button className={s.btnRight}>
 						<span>
 							<Arrow direction={ArrowType.right} />
@@ -474,7 +501,7 @@ const DayStudentPopUp = ({
 							<Arrow direction={ArrowType.left} />
 						</span>
 					</button>
-				</div>
+				</div> */}
 			</div>
 		</div>
 	)

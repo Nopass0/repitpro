@@ -94,6 +94,7 @@
 		.StudentCardName {
 			width: 100%;
 			max-width: 296px;
+			max-height: 100%;
 			font-size: 16px;
 			white-space: nowrap;
 
@@ -110,11 +111,20 @@
 			textarea {
 				display: block;
 				width: 100%;
-				max-width: 181px;
+				max-width: 100%;
 				border: none;
 				background: none;
 				outline: none;
-				white-space: normal;
+				white-space: nowrap;
+				word-wrap: break-word;
+				margin-top: 3px;
+				// Off scrollbar in textarea
+				-ms-overflow-style: none;
+				scrollbar-width: none;
+				&::-webkit-scrollbar {
+					display: none;
+				}
+
 			}
 			textarea {
 				resize: none;

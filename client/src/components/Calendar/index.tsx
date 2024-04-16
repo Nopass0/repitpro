@@ -125,7 +125,28 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				return (index % 3 ? next : next + ' ') + prev
 			})
 	}
-
+	const calendarNowPopupDay = useSelector(
+		(state: any) => state.calendarNowPopupDay,
+	)
+	const calendarNowPopupMonth = useSelector(
+		(state: any) => state.calendarNowPopupMonth,
+	)
+	const calendarNowPopupYear = useSelector(
+		(state: any) => state.calendarNowPopupYear,
+	)
+	const [clients, setClients] = React.useState<any[]>()
+	useEffect(() => {
+		socket.emit('getClientsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+	}, [])
+	socket.once('getClientsByDate', (data: any) => {
+		console.log('getClientsByDate', data)
+		setClients(data)
+	})
 	return (
 		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />
@@ -636,10 +657,16 @@ export const Calendar = ({className, cells}: ICalendar) => {
 								margin: 'auto',
 							}}
 							icon={Home}
-							name="Группа Бэтта 1 Математика"
-							address="г. Москва, ул. Мясницкая, 4"
-							date="4 марта 2024"
-							time="Пн 10:00 - 12:00"
+							// name="Группа Бэтта 1 Математика"
+							// address="г. Москва, ул. Мясницкая, 4"
+							date={`${calendarNowPopupDay} ${new Date(calendarNowPopupMonth)
+								.toLocaleString('ru-RU', {
+									month: 'long',
+								})
+								.replace(/^./, (firstLetter) =>
+									firstLetter.toLocaleUpperCase(),
+								)} ${calendarNowPopupYear}`}
+							// time="Пн 10:00 - 12:00"
 							onExit={() =>
 								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
 							}
@@ -656,11 +683,16 @@ export const Calendar = ({className, cells}: ICalendar) => {
 								top: '150px',
 								margin: 'auto',
 							}}
+							groupId={currentScheduleDay}
 							icon={Home}
-							name="Группа Бэтта 1 Математика"
-							address="г. Москва, ул. Мясницкая, 4"
-							date="4 марта 2024"
-							time="Пн 10:00 - 12:00"
+							date={`${calendarNowPopupDay} ${new Date(calendarNowPopupMonth)
+								.toLocaleString('ru-RU', {
+									month: 'long',
+								})
+								.replace(/^./, (firstLetter) =>
+									firstLetter.toLocaleUpperCase(),
+								)} ${calendarNowPopupYear}`}
+							// time="Пн 10:00 - 12:00"
 							isGroup
 							onExit={() =>
 								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
@@ -679,8 +711,18 @@ export const Calendar = ({className, cells}: ICalendar) => {
 								top: '150px',
 								margin: 'auto',
 							}}
+							date={`${calendarNowPopupDay} ${new Date(calendarNowPopupMonth)
+								.toLocaleString('ru-RU', {
+									month: 'long',
+								})
+								.replace(/^./, (firstLetter) =>
+									firstLetter.toLocaleUpperCase(),
+								)} ${calendarNowPopupYear}`}
 							onExit={() =>
-								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+								dispatch({
+									type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+									payload: '',
+								})
 							}
 						/>
 					</div>
