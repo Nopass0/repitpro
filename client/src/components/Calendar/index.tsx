@@ -668,22 +668,6 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						/>
 					</div>
 				)}
-<<<<<<< HEAD
-			{currentScheduleDay !== '' && currentPopUpType === ECurrentDayPopUp.Client && (
-				<div className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
-					<DayClientPopUp
-						style={{
-							position: 'relative',
-							top: '150px',
-							margin: 'auto',
-						}}
-						onExit={() =>
-							dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
-						}
-					/>
-				</div>
-			)}
-=======
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Client && (
 					<div
@@ -701,7 +685,6 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						/>
 					</div>
 				)}
->>>>>>> d641166369a577a39d0ee7cb00dc1c2221a79d54
 		</div>
 	)
 }
