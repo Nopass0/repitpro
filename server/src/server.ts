@@ -23,6 +23,7 @@ import {
   deleteGroup,
   getGroupById,
   getGroupList,
+  getGroupsByDate,
   groupToArchive,
 } from "./cards/group";
 import {
@@ -32,6 +33,7 @@ import {
   getClientById,
   getClientList,
   getClientsByDate,
+  getClientTableData,
   updateClient,
 } from "./cards/client";
 import {
@@ -77,6 +79,8 @@ io.on("connection", (socket) => {
   socket.on("getGroupById", (data) => getGroupById(data));
   socket.on("updateClient", (data) => updateClient(data));
   socket.on("getClientById", (data) => getClientById(data));
+  socket.on("getGroupsByDate", (data) => getGroupsByDate(data));
+  socket.on("getClientTableData", (token) => getClientTableData(token));
 
   socket.on("getStudentFinanceData", (data) => getStudentFinanceData(data));
   socket.on("getStudentCountData", (data) => getStudentCountData(data));

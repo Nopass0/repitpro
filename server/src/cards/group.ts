@@ -338,6 +338,50 @@ export async function groupToArchive(data: any) {
   }
 }
 
+export async function getGroupsByDate(data: any) {
+  const { day, month, year, userId, dayOfWeekIndex } = data;
+  const groupSchedules = await db.studentSchedule.findMany({
+    where: {
+      day,
+      month,
+      year,
+      userId,
+      clientId: null,
+      item: {
+        group: {
+          groupName: { not: "" }, // Условие для включения только групп
+        },
+      },
+    },
+    include: {
+      item: {
+        include: {
+          group: true,
+        },
+      },
+    },
+  });
+
+  return groupSchedules.reduce((groups, schedule) => {
+    const { item, groupId } = schedule;
+    const groupName = item.group.groupName;
+
+    const existingGroup = groups.find((group) => group.groupName === groupName);
+
+    if (existingGroup) {
+      existingGroup.studentSchedules.push(schedule);
+    } else {
+      const newGroup = {
+        groupName,
+        studentSchedules: [schedule],
+      };
+      groups.push(newGroup);
+    }
+
+    return groups;
+  }, []);
+}
+
 //get group by id
 export async function getGroupById(data: any) {
   const { token, groupId } = data;

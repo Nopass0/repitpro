@@ -140,35 +140,35 @@ let data = {
 	datasets: [
 		{
 			label: 'Dataset 1',
-			data: getDatasets(),
+			data: [],
 			fill: false,
 			backgroundColor: '#FF0000',
 			borderColor: '#FF0000',
 		},
 		{
 			label: 'Dataset 2',
-			data: getDatasets(),
+			data: [],
 			fill: false,
 			backgroundColor: '#9747FF',
 			borderColor: '#9747FF',
 		},
 		{
 			label: 'Dataset 3',
-			data: getDatasets(),
+			data: [],
 			fill: false,
 			backgroundColor: '#0027FF',
 			borderColor: '#0027FF',
 		},
 		{
 			label: 'Dataset 4',
-			data: getDatasets(),
+			data: [],
 			fill: false,
 			backgroundColor: '#25991C',
 			borderColor: '#25991C',
 		},
 		{
 			label: 'Dataset 5',
-			data: getDatasets(),
+			data: [],
 			fill: false,
 			backgroundColor: '#C7CB00',
 			borderColor: '#C7CB00',
@@ -301,6 +301,7 @@ const Statistics = ({}: IStatistics) => {
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
 
+	const [clientData, setClientData] = useState([])
 	const [studentsData, setStudentsData] = useState([])
 	const [startData, setStartData] = useState<Date>(new Date(Date.now() + 1))
 	const [endData, setEndData] = useState<Date>(new Date(Date.now() + 86400000))
@@ -343,6 +344,16 @@ const Statistics = ({}: IStatistics) => {
 			console.log('getTableData', data)
 			setStudentsData(data)
 		})
+
+		socket.emit('getClientTableData', {
+			token: token,
+			dateRange: {start: startData, end: endData},
+		})
+
+		socket.on('getClientTableData', (data: any) => {
+			console.log('getClientTableData', data)
+			setClientData(data)
+		})
 	}, [])
 
 	const sortData = (data: any, column: any, direction: any) => {
@@ -368,11 +379,16 @@ const Statistics = ({}: IStatistics) => {
 	}
 
 	const sortedData = sortData(studentsData, sortColumn, sortDirection)
+	const sortedData2 = sortData(clientData, sortColumn, sortDirection)
 
 	useEffect(() => {
 		socket.emit('getTableData', {
 			token: token,
 			dateRange: {start: startData, end: endData},
+		})
+		socket.emit('getClientTableData', {
+			token: token,
+			dateRange: {start: cliAmDateStart, end: cliAmDateEnd},
 		})
 		console.log(sortedData, 'sortedData')
 	}, [startData, endData])
@@ -1018,7 +1034,7 @@ const Statistics = ({}: IStatistics) => {
 									</tr>
 								</thead>
 								<tbody className={s.Tbody}>
-									{sortedData.map((item: any, index: any) => (
+									{sortedData2.map((item: any, index: any) => (
 										<tr className={s.Tr} key={index}>
 											<td className={s.Td}>
 												<p>{item.name}</p>
