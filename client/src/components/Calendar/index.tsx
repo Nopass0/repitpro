@@ -44,6 +44,9 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	let token = useSelector((state: any) => state.user.token)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const details = useSelector((state: any) => state.details)
+	const currentScheduleDayClientId = useSelector(
+		(state: any) => state.currentScheduleDayClientId,
+	)
 
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
@@ -612,8 +615,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				</div>
 			</div>
 			{pagePopup === PagePopup.DayCalendar && currentScheduleDay === '' && (
-				<div
-					className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+				<div className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 					<DayCalendarPopUp
 						className={s.DayCalendarPopUp}
 						onExit={() => setPagePopup(PagePopup.None)}
@@ -626,9 +628,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Student && (
 					<div
-						className={`${
-							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
-						}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -649,9 +649,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Group && (
 					<div
-						className={`${
-							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
-						}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -673,10 +671,9 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Client && (
 					<div
-						className={`${
-							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
-						}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 						<DayClientPopUp
+							clientId={currentScheduleDayClientId}
 							style={{
 								position: 'relative',
 								top: '150px',
