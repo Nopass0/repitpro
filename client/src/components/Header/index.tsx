@@ -131,6 +131,7 @@ const Header = ({}: IHeader) => {
 							style={{color: details ? '#25991c' : ''}}
 							className={s.hideBtn + ' ' + s.DetailsBtn}>
 							<p className={s.btnText}>Подробно</p>
+							<Doc className={s.eyeNotMob} />
 						</button>
 					</div>
 				</div>

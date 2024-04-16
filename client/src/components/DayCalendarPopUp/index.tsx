@@ -46,6 +46,7 @@ const DayCalendarPopUp = ({
 
 	const currentMonth = useSelector((state: any) => state.currentMonth)
 	const currentYear = useSelector((state: any) => state.currentYear)
+	const details = useSelector((state: any) => state.details)
 
 	const dispath = useDispatch()
 
@@ -264,11 +265,12 @@ const DayCalendarPopUp = ({
 	}
 
 	return (
-		<div style={style} className={`${s.wrapper} ${className}`}>
+		<div style={style} className={`${!details ? s.wrapper : s.wrapperNoDetails} ${className}`}>
 			<div>
 				<header className={s.Header}>
 					<div className={s.HeaderItems}>
 						{/* <DataSlidePicker className={s.dataSlidePicker} dateMode /> */}
+						<div></div>
 						<div className={s.dataSlidePicker}>
 							<button
 								className={s.btn}
@@ -305,7 +307,7 @@ const DayCalendarPopUp = ({
 							</button>
 						</div>
 						{/* this */}
-						<button onClick={onExit}>
+						<button className={s.closeIconWrap} onClick={onExit}>
 							<CloseIcon className={s.closeIcon} />
 						</button>
 					</div>
@@ -388,7 +390,6 @@ const DayCalendarPopUp = ({
 									prevpay={student.tryLessonCheck}
 									type={student.type}
 								/>
-								<Line className={s.Line} width="700px" />
 							</>
 						))}
 				</section>

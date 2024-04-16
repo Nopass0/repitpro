@@ -141,7 +141,7 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 								<>
 									<Header />
 									<div className="container">
-										<LeftMenu />
+										<LeftMenu/>
 										{[router_element]}
 									</div>
 								</>

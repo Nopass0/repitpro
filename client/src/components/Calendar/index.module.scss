@@ -403,8 +403,9 @@
 	// bottom: 12px;
 	margin: 0 !important;
 }
+
 @media screen and (min-width: 678px) {
-	.PagePopUpWrap {
+	.PagePopUpWrapMobile {
 		position: absolute;
 		top: 80px;
 		margin: 0 auto;
@@ -418,6 +419,21 @@
 			top: 50px;
 			margin: auto;
 		}
+	}
+}
+.PagePopUpWrap {
+	position: absolute;
+	top: 80px;
+	margin: 0 auto;
+	max-width: 1300px;
+	width: 100%;
+	max-height: 751px;
+	height: 100%;
+
+	.DayCalendarPopUp {
+		position: relative;
+		top: 50px;
+		margin: auto;
 	}
 }
 
@@ -502,20 +518,11 @@
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
 		.table {
-			.head {
-				border: none !important;
-			}
 			font-size: 12px !important;
 			tr {
 				th {
 					min-width: 140px;
 					min-height: 116px;
-					border: none !important;
-				}
-
-				.td {
-					text-align: center !important;
-					border: none !important;
 				}
 			}
 		}
@@ -541,7 +548,8 @@
 
 	.footer {
 		.info {
-			padding: 10px 20px !important;
+			display: none;
+			// padding: 10px 20px !important;
 		}
 
 		.infoImg,
@@ -555,15 +563,19 @@
 	}
 
 	.IncomeNPrognosisWrapper {
+		width: 100% !important;
+		max-width: 100% !important;
 		.Title {
 			font-size: 12px !important;
 		}
 		.IncomeWrapper {
-			max-width: 150px;
-			border-right: none !important;
+			width: 100% !important;
+			// max-width: 150px;
+			// border-right: none !important;
 		}
 		.PrognosisWrapper {
-			display: none;
+			width: 100% !important;
+			// display: none;
 		}
 	}
 
@@ -581,17 +593,25 @@
 			max-width: 678px !important;
 			// overflow: hidden;
 			.table {
+				.head {
+					border: none !important;
+				}
 				height: 0;
 				max-width: 678px !important;
 				tr {
 					th {
 						min-width: 0;
 						min-height: 0;
+						border: none !important;
 					}
 				}
 				tr {
 					td {
 						height: 50px !important;
+					}
+					.td {
+						text-align: center !important;
+						border: none !important;
 					}
 				}
 			}

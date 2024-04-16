@@ -45,12 +45,12 @@ import ExitPopUp from '../ExitPopUp'
 import CloseIcon from '@mui/icons-material/Close'
 
 import {useNavigate} from 'react-router-dom'
-interface IAddGroup {}
+interface IAddGroup {className?: string}
 enum PagePopup {
 	Exit,
 	None,
 }
-const AddGroup = ({}: IAddGroup) => {
+const AddGroup = ({className}: IAddGroup) => {
 	const [groupName, setGroupName] = useState<string>('')
 	// Block Student
 	const dispatch = useDispatch()
@@ -986,7 +986,7 @@ const AddGroup = ({}: IAddGroup) => {
 					}}
 				/>
 			</button>
-			<div className={s.wrapper}>
+			<div className={`${s.wrapper} ${className}`}>
 				<div className={s.Header}>
 					<div className={s.HeaderAddGroup}>
 						<div className={s.dataSlidePicker}>

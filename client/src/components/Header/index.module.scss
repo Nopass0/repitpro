@@ -210,7 +210,8 @@
 	margin-left: 26px;
 }
 
-.muiSelect__Buttons, .muiSelect__ButtonsStat {
+.muiSelect__Buttons,
+.muiSelect__ButtonsStat {
 	display: none !important;
 }
 @media screen and (max-width: 1024px) {
@@ -246,15 +247,17 @@
 	}
 }
 
-@media screen and (max-width: 678px) {
+@media screen and (min-width: 678px) {
+	.eyeNotMob {
+		margin-left: 10px;
+	}
+}
 
-	
+@media screen and (max-width: 678px) {
 	.header {
 		// position: fixed;
 		bottom: 0;
 	}
-
-
 
 	.greenBtn {
 		display: none;
@@ -267,16 +270,20 @@
 		display: none !important;
 	}
 
-	.muiSelect__Buttons, .muiSelect__ButtonsStat {
+	.muiSelect__Buttons,
+	.muiSelect__ButtonsStat {
 		display: block !important;
 		padding: 0 !important;
 	}
-	.muiSelect__Buttons {
-		margin: 0 20px;
+	.muiSelect__Buttons > div:first-child,
+	.muiSelect__ButtonsStat > div:first-child {
+		padding-right: 0 !important;
 	}
+
 	.muiSelect__ButtonsStat {
 		width: 20px;
 		height: 35px;
+		
 	}
 
 	.Buttons {
@@ -312,7 +319,7 @@
 		border: 1px solid #25991c;
 		display: flex;
 		align-items: center;
-		padding: 5px 5px;
+		padding: 5px 5px !important;
 	}
 
 	.rub {
@@ -327,8 +334,11 @@
 		height: 22px !important;
 	}
 
+	.eyeNotMob {
+		display: none;
+	}
+
 	.hideBtn {
 		margin: 0 !important;
 	}
-	
 }

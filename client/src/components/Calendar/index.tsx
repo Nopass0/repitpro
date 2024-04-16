@@ -14,6 +14,7 @@ import Line from '../Line'
 import DayCalendarPopUp from '../DayCalendarPopUp/index'
 import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
+import DayClientPopUp from '../DayClientPopUp/index'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -47,6 +48,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
+	console.log(currentScheduleDay, 'currentScheduleDay')
+
 	const currentPopUpType = useSelector((state: any) => state.currentPopUpType)
 
 	const dispatch = useDispatch()
@@ -609,20 +612,23 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				</div>
 			</div>
 			{pagePopup === PagePopup.DayCalendar && currentScheduleDay === '' && (
-				<div className={s.PagePopUpWrap}>
+				<div
+					className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 					<DayCalendarPopUp
 						className={s.DayCalendarPopUp}
 						onExit={() => setPagePopup(PagePopup.None)}
 						LineClick={() => {
 							setPagePopup(PagePopup.DayStudent)
-							console.log('123455')
 						}}
 					/>
 				</div>
 			)}
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Student && (
-					<div className={s.PagePopUpWrap}>
+					<div
+						className={`${
+							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
+						}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -642,7 +648,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				)}
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Group && (
-					<div className={s.PagePopUpWrap}>
+					<div
+						className={`${
+							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
+						}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -663,8 +672,20 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				)}
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Client && (
-					<div className={s.PagePopUpWrap}>
-						<h1>1235</h1>
+					<div
+						className={`${
+							details ? s.PagePopUpWrap : s.PagePopUpWrapMobile
+						}`}>
+						<DayClientPopUp
+							style={{
+								position: 'relative',
+								top: '150px',
+								margin: 'auto',
+							}}
+							onExit={() =>
+								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+							}
+						/>
 					</div>
 				)}
 		</div>

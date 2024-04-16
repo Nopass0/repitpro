@@ -19,7 +19,7 @@ import {useEffect, useState} from 'react'
 
 import {Input} from '@mui/base'
 import {useDispatch, useSelector} from 'react-redux'
-import {ELeftMenuPage} from '../../types'
+import {ECurrentDayPopUp, ELeftMenuPage} from '../../types'
 import socket from '../../socket'
 import DayStudentPopUp from '../DayStudentPopUp'
 import DayClientPopUp from '../DayClientPopUp'
@@ -94,7 +94,7 @@ const DayCalendarLineClient = ({
 		}
 	}, [])
 	const dispatch = useDispatch()
-
+	const currentpopup = useSelector((state: any) => state.currentPopUpType)
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
 
@@ -159,11 +159,17 @@ const DayCalendarLineClient = ({
 				</button>
 				<div
 					onClick={() => {
-						if (!editMode)
-							return dispatch({
-								type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
-								payload: id,
+						if (!editMode) {
+							dispatch({
+								type: 'SET_CURRENT_POPUP_TYPE',
+								payload: ECurrentDayPopUp.Client,
 							})
+							console.log(currentpopup,'1234667')
+						}
+						// dispatch({
+						// 	type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+						// 	payload: id,
+						// })
 					}}
 					className={s.ClickWrapper}>
 					<div className={s.ClickUp}>

@@ -235,170 +235,177 @@ const DayCalendarLine = ({
 
 	return (
 		<>
-			<div style={{display: isDelete ? 'none' : 'flex'}} className={s.wrapper}>
-				<button
-					onClick={() => {
-						if (!editMode) {
-							handleOpenCard()
-							return iconClick
-						}
-					}}
-					className={s.Icon}>
-					{!editMode ? (
-						<img
-							src={
-								editIcon === '1'
-									? Home
-									: editIcon === '2'
-									? HomeStudent
-									: editIcon === '3'
-									? Group
-									: editIcon === '4'
-									? Online
-									: GroupOnline
+			<div style={{display: isDelete ? 'none' : 'block'}}>
+				<div className={s.wrapper}>
+					<button
+						onClick={() => {
+							if (!editMode) {
+								handleOpenCard()
+								return iconClick
 							}
-							alt={editIcon}
-						/>
-					) : (
-						<>
-							<Select
-								className={s.elect__menu}
-								variant={'standard'}
-								value={editIcon}
-								onChange={(e) => {
-									//set icon
-									setEditIcon(String(e.target.value))
-									handleUpdate() // Call handleUpdate here
-								}}>
-								<MenuItem value={'1'}>
-									<img src={Home} alt={'Home'} />
-								</MenuItem>
-								<MenuItem value={'2'}>
-									<img src={HomeStudent} alt={'HomeStudent'} />
-								</MenuItem>
-
-								<MenuItem value={'4'}>
-									<img src={Online} alt={'Online'} />
-								</MenuItem>
-							</Select>
-						</>
-					)}
-				</button>
-				<div
-					onClick={() => {
-						if (!editMode && type === 'Student')
-							return (
-								dispatch({
-									type: 'SET_CURRENT_POPUP_TYPE',
-									payload: ECurrentDayPopUp.Student,
-								}) &&
-								dispatch({
-									type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
-									payload: id,
-								})
-							)
-						else if (!editMode && type === 'Group') {
-							dispatch({
-								type: 'SET_CURRENT_POPUP_TYPE',
-								payload: ECurrentDayPopUp.Group,
-							}) &&
-								dispatch({
-									type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
-									payload: id,
-								})
-						}
-					}}
-					className={s.ClickWrapper}
-					style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
-					<div className={s.Time} onClick={() => setActiveKey(key)}>
+						}}
+						className={s.Icon}>
 						{!editMode ? (
-							<p>{editTime}</p>
-						) : (
-							<InputMask
-								onChange={(e: any) => {
-									console.log(e.target.value)
-									setEditTime(formatTime(e.target.value))
-									handleUpdate()
-								}}
-								value={editTime}
-								mask="99:99-99:99"
+							<img
+								src={
+									editIcon === 1
+										? Home
+										: editIcon === 2
+										? HomeStudent
+										: editIcon === 3
+										? Group
+										: editIcon === 4
+										? Online
+										: GroupOnline
+								}
+								alt={editIcon}
 							/>
-						)}
-					</div>
-					<div className={s.Name}>
-						{!editMode ? (
-							<p title={editName}>
-								{editName && (editName.length  > 24 ? name.slice(0, 24) + '...' : editName)}
-							</p>
-						) : (
-							<Input
-								className={s.InputCstm}
-								onChange={(e: any) => {
-									setEditName(e.target.value)
-									handleUpdate()
-								}}
-								value={editName}
-							/>
-						)}
-					</div>
-					<div className={s.Item}>
-						{!editMode ? (
-							<p title={editItem}>
-								{editItem.length > 13 ? item.slice(0, 13) + '...' : editItem}
-							</p>
-						) : (
-							<Input
-								className={s.InputCstm}
-								onChange={(e: any) => {
-									setEditItem(e.target.value)
-									handleUpdate()
-								}}
-								value={editItem}
-							/>
-						)}
-					</div>
-					<div className={s.Price}>
-						{!editMode ? (
-							<p title={editPrice}>
-								{editPrice.length > 5 && !isMobile
-									? price.slice(0, 5) + '>'
-									: editPrice}{' '}
-								₽
-							</p>
 						) : (
 							<>
-								<Input
-									className={s.InputCstm}
-									style={{width: '50px'}}
-									onChange={(e: any) => {
-										setEditPrice(e.target.value)
-										handleUpdate()
-									}}
-									value={editPrice}
-									type="number"
-								/>{' '}
-								<p>₽</p>
+								<Select
+									className={s.elect__menu}
+									variant={'standard'}
+									value={editIcon}
+									onChange={(e) => {
+										//set icon
+										setEditIcon(String(e.target.value))
+										handleUpdate() // Call handleUpdate here
+									}}>
+									<MenuItem value={'1'}>
+										<img src={Home} alt={'Home'} />
+									</MenuItem>
+									<MenuItem value={'2'}>
+										<img src={HomeStudent} alt={'HomeStudent'} />
+									</MenuItem>
+
+									<MenuItem value={'4'}>
+										<img src={Online} alt={'Online'} />
+									</MenuItem>
+								</Select>
 							</>
 						)}
+					</button>
+					<div
+						onClick={() => {
+							if (!editMode && type === 'Student')
+								return (
+									dispatch({
+										type: 'SET_CURRENT_POPUP_TYPE',
+										payload: ECurrentDayPopUp.Student,
+									}) &&
+									dispatch({
+										type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+										payload: id,
+									})
+								)
+							else if (!editMode && type === 'Group') {
+								dispatch({
+									type: 'SET_CURRENT_POPUP_TYPE',
+									payload: ECurrentDayPopUp.Group,
+								}) &&
+									dispatch({
+										type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+										payload: id,
+									})
+							}
+						}}
+						className={s.ClickWrapper}
+						style={editMode ? {cursor: 'default'} : {cursor: 'pointer'}}>
+						<div className={s.Time} onClick={() => setActiveKey(key)}>
+							{!editMode ? (
+								<p>{editTime}</p>
+							) : (
+								<InputMask
+									onChange={(e: any) => {
+										console.log(e.target.value)
+										setEditTime(formatTime(e.target.value))
+										handleUpdate()
+									}}
+									value={editTime}
+									mask="99:99-99:99"
+								/>
+							)}
+						</div>
+						<div className={s.Name}>
+							{!editMode ? (
+								<p title={editName}>
+									{editName &&
+										(editName.length > 24
+											? name.slice(0, 24) + '...'
+											: editName)}
+								</p>
+							) : (
+								<Input
+									className={s.InputCstm}
+									onChange={(e: any) => {
+										setEditName(e.target.value)
+										handleUpdate()
+									}}
+									value={editName}
+								/>
+							)}
+						</div>
+						<div className={s.Item}>
+							{!editMode ? (
+								<p title={editItem}>
+									{editItem.length > 13 ? item.slice(0, 13) + '...' : editItem}
+								</p>
+							) : (
+								<Input
+									className={s.InputCstm}
+									onChange={(e: any) => {
+										setEditItem(e.target.value)
+										handleUpdate()
+									}}
+									value={editItem}
+								/>
+							)}
+						</div>
+						<div className={s.Price}>
+							{!editMode ? (
+								<p title={editPrice}>
+									{editPrice.length > 5 && !isMobile
+										? price.slice(0, 5) + '>'
+										: editPrice}{' '}
+									₽
+								</p>
+							) : (
+								<>
+									<Input
+										className={s.InputCstm}
+										style={{width: '50px'}}
+										onChange={(e: any) => {
+											setEditPrice(e.target.value)
+											handleUpdate()
+										}}
+										value={editPrice}
+										type="number"
+									/>{' '}
+									<p>₽</p>
+								</>
+							)}
+						</div>
 					</div>
+					<CheckBox
+						checked={editPrevpay}
+						onChange={() => {
+							setEditPrevpay(!editPrevpay)
+							handleUpdate()
+						}}
+						className={s.Checkbox}
+						size={isMobile ? '12px' : '20px'}
+					/>
+					<button
+						onClick={() => {
+							setIsDelete(true)
+							handleUpdate()
+						}}
+						className={s.BtnDelete}>
+						<DeleteOutlineIcon />
+					</button>
 				</div>
-				<CheckBox
-					checked={editPrevpay}
-					onChange={() => {
-						setEditPrevpay(!editPrevpay)
-						handleUpdate()
-					}}
-					className={s.Checkbox}
-					size={isMobile ? '12px' : '20px'}
-				/>
-				<button
-					onClick={() => {
-						setIsDelete(true)
-						handleUpdate()
-					}}
-					className={s.BtnDelete}>
-					<DeleteOutlineIcon />
-				</button>
+
+				<Line className={s.Line} width="700px" />
 			</div>
 			{isDetailsShow && (
 				<DayStudentPopUp icon={icon} name={editName} time={editTime} />

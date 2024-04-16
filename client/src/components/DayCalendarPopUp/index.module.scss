@@ -10,10 +10,11 @@ input {
 	margin: 20px 0;
 }
 .Line {
-	background-color: #9296ad;
+	background-color: #e2e2e9;
 }
-.wrapper {
-	width: 700px;
+.wrapper,
+.wrapperNoDetails {
+	max-width: 700px;
 	height: 603px;
 	display: flex;
 	flex-direction: column;
@@ -31,21 +32,23 @@ input {
 
 		flex-direction: row;
 		.HeaderItems {
+			width: 100%;
 			display: flex;
 			align-items: center;
+			justify-content: space-between;
 
-			.closeIcon {
-				position: relative;
-				left: 180px;
-				padding: 5px;
-				color: red;
-				cursor: pointer;
+			.closeIconWrap {
+				.closeIcon {
+					padding: 5px;
+					color: red;
+					cursor: pointer;
 
-				border-radius: 8px;
-				&:hover {
-					background-color: red;
-					color: #fff;
-					transition: all 0.2s;
+					border-radius: 8px;
+					&:hover {
+						background-color: red;
+						color: #fff;
+						transition: all 0.2s;
+					}
 				}
 			}
 		}
@@ -145,6 +148,29 @@ input {
 }
 
 @media screen and (max-width: 678px) {
+	.wrapperNoDetails {
+		.ThreeBtnWrapper {
+			margin-bottom: 10px !important;
+			.EditBtn,
+			.SaveBtn {
+				width: 140px;
+				height: 40px;
+				font-size: 12px;
+			}
+			.PlusBtn {
+				height: 40px;
+				width: 40px;
+			}
+		}
+		.Footer {
+			height: 52px !important;
+			font-size: 12px;
+			.Lessons,
+			.works {
+				margin: 0 !important;
+			}
+		}
+	}
 	.wrapper {
 		max-width: 100%;
 		box-shadow: none;
@@ -152,10 +178,19 @@ input {
 		margin-top: 5px;
 		padding: 0;
 		max-height: 350px;
-		
+
+		.Header {
+			height: 0px;
+			.HeaderItems {
+				height: 0px;
+				.closeIconWrap {
+					height: 10px;
+				}
+			}
+		}
 		.closeIcon {
-			// left: 50px !important;
-			display: none !important;
+			width: 24px;
+			height: 24px;
 		}
 		.dataSlidePicker {
 			display: none !important;
@@ -180,7 +215,8 @@ input {
 		.Footer {
 			height: 52px !important;
 			font-size: 12px;
-			.Lessons, .works {
+			.Lessons,
+			.works {
 				margin: 0 !important;
 			}
 		}
