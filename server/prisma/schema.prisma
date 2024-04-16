@@ -153,6 +153,7 @@ model StudentSchedule {
   classWork  String?
   address  String?
   homeFiles      String[]
+  totalWorkPrice  Int?
   homeAudios     String[]
   classFiles      String[]
   classAudios     String[]
@@ -166,6 +167,8 @@ model StudentSchedule {
   year         String
   item         Item     @relation(fields: [itemId], references: [id])
   itemId       String
+
+  workStages  Json?
 }
 
 // ... (остальные модели)
@@ -227,6 +230,7 @@ model Stage {
   jobId              String
   client             Client?  @relation(fields: [clientId], references: [id])
   clientId           String?
+  
 
   userId            String
 }

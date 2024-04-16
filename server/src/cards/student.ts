@@ -348,17 +348,9 @@ export async function getStudentsByDate(data: {
         })
       : [];
 
-    const groupStudentSchedule = schedule.item.group.groupName;
-    const clientSchedule = db.client.findFirst({
-      where: {
-        id: schedule.clientId,
-      },
-      select: {
-        nameStudent: true,
-      },
-    });
-    const type = groupStudentSchedule === "" ? "Student" : "Group";
-    const isClient = clientSchedule === null ? false : true;
+    const groupStudentSchedule = schedule.item.group.groupName; //if name !== "" then this is from group
+    // const clientSchedule ; //clientId !== null then this is from client
+
     return {
       id: schedule.id,
       nameStudent: schedule.studentName,
@@ -376,8 +368,7 @@ export async function getStudentsByDate(data: {
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,
-      type: type,
-      isClient: isClient,
+      type: groupStudentSchedule ? "group" : "client",
     };
   });
 
@@ -386,6 +377,85 @@ export async function getStudentsByDate(data: {
 
   io.emit("getStudentsByDate", dataToEmit);
 }
+
+// export async function getStudentsByDate(
+//   day,
+//   month,
+//   year,
+//   userId,
+//   dayOfWeekIndex
+// ) {
+//   const studentSchedules = await db.studentSchedule.findMany({
+//     where: {
+//       day,
+//       month,
+//       year,
+//       userId,
+//       clientId: null,
+//       item: {
+//         group: {
+//           groupName: "", // Условие для исключения групп
+//         },
+//       },
+//     },
+//     select: {
+//       id: true,
+//       studentName: true,
+//       lessonsPrice: true,
+//       itemName: true,
+//       timeLinesArray: true,
+//       typeLesson: true,
+//       isChecked: true,
+//       homeFiles: true,
+//       classFiles: true,
+//       homeWork: true,
+//       classWork: true,
+//       homeStudentsPoints: true,
+//       classStudentsPoints: true,
+//       item: {
+//         select: {
+//           tryLessonCheck: true,
+//           todayProgramStudent: true,
+//           targetLesson: true,
+//           programLesson: true,
+//           placeLesson: true,
+//           timeLesson: true,
+//         },
+//       },
+//     },
+//   });
+
+//   return studentSchedules.map((schedule) => {
+//     const { item } = schedule;
+//     const timeLinesArray = schedule.timeLinesArray;
+//     const daySchedule = timeLinesArray[dayOfWeekIndex];
+
+//     const homeFiles = schedule.homeFiles
+//       ? schedule.homeFiles.map((file) => Buffer.from(file))
+//       : [];
+//     const classFiles = schedule.classFiles
+//       ? schedule.classFiles.map((file) => Buffer.from(file))
+//       : [];
+
+//     return {
+//       id: schedule.id,
+//       nameStudent: schedule.studentName,
+//       costOneLesson: schedule.lessonsPrice,
+//       itemName: schedule.itemName,
+//       typeLesson: schedule.typeLesson,
+//       homeFiles,
+//       classFiles,
+//       homeWork: schedule.homeWork,
+//       classWork: schedule.classWork,
+//       homeStudentsPoints: schedule.homeStudentsPoints,
+//       classStudentsPoints: schedule.classStudentsPoints,
+//       isCheck: schedule.isChecked,
+//       tryLessonCheck: item.tryLessonCheck,
+//       startTime: daySchedule?.startTime,
+//       endTime: daySchedule?.endTime,
+//     };
+//   });
+// }
 
 export async function updateStudentSchedule(data: {
   id: string;
