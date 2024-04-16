@@ -867,8 +867,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			sumCost += Number(student.costStudent)
 			totalCostGroup += Number(student.costOneLesson)
 		})
-		console.log(students,'studentsstudentsstudentsstudents' );
-		
+		console.log(students, 'studentsstudentsstudentsstudents')
+
 		setAllCostForGroup(sumCost)
 		setAllPriceGroup(totalCostGroup)
 	}, [students])
@@ -1435,20 +1435,20 @@ const AddGroup = ({className}: IAddGroup) => {
 										<div className={s.MathObjectsList}>
 											<div className={s.MathHeader}>
 												<p>Общая стоимость 1-го занятия:</p>
+												<p>{allPriceGroup}₽</p>
+											</div>
+											<Line width="294px" className={s.Line} />
+											<div className={s.MathObject}>
+												<p>Всего занятий: {items.length}</p>
+												<p>Сумма: {items.length * allPriceGroup}₽</p>
+											</div>
+											<Line width="294px" className={s.Line} />
+											<div className={s.MathObject}>
+												<p>Прошло: {items.length}</p>
 												<p>
-													{allPriceGroup}
-													₽
+													Оплачено: {items.length} (
+													{(items.length * allPriceGroup) / 2}₽)
 												</p>
-											</div>
-											<Line width="294px" className={s.Line} />
-											<div className={s.MathObject}>
-												<p>Всего занятий: {allLessons}</p>
-												<p>Сумма: {allLessons * allPriceGroup}₽</p>
-											</div>
-											<Line width="294px" className={s.Line} />
-											<div className={s.MathObject}>
-												<p>Прошло: 0</p>
-												<p>Оплачено: 0 (0₽)</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>

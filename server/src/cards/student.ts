@@ -368,7 +368,7 @@ export async function getStudentsByDate(data: {
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,
-      type: groupStudentSchedule ? "group" : "client",
+      type: groupStudentSchedule ? "group" : "student",
     };
   });
 

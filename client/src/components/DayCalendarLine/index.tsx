@@ -287,7 +287,7 @@ const DayCalendarLine = ({
 					</button>
 					<div
 						onClick={() => {
-							if (!editMode && type === 'Student')
+							if (!editMode && type === 'student')
 								return (
 									dispatch({
 										type: 'SET_CURRENT_POPUP_TYPE',
@@ -298,7 +298,7 @@ const DayCalendarLine = ({
 										payload: id,
 									})
 								)
-							else if (!editMode && type === 'Group') {
+							else if (!editMode && type === 'group') {
 								dispatch({
 									type: 'SET_CURRENT_POPUP_TYPE',
 									payload: ECurrentDayPopUp.Group,
