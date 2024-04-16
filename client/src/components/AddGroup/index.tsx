@@ -170,22 +170,6 @@ const AddGroup = ({className}: IAddGroup) => {
 		}, 0)
 	}
 
-	const setHistoryLessonIsDone = (index: number, value: boolean) => {
-		setHistoryLesson((prevHistoryLesson: any) => [
-			...prevHistoryLesson.slice(0, index),
-			{...prevHistoryLesson[index], isDone: value},
-			...prevHistoryLesson.slice(index + 1),
-		])
-	}
-
-	const setHistoryLessonIsPaid = (index: number, value: boolean) => {
-		setHistoryLesson((prevHistoryLesson: any) => [
-			...prevHistoryLesson.slice(0, index),
-			{...prevHistoryLesson[index], isPaid: value},
-			...prevHistoryLesson.slice(index + 1),
-		])
-	}
-
 	function getDay(date: any) {
 		const dayIndex = date.getDay() - 1
 		return dayIndex === -1 ? 6 : dayIndex
@@ -381,66 +365,76 @@ const AddGroup = ({className}: IAddGroup) => {
 	// 	}
 	// }, [currentGroupIndex, groupsIndexes])
 
+	const [studentsHistoryLessons, setStudentsHistoryLessons] = useState(
+		students.map(() => []),
+	)
+
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
 	useEffect(() => {
-		let countLessons = 0
-		let countLessonsPrice = 0
-		let historyLessons_ = []
-		for (let i = 0; i < items.length; i++) {
-			let differenceDays = differenceInDays(
-				items[i].endLesson,
-				items[i].startLesson,
-			)
-			// console.log(endLessonsDate)
-			const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
-				addDays(items[i].startLesson, j),
-			)
-			console.log(dateRange, 'dateRange', differenceDays, 'differenceDays')
+		const newStudentsHistoryLessons = students.map((student, studentIndex) => {
+			let historyLessons_ = []
+			for (let i = 0; i < items.length; i++) {
+				let differenceDays = differenceInDays(
+					items[i].endLesson,
+					items[i].startLesson,
+				)
+				const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+					addDays(items[i].startLesson, j),
+				)
 
-			for (const date of dateRange) {
-				const dayOfWeek = getDay(date)
-				const scheduleForDay = items[i].timeLinesArray[dayOfWeek] // Здесь укажите переменную, содержащую ваше недельное расписание
+				for (const date of dateRange) {
+					const dayOfWeek = getDay(date)
+					const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
 
-				const cond =
-					scheduleForDay.startTime.hour === 0 &&
-					scheduleForDay.startTime.minute === 0 &&
-					scheduleForDay.endTime.hour === 0 &&
-					scheduleForDay.endTime.minute === 0
+					const cond =
+						scheduleForDay.startTime.hour === 0 &&
+						scheduleForDay.startTime.minute === 0 &&
+						scheduleForDay.endTime.hour === 0 &&
+						scheduleForDay.endTime.minute === 0
 
-				const dayOfMonth = date.getDate()
+					if (!cond) {
+						let hl = {
+							date: date,
+							itemName: items[i].itemName,
+							isDone: date <= new Date(Date.now()) ? true : false,
+							price: students[studentIndex].costOneLesson,
+							isPaid: false,
+						}
 
-				if (!cond) {
-					let hl = {
-						date: date,
-						itemName: items[i].itemName,
-						isDone: date <= new Date(Date.now()) ? true : false,
-						price: students[currentStudentIndex].costOneLesson,
-						isPaid: false,
+						historyLessons_.push(hl)
 					}
-
-					historyLessons_.push(hl)
-
-					countLessons++
-					countLessonsPrice =
-						countLessons * Number(students[currentStudentIndex].costOneLesson)
 				}
 			}
-		}
-		console.log('historyLessons_', historyLessons_)
-		setHistoryLesson(historyLessons_)
-		setAllLessons(countLessons)
-		setAllLessonsPrice(countLessonsPrice)
-		// console.log(differenceDays, 'differenceWeeks')
+			return historyLessons_
+		})
 
-		console.log(
-			countLessons,
-			'countLessons',
-			countLessonsPrice,
-			'countLessonsPrice',
-		)
-		console.log('items AAAAAAAAAA', items)
-	}, [items, costOneLesson])
+		setStudentsHistoryLessons(newStudentsHistoryLessons)
+	}, [items, students])
+
+	const setHistoryLessonIsDone = (studentIndex, lessonIndex, value) => {
+		setStudentsHistoryLessons((prevHistoryLessons) => {
+			const updatedHistoryLessons = [...prevHistoryLessons]
+			updatedHistoryLessons[studentIndex] = updatedHistoryLessons[
+				studentIndex
+			].map((lesson, index) =>
+				index === lessonIndex ? {...lesson, isDone: value} : lesson,
+			)
+			return updatedHistoryLessons
+		})
+	}
+
+	const setHistoryLessonIsPaid = (studentIndex, lessonIndex, value) => {
+		setStudentsHistoryLessons((prevHistoryLessons) => {
+			const updatedHistoryLessons = [...prevHistoryLessons]
+			updatedHistoryLessons[studentIndex] = updatedHistoryLessons[
+				studentIndex
+			].map((lesson, index) =>
+				index === lessonIndex ? {...lesson, isPaid: value} : lesson,
+			)
+			return updatedHistoryLessons
+		})
+	}
 
 	//add item function
 	const addItem = () => {
@@ -1791,35 +1785,60 @@ const AddGroup = ({className}: IAddGroup) => {
 									<div className={s.MathBlockStudent}>
 										<div className={s.MathObjectsList}>
 											<div className={s.MathObject}>
-												<p>Всего занятий: {allLessons}</p>
-												<p>Сумма: {allLessonsPrice}₽</p>
+												<p>
+													Всего занятий: {studentsHistoryLessons[index].length}
+												</p>
+												<p>
+													Сумма:{' '}
+													{studentsHistoryLessons[index].length *
+														student.costOneLesson}
+													₽
+												</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
-												<p>Прошло: {getCountOfDoneObjects(historyLesson)}</p>
+												{/* count isDone */}
 												<p>
-													Оплачено: {getCountOfPaidObjects(historyLesson)} (
-													{getTotalPaidPrice(historyLesson)}₽)
+													Прошло:{' '}
+													{
+														studentsHistoryLessons[index].filter(
+															(i) => i.isDone,
+														).length
+													}
+												</p>
+												<p>
+													Оплачено:{' '}
+													{
+														studentsHistoryLessons[index].filter(
+															(i) => i.isPaid,
+														).length
+													}{' '}
+													(
+													{studentsHistoryLessons[index].filter((i) => i.isPaid)
+														.length * student.costOneLesson}
+													₽)
 												</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
 												<p>
 													Не оплачено:{' '}
-													{Math.abs(
-														getCountOfPaidObjects(historyLesson) -
-															historyLesson.length,
-													)}
+													{studentsHistoryLessons[index].filter((i) => i.isDone)
+														.length -
+														studentsHistoryLessons[index].filter(
+															(i) => i.isPaid,
+														).length}
 												</p>
 												<p style={{display: 'flex', flexDirection: 'row'}}>
 													<p style={{marginRight: '5px'}}>Долг:</p>
 													<p style={{color: 'red'}}>
-														{historyLesson
-															.filter((i) => !i.isPaid)
-															.reduce(
-																(total, item) => total + Number(item.price),
-																0,
-															)}
+														{(studentsHistoryLessons[index].filter(
+															(i) => i.isDone,
+														).length -
+															studentsHistoryLessons[index].filter(
+																(i) => i.isPaid,
+															).length) *
+															student.costOneLesson}
 													</p>
 													<p>₽</p>
 												</p>
@@ -1848,49 +1867,59 @@ const AddGroup = ({className}: IAddGroup) => {
 											component="div"
 											disablePadding>
 											<div className={s.ListObjectWrapper}>
-												{historyLesson.sort(compareDates).map((lesson) => (
-													<div
-														className={s.ListObject}
-														style={{
-															backgroundColor: hashToColor(
-																hashString(lesson.itemName),
-															),
-														}}>
-														<p
+												{studentsHistoryLessons[currentStudentIndex]
+													.sort(compareDates)
+													.map((lesson, lessonIndex) => (
+														<div
+															className={s.ListObject}
 															style={{
-																fontWeight: '500',
-																fontSize: '14px',
-																marginRight: '5px',
+																backgroundColor: hashToColor(
+																	hashString(lesson.itemName),
+																),
 															}}>
-															{formatDate(lesson.date)}
-														</p>
-														<p style={{fontWeight: '300', fontSize: '12px'}}>
-															{lesson.itemName}
-														</p>
-														<CheckBox
-															checked={lesson.isDone}
-															size="16px"
-															onChange={() =>
-																setHistoryLessonIsDone(index, !lesson.isDone)
-															}
-														/>
-														<p style={{marginLeft: '55px', fontSize: '14px'}}>
-															{lesson.price}₽
-														</p>
-														<CheckBox
-															checked={lesson.isPaid}
-															size="16px"
-															onChange={() =>
-																setHistoryLessonIsPaid(index, !lesson.isPaid)
-															}
-														/>
-														<button className={s.ButtonEdit}>
-															<CreateIcon
-																style={{width: '18px', height: '18px'}}
+															<p
+																style={{
+																	fontWeight: '500',
+																	fontSize: '14px',
+																	marginRight: '5px',
+																}}>
+																{formatDate(lesson.date)}
+															</p>
+															<p style={{fontWeight: '300', fontSize: '12px'}}>
+																{lesson.itemName}
+															</p>
+															<CheckBox
+																checked={lesson.isDone}
+																size="16px"
+																onChange={() =>
+																	setHistoryLessonIsDone(
+																		index,
+																		lessonIndex,
+																		!lesson.isDone,
+																	)
+																}
 															/>
-														</button>
-													</div>
-												))}
+															<p style={{marginLeft: '55px', fontSize: '14px'}}>
+																{lesson.price}₽
+															</p>
+															<CheckBox
+																checked={lesson.isPaid}
+																size="16px"
+																onChange={() =>
+																	setHistoryLessonIsPaid(
+																		index,
+																		lessonIndex,
+																		!lesson.isPaid,
+																	)
+																}
+															/>
+															<button className={s.ButtonEdit}>
+																<CreateIcon
+																	style={{width: '18px', height: '18px'}}
+																/>
+															</button>
+														</div>
+													))}
 											</div>
 										</mui.List>
 									</mui.Collapse>

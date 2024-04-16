@@ -265,7 +265,9 @@ const DayCalendarPopUp = ({
 	}
 
 	return (
-		<div style={style} className={`${!details ? s.wrapper : s.wrapperNoDetails} ${className}`}>
+		<div
+			style={style}
+			className={`${!details ? s.wrapper : s.wrapperNoDetails} ${className}`}>
 			<div>
 				<header className={s.Header}>
 					<div className={s.HeaderItems}>
@@ -320,7 +322,7 @@ const DayCalendarPopUp = ({
 								<DayCalendarLineClient
 									id={client.clientId}
 									key={client.id}
-									name={client.itemName}
+									name={client.studentName}
 									price={client.workPrice}
 									studentId=""
 									item={client.itemName}
@@ -442,9 +444,11 @@ const DayCalendarPopUp = ({
 						</div>
 						<div className={s.works}>
 							<p>
-								Работ: <b>0</b>
+								Работ: <b>{clients && clients.length}</b>
 							</p>
-							<b>0₽</b>
+							<b>
+								{clients && clients.reduce((a, b) => +a + +b.workPrice, 0)}₽
+							</b>
 						</div>
 					</div>
 					<div className={s.income}>

@@ -38,6 +38,8 @@ let defaultState = {
 	currentOpenedGroup: '', //ID of current opened group
 	currentScheduleDay: '', //ID of schedule dayIndex
 
+	currentScheduleDayClientId: '',
+
 	currentPopUpType: ECurrentDayPopUp.None,
 }
 socket.emit('getMonth', {
@@ -67,6 +69,9 @@ const reducer = (state = defaultState, action: any) => {
 
 		case 'SET_CURRENT_POPUP_TYPE':
 			return {...state, currentPopUpType: action.payload}
+
+		case 'SET_CURRENT_SCHEDULE_DAY_CLIENT_ID':
+			return {...state, currentScheduleDayClientId: action.payload}
 
 		case 'SET_CURRENT_MONTH':
 			socket.emit('getMonth', {
@@ -141,7 +146,7 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 								<>
 									<Header />
 									<div className="container">
-										<LeftMenu/>
+										<LeftMenu />
 										{[router_element]}
 									</div>
 								</>

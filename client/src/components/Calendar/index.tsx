@@ -44,6 +44,9 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	let token = useSelector((state: any) => state.user.token)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const details = useSelector((state: any) => state.details)
+	const currentScheduleDayClientId = useSelector(
+		(state: any) => state.currentScheduleDayClientId,
+	)
 
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
@@ -665,6 +668,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						/>
 					</div>
 				)}
+<<<<<<< HEAD
 			{currentScheduleDay !== '' && currentPopUpType === ECurrentDayPopUp.Client && (
 				<div className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
 					<DayClientPopUp
@@ -679,6 +683,25 @@ export const Calendar = ({className, cells}: ICalendar) => {
 					/>
 				</div>
 			)}
+=======
+			{currentScheduleDay !== '' &&
+				currentPopUpType === ECurrentDayPopUp.Client && (
+					<div
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+						<DayClientPopUp
+							clientId={currentScheduleDayClientId}
+							style={{
+								position: 'relative',
+								top: '150px',
+								margin: 'auto',
+							}}
+							onExit={() =>
+								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+							}
+						/>
+					</div>
+				)}
+>>>>>>> d641166369a577a39d0ee7cb00dc1c2221a79d54
 		</div>
 	)
 }

@@ -638,521 +638,532 @@ const AddClient = ({}: IAddClient) => {
 											<>
 												<div
 													className={
-														currentStageIndex === index
+														currentStageIndex === indexStage
 															? s.ItemActive_
 															: s.ItemMain_
 													}>
-													<p>Название:</p>
-													<input
-														type="text"
-														value={item.name}
-														onChange={(e) => {
-															changeStage(
-																index,
-																indexStage,
-																'name',
-																e.target.value,
-															)
-														}}
-													/>
-												</div>
-												<Line width="296px" className={s.Line} />
-												<div className={s.StudentCard}>
-													<p>Стоимость этапа:</p>
-													<Input
-														style={{borderBottom: '1px solid #e2e2e9'}}
-														num
-														type="text"
-														value={item.totalCost}
-														onChange={(e) => {
-															changeStage(
-																index,
-																indexStage,
-																'totalCost',
-																e.target.value,
-															)
-														}}
-													/>
-													<p>₽</p>
-												</div>
-												<Line width="296px" className={s.Line} />
-												<div className={s.TypePaymentWrapper}>
-													<div
-														onClick={() => {
-															setTypePayment(false)
-															changeStage(index, 0, 'typePayment', typePayment)
-														}}
-														className={s.PrevPay}>
-														<p>Предоплата</p>
-														<CheckBox
-															checked={
-																job.stages[0].typePayment === false
-																	? true
-																	: false
-															}
-															size="18px"
+													<div>
+														<p>Название:</p>
+														<input
+															type="text"
+															value={item.name}
+															onChange={(e) => {
+																changeStage(
+																	index,
+																	indexStage,
+																	'name',
+																	e.target.value,
+																)
+															}}
 														/>
 													</div>
-													<div
-														onClick={() => {
-															setTypePayment(true)
-															changeStage(index, 0, 'typePayment', typePayment)
-														}}
-														className={s.NextPay}>
-														<p>Постоплата</p>
-														<CheckBox
-															checked={
-																job.stages[0].typePayment === true
-																	? true
-																	: false
-															}
-															size="18px"
+													<Line width="296px" className={s.Line} />
+													<div className={s.StudentCard}>
+														<p>Стоимость этапа:</p>
+														<Input
+															style={{borderBottom: '1px solid #e2e2e9'}}
+															num
+															type="text"
+															value={item.totalCost}
+															onChange={(e) => {
+																changeStage(
+																	index,
+																	indexStage,
+																	'totalCost',
+																	e.target.value,
+																)
+															}}
 														/>
+														<p>₽</p>
 													</div>
-												</div>
-												<div className={s.PaymentTable}>
-													{job.stages[0].typePayment === true ? (
-														<>
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={job.stages[0].isStartWork}
-																		onChange={(newValue) => {
+													<Line width="296px" className={s.Line} />
+													<div className={s.TypePaymentWrapper}>
+														<div
+															onClick={() => {
+																setTypePayment(false)
+																changeStage(
+																	index,
+																	0,
+																	'typePayment',
+																	typePayment,
+																)
+															}}
+															className={s.PrevPay}>
+															<p>Предоплата</p>
+															<CheckBox
+																checked={
+																	job.stages[0].typePayment === false
+																		? true
+																		: false
+																}
+																size="18px"
+															/>
+														</div>
+														<div
+															onClick={() => {
+																setTypePayment(true)
+																changeStage(
+																	index,
+																	0,
+																	'typePayment',
+																	typePayment,
+																)
+															}}
+															className={s.NextPay}>
+															<p>Постоплата</p>
+															<CheckBox
+																checked={
+																	job.stages[0].typePayment === true
+																		? true
+																		: false
+																}
+																size="18px"
+															/>
+														</div>
+													</div>
+													<div className={s.PaymentTable}>
+														{job.stages[0].typePayment === true ? (
+															<>
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={job.stages[0].isStartWork}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'isStartWork',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayText}>
+																		<p>Начало работы</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={job.stages[0].isStartWork}
+																		onChange={() =>
 																			changeStage(
 																				index,
 																				0,
 																				'isStartWork',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayText}>
-																	<p>Начало работы</p>
-																</div>
-																<CheckBox
-																	size="18px"
-																	checked={job.stages[0].isStartWork}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'isStartWork',
-																			!job.stages[0].isStartWork,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}></p>
-															</div>
-															<Line width="268px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={item.endPaymentDate!}
-																		onChange={(newValue) => {
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentDate',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayInput}>
-																	<p>Оплата</p>
-																	<Input
-																		num
-																		type="text"
-																		value={String(item.endPaymentPrice!)}
-																		onChange={(e) =>
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentPrice',
-																				Number(e.target.value),
+																				!job.stages[0].isStartWork,
 																			)
 																		}
 																	/>
-																	<p>₽</p>
+																	<p style={{width: '33px'}}></p>
 																</div>
-																<CheckBox
-																	size="18px"
-																	checked={item.firstPaymentPayed}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'firstPaymentPayed',
-																			!item.firstPaymentPayed,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}>0%</p>
-															</div>
-															<Line width="268px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={job.stages[0].endWorkDate}
-																		onChange={(newValue) => {
+																<Line width="268px" className={s.Line} />
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={item.endPaymentDate!}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayInput}>
+																		<p>Оплата</p>
+																		<Input
+																			num
+																			type="text"
+																			value={String(item.endPaymentPrice!)}
+																			onChange={(e) =>
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentPrice',
+																					Number(e.target.value),
+																				)
+																			}
+																		/>
+																		<p>₽</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={item.firstPaymentPayed}
+																		onChange={() =>
 																			changeStage(
 																				index,
 																				0,
-																				'endWorkDate',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayText}>
-																	<p>Сдача работы</p>
-																</div>
-																<CheckBox
-																	size="18px"
-																	checked={job.stages[0].isEndWork}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'isEndWork',
-																			!job.stages[0].isEndWork,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}></p>
-															</div>
-															<Line width="268px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={item.endPaymentDate!}
-																		onChange={(newValue) => {
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentDate',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayInput}>
-																	<p>Оплата</p>
-																	<Input
-																		num
-																		type="text"
-																		value={String(item.endPaymentPrice)}
-																		onChange={(e) =>
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentPrice',
-																				Number(e.target.value),
+																				'firstPaymentPayed',
+																				!item.firstPaymentPayed,
 																			)
 																		}
 																	/>
-																	<p>₽</p>
+																	<p style={{width: '33px'}}>0%</p>
 																</div>
-																<CheckBox
-																	size="18px"
-																	checked={item.firstPaymentPayed}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'firstPaymentPayed',
-																			!item.firstPaymentPayed,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}>0%</p>
-															</div>
-														</>
-													) : (
-														<>
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={item.endPaymentDate}
-																		onChange={(newValue) => {
+																<Line width="268px" className={s.Line} />
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={job.stages[0].endWorkDate}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'endWorkDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayText}>
+																		<p>Сдача работы</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={job.stages[0].isEndWork}
+																		onChange={() =>
 																			changeStage(
 																				index,
 																				0,
-																				'endPaymentDate',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayInput}>
-																	<p>Оплата</p>
-																	<Input
-																		num
-																		type="text"
-																		value={String(item.endPaymentPrice!)}
-																		onChange={(e) =>
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentPrice',
-																				Number(e.target.value),
+																				'isEndWork',
+																				!job.stages[0].isEndWork,
 																			)
 																		}
 																	/>
-																	<p>₽</p>
+																	<p style={{width: '33px'}}></p>
 																</div>
-																<CheckBox
-																	size="18px"
-																	checked={item.firstPaymentPayed}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'firstPaymentPayed',
-																			!item.firstPaymentPayed,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}>0%</p>
-															</div>
-															<Line width="268px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={item.startWorkDate!}
-																		onChange={(newValue) => {
+																<Line width="268px" className={s.Line} />
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={item.endPaymentDate!}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayInput}>
+																		<p>Оплата</p>
+																		<Input
+																			num
+																			type="text"
+																			value={String(item.endPaymentPrice)}
+																			onChange={(e) =>
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentPrice',
+																					Number(e.target.value),
+																				)
+																			}
+																		/>
+																		<p>₽</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={item.firstPaymentPayed}
+																		onChange={() =>
 																			changeStage(
 																				index,
 																				0,
-																				'startWorkDate',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayText}>
-																	<p>Начало работы</p>
-																</div>
-																<CheckBox
-																	size="18px"
-																	checked={job.stages[0].isStartWork}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'isStartWork',
-																			!job.stages[0].isStartWork,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}></p>
-															</div>
-															<Line width="268px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={item.endPaymentDate!}
-																		onChange={(newValue) => {
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentDate',
-																				newValue,
-																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
-																	/>
-																</LocalizationProvider>
-																<div className={s.PayInput}>
-																	<p>Оплата</p>
-																	<Input
-																		num
-																		type="text"
-																		value={String(item.endPaymentPrice)}
-																		onChange={(e) =>
-																			changeStage(
-																				index,
-																				0,
-																				'endPaymentPrice',
-																				Number(e.target.value),
+																				'firstPaymentPayed',
+																				!item.firstPaymentPayed,
 																			)
 																		}
 																	/>
-																	<p>₽</p>
+																	<p style={{width: '33px'}}>0%</p>
 																</div>
-																<CheckBox
-																	size="18px"
-																	checked={item.firstPaymentPayed}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'firstPaymentPayed',
-																			!item.firstPaymentPayed,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}>0%</p>
-															</div>
-															<Line width="268px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<LocalizationProvider
-																	dateAdapter={AdapterDateFns}
-																	adapterLocale={ru}>
-																	<DatePicker
-																		className={s.DatePickerPayment}
-																		slots={{
-																			layout: StyledPickersLayout,
-																		}}
-																		sx={{
-																			input: {
-																				paddingTop: '0px',
-																				paddingBottom: '0px',
-																				paddingLeft: '0px',
-																			},
-																		}}
-																		value={job.stages[0].endWorkDate}
-																		onChange={(newValue) => {
+															</>
+														) : (
+															<>
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={item.endPaymentDate}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayInput}>
+																		<p>Оплата</p>
+																		<Input
+																			num
+																			type="text"
+																			value={String(item.endPaymentPrice!)}
+																			onChange={(e) =>
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentPrice',
+																					Number(e.target.value),
+																				)
+																			}
+																		/>
+																		<p>₽</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={item.firstPaymentPayed}
+																		onChange={() =>
 																			changeStage(
 																				index,
 																				0,
-																				'endWorkDate',
-																				newValue,
+																				'firstPaymentPayed',
+																				!item.firstPaymentPayed,
 																			)
-																		}}
-																		timezone="system"
-																		showDaysOutsideCurrentMonth
+																		}
 																	/>
-																</LocalizationProvider>
-																<div className={s.PayText}>
-																	<p>Сдача работы</p>
+																	<p style={{width: '33px'}}>0%</p>
 																</div>
-																<CheckBox
-																	size="18px"
-																	checked={job.stages[0].isEndWork}
-																	onChange={() =>
-																		changeStage(
-																			index,
-																			0,
-																			'isEndWork',
-																			!job.stages[0].isEndWork,
-																		)
-																	}
-																/>
-																<p style={{width: '33px'}}></p>
-															</div>
-															<Line width="268px" className={s.Line} />
-														</>
-													)}
+																<Line width="268px" className={s.Line} />
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={item.startWorkDate!}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'startWorkDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayText}>
+																		<p>Начало работы</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={job.stages[0].isStartWork}
+																		onChange={() =>
+																			changeStage(
+																				index,
+																				0,
+																				'isStartWork',
+																				!job.stages[0].isStartWork,
+																			)
+																		}
+																	/>
+																	<p style={{width: '33px'}}></p>
+																</div>
+																<Line width="268px" className={s.Line} />
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={item.endPaymentDate!}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayInput}>
+																		<p>Оплата</p>
+																		<Input
+																			num
+																			type="text"
+																			value={String(item.endPaymentPrice)}
+																			onChange={(e) =>
+																				changeStage(
+																					index,
+																					0,
+																					'endPaymentPrice',
+																					Number(e.target.value),
+																				)
+																			}
+																		/>
+																		<p>₽</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={item.firstPaymentPayed}
+																		onChange={() =>
+																			changeStage(
+																				index,
+																				0,
+																				'firstPaymentPayed',
+																				!item.firstPaymentPayed,
+																			)
+																		}
+																	/>
+																	<p style={{width: '33px'}}>0%</p>
+																</div>
+																<Line width="268px" className={s.Line} />
+																<div className={s.PaymentRow}>
+																	<LocalizationProvider
+																		dateAdapter={AdapterDateFns}
+																		adapterLocale={ru}>
+																		<DatePicker
+																			className={s.DatePickerPayment}
+																			slots={{
+																				layout: StyledPickersLayout,
+																			}}
+																			sx={{
+																				input: {
+																					paddingTop: '0px',
+																					paddingBottom: '0px',
+																					paddingLeft: '0px',
+																				},
+																			}}
+																			value={job.stages[0].endWorkDate}
+																			onChange={(newValue) => {
+																				changeStage(
+																					index,
+																					0,
+																					'endWorkDate',
+																					newValue,
+																				)
+																			}}
+																			timezone="system"
+																			showDaysOutsideCurrentMonth
+																		/>
+																	</LocalizationProvider>
+																	<div className={s.PayText}>
+																		<p>Сдача работы</p>
+																	</div>
+																	<CheckBox
+																		size="18px"
+																		checked={job.stages[0].isEndWork}
+																		onChange={() =>
+																			changeStage(
+																				index,
+																				0,
+																				'isEndWork',
+																				!job.stages[0].isEndWork,
+																			)
+																		}
+																	/>
+																	<p style={{width: '33px'}}></p>
+																</div>
+																<Line width="268px" className={s.Line} />
+															</>
+														)}
+													</div>
 												</div>
 											</>
 										))}
-										<></>
 									</>
 								)}
 								{stages == 1 && (

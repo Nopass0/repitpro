@@ -161,15 +161,19 @@ const DayCalendarLineClient = ({
 					onClick={() => {
 						if (!editMode) {
 							dispatch({
+								type: 'SET_CURRENT_SCHEDULE_DAY_CLIENT_ID',
+								payload: id,
+							})
+							dispatch({
 								type: 'SET_CURRENT_POPUP_TYPE',
 								payload: ECurrentDayPopUp.Client,
 							})
-							console.log(currentpopup,'1234667')
+							console.log(currentpopup, '1234667')
 						}
-						// dispatch({
-						// 	type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
-						// 	payload: id,
-						// })
+						dispatch({
+							type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+							payload: id,
+						})
 					}}
 					className={s.ClickWrapper}>
 					<div className={s.ClickUp}>
