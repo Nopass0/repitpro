@@ -78,6 +78,7 @@ const DayCalendarPopUp = ({
 			studentId: string
 			itemName: string
 			tryLessonCheck: boolean
+			groupName?: string
 			id: string
 			typeLesson: string
 			startTime: {hour: number; minute: number}
@@ -264,6 +265,37 @@ const DayCalendarPopUp = ({
 		debouncedOnUpdate(newDay, newMonth, newYear)
 	}
 
+	const handeleAddStudentDay = () => {
+		socket.emit('createStudentSchedule', {
+			token: token,
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+		})
+		socket.once('createStudentSchedule', (data: any) => {
+			if (data.created != '' || data.created != undefined) {
+				console.log('createStudentSchedule', data)
+				students.push(
+					// @ts-ignore
+					{
+						id: data.created,
+						nameStudent: '',
+						costOneLesson: '',
+						itemName: '',
+						studentId: '',
+						typeLesson: '1',
+						tryLessonCheck: false,
+						startTime: {hour: 0, minute: 0},
+						endTime: {hour: 0, minute: 0},
+					},
+				)
+				setEditMode(true),
+					//delete all undefined from students array
+					setStudents(students.filter((student) => student !== undefined))
+			}
+		})
+	}
+
 	return (
 		<div
 			style={style}
@@ -374,7 +406,7 @@ const DayCalendarPopUp = ({
 									}
 									LineClick={LineClick}
 									iconClick={iconClick}
-									icon={student.typeLesson}
+									icon={student.type == 'group' ? 3 : student.typeLesson}
 									editMode={editMode}
 									timeStart={
 										timeNormalize(student.startTime.hour) +
@@ -386,7 +418,11 @@ const DayCalendarPopUp = ({
 										':' +
 										timeNormalize(student.endTime.minute)
 									}
-									name={student.nameStudent}
+									name={
+										student.type == 'student'
+											? student.nameStudent
+											: student.groupName
+									}
 									item={student.itemName}
 									price={student.costOneLesson}
 									prevpay={student.tryLessonCheck}
@@ -414,21 +450,7 @@ const DayCalendarPopUp = ({
 					</button>
 					<button
 						onClick={() => {
-							setEditMode(!editMode)
-							students.push(
-								//void object
-								{
-									id: '-' + Math.random().toString(36).substr(2, 9),
-									nameStudent: '',
-									costOneLesson: '',
-									itemName: '',
-									studentId: '-' + Math.random().toString(36).substr(2, 9),
-									typeLesson: '1',
-									tryLessonCheck: false,
-									startTime: {hour: 0, minute: 0},
-									endTime: {hour: 0, minute: 0},
-								},
-							)
+							handeleAddStudentDay()
 						}}
 						className={s.PlusBtn}>
 						<img src={Plus} alt={Plus} />

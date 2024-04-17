@@ -6,6 +6,7 @@ import { upload } from "./files/files";
 import { calendar } from "./calendar/calendar";
 import {
   addStudent,
+  createStudentSchedule,
   deleteStudent,
   getAllIdStudents,
   getGroupByStudentId,
@@ -91,6 +92,9 @@ io.on("connection", (socket) => {
   socket.on("getStudentClientComparisonData", (data) =>
     getStudentClientComparisonData(data)
   );
+
+  socket.on("createStudentSchedule", (data) => createStudentSchedule(data));
+
   socket.on("getAllItemsIdsAndNames", (token) => getAllItemsIdsAndNames(token));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));

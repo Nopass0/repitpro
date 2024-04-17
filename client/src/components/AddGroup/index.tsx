@@ -1426,7 +1426,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
-												<p>Не оплачено: 0</p>
+												<p>Не оплачено: {items.length}</p>
 												<p style={{display: 'flex', flexDirection: 'row'}}>
 													<p style={{marginRight: '5px'}}>Долг:</p>
 													<p style={{color: 'red'}}>0</p>
