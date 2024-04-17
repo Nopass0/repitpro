@@ -223,7 +223,10 @@
 	.logo {
 		display: none;
 	}
-
+	.BurgerMenu {
+		margin: 0 15px;
+		display: block !important;
+	}
 	.mobileLogo {
 		display: block !important;
 	}
@@ -262,10 +265,7 @@
 	.greenBtn {
 		display: none;
 	}
-	.BurgerMenu {
-		margin: 0 15px;
-		display: block !important;
-	}
+	
 	.muiSelect__menu {
 		display: none !important;
 	}

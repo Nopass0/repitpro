@@ -7,7 +7,6 @@ input {
 }
 
 .wrapper {
-	width: 1158px;
 	height: fit-content;
 
 	display: flex;
@@ -22,7 +21,6 @@ input {
 		width: 100%;
 		display: flex;
 		flex-direction: column;
-		margin-right: 10px;
 		.Header {
 			width: 100%;
 			display: flex;
@@ -81,7 +79,6 @@ input {
 		.MainBlock {
 			display: flex;
 			flex-direction: row;
-			width: 100%;
 
 			h1 {
 				font-size: 16px;
@@ -91,7 +88,6 @@ input {
 			}
 
 			.TextArea {
-				width: 100%;
 				min-height: 80px;
 				border-radius: 8px;
 				border-color: #bababa;
@@ -132,7 +128,6 @@ input {
 			}
 
 			.HomeWorkWrapper {
-				width: 35%;
 				margin-right: 30px;
 				.HomeWorkGroups {
 					display: flex;
@@ -195,8 +190,6 @@ input {
 			}
 
 			.LessonWrapper {
-				width: 65%;
-
 				.PrePay {
 					display: flex;
 					flex-direction: row;
@@ -276,4 +269,108 @@ input {
 		align-items: center;
 		justify-content: space-between;
 	}
+}
+
+@media screen and (min-width: 1024px) {
+	.wrapper {
+		width: 1158px;
+
+		.InfoBlock {
+			
+		margin-right: 10px;
+		}
+		.TextArea {
+			width: 100%;
+		}
+		.MainBlock {
+			width: 100%;
+		}
+		.HomeWorkWrapper {
+			width: 35%;
+		}
+		.LessonWrapper {
+			width: 65%;
+		}
+
+		.Total {
+		}
+	}
+}
+
+@media screen and (max-width: 1024px) and (min-width:860px) {
+	.wrapper {
+		.TextArea {
+			width: 100%;
+		}
+		.MediaBlock {
+			flex-wrap: wrap;
+			.RecordNListen {
+				min-width: 0px !important;
+				flex-wrap: wrap !important;
+			}
+		}
+
+		.HomeWorkWrapper {
+		}
+
+		.LessonWrapper {
+			// width: calc(clamp(13.125rem, 73.699vw - 18.105rem, 29.063rem));
+			width: calc(clamp(13.125rem, 89.595vw - 24.841rem, 32.5rem));
+			max-width: 65%;
+		}
+
+		.WorkClassGroup {
+			width: 100%;
+			overflow-x: scroll !important;
+
+		}
+		.NowLevel {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+		}
+	}
+}
+
+@media screen and (max-width: 860px) {
+
+	.wrapper {
+		top: 0 !important;
+		margin-top: 20px !important;
+		margin-bottom: 100px !important;
+		box-shadow: none;
+		border: 1px solid #bababa;
+	}
+	.AddressHeader {
+		display: none !important;
+	}
+	.Devider:first-child {
+		display: none !important;
+	}
+
+	.MainBlock {
+		flex-direction: column !important;
+	}
+
+	.HomeWorkWrapper{
+		width: 100%;
+		margin-right: 0 !important;
+		margin-bottom: 20px;
+		padding-bottom: 20px;
+		border-bottom: 1px solid #bababa;
+	}
+
+	.LessonWrapper {
+		margin-bottom: 20px;
+	}
+
+	.MediaBlock {
+		flex-wrap: wrap;
+		margin-bottom: 10px;
+	}
+
+	.TextArea {
+		width: 100%;
+	}
+	
 }

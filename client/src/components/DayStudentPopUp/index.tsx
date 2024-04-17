@@ -30,7 +30,7 @@ interface IDayStudentPopUp {
 	style?: React.CSSProperties
 	onExit?: () => void
 	isGroup?: boolean
-	groupId?:string,
+	groupId?: string
 }
 const DayStudentPopUp = ({
 	icon,
@@ -227,7 +227,7 @@ const DayStudentPopUp = ({
 							onChange={(e) => setHomeWorkComment(e.target.value)}
 						/>
 						<div className={s.MediaBlock}>
-							<RecordNListen />
+							<RecordNListen className={s.RecordNListen} />
 							<input
 								type="file"
 								id="inputFile1"
@@ -296,6 +296,7 @@ const DayStudentPopUp = ({
 						<h1>Выполнение домашней работы</h1>
 						{!isGroup ? (
 							<NowLevel
+							className={s.NowLevel}
 								value={homeStudentsPoints}
 								onChange={(e) => setHomeStudentsPoints(e)}
 							/>
@@ -305,6 +306,7 @@ const DayStudentPopUp = ({
 									<div className={s.HomeWorkStud}>
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={homeStudentsPoints}
 											onChange={(e) => setHomeStudentsPoints(e)}
 										/>
@@ -313,6 +315,7 @@ const DayStudentPopUp = ({
 									<div className={s.HomeWorkStud}>
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={homeStudentsPoints}
 											onChange={(e) => setHomeStudentsPoints(e)}
 										/>
@@ -321,6 +324,7 @@ const DayStudentPopUp = ({
 									<div className={s.HomeWorkStud}>
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={homeStudentsPoints}
 											onChange={(e) => setHomeStudentsPoints(e)}
 										/>
@@ -329,6 +333,7 @@ const DayStudentPopUp = ({
 									<div className={s.HomeWorkStud}>
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={homeStudentsPoints}
 											onChange={(e) => setHomeStudentsPoints(e)}
 										/>
@@ -348,7 +353,7 @@ const DayStudentPopUp = ({
 							onChange={(e) => setClassroomComment(e.target.value)}
 						/>
 						<div className={s.MediaBlock}>
-							<RecordNListen />
+							<RecordNListen className={s.RecordNListen} />
 							<input
 								type="file"
 								id="inputFile2"
@@ -418,6 +423,7 @@ const DayStudentPopUp = ({
 						{!isGroup ? (
 							<>
 								<NowLevel
+											className={s.NowLevel}
 									value={classroomStudentsPoints}
 									onChange={(e) => setClassroomStudentsPoints(e)}
 								/>
@@ -433,6 +439,7 @@ const DayStudentPopUp = ({
 										<CheckBox borderRadius={10} size="16px" />
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={classroomStudentsPoints}
 											onChange={(e) => setClassroomStudentsPoints(e)}
 										/>
@@ -445,6 +452,7 @@ const DayStudentPopUp = ({
 										<CheckBox borderRadius={10} size="16px" />
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={classroomStudentsPoints}
 											onChange={(e) => setClassroomStudentsPoints(e)}
 										/>
@@ -457,6 +465,7 @@ const DayStudentPopUp = ({
 										<CheckBox borderRadius={10} size="16px" />
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={classroomStudentsPoints}
 											onChange={(e) => setClassroomStudentsPoints(e)}
 										/>
@@ -469,6 +478,7 @@ const DayStudentPopUp = ({
 										<CheckBox borderRadius={10} size="16px" />
 										<p>Петров</p>
 										<NowLevel
+											className={s.NowLevel}
 											value={classroomStudentsPoints}
 											onChange={(e) => setClassroomStudentsPoints(e)}
 										/>

@@ -37,7 +37,7 @@ let defaultState = {
 	currentOpenedClient: '', //ID of current opened client
 	currentOpenedGroup: '', //ID of current opened group
 	currentScheduleDay: '', //ID of schedule dayIndex
-
+	mobileLeft: true,
 	currentScheduleDayClientId: '',
 
 	currentPopUpType: ECurrentDayPopUp.None,
@@ -120,6 +120,8 @@ const reducer = (state = defaultState, action: any) => {
 
 		case 'SET_DETAILS':
 			return {...state, details: action.payload}
+		case 'SET_MOBILE_LEFT':
+			return {...state, mobileLeft: action.payload}
 
 		default:
 			return state

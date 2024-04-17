@@ -3,16 +3,14 @@ import s from './index.module.scss'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
 interface IRecordNListen {
-
+	className?: string
 }
 
 const RecordNListen: React.FC<IRecordNListen> = ({
-
+	className,
 }: IRecordNListen) => {
-
-
 	return (
-		<div className={s.RecordNListen}>
+		<div className={`${s.RecordNListen} ${className}`}>
 			<button className={s.Record}>
 				<p>Аудио</p>
 				<img src={microSVG} alt={microSVG} />

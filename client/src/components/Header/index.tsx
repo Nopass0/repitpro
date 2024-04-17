@@ -33,6 +33,7 @@ const Header = ({}: IHeader) => {
 		dispatch({type: 'LOGOUT'})
 		navigate('/login')
 	}
+	const mobileLeftSelector = useSelector((state: any) => state.mobileLeft)
 
 	return (
 		<header className={s.header}>
@@ -57,6 +58,7 @@ const Header = ({}: IHeader) => {
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
 							})
+							dispatch({type: 'SET_MOBILE_LEFT', payload: !mobileLeftSelector})
 						}}>
 						<MenuIcon />
 					</button>

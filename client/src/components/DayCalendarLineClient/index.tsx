@@ -216,6 +216,8 @@ const DayCalendarLineClient = ({
 						</div>
 					</div>
 				</div>
+				<div></div>
+				<div></div>
 			</div>
 		</>
 	)

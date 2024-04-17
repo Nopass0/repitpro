@@ -126,5 +126,19 @@ input {
 @media screen and (max-width: 678px) {
 	.wrapper {
 		margin-top: 10px;
+		margin-left: 0 !important;
+
+		.Icon {
+			margin-right: 60px !important;
+		}
+		p {
+			font-size: 14px !important;
+		}
+		.Order, .Price {
+			font-size: 14px;
+			p {
+				margin-right: 5px;
+			}
+		}
 	}
 }

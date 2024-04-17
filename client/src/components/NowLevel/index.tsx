@@ -37,7 +37,7 @@ const NowLevel: React.FC<INowLevel> = ({
 	}, [value])
 
 	return (
-		<div className={s.wrapper}>
+		<div className={`${s.wrapper} ${className}`}>
 			{Array.from({length: amountInputs}, (_, i) => (
 				<button
 					key={i}
