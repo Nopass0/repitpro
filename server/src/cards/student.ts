@@ -255,36 +255,20 @@ export async function getStudentsByDate(data: {
   token: string;
 }) {
   const { day, month, year, token } = data;
-
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  const userId = token_.userId;
-
-  console.log(day, month, year, userId);
+  const token_ = await db.token.findFirst({ where: { token } });
+  const userId = token_?.userId;
 
   if (!userId) {
-    io.emit("getStudentsByDate", {
-      error: "Invalid token",
-    });
+    io.emit("getStudentsByDate", { error: "Invalid token" });
+    return;
   }
 
   const dayOfWeekIndex = getDay(
     new Date(Number(year), Number(month) - 1, Number(day))
   );
 
-  //get students names, and item for this day, month, year by studentSchedule
   const studentSchedules = await db.studentSchedule.findMany({
-    where: {
-      day,
-      month,
-      year,
-      userId,
-      clientId: null,
-    },
+    where: { day, month, year, userId, clientId: null },
     select: {
       id: true,
       studentName: true,
@@ -327,39 +311,31 @@ export async function getStudentsByDate(data: {
     },
   });
 
-  const dataToEmit = studentSchedules.map((schedule) => {
+  const groupsData = [];
+  const dataToEmit = [];
+
+  for (const schedule of studentSchedules) {
     const { item } = schedule;
-    const student = item.group.students[0]; // Assuming there's only one student per group
+    const student = item.group.students[0] || null;
     const timeLinesArray = schedule.timeLinesArray;
-
     const daySchedule = timeLinesArray[dayOfWeekIndex];
-    console.log(" daySchedule", daySchedule, "dayOfWeekIndex", dayOfWeekIndex);
-
-    //get homeFiles and classFiles paths from arrays get this files and return array of blobs
     const homeFiles = schedule.homeFiles
-      ? schedule.homeFiles.map((file) => {
-          return Buffer.from(file);
-        })
+      ? schedule.homeFiles.map((file) => Buffer.from(file))
       : [];
-
     const classFiles = schedule.classFiles
-      ? schedule.classFiles.map((file) => {
-          return Buffer.from(file);
-        })
+      ? schedule.classFiles.map((file) => Buffer.from(file))
       : [];
+    const groupStudentSchedule = schedule.item.group.groupName;
 
-    const groupStudentSchedule = schedule.item.group.groupName; //if name !== "" then this is from group
-    // const clientSchedule ; //clientId !== null then this is from client
-
-    return {
+    const scheduleData = {
       id: schedule.id,
       nameStudent: schedule.studentName,
       costOneLesson: schedule.lessonsPrice,
-      studentId: student.id,
+      studentId: student ? student.id : "",
       itemName: schedule.itemName,
       typeLesson: schedule.typeLesson,
-      homeFiles: homeFiles,
-      classFiles: classFiles,
+      homeFiles,
+      classFiles,
       homeWork: schedule.homeWork,
       classWork: schedule.classWork,
       homeStudentsPoints: schedule.homeStudentsPoints,
@@ -368,14 +344,33 @@ export async function getStudentsByDate(data: {
       tryLessonCheck: item.tryLessonCheck,
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,
+      groupName: groupStudentSchedule ? groupStudentSchedule : "",
       type: groupStudentSchedule ? "group" : "student",
     };
-  });
 
-  console.log(studentSchedules);
-  console.log(dataToEmit);
+    if (groupStudentSchedule) {
+      const groupIndex = groupsData.findIndex(
+        (group) => group.groupName === groupStudentSchedule
+      );
+      if (groupIndex === -1) {
+        groupsData.push({
+          groupName: groupStudentSchedule,
+          schedules: [scheduleData],
+        });
+      } else {
+        groupsData[groupIndex].schedules.push(scheduleData);
+      }
+    } else {
+      dataToEmit.push(scheduleData);
+    }
+  }
 
-  io.emit("getStudentsByDate", dataToEmit);
+  const mergedData = [
+    ...dataToEmit,
+    ...groupsData.flatMap((group) => group.schedules),
+  ];
+  console.log("\n--------------MERGED DATA----------\n", mergedData);
+  io.emit("getStudentsByDate", mergedData);
 }
 
 // export async function getStudentsByDate(
@@ -566,7 +561,7 @@ export async function updateStudentSchedule(data: {
   if (lessonsPrice !== undefined)
     updatedFields.lessonsPrice = Number(lessonsPrice);
   if (itemName !== undefined) updatedFields.itemName = itemName;
-  if (typeLesson !== undefined) updatedFields.typeLesson = typeLesson;
+  if (typeLesson !== undefined) updatedFields.typeLesson = Number(typeLesson);
   if (isChecked !== undefined) updatedFields.isChecked = isChecked;
   if (studentName !== undefined) updatedFields.studentName = studentName;
   if (homeWork !== undefined) updatedFields.homeWork = homeWork;
@@ -992,4 +987,108 @@ export async function studentToArhive(data: {
   }
 
   return null;
+}
+
+export async function createStudentSchedule(data: any) {
+  const { token, day, month, year } = data; // token is the user's token. id is the student's id
+
+  const token_ = await db.token.findFirst({
+    where: {
+      token,
+    },
+  });
+
+  const userId = token_.userId;
+
+  try {
+    //create void item
+    const item = await db.item.create({
+      data: {
+        itemName: "",
+        lessonDuration: 0,
+        userId,
+        endLesson: new Date(),
+        startLesson: new Date(),
+        nowLevel: 0,
+        tryLessonCheck: false,
+        todayProgramStudent: "",
+        targetLesson: "",
+        programLesson: "",
+        typeLesson: 0,
+        placeLesson: "",
+        timeLesson: "",
+        valueMuiSelectArchive: 0,
+        tryLessonCost: "",
+        timeLinesArray: [],
+      },
+    });
+
+    //create void group
+    const group = await db.group.create({
+      data: {
+        groupName: "",
+        userId,
+        items: {
+          connect: {
+            id: item.id,
+          },
+        },
+      },
+    });
+
+    //create timelinesArray. Ex: [{"id":1,"day":"Пн","active":false,"endTime":{"hour":3,"minute":25},"startTime":{"hour":3,"minute":0},"editingEnd":false,"editingStart":false},{"id":2,"day":"Вт","active":false,"endTime":{"hour":0,"minute":0},"startTime":{"hour":0,"minute":0},"editingEnd":false,"editingStart":false},{"id":3,"day":"Ср","active":false,"endTime":{"hour":0,"minute":0},"startTime":{"hour":0,"minute":0},"editingEnd":false,"editingStart":false},{"id":4,"day":"Чт","active":false,"endTime":{"hour":2,"minute":25},"startTime":{"hour":2,"minute":0},"editingEnd":false,"editingStart":false},{"id":5,"day":"Пт","active":false,"endTime":{"hour":0,"minute":0},"startTime":{"hour":0,"minute":0},"editingEnd":false,"editingStart":false},{"id":6,"day":"Сб","active":false,"endTime":{"hour":0,"minute":0},"startTime":{"hour":0,"minute":0},"editingEnd":false,"editingStart":false},{"id":7,"day":"Вс","active":false,"endTime":{"hour":0,"minute":0},"startTime":{"hour":0,"minute":0},"editingEnd":false,"editingStart":false}]
+    const tla = [];
+    const days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+    for (let i = 0; i < 7; i++) {
+      tla.push({
+        id: i + 1,
+        day: days[i],
+        active: false,
+        endTime: {
+          hour: 0,
+          minute: 0,
+        },
+        startTime: {
+          hour: 0,
+          minute: 0,
+        },
+        editingEnd: false,
+        editingStart: false,
+      });
+    }
+
+    const studentSchedule = await db.studentSchedule.create({
+      data: {
+        studentId: null,
+        studentName: "",
+        itemName: "",
+        lessonsPrice: 0,
+        typeLesson: 0,
+        day,
+        month,
+        year,
+        userId,
+        timeLinesArray: tla,
+        lessonsCount: 1,
+        workPrice: 0,
+        workCount: 0,
+        groupId: group.id,
+        isArchived: false,
+        clientId: null,
+        item: {
+          connect: {
+            id: item.id,
+          },
+        },
+      },
+    });
+
+    io.emit("createStudentSchedule", {
+      message: "student schedule created successfully",
+      created: studentSchedule.id,
+    });
+    return studentSchedule.id;
+  } catch (error) {
+    console.error("Error deleting student:", error);
+  }
 }
