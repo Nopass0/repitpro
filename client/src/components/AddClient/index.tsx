@@ -740,12 +740,12 @@ const AddClient = ({}: IAddClient) => {
 																					paddingLeft: '0px',
 																				},
 																			}}
-																			value={job.stages[0].isStartWork}
+																			value={job.stages[0].firstPaymentDate}
 																			onChange={(newValue) => {
 																				changeStage(
 																					index,
 																					0,
-																					'isStartWork',
+																					'firstPaymentDate',
 																					newValue,
 																				)
 																			}}
@@ -787,12 +787,12 @@ const AddClient = ({}: IAddClient) => {
 																					paddingLeft: '0px',
 																				},
 																			}}
-																			value={item.endPaymentDate!}
+																			value={item.firstPaymentDate}
 																			onChange={(newValue) => {
 																				changeStage(
 																					index,
 																					0,
-																					'endPaymentDate',
+																					'firstPaymentDate',
 																					newValue,
 																				)
 																			}}
@@ -805,12 +805,12 @@ const AddClient = ({}: IAddClient) => {
 																		<Input
 																			num
 																			type="text"
-																			value={String(item.endPaymentPrice!)}
+																			value={String(item.fisrtPaymentPrice!)}
 																			onChange={(e) =>
 																				changeStage(
 																					index,
 																					0,
-																					'endPaymentPrice',
+																					'fisrtPaymentPrice',
 																					Number(e.target.value),
 																				)
 																			}
@@ -895,7 +895,7 @@ const AddClient = ({}: IAddClient) => {
 																					paddingLeft: '0px',
 																				},
 																			}}
-																			value={item.endPaymentDate!}
+																			value={item.endPaymentDate}
 																			onChange={(newValue) => {
 																				changeStage(
 																					index,
@@ -927,13 +927,13 @@ const AddClient = ({}: IAddClient) => {
 																	</div>
 																	<CheckBox
 																		size="18px"
-																		checked={item.firstPaymentPayed}
+																		checked={item.endPaymentPayed}
 																		onChange={() =>
 																			changeStage(
 																				index,
 																				0,
-																				'firstPaymentPayed',
-																				!item.firstPaymentPayed,
+																				'endPaymentPayed',
+																				!item.endPaymentPayed,
 																			)
 																		}
 																	/>
@@ -1385,12 +1385,12 @@ const AddClient = ({}: IAddClient) => {
 															<Input
 																num
 																type="text"
-																value={String(job.stages[0].fisrtPaymentPrice)}
+																value={String(job.stages[0].endPaymentPrice)}
 																onChange={(e) =>
 																	changeStage(
 																		index,
 																		0,
-																		'fisrtPaymentPrice',
+																		'endPaymentPrice',
 																		Number(e.target.value),
 																	)
 																}
@@ -1444,7 +1444,7 @@ const AddClient = ({}: IAddClient) => {
 															/>
 														</LocalizationProvider>
 														<div className={s.PayInput}>
-															<p>Оплата</p>
+															<p>Оплата</p>	
 															<Input
 																num
 																type="text"

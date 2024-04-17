@@ -44,6 +44,7 @@ interface IDayCalendarLine {
 	prevpay?: boolean
 	editMode?: boolean
 	isGroup?: boolean
+	groupId?: string
 
 	type?: string
 
@@ -71,6 +72,7 @@ const DayCalendarLine = ({
 	price,
 	key,
 	studentId,
+	groupId,
 	prevpay,
 	isGroup,
 	editMode,
@@ -186,6 +188,18 @@ const DayCalendarLine = ({
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddStudent})
 	}
 
+	const handleOpenCardGroup = () => {
+		socket.emit('getGroupById', {
+			token: token,
+			groupId: groupId,
+		})
+
+		//SET_CURRENT_OPENED_STUDENT with studentid
+		dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: groupId})
+		//SET_LEFT_MENU_PAGE
+		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup})
+	}
+
 	const debouncedOnUpdate = debounce(onUpdate, 500)
 
 	const [isDetailsShow, setIsDetailsShow] = useState<boolean>(false)
@@ -239,8 +253,11 @@ const DayCalendarLine = ({
 				<div className={s.wrapper}>
 					<button
 						onClick={() => {
-							if (!editMode) {
+							if (!editMode && type === 'student') {
 								handleOpenCard()
+								return iconClick
+							} else if (!editMode && type === 'group') {
+								handleOpenCardGroup()
 								return iconClick
 							}
 						}}

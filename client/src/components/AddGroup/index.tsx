@@ -1,5 +1,6 @@
 import s from './index.module.scss'
 import * as mui from '@mui/material'
+import * as MUI from '@mui/base'
 import {styled} from '@mui/material/styles'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -876,7 +877,9 @@ const AddGroup = ({className}: IAddGroup) => {
 	// 	})
 	// 	return cost
 	// }
-
+	// const [allDuty, setAllDuty] = useState<number[]>([])
+	let allDuty = 0
+	const [DutyStudents, setDutyStudents] = useState<any>([])
 	useEffect(() => {
 		//sum all costStudent and write to allCost
 		let sumCost = 0
@@ -884,12 +887,39 @@ const AddGroup = ({className}: IAddGroup) => {
 		students.forEach((student) => {
 			sumCost += Number(student.costStudent)
 			totalCostGroup += Number(student.costOneLesson)
-		})
-		console.log(students, 'studentsstudentsstudentsstudents')
 
+			// studentsHistoryLessons[index] &&
+			// 	(studentsHistoryLessons[index].filter((i) => i.isDone).length -
+			// 		studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
+			// 		student.costOneLesson
+		})
+		console.log(allDuty, 'allDutyallDutyallDuty', DutyStudents)
 		setAllCostForGroup(sumCost)
 		setAllPriceGroup(totalCostGroup)
-	}, [students])
+	}, [students, historyLesson, studentsHistoryLessons])
+
+	const handleDuty = (student: any, index: number) => {
+		const duty =
+			studentsHistoryLessons[index] &&
+			(studentsHistoryLessons[index].filter((i) => i.isDone).length -
+				studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
+				student.costOneLesson
+
+		allDuty += duty
+		DutyStudents[index] = duty
+		return duty
+	}
+
+	const handleDutyStudent = (student: any, index: number) => {
+		const duty =
+			studentsHistoryLessons[index] &&
+			(studentsHistoryLessons[index].filter((i) => i.isDone).length -
+				studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
+				student.costOneLesson
+
+		DutyStudents[index] = duty
+		return DutyStudents[index]
+	}
 
 	const handleClick = () => {
 		setOpen(!open)
@@ -1390,7 +1420,6 @@ const AddGroup = ({className}: IAddGroup) => {
 											)}
 										</div>
 									</div>
-									{/* MATH NO DATA */}
 									<div className={s.MathBlockItem}>
 										<div className={s.MathObjectsList}>
 											<div className={s.MathHeader}>
@@ -1414,22 +1443,86 @@ const AddGroup = ({className}: IAddGroup) => {
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
-												<p>Прошло: {items.length}</p>
 												<p>
-													Оплачено: {items.length} (
-													{studentsHistoryLessons[index] &&
-														(studentsHistoryLessons[index].length *
-															allPriceGroup) /
-															2}
-													₽)
+													Прошло:{' '}
+													{
+														studentsHistoryLessons
+															.map(
+																(item) =>
+																	item.filter((obj) => obj.isDone === true)
+																		.length,
+															)
+															.sort((a, b) => b - a)[0]
+													}
+												</p>
+												<p>
+													Оплачено:
+													{studentsHistoryLessons
+														.map(
+															(item) =>
+																item.filter((obj) => obj.isDone === true)
+																	.length,
+														)
+														.sort((a, b) => b - a)[0] * allPriceGroup}
+													₽
 												</p>
 											</div>
 											<Line width="294px" className={s.Line} />
 											<div className={s.MathObject}>
-												<p>Не оплачено: {items.length}</p>
+												<p>
+													Не оплачено:{' '}
+													{studentsHistoryLessons[index] &&
+														studentsHistoryLessons[index].length -
+															studentsHistoryLessons
+																.map(
+																	(item) =>
+																		item.filter((obj) => obj.isDone === true)
+																			.length,
+																)
+																.sort((a, b) => b - a)[0]}
+												</p>
 												<p style={{display: 'flex', flexDirection: 'row'}}>
 													<p style={{marginRight: '5px'}}>Долг:</p>
-													<p style={{color: 'red'}}>0</p>
+													<MUI.Select
+														key={index}
+														className={`${s.muiSelect}`}
+														multiple
+														renderValue={(
+															option: MUI.SelectOption<number> | null,
+														) => {
+															if (option == null || option.value === null) {
+																return
+																;<>
+																	<p style={{color: 'red', fontSize: '16px'}}>
+																		{allDuty}
+																	</p>
+																</>
+															}
+															return (
+																<>
+																	<p style={{color: 'red', fontSize: '16px'}}>
+																		{allDuty}
+																	</p>
+																</>
+															)
+														}}>
+														{students.map((student: any, index: number) => (
+															<MUI.Option className={s.muiOption} value={index}>
+																<div className={s.wrapOption}>
+																	<>
+																		<p>{student.nameStudent}</p>
+																		<p
+																			style={{
+																				color: 'red',
+																				fontSize: '16px',
+																			}}>
+																			{handleDutyStudent(student, index)}
+																		</p>
+																	</>
+																</div>
+															</MUI.Option>
+														))}
+													</MUI.Select>
 													<p>₽</p>
 												</p>
 											</div>
@@ -1817,14 +1910,7 @@ const AddGroup = ({className}: IAddGroup) => {
 												<p style={{display: 'flex', flexDirection: 'row'}}>
 													<p style={{marginRight: '5px'}}>Долг:</p>
 													<p style={{color: 'red'}}>
-														{studentsHistoryLessons[index] &&
-															(studentsHistoryLessons[index].filter(
-																(i) => i.isDone,
-															).length -
-																studentsHistoryLessons[index].filter(
-																	(i) => i.isPaid,
-																).length) *
-																student.costOneLesson}
+														{handleDuty(student, index)}
 													</p>
 													<p>₽</p>
 												</p>

@@ -13,7 +13,7 @@ import Home from '../../assets/5.svg'
 import Client from '../../assets/6.svg'
 import Plus from '../../assets/ItemPlus.svg'
 import {useDispatch, useSelector} from 'react-redux'
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import socket from '../../socket'
 import React from 'react'
 import {debounce} from 'lodash'
@@ -49,7 +49,6 @@ const DayCalendarPopUp = ({
 	const details = useSelector((state: any) => state.details)
 
 	const dispath = useDispatch()
-
 	//for date mode
 	let months = [
 		'Январь',
@@ -227,6 +226,12 @@ const DayCalendarPopUp = ({
 			year: year,
 			token: token,
 		})
+		socket.emit('getClientsByDate', {
+			day: day,
+			month: month,
+			year: year,
+			token: token,
+		})
 	}
 
 	const debouncedOnUpdate = debounce(updData, 2)
@@ -295,7 +300,7 @@ const DayCalendarPopUp = ({
 			}
 		})
 	}
-
+	
 	return (
 		<div
 			style={style}
@@ -381,6 +386,7 @@ const DayCalendarPopUp = ({
 									key={student._id}
 									id={student.id}
 									studentId={student.studentId}
+									groupId={student.groupId}
 									onUpdate={(
 										id,
 										editIcon,

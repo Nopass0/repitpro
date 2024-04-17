@@ -55,6 +55,7 @@ const DayClientPopUp = ({
 	const [clients, setClients] = useState<any>([])
 	const [client, setClient] = useState<any>({})
 
+	const [stagesClient, setStagesClient] = useState<any[]>([])
 	useEffect(() => {
 		socket.emit('getClientsByDate', {
 			day: calendarNowPopupDay,
@@ -69,8 +70,19 @@ const DayClientPopUp = ({
 			//get client where clientId = clientId
 			const client = data.find((client: any) => client.clientId === clientId)
 			setClient(client)
+			console.log(
+				client.workStages.map((client: any) => client.firstPaymentDate),
+				'clientclientclientclientclient',
+			)
 		})
 	}, [])
+
+	useEffect(() => {
+		if (client) {
+			setStagesClient(client.workStages)
+		}
+		console.log(stagesClient, 'stagesClientstagesClientstagesClient', client)
+	}, [client, clients])
 
 	//Date to 12.02.2022 format
 	const formatDate = (date: Date) => {
@@ -95,89 +107,81 @@ const DayClientPopUp = ({
 				<img width={'50px'} height={'50px'} src={Client} alt="Client" />
 				<div className={s.info}>
 					<h1>{client?.itemName}</h1>
-					{client?.workStages && (
-						<>
-							<div className={s.HeaderInfo}>
-								<p>Общая стоимость {client.totalWorkPrice} ₽</p>
-								<p>
-									{client.workStages[0].prePay ? 'Предоплата' : 'Постоплата'}
-								</p>
-							</div>
-							<div className={s.LineInfo}>
-								<p>{formatDate(client.workStages[0].firstPaymentDate)}</p>
-								<p>Оплата</p>
-								<p>{client.workStages[0].firstPaymentPrice}₽</p>
-								<CheckBox
-									className={s.Checkbox}
-									size={'20px'}
-									checked={client.workStages[0].firstPaymentPayed}
-								/>
-								<p>
-									{Math.round(
-										(client.workStages[0].firstPaymentPayed /
-											client.totalWorkPrice) *
-											100,
-									)}{' '}
-									%
-								</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.LineInfo}>
-								<p>{formatDate(client.workStages[0].startWorkDate)}</p>
-								<p>Начало работы</p>
-								<p></p>
-								<CheckBox
-									className={s.Checkbox}
-									size={'20px'}
-									checked={client.workStages[0].isStartWork}
-								/>
-								<p></p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.LineInfo}>
-								<p>{formatDate(client.workStages[0].endPaymentDate)}</p>
-								<p>Оплата</p>
-								<p>{client.workStages[0].endPaymentPrice}₽</p>
-								<CheckBox
-									className={s.Checkbox}
-									size={'20px'}
-									checked={client.workStages[0].endPaymentPayed}
-								/>
-								<p>
-									{Math.round(
-										(client.workStages[0].endPaymentPayed /
-											client.totalWorkPrice) *
-											100,
-									)}{' '}
-									%
-								</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.LineInfo}>
-								<p>{formatDate(client.workStages[0].endWorkDate)}</p>
-								<p>Сдача работы</p>
-								<p>₽</p>
-								<CheckBox
-									className={s.Checkbox}
-									size={'20px'}
-									checked={client.workStages[0].isEndWork}
-								/>
-								<p>
-									{Math.round(
-										(client.workStages[0].endPaymentPayed /
-											client.totalWorkPrice) *
-											100,
-									) +
-										Math.round(
-											(client.workStages[0].firstPaymentPayed /
-												client.totalWorkPrice) *
-												100,
-										)} %
-								</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-						</>
-					)}
+					{stagesClient &&
+						stagesClient.map((stage: any, i: number) => {
+							;<>
+								<div className={s.HeaderInfo}>
+									<p>Общая стоимость {client.totalWorkPrice} ₽</p>
+									<p>{stage.prePay ? 'Предоплата' : 'Постоплата'}</p>
+								</div>
+								<div className={s.LineInfo}>
+									<p>{formatDate(stage.firstPaymentDate)}</p>
+									<p>Оплата</p>
+									<p>{stage.fisrtPaymentPrice}₽</p>
+									<CheckBox
+										className={s.Checkbox}
+										size={'20px'}
+										checked={stage.firstPaymentPayed}
+									/>
+									<p>
+										{Math.round(
+											(stage.firstPaymentPayed / client.totalWorkPrice) * 100,
+										)}{' '}
+										%
+									</p>
+								</div>
+								<Line width="100%" className={s.Line} />
+								<div className={s.LineInfo}>
+									<p>{formatDate(stage.startWorkDate)}</p>
+									<p>Начало работы</p>
+									<p></p>
+									<CheckBox
+										className={s.Checkbox}
+										size={'20px'}
+										checked={stage.isStartWork}
+									/>
+									<p></p>
+								</div>
+								<Line width="100%" className={s.Line} />
+								<div className={s.LineInfo}>
+									<p>{formatDate(stage.endPaymentDate)}</p>
+									<p>Оплата</p>
+									<p>{stage.endPaymentPrice}₽</p>
+									<CheckBox
+										className={s.Checkbox}
+										size={'20px'}
+										checked={stage.endPaymentPayed}
+									/>
+									<p>
+										{Math.round(
+											(stage.endPaymentPayed / client.totalWorkPrice) * 100,
+										)}{' '}
+										%
+									</p>
+								</div>
+								<Line width="100%" className={s.Line} />
+								<div className={s.LineInfo}>
+									<p>{formatDate(stage.endWorkDate)}</p>
+									<p>Сдача работы</p>
+									<p>₽</p>
+									<CheckBox
+										className={s.Checkbox}
+										size={'20px'}
+										checked={stage.isEndWork}
+									/>
+									<p>
+										{Math.round(
+											(stage.endPaymentPayed / client.totalWorkPrice) * 100,
+										) +
+											Math.round(
+												(stage.firstPaymentPayed / client.totalWorkPrice) * 100,
+											)}{' '}
+										%
+									</p>
+								</div>
+								<Line width="100%" className={s.Line} />
+							</>
+						})}
 				</div>
 			</div>
 			{/* <div className={s.buttons}>

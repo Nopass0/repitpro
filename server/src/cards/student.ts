@@ -345,6 +345,7 @@ export async function getStudentsByDate(data: {
       startTime: daySchedule?.startTime,
       endTime: daySchedule?.endTime,
       groupName: groupStudentSchedule ? groupStudentSchedule : "",
+      groupId: schedule.groupId,
       type: groupStudentSchedule ? "group" : "student",
     };
 

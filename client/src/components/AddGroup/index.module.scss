@@ -455,8 +455,6 @@
 	}
 }
 
-
-
 // Mui Collapse
 
 .MuiCollapse {
@@ -559,7 +557,43 @@
 	position: absolute;
 	z-index: 100;
 }
+.muiSelect {
+	.ListWrapper {
+		display: flex;
+		align-items: center;
 
+		p {
+			text-align: start;
+			font-size: 16px;
+		}
+		.btn {
+			img {
+				width: 32px;
+				height: 32px;
+
+				margin-right: 10px;
+			}
+		}
+	}
+}
+.muiOption {
+	background-color: #f9f9fd;
+	max-width: 296px;
+	height: fit-content;
+
+	padding: 10px 0 10px 10px;
+	border: 1px solid #e2e2e9;
+
+	.wrapOption {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		p {
+			margin-right: 10px;
+		}
+	}
+}
 .CloseIcon {
 	position: relative;
 	left: 360px;
@@ -577,7 +611,6 @@
 	top: 20px;
 	left: 400px;
 }
-
 
 @media screen and (max-width: 1024px) {
 	.wrapper {

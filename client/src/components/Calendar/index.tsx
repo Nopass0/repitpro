@@ -377,7 +377,17 @@ export const Calendar = ({className, cells}: ICalendar) => {
 																		<Line
 																			key={i}
 																			width="30px"
-																			className={s.LineLesson}
+																			className={`${s.LineLesson} ${s.green}`}
+																		/>
+																	))}
+																{cell &&
+																	Array.from({
+																		length: Math.min(55, cell.workCount),
+																	}).map((_, i) => (
+																		<Line
+																			key={i}
+																			width="30px"
+																			className={`${s.LineLesson} ${s.blue}`}
 																		/>
 																	))}
 															</div>
