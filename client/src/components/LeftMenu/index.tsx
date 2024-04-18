@@ -31,6 +31,7 @@ const MainPage = () => {
 	const [search, setSearch] = useState<string>('')
 	const [valueMuiSelectType, setValueMuiSelectType] = useState<number>(0)
 	const [valueMuiSelectArchive, setValueMuiSelectArchive] = useState<number>(0)
+	const [sortedTypeData, setSortedTypeData] = useState<number>(0)
 	const [students, setStudents] = useState([])
 	const [groups, setGroups] = useState([])
 	const [clients, setClients] = useState([])
@@ -197,23 +198,40 @@ const MainPage = () => {
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup})
 	}
 	const mobileLeftSelector = useSelector((state: any) => state.mobileLeft)
-	console.log(
-		mobileLeftSelector,
-		'mobileLeftSelector',
-	)
+	console.log(mobileLeftSelector, 'mobileLeftSelector')
+	useEffect(() => {
+		// const sortData = () => {
+		// 	if (sortedTypeData === 1) {
+		// 		// Sort by type
+		// 		filteredGroups.sort((a, b) => a.groupName.localeCompare(b.groupName))
+		// 		filteredStudents.sort((a, b) =>
+		// 			a.nameStudent.localeCompare(b.nameStudent),
+		// 		)
+		// 		filteredClients.sort((a, b) =>
+		// 			a.nameStudent.localeCompare(b.nameStudent),
+		// 		)
+		// 	} else if (sortedTypeData === 2) {
+		// 		// Sort by alphabetical order
+		// 		filteredGroups.sort((a, b) => a.groupName.localeCompare(b.groupName))
+		// 		filteredStudents.sort((a, b) =>
+		// 			a.nameStudent.localeCompare(b.nameStudent),
+		// 		)
+		// 		filteredClients.sort((a, b) =>
+		// 			a.nameStudent.localeCompare(b.nameStudent),
+		// 		)
+		// 	}
+		// }
 
+		// sortData()
+	}, [sortedTypeData, filteredGroups, filteredStudents, filteredClients])
 	return (
 		<>
 			<button
 				className={`${s.CloseButton} ${mobileLeftSelector ? s.mobileLeft : ''}`}
 				onClick={() => {
 					dispatch({type: 'SET_MOBILE_LEFT', payload: true})
-					
 
-					console.log(
-						mobileLeftSelector,
-						'mobileLeftSelector',
-					)
+					console.log(mobileLeftSelector, 'mobileLeftSelector')
 				}}>
 				<CloseIcon className={s.CloseIcon} />
 			</button>
@@ -290,6 +308,38 @@ const MainPage = () => {
 						<div className={s.SearchIconDiv}>
 							<Search className={s.SearchIcon} />
 						</div>
+					</div>
+					<div className={s.SortData}>
+						<mui.Select
+							className={s.muiSelectSort}
+							variant={'standard'}
+							value={sortedTypeData}
+							onChange={(e: any) => {
+								setSortedTypeData(e.target.value)
+							}}>
+							<mui.MenuItem value={0}>
+								<div
+									style={{
+										display: 'flex',
+										flexDirection: 'row',
+										whiteSpace: 'nowrap',
+										fontSize: '16px',
+									}}>
+									<p>По типу</p>
+								</div>
+							</mui.MenuItem>
+							<mui.MenuItem value={1}>
+								<div
+									style={{
+										display: 'flex',
+										flexDirection: 'row',
+										whiteSpace: 'nowrap',
+										fontSize: '16px',
+									}}>
+									<p>По алфавиту</p>
+								</div>
+							</mui.MenuItem>
+						</mui.Select>
 					</div>
 				</div>
 				<div className={s.MainLeftMenu}>

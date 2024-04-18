@@ -38,6 +38,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
 import {useNavigate} from 'react-router-dom'
 import {addDays, differenceInDays, differenceInCalendarDays} from 'date-fns'
+import FileNLinks from '../FileNLinks/index';
+import RecordNListen from '../RecordNListen/index';
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -1042,16 +1044,8 @@ const AddStudent = ({}: IAddStudent) => {
 						<Line width="296px" className={s.Line} />
 					</div>
 
-					<div className={s.RecordNListen}>
-						<button className={s.Record}>
-							<p>Аудио</p>
-							<img src={microSVG} alt={microSVG} />
-						</button>
-						<button className={s.Listen}>
-							<p>Прослушать</p>
-							<img src={Listen} alt={Listen} />
-						</button>
-					</div>
+					
+					<RecordNListen/>
 
 					<div className={s.ItemWrapper}>
 						<div className={s.ItemHeader}>
@@ -1648,13 +1642,14 @@ const AddStudent = ({}: IAddStudent) => {
 								</div>
 							</div>
 						</div>
-						<mui.ListItemButton
+						{/* <mui.ListItemButton
 							style={{marginTop: '10px'}}
 							onClick={handleClick}>
 							<img src={uploadFile} alt={uploadFile} />
 							<mui.ListItemText primary="Файлы/ссылки" />
 							{open ? <ExpandLess /> : <ExpandMore />}
-						</mui.ListItemButton>
+						</mui.ListItemButton> */}
+{/* 						
 						<mui.Collapse in={open} timeout="auto" unmountOnExit>
 							<mui.List
 								style={{
@@ -1668,7 +1663,8 @@ const AddStudent = ({}: IAddStudent) => {
 								<Line width="296px" className={s.Line} />
 								<p>Список пока пуст</p>
 							</mui.List>
-						</mui.Collapse>
+						</mui.Collapse> */}
+						<FileNLinks/>
 					</div>
 				</div>
 				<div className={s.FooterWrapper}>

@@ -23,8 +23,24 @@
 		justify-content: space-between;
 		flex-wrap: nowrap;
 		padding: 0 13px;
+		&.pulsating {
+			animation: pulse 1.5s infinite;
+		}
 	}
 	.Record {
 		margin-right: 2px;
+	}
+}
+@keyframes pulse {
+	0% {
+		box-shadow: 0 0 0 0px #59cf50;
+		background-color: #59cf50;
+	}
+	50% {
+		// box-shadow: 0 0 0 10px rgba(110, 1, 1, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 10px rgba(110, 1, 1, 0);
+		// box-shadow: 0 0 0 0px #b1e7ad;
 	}
 }

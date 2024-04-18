@@ -64,29 +64,35 @@ const FileNLinks: React.FC<IFileNLinks> = ({className}: IFileNLinks) => {
 					disablePadding>
 					<Line width="296px" className={s.Line} />
 					<div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-						{files.map((file, index) => (
-							<div
-								key={index}
-								style={{
-									display: 'flex',
-									justifyContent: 'space-between',
-									width: '100%',
-								}}>
-								<p>
-									{file.name.length > 20
-										? `${file.name.slice(0, 20)}...`
-										: file.name}
-								</p>
-								<button
-									onClick={() =>
-										setFiles((prevFiles) =>
-											prevFiles.filter((_, i) => i !== index),
-										)
-									}>
-									<DeleteOutlineIcon/>
-								</button>
-							</div>
-						))}
+						{files.length ? (
+							files.map((file, index) => (
+								<div
+									key={index}
+									style={{
+										display: 'flex',
+										justifyContent: 'space-between',
+										width: '100%',
+									}}>
+									<p>
+										{file.name.length > 20
+											? `${file.name.slice(0, 20)}...`
+											: file.name}
+									</p>
+									<button
+										onClick={() =>
+											setFiles((prevFiles) =>
+												prevFiles.filter((_, i) => i !== index),
+											)
+										}>
+										<DeleteOutlineIcon />
+									</button>
+								</div>
+							))
+						) : (
+							<>
+								<p>Список пока пуст</p>
+							</>
+						)}
 					</div>
 				</List>
 			</Collapse>

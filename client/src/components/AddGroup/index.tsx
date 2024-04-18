@@ -46,6 +46,7 @@ import ExitPopUp from '../ExitPopUp'
 import CloseIcon from '@mui/icons-material/Close'
 
 import {useNavigate} from 'react-router-dom'
+import FileNLinks from '../FileNLinks'
 interface IAddGroup {
 	className?: string
 }
@@ -1533,28 +1534,8 @@ const AddGroup = ({className}: IAddGroup) => {
 											</div>
 										</div>
 									</div>
-									<mui.ListItemButton
-										style={{marginTop: '10px'}}
-										onClick={handleClick}>
-										<img src={uploadFile} alt={uploadFile} />
-										<mui.ListItemText primary="Файлы/ссылки" />
-										{open ? <ExpandLess /> : <ExpandMore />}
-									</mui.ListItemButton>
 
-									<mui.Collapse in={open} timeout="auto" unmountOnExit>
-										<mui.List
-											style={{
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'center',
-												flexDirection: 'column',
-											}}
-											component="div"
-											disablePadding>
-											<Line width="296px" className={s.Line} />
-											<p>Список пока пуст</p>
-										</mui.List>
-									</mui.Collapse>
+									<FileNLinks />
 
 									<Line width="296px" className={s.Line} />
 
@@ -1996,28 +1977,8 @@ const AddGroup = ({className}: IAddGroup) => {
 										</mui.List>
 									</mui.Collapse>
 									<Line width="296px" className={s.Line} />
-									<mui.ListItemButton
-										style={{marginTop: '10px'}}
-										onClick={handleClick}>
-										<img src={uploadFile} alt={uploadFile} />
-										<mui.ListItemText primary="Файлы/ссылки" />
-										{open ? <ExpandLess /> : <ExpandMore />}
-									</mui.ListItemButton>
 
-									<mui.Collapse in={open} timeout="auto" unmountOnExit>
-										<mui.List
-											style={{
-												display: 'flex',
-												alignItems: 'center',
-												justifyContent: 'center',
-												flexDirection: 'column',
-											}}
-											component="div"
-											disablePadding>
-											<Line width="296px" className={s.Line} />
-											<p>Список пока пуст</p>
-										</mui.List>
-									</mui.Collapse>
+									<FileNLinks />
 
 									<Line width="296px" className={s.Line} />
 									<div className={s.StudentCard}>

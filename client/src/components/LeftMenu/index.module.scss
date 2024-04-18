@@ -89,6 +89,22 @@
 		}
 	}
 
+	.SortData {
+		.muiSelectSort {
+			background: #f9f9fd;
+			border: none !important;
+			border-radius: 6px;
+			padding: 5px;
+			cursor: pointer;
+			outline: none;
+			color: black;
+
+			display: flex;
+			flex-direction: row;
+			white-space: nowrap;
+		}
+	}
+
 	.MainLeftMenu {
 		margin: 20px;
 		display: flex;

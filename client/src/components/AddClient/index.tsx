@@ -32,6 +32,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
 import {useNavigate} from 'react-router-dom'
 import {ELeftMenuPage} from '../../types'
+import FileNLinks from '../FileNLinks'
 interface IAddClient {}
 enum PagePopup {
 	Exit,
@@ -1444,7 +1445,7 @@ const AddClient = ({}: IAddClient) => {
 															/>
 														</LocalizationProvider>
 														<div className={s.PayInput}>
-															<p>Оплата</p>	
+															<p>Оплата</p>
 															<Input
 																num
 																type="text"
@@ -1632,28 +1633,7 @@ const AddClient = ({}: IAddClient) => {
 								)}
 								{/* NO DATA */}
 
-								<mui.ListItemButton
-									style={{marginTop: '10px'}}
-									onClick={handleClick}>
-									<img src={uploadFile} alt={uploadFile} />
-									<mui.ListItemText primary="Файлы/ссылки" />
-									{open ? <ExpandLess /> : <ExpandMore />}
-								</mui.ListItemButton>
-
-								<mui.Collapse in={open} timeout="auto" unmountOnExit>
-									<mui.List
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-											flexDirection: 'column',
-										}}
-										component="div"
-										disablePadding>
-										<Line width="296px" className={s.Line} />
-										<p>Список пока пуст</p>
-									</mui.List>
-								</mui.Collapse>
+								<FileNLinks />
 								<Line width="296px" className={s.Line} />
 
 								<div className={s.StudentCard}>
