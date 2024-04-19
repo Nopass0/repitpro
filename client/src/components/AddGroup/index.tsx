@@ -1015,7 +1015,7 @@ const AddGroup = ({className}: IAddGroup) => {
 							</button>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						{/* <Line width="296px" className={s.Line} /> */}
 
 						{items.map((item, index) => (
 							<>
@@ -1923,22 +1923,40 @@ const AddGroup = ({className}: IAddGroup) => {
 												{studentsHistoryLessons[currentStudentIndex]
 													.sort(compareDates)
 													.map((lesson, lessonIndex) => (
-														<div
-															className={s.ListObject}
-															style={{
-																backgroundColor: hashToColor(
-																	hashString(lesson.itemName),
-																),
-															}}>
+														<div className={s.ListObject}>
 															<p
 																style={{
 																	fontWeight: '500',
 																	fontSize: '14px',
 																	marginRight: '5px',
+																	display: 'flex',
+																	flexDirection: 'row',
+																	alignItems: 'center',
 																}}>
+																<div
+																	style={{
+																		backgroundColor: hashToColor(
+																			hashString(lesson.itemName),
+																		),
+																		width: '10px',
+																		height: '35px',
+																		borderTopLeftRadius: '8px',
+																		borderBottomLeftRadius: '8px',
+																		marginRight: '5px',
+																	}}></div>
 																{formatDate(lesson.date)}
 															</p>
-															<p style={{fontWeight: '300', fontSize: '12px'}}>
+															<p
+																style={{
+																	fontWeight: '300',
+																	fontSize: '14px',
+																	width: '95px',
+																	minWidth: '95px',
+																	maxWidth: '95px',
+																	whiteSpace: 'nowrap',
+																	overflow: 'hidden',
+																	textOverflow: 'ellipsis',
+																}}>
 																{lesson.itemName}
 															</p>
 															<CheckBox

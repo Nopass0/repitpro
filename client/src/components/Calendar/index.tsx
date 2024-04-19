@@ -35,6 +35,21 @@ enum PagePopup {
 	None,
 }
 
+const months = [
+	'Январь',
+	'Февраль',
+	'Март',
+	'Апрель',
+	'Май',
+	'Июнь',
+	'Июль',
+	'Август',
+	'Сентябрь',
+	'Октябрь',
+	'Ноябрь',
+	'Декабрь',
+]
+
 export const Calendar = ({className, cells}: ICalendar) => {
 	const [currentCells, setCurrentCells] = useState<ICell[]>()
 	let currentMonth = useSelector((state: any) => state.currentMonth)
@@ -603,7 +618,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						</div>
 					</div>
 					<div className={s.PrognosisWrapper}>
-						<p className={s.Title}>Прогноз на</p>
+						<p className={s.Title}>Прогноз на {months[currentMonth]}</p>
 						<div className={s.Lessons}>
 							<p>
 								Занятий:{' '}

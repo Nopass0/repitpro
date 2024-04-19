@@ -516,7 +516,7 @@ const AddClient = ({}: IAddClient) => {
 									/>
 								</div>
 
-								<Line width="296px" className={s.Line} />
+								{/* <Line width="296px" className={s.Line} /> */}
 
 								<div className={s.StudentCard}>
 									<p>Название работы:</p>

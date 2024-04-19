@@ -38,8 +38,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
 import {useNavigate} from 'react-router-dom'
 import {addDays, differenceInDays, differenceInCalendarDays} from 'date-fns'
-import FileNLinks from '../FileNLinks/index';
-import RecordNListen from '../RecordNListen/index';
+import FileNLinks from '../FileNLinks/index'
+import RecordNListen from '../RecordNListen/index'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -770,7 +770,8 @@ const AddStudent = ({}: IAddStudent) => {
 
 	return (
 		<>
-			<button className={s.CloseButton}
+			<button
+				className={s.CloseButton}
 				onClick={() => {
 					if (
 						items.some((item) => {
@@ -806,12 +807,8 @@ const AddStudent = ({}: IAddStudent) => {
 							payload: ELeftMenuPage.MainPage,
 						})
 					}
-				}}
-				>
-				<CloseIcon
-				className={s.CloseIcon}
-					
-				/>
+				}}>
+				<CloseIcon className={s.CloseIcon} />
 			</button>
 			<div className={s.wrapper}>
 				<div className={s.Header}>
@@ -964,27 +961,39 @@ const AddStudent = ({}: IAddStudent) => {
 									{historyLesson
 										.sort(compareDates)
 										.map((lesson: any, index: number) => (
-											<div
-												key={index}
-												className={s.ListObject}
-												style={{
-													backgroundColor: hashToColor(
-														hashString(lesson.itemName),
-													),
-												}}>
+											<div key={index} className={s.ListObject}>
 												<p
 													style={{
 														fontWeight: '500',
 														fontSize: '14px',
 														marginRight: '5px',
+														display: 'flex',
+														flexDirection: 'row',
+														alignItems: 'center',
 													}}>
+													<div
+														style={{
+															backgroundColor: hashToColor(
+																hashString(lesson.itemName),
+															),
+															width: '10px',
+															height: '35px',
+															borderTopLeftRadius: '8px',
+															borderBottomLeftRadius: '8px',
+															marginRight: '5px',
+														}}></div>
 													{formatDate(lesson.date)}
 												</p>
 												<p
 													style={{
 														fontWeight: '300',
-														fontSize: '12px',
-														width: '100px',
+														fontSize: '14px',
+														width: '95px',
+														minWidth: '95px',
+														maxWidth: '95px',
+														whiteSpace: 'nowrap',
+														overflow: 'hidden',
+														textOverflow: 'ellipsis',
 													}}>
 													{lesson.itemName}
 												</p>
@@ -1044,8 +1053,7 @@ const AddStudent = ({}: IAddStudent) => {
 						<Line width="296px" className={s.Line} />
 					</div>
 
-					
-					<RecordNListen/>
+					<RecordNListen />
 
 					<div className={s.ItemWrapper}>
 						<div className={s.ItemHeader}>
@@ -1082,7 +1090,7 @@ const AddStudent = ({}: IAddStudent) => {
 							</button>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						{/* <Line width="296px" className={s.Line} /> */}
 
 						{items.map((item, index) => (
 							<>
@@ -1263,40 +1271,7 @@ const AddStudent = ({}: IAddStudent) => {
 														/>
 													</svg>
 												</mui.MenuItem>
-												<mui.MenuItem value={3}>
-													{/* Тут картинка группы */}
-													<svg
-														width="32"
-														height="32"
-														viewBox="0 0 51 49"
-														fill="none"
-														xmlns="http://www.w3.org/2000/svg">
-														<rect
-															x="0.5"
-															y="0.5"
-															width="50"
-															height="48"
-															rx="7.5"
-															fill="#F9F9FD"
-														/>
-														<rect
-															x="0.5"
-															y="0.5"
-															width="50"
-															height="48"
-															rx="7.5"
-															stroke="#25991C"
-														/>
-														<path
-															d="M21.5 24C21.5 24.2761 21.7239 24.5 22 24.5H28C28.2761 24.5 28.5 24.2761 28.5 24C28.5 23.7239 28.2761 23.5 28 23.5H22C21.7239 23.5 21.5 23.7239 21.5 24Z"
-															stroke="#25991C"
-														/>
-														<path
-															d="M21.5 24C21.5 24.2761 21.7239 24.5 22 24.5H28C28.2761 24.5 28.5 24.2761 28.5 24C28.5 23.7239 28.2761 23.5 28 23.5H22C21.7239 23.5 21.5 23.7239 21.5 24Z"
-															stroke="#25991C"
-														/>
-													</svg>
-												</mui.MenuItem>
+
 												<mui.MenuItem value={4}>
 													<svg
 														width="32"
@@ -1327,40 +1302,6 @@ const AddStudent = ({}: IAddStudent) => {
 														<path
 															d="M20.5587 38.7918C20.2202 38.7918 19.9367 38.6816 19.7085 38.4613C19.4802 38.2408 19.366 37.9672 19.366 37.6404C19.366 37.3136 19.4802 37.0418 19.7085 36.8251C19.9367 36.6084 20.2202 36.5001 20.5587 36.5001H23.2921L23.3267 35.2459H10.6453C9.8319 35.2459 9.13364 34.9658 8.5505 34.4054C7.96735 33.8452 7.67578 33.1743 7.67578 32.3928V12.5616C7.67578 11.7801 7.96735 11.1092 8.5505 10.549C9.13364 9.98865 9.8319 9.7085 10.6453 9.7085H40.7787C41.5984 9.7085 42.2983 9.98865 42.8783 10.549C43.4583 11.1092 43.7483 11.7801 43.7483 12.5616V32.3928C43.7483 33.1743 43.4583 33.8452 42.8783 34.4054C42.2983 34.9658 41.5984 35.2459 40.7787 35.2459H28.0973L28.0628 36.5001H30.8084C31.1469 36.5001 31.4303 36.6103 31.6586 36.8307C31.8869 37.0511 32.0011 37.3247 32.0011 37.6515C32.0011 37.9783 31.8869 38.2501 31.6586 38.4668C31.4303 38.6835 31.1469 38.7918 30.8084 38.7918H20.5587ZM10.6453 32.9541H40.7787C40.9491 32.9541 41.0891 32.9015 41.1987 32.7963C41.3082 32.691 41.363 32.5565 41.363 32.3928V12.5616C41.363 12.3979 41.3082 12.2634 41.1987 12.1581C41.0891 12.0529 40.9491 12.0003 40.7787 12.0003H10.6453C10.483 12.0003 10.3451 12.0529 10.2315 12.1581C10.1179 12.2634 10.0611 12.3979 10.0611 12.5616V32.3928C10.0611 32.5565 10.1179 32.691 10.2315 32.7963C10.3451 32.9015 10.483 32.9541 10.6453 32.9541Z"
 															fill="#25991C"
-														/>
-													</svg>
-												</mui.MenuItem>
-												<mui.MenuItem value={5}>
-													{/* Тут картинка группы онлайн */}
-													<svg
-														width="32"
-														height="32"
-														viewBox="0 0 51 49"
-														fill="none"
-														xmlns="http://www.w3.org/2000/svg">
-														<rect
-															x="0.5"
-															y="0.5"
-															width="50"
-															height="48"
-															rx="7.5"
-															fill="#F9F9FD"
-														/>
-														<rect
-															x="0.5"
-															y="0.5"
-															width="50"
-															height="48"
-															rx="7.5"
-															stroke="#25991C"
-														/>
-														<path
-															d="M21.5 24C21.5 24.2761 21.7239 24.5 22 24.5H28C28.2761 24.5 28.5 24.2761 28.5 24C28.5 23.7239 28.2761 23.5 28 23.5H22C21.7239 23.5 21.5 23.7239 21.5 24Z"
-															stroke="#25991C"
-														/>
-														<path
-															d="M21.5 24C21.5 24.2761 21.7239 24.5 22 24.5H28C28.2761 24.5 28.5 24.2761 28.5 24C28.5 23.7239 28.2761 23.5 28 23.5H22C21.7239 23.5 21.5 23.7239 21.5 24Z"
-															stroke="#25991C"
 														/>
 													</svg>
 												</mui.MenuItem>
@@ -1649,7 +1590,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<mui.ListItemText primary="Файлы/ссылки" />
 							{open ? <ExpandLess /> : <ExpandMore />}
 						</mui.ListItemButton> */}
-{/* 						
+						{/* 						
 						<mui.Collapse in={open} timeout="auto" unmountOnExit>
 							<mui.List
 								style={{
@@ -1664,7 +1605,7 @@ const AddStudent = ({}: IAddStudent) => {
 								<p>Список пока пуст</p>
 							</mui.List>
 						</mui.Collapse> */}
-						<FileNLinks/>
+						<FileNLinks />
 					</div>
 				</div>
 				<div className={s.FooterWrapper}>
@@ -1692,10 +1633,9 @@ const AddStudent = ({}: IAddStudent) => {
 			</div>
 
 			{pagePopup === PagePopup.Exit && (
-				<div className={s.ExitPopUpWrap} >
+				<div className={s.ExitPopUpWrap}>
 					<ExitPopUp
 						className={s.ExitPopUp}
-
 						title="Закрыть без сохранения?"
 						yes={() => {
 							dispatch({
