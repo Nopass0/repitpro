@@ -127,7 +127,6 @@
 				&::-webkit-scrollbar {
 					display: none;
 				}
-
 			}
 			textarea {
 				resize: none;
@@ -443,11 +442,15 @@
 
 				margin-bottom: 2px;
 
-				background-color: rgb(255, 0, 0, 0.2);
+				// background-color: rgb(255, 0, 0, 0.2);
+				background-color: white;
+				border: 1px dotted #eee;
+				border-radius: 8px;
 
 				.ButtonEdit {
 					border: none;
 					background: none;
+					margin-right: 10px;
 				}
 			}
 		}
