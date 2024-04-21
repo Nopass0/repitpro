@@ -93,6 +93,10 @@
 .calendarBtns {
 	display: flex;
 	flex-direction: row;
+
+	button:first-child {
+		margin-right: 50px;
+	}
 }
 
 .hideBtn {
@@ -106,12 +110,12 @@
 	margin-right: 16px;
 	.btnText {
 		font-family: 'Roboto';
-		font-size: 16px;
+		font-size: 17px;
 		font-weight: 400;
 	}
 	.rub {
 		font-family: 'Roboto';
-		font-size: 16px;
+		font-size: 17px;
 		margin-left: 4px;
 
 		font-weight: 400;
@@ -138,6 +142,17 @@
 	// width: 200px;
 	// margin-left: 280px;
 	// margin-left: 10%;
+	p {
+		font-size: 17px !important;
+	}
+	margin-right: clamp(0px, 100%, 20px);
+	button:first-child {
+		margin-right: 10px !important;
+	}
+
+	button:last-child {
+		margin-left: 10px !important;
+	}
 }
 
 .Buttons {
@@ -145,6 +160,7 @@
 	flex-direction: row;
 	align-items: center;
 	// float: right;
+
 }
 
 .greenBtn {
@@ -154,7 +170,7 @@
 	cursor: pointer;
 	color: #1f2133;
 	font-family: 'Roboto';
-	font-size: 16px;
+	font-size: 17px;
 	font-weight: 400;
 
 	font-style: none;
@@ -183,7 +199,7 @@
 	cursor: pointer;
 	color: #1f2133;
 	font-family: 'Roboto';
-	font-size: 16px;
+	font-size: 17px;
 	font-weight: 400;
 	display: flex;
 	align-items: center;

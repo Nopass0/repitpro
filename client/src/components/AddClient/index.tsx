@@ -33,6 +33,7 @@ import ExitPopUp from '../ExitPopUp'
 import {useNavigate} from 'react-router-dom'
 import {ELeftMenuPage} from '../../types'
 import FileNLinks from '../FileNLinks'
+import RecordNListen from '../RecordNListen/index'
 interface IAddClient {}
 enum PagePopup {
 	Exit,
@@ -405,7 +406,7 @@ const AddClient = ({}: IAddClient) => {
 							<p>*</p>
 						</div>
 
-						{/* <Line width="296px" className={s.Line} /> */}
+						{/* <Line width="100%" className={s.Line} /> */}
 					</div>
 				</div>
 				<div className={s.wrapperMenu}>
@@ -421,7 +422,7 @@ const AddClient = ({}: IAddClient) => {
 							/>
 							<div className={s.PhoneIcons}></div>
 						</div>
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Эл. почта:</p>
 							<input
@@ -430,7 +431,7 @@ const AddClient = ({}: IAddClient) => {
 								onChange={(e: any) => setEmail(e.target.value)}
 							/>
 						</div>
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
 							<p>Расходы по ученику:</p>
@@ -438,11 +439,12 @@ const AddClient = ({}: IAddClient) => {
 								type="text"
 								value={costStudent}
 								onChange={(e) => setCostStudent(e.target.value)}
+								style={{borderBottom: '1px solid #e2e2e9'}}
 							/>
 							<p>₽</p>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
 							<p>Комментарий:</p>
@@ -452,18 +454,9 @@ const AddClient = ({}: IAddClient) => {
 							/>
 						</div>
 					</div>
-					<Line width="296px" className={s.Line} />
+					<Line width="100%" className={s.Line} />
 
-					<div className={s.RecordNListen}>
-						<button className={s.Record}>
-							<p>Аудио</p>
-							<img src={microSVG} alt={microSVG} />
-						</button>
-						<button className={s.Listen}>
-							<p>Прослушать</p>
-							<img src={Listen} alt={Listen} />
-						</button>
-					</div>
+					<RecordNListen />
 
 					<div className={s.ItemWrapper}>
 						<div className={s.ItemHeader}>
@@ -498,7 +491,7 @@ const AddClient = ({}: IAddClient) => {
 							</button>
 						</div>
 
-						{/* <Line width="296px" className={s.Line} /> */}
+						{/* <Line width="100%" className={s.Line} /> */}
 
 						{jobs.map((job, index) => (
 							<div
@@ -516,7 +509,7 @@ const AddClient = ({}: IAddClient) => {
 									/>
 								</div>
 
-								<Line width="296px" className={s.Line} />
+								<Line width="100%" className={s.Line} />
 
 								<div className={s.StudentCard}>
 									<p>Название работы:</p>
@@ -529,7 +522,7 @@ const AddClient = ({}: IAddClient) => {
 									/>
 								</div>
 
-								<Line width="296px" className={s.Line} />
+								<Line width="100%" className={s.Line} />
 								<div className={s.StudentCard}>
 									<mui.Select
 										variant={'standard'}
@@ -547,11 +540,11 @@ const AddClient = ({}: IAddClient) => {
 									</mui.Select>
 								</div>
 
-								<Line width="296px" className={s.Line} />
+								<Line width="100%" className={s.Line} />
 
 								{stages === 1 && (
 									<>
-										<div className={s.StudentCard}>
+										<div  className={s.StudentCard}>
 											<p>Общая стоимость работы:</p>
 											<Input
 												num
@@ -560,11 +553,12 @@ const AddClient = ({}: IAddClient) => {
 												onChange={(e) => {
 													changeStage(index, 0, 'totalCost', e.target.value)
 												}}
+												style={{borderBottom: '1px solid #e2e2e9'}}
 											/>
 											<p>₽</p>
 										</div>
 
-										<Line width="296px" className={s.Line} />
+										<Line width="100%" className={s.Line} />
 									</>
 								)}
 								{stages === 2 && (
@@ -590,18 +584,9 @@ const AddClient = ({}: IAddClient) => {
 											}
 										/>
 									</div> */}
-										<Line width="296px" className={s.Line} />
+										<Line width="100%" className={s.Line} />
 
-										<div className={s.RecordNListen}>
-											<button className={s.Record}>
-												<p>Аудио</p>
-												<img src={microSVG} alt={microSVG} />
-											</button>
-											<button className={s.Listen}>
-												<p>Прослушать</p>
-												<img src={Listen} alt={Listen} />
-											</button>
-										</div>
+										<RecordNListen />
 										<div className={s.ItemHeader}>
 											<div className={s.dataSlidePicker}>
 												<button
@@ -658,7 +643,7 @@ const AddClient = ({}: IAddClient) => {
 															}}
 														/>
 													</div>
-													<Line width="296px" className={s.Line} />
+													<Line width="100%" className={s.Line} />
 													<div className={s.StudentCard}>
 														<p>Стоимость этапа:</p>
 														<Input
@@ -677,7 +662,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p>₽</p>
 													</div>
-													<Line width="296px" className={s.Line} />
+													<Line width="100%" className={s.Line} />
 													<div className={s.TypePaymentWrapper}>
 														<div
 															onClick={() => {
@@ -693,9 +678,7 @@ const AddClient = ({}: IAddClient) => {
 															<p>Предоплата</p>
 															<CheckBox
 																checked={
-																	item.typePayment === false
-																		? true
-																		: false
+																	item.typePayment === false ? true : false
 																}
 																size="18px"
 															/>
@@ -714,9 +697,7 @@ const AddClient = ({}: IAddClient) => {
 															<p>Постоплата</p>
 															<CheckBox
 																checked={
-																	item.typePayment === true
-																		? true
-																		: false
+																	item.typePayment === true ? true : false
 																}
 																size="18px"
 															/>
@@ -771,7 +752,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}></p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<LocalizationProvider
 																		dateAdapter={AdapterDateFns}
@@ -832,7 +813,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}>0%</p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<LocalizationProvider
 																		dateAdapter={AdapterDateFns}
@@ -879,7 +860,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}></p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<LocalizationProvider
 																		dateAdapter={AdapterDateFns}
@@ -1003,7 +984,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}>0%</p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<LocalizationProvider
 																		dateAdapter={AdapterDateFns}
@@ -1050,7 +1031,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}></p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<LocalizationProvider
 																		dateAdapter={AdapterDateFns}
@@ -1111,7 +1092,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}>0%</p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<LocalizationProvider
 																		dateAdapter={AdapterDateFns}
@@ -1158,7 +1139,7 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}></p>
 																</div>
-																<Line width="268px" className={s.Line} />
+																<Line width="317px" className={s.Line} />
 															</>
 														)}
 													</div>
@@ -1248,7 +1229,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}></p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
 														<LocalizationProvider
 															dateAdapter={AdapterDateFns}
@@ -1309,7 +1290,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}>0%</p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
 														<LocalizationProvider
 															dateAdapter={AdapterDateFns}
@@ -1351,7 +1332,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}></p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
 														<LocalizationProvider
 															dateAdapter={AdapterDateFns}
@@ -1475,7 +1456,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}>0%</p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
 														<LocalizationProvider
 															dateAdapter={AdapterDateFns}
@@ -1522,7 +1503,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}></p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
 														<LocalizationProvider
 															dateAdapter={AdapterDateFns}
@@ -1583,7 +1564,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}>0%</p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
 														<LocalizationProvider
 															dateAdapter={AdapterDateFns}
@@ -1625,7 +1606,7 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}></p>
 													</div>
-													<Line width="268px" className={s.Line} />
+													<Line width="317px" className={s.Line} />
 												</>
 											)}
 										</div>
@@ -1634,7 +1615,7 @@ const AddClient = ({}: IAddClient) => {
 								{/* NO DATA */}
 
 								<FileNLinks />
-								<Line width="296px" className={s.Line} />
+								<Line width="100%" className={s.Line} />
 
 								<div className={s.StudentCard}>
 									<p>Комментарий:</p>
@@ -1643,17 +1624,9 @@ const AddClient = ({}: IAddClient) => {
 										onChange={(e) => setGeneralComment(e.target.value)}
 									/>
 								</div>
-								<Line width="296px" className={s.Line} />
-								<div className={s.RecordNListen}>
-									<button className={s.Record}>
-										<p>Аудио</p>
-										<img src={microSVG} alt={microSVG} />
-									</button>
-									<button className={s.Listen}>
-										<p>Прослушать</p>
-										<img src={Listen} alt={Listen} />
-									</button>
-								</div>
+								<Line width="100%" className={s.Line} />
+
+								<RecordNListen />
 							</div>
 						))}
 					</div>
