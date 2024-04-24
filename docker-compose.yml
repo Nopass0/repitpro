@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./server:/app
+      - ./docker:/docker
+      - status:/out
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DOCKER_POSTGRES_HOST}:${DOCKER_INTERNAL_PORT}/${POSTGRES_DB}?schema=public
+      - SHADOW_DB_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DOCKER_POSTGRES_HOST}:${DOCKER_INTERNAL_PORT}/${SHADOW_DB}?schema=public
+    entrypoint: /docker/db-init.sh
+
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    networks:
+      new:
+        aliases:
+          - database
+    restart: always
+    command: "sh -c 'until [[ -f /in/db-init-done && -d /target/node_modules ]]; do sleep 1; done; yarn migrate; yarn prisma db seed'"
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "80:5173"
+    volumes:
+      - ./client:/app
+    depends_on:
+      - backend
+
+  # nginx:
+  #   image: nginx:1.21.3
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d
+  #     - ./client/build:/usr/share/nginx/html
+  #   depends_on:
+  #     - backend
+
+  postgres:
+    image: postgres:14.3-alpine
+    restart: always
+    ports:
+      - "5434:5432"
+    # entrypoint: db_create.sh
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4G
+    container_name: postgres
+    networks:
+      new:
+        aliases:
+          - database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+  status:
+
+networks:
+  new:
