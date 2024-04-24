@@ -47,6 +47,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import {useNavigate} from 'react-router-dom'
 import FileNLinks from '../FileNLinks'
+import RecordNListen from '../RecordNListen/index';
 interface IAddGroup {
 	className?: string
 }
@@ -1002,7 +1003,7 @@ const AddGroup = ({className}: IAddGroup) => {
 									</span>
 								</button>
 								<p className={s.btnText}>
-									Предмет {currentItemIndex + 1} / {items.length};
+									Предмет {currentItemIndex + 1} / {items.length}
 								</p>
 								<button className={s.btn} onClick={handleNextItem}>
 									<span>
@@ -1015,7 +1016,7 @@ const AddGroup = ({className}: IAddGroup) => {
 							</button>
 						</div>
 
-						{/* <Line width="296px" className={s.Line} /> */}
+						{/* <Line width="100%" className={s.Line} /> */}
 
 						{items.map((item, index) => (
 							<>
@@ -1035,7 +1036,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Цель занятий:</p>
@@ -1048,7 +1049,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Программа ученика:</p>
 										<input
@@ -1060,7 +1061,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<div
 											style={{
@@ -1172,7 +1173,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										</div>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Место проведения:</p>
 										<input
@@ -1188,7 +1189,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Продолжительность занятия:</p>
@@ -1203,11 +1204,12 @@ const AddGroup = ({className}: IAddGroup) => {
 													e.target.value,
 												)
 											}
+											style={{borderBottom: '1px solid #e2e2e9'}}
 										/>
 										<p>мин</p>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Начало занятий:</p>
@@ -1240,7 +1242,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 										<p style={{color: 'red'}}>*</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>
 										<p>Окончание занятий:</p>
 										<LocalizationProvider
@@ -1275,7 +1277,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										<div className={s.ScheduleHeader}>
 											<p>Расписание</p>
 										</div>
-										<Line width="295px" className={s.LineGreen} />
+										<Line width="324px" className={s.LineGreen} />
 										<div className={s.Schedule}>
 											{items[currentItemIndex].timeLinesArray.map(
 												(timeline, index) => (
@@ -1414,7 +1416,7 @@ const AddGroup = ({className}: IAddGroup) => {
 														{items[currentItemIndex].timeLinesArray.length -
 															1 !==
 															index && (
-															<Line width="303px" className={s.Line} />
+															<Line width="324px" className={s.Line} />
 														)}
 													</>
 												),
@@ -1537,7 +1539,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 									<FileNLinks />
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Комментарий:</p>
@@ -1554,17 +1556,8 @@ const AddGroup = ({className}: IAddGroup) => {
 											}}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
-									<div className={s.RecordNListen}>
-										<button className={s.Record}>
-											<p>Аудио</p>
-											<img src={microSVG} alt={microSVG} />
-										</button>
-										<button className={s.Listen}>
-											<p>Прослушать</p>
-											<img src={Listen} alt={Listen} />
-										</button>
-									</div>
+									<Line width="100%" className={s.Line} />
+									<RecordNListen />
 								</div>
 							</>
 						))}
@@ -1621,7 +1614,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Тел:</p>
@@ -1636,7 +1629,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 										<div className={s.PhoneIcons}></div>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Эл. почта:</p>
 										<input
@@ -1647,7 +1640,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Источник:</p>
@@ -1659,7 +1652,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Расходы по ученику:</p>
 										<Input
@@ -1668,11 +1661,12 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(e) =>
 												changeStudentValue(index, 'costStudent', e.target.value)
 											}
+											style={{borderBottom: '1px solid #e2e2e9'}}
 										/>
 										<p>₽</p>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Предоплата:</p>
@@ -1710,7 +1704,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 										<p>₽</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCardCheckBox}>
 										<div className={s.CardCheckBox}>
 											<p>Пробное занятие:</p>
@@ -1725,7 +1719,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 										<p>₽</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									{/* NO DATA */}
 									<div className={s.StudentCardCheckBox}>
 										<div className={s.CardCheckBoxLevel}>
@@ -1734,7 +1728,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 										<NowLevel amountInputs={5} />
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Текущая программа ученика:</p>
 										<input
@@ -1749,7 +1743,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											}}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Цель занятий:</p>
@@ -1765,7 +1759,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									{/* NO DATA */}
 									<div className={s.StudentCard}>
@@ -1790,7 +1784,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 										<p style={{color: 'red'}}>*</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>
 										<p>Окончание занятий:</p>
 										<LocalizationProvider
@@ -1813,7 +1807,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										<p style={{color: 'red'}}>*</p>
 									</div>
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Стоимость одного занятия:</p>
 										<Input
@@ -1903,7 +1897,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										<p>Посещение занятий: 0</p>
 										<p>Пропущено: 0</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<mui.ListItemButton
 										onClick={() => setOpenHistory(!openHistory)}>
 										<mui.ListItemText primary="История занятий и оплат" />
@@ -1994,11 +1988,11 @@ const AddGroup = ({className}: IAddGroup) => {
 											</div>
 										</mui.List>
 									</mui.Collapse>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<FileNLinks />
 
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Комментарий:</p>
 										<textarea
@@ -2006,17 +2000,8 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(e) => setCommentStudent(e.target.value)}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
-									<div className={s.RecordNListen}>
-										<button className={s.Record}>
-											<p>Аудио</p>
-											<img src={microSVG} alt={microSVG} />
-										</button>
-										<button className={s.Listen}>
-											<p>Прослушать</p>
-											<img src={Listen} alt={Listen} />
-										</button>
-									</div>
+									<Line width="100%" className={s.Line} />
+									<RecordNListen/>
 								</div>
 							</>
 						))}

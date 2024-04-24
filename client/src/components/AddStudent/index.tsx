@@ -831,17 +831,19 @@ const AddStudent = ({}: IAddStudent) => {
 					</div>
 					<div className={s.StudNameHead}>
 						<div className={s.StudentCardName}>
-							<p>Имя:</p>
-							<input
-								type="text"
-								value={nameStudent}
-								disabled={isEditMode}
-								onChange={(e) => setNameStudent(e.target.value)}
-							/>
+							<div className={s.StudentCardInput}>
+								<p>Имя:</p>
+								<input
+									type="text"
+									value={nameStudent}
+									disabled={isEditMode}
+									onChange={(e) => setNameStudent(e.target.value)}
+								/>
+							</div>
 							<p>*</p>
 						</div>
 
-						{/* <Line width="296px" className={s.Line} /> */}
+						{/* <Line width="100%" className={s.Line} /> */}
 					</div>
 				</div>
 				<div className={s.wrapperMenu}>
@@ -856,7 +858,7 @@ const AddStudent = ({}: IAddStudent) => {
 							/>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
 							<p>Тел:</p>
@@ -871,7 +873,7 @@ const AddStudent = ({}: IAddStudent) => {
 							/>
 							<div className={s.PhoneIcons}></div>
 						</div>
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Эл. почта:</p>
 							<input
@@ -882,7 +884,7 @@ const AddStudent = ({}: IAddStudent) => {
 							/>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Источник:</p>
 							<input
@@ -892,7 +894,7 @@ const AddStudent = ({}: IAddStudent) => {
 								onChange={(e) => setLinkStudent(e.target.value)}
 							/>
 						</div>
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Расходы по ученику:</p>
 							<Input
@@ -901,11 +903,12 @@ const AddStudent = ({}: IAddStudent) => {
 								value={costStudent}
 								disabled={isEditMode}
 								onChange={(e: any) => setCostStudent(e.target.value)}
+								style={{borderBottom: '1px solid #e2e2e9'}}
 							/>
 							<p>₽</p>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
 							<p>Предоплата:</p>
@@ -944,7 +947,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<p>₽</p>
 						</div>
 
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 
 						<mui.ListItemButton onClick={handleClick}>
 							<mui.ListItemText primary="История занятий и оплат" />
@@ -1028,7 +1031,7 @@ const AddStudent = ({}: IAddStudent) => {
 							</mui.List>
 						</mui.Collapse>
 
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
 							<p>Стоимость одного занятия:</p>
 							<Input
@@ -1037,10 +1040,11 @@ const AddStudent = ({}: IAddStudent) => {
 								value={costOneLesson}
 								disabled={isEditMode}
 								onChange={(e) => setCostOneLesson(e.target.value)}
+								style={{borderBottom: '1px solid #e2e2e9'}}
 							/>
 							<p>₽</p>
 						</div>
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
 							<p>Комментарий:</p>
@@ -1050,10 +1054,10 @@ const AddStudent = ({}: IAddStudent) => {
 								onChange={(e) => setCommentStudent(e.target.value)}
 							/>
 						</div>
-						<Line width="296px" className={s.Line} />
+						<Line width="100%" className={s.Line} />
 					</div>
 
-					<RecordNListen />
+					<RecordNListen className={s.RecordNListen} />
 
 					<div className={s.ItemWrapper}>
 						<div className={s.ItemHeader}>
@@ -1090,7 +1094,7 @@ const AddStudent = ({}: IAddStudent) => {
 							</button>
 						</div>
 
-						{/* <Line width="296px" className={s.Line} /> */}
+						{/* <Line width="100%" className={s.Line} /> */}
 
 						{items.map((item, index) => (
 							<>
@@ -1110,7 +1114,7 @@ const AddStudent = ({}: IAddStudent) => {
 											placeholder="Наименование"
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCardCheckBox}>
 										<div className={s.CardCheckBox}>
 											<p>Пробное занятие:</p>
@@ -1139,7 +1143,7 @@ const AddStudent = ({}: IAddStudent) => {
 										/>
 										<p>₽</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCardCheckBox}>
 										<div className={s.CardCheckBoxLevel}>
 											<p>Текущий уровень:</p>
@@ -1154,7 +1158,7 @@ const AddStudent = ({}: IAddStudent) => {
 											amountInputs={5}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
 										<p>Текущая программа ученика:</p>
@@ -1171,7 +1175,7 @@ const AddStudent = ({}: IAddStudent) => {
 											}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Цель занятий:</p>
 										<input
@@ -1183,7 +1187,7 @@ const AddStudent = ({}: IAddStudent) => {
 											}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Программа ученика:</p>
 										<input
@@ -1195,7 +1199,7 @@ const AddStudent = ({}: IAddStudent) => {
 											}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<div
 											style={{
@@ -1308,7 +1312,7 @@ const AddStudent = ({}: IAddStudent) => {
 											</mui.Select>
 										</div>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Место проведения:</p>
 										<input
@@ -1320,7 +1324,7 @@ const AddStudent = ({}: IAddStudent) => {
 											}}
 										/>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Продолжительность занятия:</p>
 										<Input
@@ -1331,10 +1335,11 @@ const AddStudent = ({}: IAddStudent) => {
 											onChange={(e: any) =>
 												handleLessonDurationChange(e, index)
 											}
+											style={{borderBottom: '1px solid #e2e2e9'}}
 										/>
 										<p>мин</p>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Начало занятий:</p>
 										<LocalizationProvider
@@ -1364,7 +1369,7 @@ const AddStudent = ({}: IAddStudent) => {
 											/>
 										</LocalizationProvider>
 									</div>
-									<Line width="296px" className={s.Line} />
+									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>
 										<p>Окончание занятий:</p>
 										<LocalizationProvider
@@ -1394,7 +1399,7 @@ const AddStudent = ({}: IAddStudent) => {
 										<div className={s.ScheduleHeader}>
 											<p>Расписание</p>
 										</div>
-										<Line width="303px" className={s.LineGreen} />
+										<Line width="324px" className={s.LineGreen} />
 										<div className={s.Schedule}>
 											{items[currentItemIndex].timeLinesArray.map(
 												(timeline, index) => (
@@ -1540,7 +1545,7 @@ const AddStudent = ({}: IAddStudent) => {
 														{items[currentItemIndex].timeLinesArray.length -
 															1 !==
 															index && (
-															<Line width="303px" className={s.Line} />
+															<Line width="324px" className={s.Line} />
 														)}
 													</>
 												),
@@ -1556,7 +1561,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>Всего занятий: {allLessons}</p>
 									<p>Сумма: {allLessonsPrice}₽</p>
 								</div>
-								<Line width="294px" className={s.Line} />
+								<Line width="324px" className={s.Line} />
 								<div className={s.MathObject}>
 									{/* HistoryLesson isDone count */}
 									<p>Прошло: {getCountOfDoneObjects(historyLesson)}</p>
@@ -1566,7 +1571,7 @@ const AddStudent = ({}: IAddStudent) => {
 										₽)
 									</p>
 								</div>
-								<Line width="294px" className={s.Line} />
+								<Line width="324px" className={s.Line} />
 								<div className={s.MathObject}>
 									<p>
 										Не оплачено: {historyLesson.filter((i) => !i.isPaid).length}
@@ -1601,7 +1606,7 @@ const AddStudent = ({}: IAddStudent) => {
 								}}
 								component="div"
 								disablePadding>
-								<Line width="296px" className={s.Line} />
+								<Line width="100%" className={s.Line} />
 								<p>Список пока пуст</p>
 							</mui.List>
 						</mui.Collapse> */}

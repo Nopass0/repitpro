@@ -1,6 +1,6 @@
 .wrapper {
-	min-width: 336px;
-	max-width: 336px;
+	min-width: 346px;
+	max-width: 346px; // + 10px 
 	// height: 872px; // на сайте 833 | в фигме 872
 	height: fit-content;
 	max-height: 833px;
@@ -10,18 +10,23 @@
 	display: flex;
 	flex-direction: column;
 
-	margin: 20px 20px 20px 25px;
+	margin: 10px 10px 0 10px;
 
 	background-color: #f3fdf2;
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
 
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+	&::-webkit-scrollbar {
+		display: none;
+	}
 	.Line {
 		background: #e2e2e9;
 		margin: 10px 0px;
 	}
 	.Header {
-		width: 290px;
+		width: 320px;
 		display: flex;
 		flex-direction: column;
 		position: sticky;
@@ -29,7 +34,7 @@
 		// position: fixed;
 		z-index: 20;
 
-		padding: 20px;
+		padding: 20px 10px;
 		border-bottom: 1px solid #e2e2e9;
 		border-left: 1px solid #e2e2e9;
 		border-top-left-radius: 20px;
@@ -43,6 +48,8 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			flex-wrap: nowrap;
+			white-space: nowrap;
 
 			margin-bottom: 20px;
 
@@ -52,6 +59,13 @@
 		.StudentCardName {
 			// width: 100%;
 
+			.StudentCardInput {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: nowrap;
+				width: 100%;
+
+			}
 			font-size: 16px;
 			white-space: nowrap;
 
@@ -88,12 +102,12 @@
 		}
 	}
 	.wrapperMenu {
-		margin: 20px 5px 20px 20px;
+		margin: 20px 10px 20px 10px;
 
 		.StudentCard,
 		.StudentCardName {
 			width: 100%;
-			max-width: 296px;
+			max-width: 320px; // prev 296px
 			max-height: 100vh;
 			font-size: 16px;
 			white-space: nowrap;
@@ -131,7 +145,7 @@
 			textarea {
 				resize: none;
 				width: 100%;
-				// height: 19px;
+				height: 19px;
 				font-size: 16px;
 			}
 			input[type='text'],
@@ -160,7 +174,7 @@
 			}
 
 			input[type='text'] {
-				width: 30px;
+				min-width: 30px;
 				height: 15px;
 				border: none;
 				background: none;
@@ -238,7 +252,8 @@
 					cursor: pointer;
 				}
 				.dataSlidePicker {
-					width: 244px;
+					// width: 244px;
+					width: 326px;
 					margin-right: 2px;
 
 					display: flex;
@@ -543,6 +558,10 @@
 	position: relative;
 	top: 20px;
 	left: 400px;
+}
+
+.RecordNListen {
+	width: 100% !important;
 }
 
 @media screen and (max-width: 1024px) {
