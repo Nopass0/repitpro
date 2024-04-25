@@ -47,7 +47,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import {useNavigate} from 'react-router-dom'
 import FileNLinks from '../FileNLinks'
-import RecordNListen from '../RecordNListen/index';
+import RecordNListen from '../RecordNListen/index'
 interface IAddGroup {
 	className?: string
 }
@@ -99,8 +99,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			typeLesson: '1',
 			placeLesson: '',
 			timeLesson: '',
-			startLesson: null,
-			endLesson: null,
+			startLesson: new Date(Date.now()),
+			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 			// totalCostOneLesson: 0,
 			// commentItem: '',
 			lessonDuration: null,
@@ -454,8 +454,8 @@ const AddGroup = ({className}: IAddGroup) => {
 				placeLesson: '',
 				timeLesson: '',
 				valueMuiSelectArchive: 1,
-				startLesson: null,
-				endLesson: null,
+				startLesson: new Date(Date.now()),
+				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 				nowLevel: undefined,
 				lessonDuration: null,
 				timeLinesArray: getVoidWeek() as ITimeLine[],
@@ -719,8 +719,8 @@ const AddGroup = ({className}: IAddGroup) => {
 				typeLesson: '1',
 				placeLesson: '',
 				timeLesson: '',
-				startLesson: null,
-				endLesson: null,
+				startLesson: new Date(Date.now()),
+				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 				nowLevel: 0,
 				valueMuiSelectArchive: 1,
 				lessonDuration: null,
@@ -982,13 +982,15 @@ const AddGroup = ({className}: IAddGroup) => {
 					</div>
 					<div className={s.StudNameHead}>
 						<div className={s.StudentCardName}>
-							<p>Группа:</p>
-							<input
-								type="text"
-								value={groupName}
-								onChange={(e) => setGroupName(e.target.value)}
-								placeholder="Название группы"
-							/>
+							<div className={s.StudentCarName__Left}>
+								<p>Группа:</p>
+								<input
+									type="text"
+									value={groupName}
+									onChange={(e) => setGroupName(e.target.value)}
+									placeholder="Название группы"
+								/>
+							</div>
 							<p>*</p>
 						</div>
 					</div>
@@ -2001,7 +2003,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 									<Line width="100%" className={s.Line} />
-									<RecordNListen/>
+									<RecordNListen />
 								</div>
 							</>
 						))}

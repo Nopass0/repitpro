@@ -235,7 +235,7 @@ const AddStudent = ({}: IAddStudent) => {
 			timeLesson: '',
 			valueMuiSelectArchive: 1,
 			startLesson: new Date(Date.now()),
-			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 			nowLevel: undefined,
 			lessonDuration: null,
 			timeLinesArray: getVoidWeek() as ITimeLine[],
@@ -280,7 +280,8 @@ const AddStudent = ({}: IAddStudent) => {
 				timeLesson: '',
 				valueMuiSelectArchive: 1,
 				startLesson: new Date(Date.now()),
-				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // adds one month to the current date using the Date library
+
+				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 				nowLevel: undefined,
 				lessonDuration: null,
 				timeLinesArray: getVoidWeek() as ITimeLine[],
@@ -383,7 +384,7 @@ const AddStudent = ({}: IAddStudent) => {
 			backgroundColor: '#25991c',
 		},
 	})
-	const [open, setOpen] = useState(true)
+	const [open, setOpen] = useState(false)
 
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
 	const [lessonDuration, setLessonDuration] = useState()
@@ -950,7 +951,7 @@ const AddStudent = ({}: IAddStudent) => {
 						<Line width="100%" className={s.Line} />
 
 						<mui.ListItemButton onClick={handleClick}>
-							<mui.ListItemText primary="История занятий и оплат" />
+							<p className={s.MuiListItemText}>История занятий и оплат</p>
 							{open ? <ExpandLess /> : <ExpandMore />}
 						</mui.ListItemButton>
 

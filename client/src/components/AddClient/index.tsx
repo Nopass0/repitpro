@@ -397,12 +397,14 @@ const AddClient = ({}: IAddClient) => {
 					</div>
 					<div className={s.StudNameHead}>
 						<div className={s.StudentCardName}>
-							<p>Имя:</p>
-							<input
-								type="text"
-								value={nameStudent}
-								onChange={(e) => setNameStudent(e.target.value)}
-							/>
+							<div className={s.StudentCardName_Left}>
+								<p>Имя:</p>
+								<input
+									type="text"
+									value={nameStudent}
+									onChange={(e) => setNameStudent(e.target.value)}
+								/>
+							</div>
 							<p>*</p>
 						</div>
 
@@ -544,7 +546,7 @@ const AddClient = ({}: IAddClient) => {
 
 								{stages === 1 && (
 									<>
-										<div  className={s.StudentCard}>
+										<div className={s.StudentCard}>
 											<p>Общая стоимость работы:</p>
 											<Input
 												num

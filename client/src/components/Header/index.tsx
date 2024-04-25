@@ -67,9 +67,12 @@ const Header = ({}: IHeader) => {
 						className={s.muiSelect__menu}
 						renderValue={(option: SelectOption<number> | null) => {
 							return (
-								<div className={s.selectContainer}>
-									<p className={s.selectText}>Добавить</p>
-								</div>
+								<>
+									<div className={s.selectContainer}>
+										<p className={s.selectText}>Добавить</p>
+									</div>
+									<div className={s.hiddenDivMuiSelect}></div>
+								</>
 							)
 						}}
 						variant={'standard'}

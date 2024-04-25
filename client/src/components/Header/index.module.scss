@@ -230,6 +230,17 @@
 .muiSelect__ButtonsStat {
 	display: none !important;
 }
+
+.hiddenDivMuiSelect {
+	background-color: none;
+	width: 30px;
+	height: 32px;
+	position: absolute;
+	bottom: 0px;
+	left: 105px;
+	border-radius: 8px;
+}
+
 @media screen and (max-width: 1024px) {
 	.header {
 		position: fixed;
@@ -358,3 +369,4 @@
 		margin: 0 !important;
 	}
 }
+

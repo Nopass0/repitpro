@@ -68,7 +68,7 @@
 			justify-content: space-between;
 
 			p {
-				font-weight: 500;
+				font-weight: 600;
 				margin-right: 2px;
 			}
 
@@ -81,6 +81,7 @@
 				border: none;
 				background: none;
 				outline: none;
+				margin-left: 5px;
 			}
 			textarea {
 				resize: none;
@@ -91,6 +92,13 @@
 			input[type='text'],
 			input[type='email'] {
 				font-size: 16px;
+
+				
+			}
+			.StudentCarName__Left {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
 			}
 		}
 	}
@@ -112,7 +120,7 @@
 			align-items: center;
 
 			p {
-				font-weight: 500;
+				font-weight: 600;
 				margin-right: 2px;
 			}
 
@@ -125,6 +133,7 @@
 				background: none;
 				outline: none;
 				white-space: normal;
+				margin-left: 5px;
 			}
 			textarea {
 				resize: none;
@@ -153,7 +162,7 @@
 				white-space: nowrap;
 			}
 			p {
-				font-weight: 500;
+				font-weight: 600;
 				margin-right: 2px;
 			}
 
@@ -167,6 +176,7 @@
 				outline: none;
 				font-size: 16px;
 				border-bottom: 1px solid #e2e2e9;
+				margin-left: 5px;
 			}
 		}
 
