@@ -12,7 +12,7 @@ export const upload = async (
   file: Buffer,
   callback?: any
 ): Promise<string | null> => {
-  console.log(file); // <Buffer 25 50 44 ...>
+  console.log(file, "-----------------------------"); // <Buffer 25 50 44 ...>
 
   // Create a dummy filename with an extension to be used with the extname function
   const dummyFilename = `dummy.${extname("filename.txt").slice(1)}`;
@@ -21,7 +21,7 @@ export const upload = async (
   try {
     await mkdirSync("../../files", { recursive: true });
   } catch (err) {
-    console.error(err);
+    console.error(err, "ERROR IN mkdirSync");
   }
 
   // Create a new filename with random symbols of length 256

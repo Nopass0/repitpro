@@ -42,6 +42,7 @@ enum PagePopup {
 const AddClient = ({}: IAddClient) => {
 	const dispatch = useDispatch()
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
+	
 	// Block Student
 	const [stages, setStages] = useState<number>(1)
 	const [nameStudent, setNameStudent] = useState<string>('')
@@ -55,8 +56,8 @@ const AddClient = ({}: IAddClient) => {
 	const [typePayment, setTypePayment] = useState<boolean>(false) // Предоплата
 	const [generalComment, setGeneralComment] = useState<string>('')
 
-	const [currentJobIndex, setCurrentJobIndex] = useState(0)
-	const [currentStageIndex, setCurrentStageIndex] = useState(0)
+	const [currentJobIndex, setCurrentJobIndex] = useState<number>(0)
+	const [currentStageIndex, setCurrentStageIndex] = useState<number>(0)
 
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token

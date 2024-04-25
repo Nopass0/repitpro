@@ -695,7 +695,7 @@ export async function getGroupByStudentId(data: any) {
     return group.group;
   } catch (error) {
     console.error("Error retrieving group:", error);
-    throw error;
+    console.log(error);
   }
 }
 
@@ -741,7 +741,7 @@ export async function updateStudentAndItems(data: any) {
     return updatedStudent;
   } catch (error) {
     console.error("Error updating student and items:", error);
-    throw error;
+    console.log(error);
   }
 }
 export async function getAllIdStudents(data: any) {
@@ -863,7 +863,7 @@ export async function getTableData(data) {
     return tableData;
   } catch (error) {
     console.error("Error fetching table data:", error);
-    throw error;
+    console.log(error);
   }
 }
 

@@ -45,6 +45,7 @@ const MainPage = () => {
 	const [openedGroups, setOpenedGroups] = useState<number[]>([])
 	const [openedClients, setOpenedClients] = useState<number[]>([])
 
+	
 	const handleOpenStudent = (index: number) => {
 		if (openedStudents.includes(index)) {
 			setOpenedStudents(openedStudents.filter((item) => item !== index))
@@ -221,9 +222,9 @@ const MainPage = () => {
 		// 		)
 		// 	}
 		// }
-
 		// sortData()
 	}, [sortedTypeData, filteredGroups, filteredStudents, filteredClients])
+
 	return (
 		<>
 			<button
