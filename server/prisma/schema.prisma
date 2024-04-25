@@ -15,7 +15,9 @@ datasource db {
 
   //sqlite3 dev
   provider = "postgresql"
-  url      = "postgresql://postgres:root@localhost:5432/repitpro"
+  // url      = "postgresql://postgres:root@localhost:5432/repitpro"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DB_URL")
 }
 
 
