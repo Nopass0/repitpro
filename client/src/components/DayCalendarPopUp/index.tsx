@@ -48,6 +48,7 @@ const DayCalendarPopUp = ({
 	const currentYear = useSelector((state: any) => state.currentYear)
 	const details = useSelector((state: any) => state.details)
 
+	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const dispath = useDispatch()
 	//for date mode
 	let months = [
@@ -300,7 +301,7 @@ const DayCalendarPopUp = ({
 			}
 		})
 	}
-	
+
 	return (
 		<div
 			style={style}
@@ -468,22 +469,28 @@ const DayCalendarPopUp = ({
 							<p>
 								Занятий: <b>{students.length}</b>
 							</p>
-							<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+							{!hiddenNum && (
+								<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+							)}
 						</div>
 						<div className={s.works}>
 							<p>
 								Работ: <b>{clients && clients.length}</b>
 							</p>
-							<b>
-								{clients && clients.reduce((a, b) => +a + +b.workPrice, 0)}₽
-							</b>
+							{!hiddenNum && (
+								<b>
+									{clients && clients.reduce((a, b) => +a + +b.workPrice, 0)}₽
+								</b>
+							)}
 						</div>
 					</div>
 					<div className={s.income}>
-						<p>
-							Доход:{' '}
-							<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
-						</p>
+						{!hiddenNum && (
+							<p>
+								Доход:{' '}
+								<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+							</p>
+						)}
 					</div>
 				</footer>
 			</div>

@@ -22,6 +22,12 @@ import {useDispatch, useSelector} from 'react-redux'
 import {ECurrentDayPopUp, ELeftMenuPage} from '../../types'
 import socket from '../../socket'
 import DayStudentPopUp from '../DayStudentPopUp'
+import ExitPopUp from '../ExitPopUp/index'
+
+enum PagePopup {
+	Exit,
+	None,
+}
 
 export const UPDATE_STUDENTS = 'UPDATE_STUDENTS'
 
@@ -94,6 +100,9 @@ const DayCalendarLine = ({
 	const [editPrice, setEditPrice] = useState<string>(price)
 	const [activeKey, setActiveKey] = useState<number | null>(null)
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 678)
+	const [pagePopup, setPagePopup] = useState<PagePopup>(PagePopup.None)
+
+	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	useEffect(() => {
 		const handleResize = () => {
 			setIsMobile(window.innerWidth <= 678)
@@ -358,6 +367,7 @@ const DayCalendarLine = ({
 										setEditName(e.target.value)
 										handleUpdate()
 									}}
+									placeholder="Имя"
 									value={editName}
 								/>
 							)}
@@ -374,6 +384,7 @@ const DayCalendarLine = ({
 										setEditItem(e.target.value)
 										handleUpdate()
 									}}
+									placeholder="Предмет"
 									value={editItem}
 								/>
 							)}
@@ -381,9 +392,13 @@ const DayCalendarLine = ({
 						<div className={s.Price}>
 							{!editMode ? (
 								<p title={editPrice}>
-									{editPrice.length > 5 && !isMobile
-										? price.slice(0, 5) + '>'
-										: editPrice}{' '}
+									{!hiddenNum && (
+										<>
+											{editPrice.length > 5 && !isMobile
+												? price.slice(0, 5) + '>'
+												: editPrice}{' '}
+										</>
+									)}
 									₽
 								</p>
 							) : (
@@ -397,6 +412,7 @@ const DayCalendarLine = ({
 										}}
 										value={editPrice}
 										type="number"
+										placeholder="Цена"
 									/>{' '}
 									<p>₽</p>
 								</>
@@ -414,8 +430,7 @@ const DayCalendarLine = ({
 					/>
 					<button
 						onClick={() => {
-							setIsDelete(true)
-							handleUpdate()
+							setPagePopup(PagePopup.Exit)
 						}}
 						className={s.BtnDelete}>
 						<DeleteOutlineIcon />
@@ -426,6 +441,22 @@ const DayCalendarLine = ({
 			</div>
 			{isDetailsShow && (
 				<DayStudentPopUp icon={icon} name={editName} time={editTime} />
+			)}
+			{pagePopup === PagePopup.Exit && (
+				<>
+					<div className={s.PopUp__wrapper}>
+						<ExitPopUp
+							className={s.PopUp}
+							title="Вы действительно хотите удалить?"
+							yes={() => {
+								setIsDelete(true)
+								handleUpdate()
+								setPagePopup(PagePopup.None)
+							}}
+							no={() => setPagePopup(PagePopup.None)}
+						/>
+					</div>
+				</>
 			)}
 		</>
 	)

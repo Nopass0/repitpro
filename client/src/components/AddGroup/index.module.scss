@@ -3,7 +3,8 @@
 	max-width: 346px; // + 10px
 	// height: 872px; // на сайте 833 | в фигме 872
 	height: fit-content;
-	max-height: 833px;
+	min-height: 872px;
+	max-height: 872px;
 	overflow-x: hidden;
 	overflow-y: auto !important;
 
@@ -92,8 +93,6 @@
 			input[type='text'],
 			input[type='email'] {
 				font-size: 16px;
-
-				
 			}
 			.StudentCarName__Left {
 				display: flex;
@@ -481,6 +480,8 @@
 
 .MuiCollapse {
 	.MuiList {
+		max-height: 200px;
+		overflow-y: auto;
 		.ListObjectWrapper {
 			display: flex;
 			flex-direction: column;
@@ -502,6 +503,14 @@
 				}
 			}
 		}
+	}
+	.ListNoInfo {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		font-size: 16px;
+		padding: 20px;
 	}
 }
 

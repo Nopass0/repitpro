@@ -42,7 +42,7 @@ enum PagePopup {
 const AddClient = ({}: IAddClient) => {
 	const dispatch = useDispatch()
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
-	
+
 	// Block Student
 	const [stages, setStages] = useState<number>(1)
 	const [nameStudent, setNameStudent] = useState<string>('')
@@ -107,50 +107,52 @@ const AddClient = ({}: IAddClient) => {
 	])
 
 	const addJob = () => {
-		setJobs([
-			...jobs,
-			{
-				jobName: '',
-				itemName: '',
-				cost: 0,
-				stages: [
-					{
-						totalCost: 0,
-						name: '',
-						typePayment: false, // Предоплата false - оплата true
+		if (jobs[currentJobIndex].itemName !== '') {
+			setJobs([
+				...jobs,
+				{
+					jobName: '',
+					itemName: '',
+					cost: 0,
+					stages: [
+						{
+							totalCost: 0,
+							name: '',
+							typePayment: false, // Предоплата false - оплата true
 
-						dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
-						cost: 0,
-						prePay: true,
-						postPay: false,
-						payment: 0,
+							dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
+							cost: 0,
+							prePay: true,
+							postPay: false,
+							payment: 0,
 
-						// First payment
-						endPaymentPrice: 0,
-						endPaymentDate: new Date(Date.now()),
-						firstPaymentPayed: false,
+							// First payment
+							endPaymentPrice: 0,
+							endPaymentDate: new Date(Date.now()),
+							firstPaymentPayed: false,
 
-						// Start work
-						startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
-						isStartWork: false,
+							// Start work
+							startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+							isStartWork: false,
 
-						// end payment
-						firstPaymentDate: new Date(Date.now()),
-						fisrtPaymentPrice: 0,
-						endPaymentPayed: false,
+							// end payment
+							firstPaymentDate: new Date(Date.now()),
+							fisrtPaymentPrice: 0,
+							endPaymentPayed: false,
 
-						// end work
-						endWorkDate: new Date(Date.now()),
-						isEndWork: false,
+							// end work
+							endWorkDate: new Date(Date.now()),
+							isEndWork: false,
 
-						payed: false,
-						date: new Date(Date.now()),
-						workStarted: false,
-						paymentDate: new Date(Date.now()),
-					},
-				],
-			},
-		])
+							payed: false,
+							date: new Date(Date.now()),
+							workStarted: false,
+							paymentDate: new Date(Date.now()),
+						},
+					],
+				},
+			])
+		}
 	}
 
 	const changeJob = (index: number, name: string, value: any) => {
@@ -178,52 +180,54 @@ const AddClient = ({}: IAddClient) => {
 	}
 
 	const addStage = (jobIndex: number) => {
-		setJobs(
-			jobs.map((job, i) =>
-				i === jobIndex
-					? {
-							...job,
-							stages: [
-								...job.stages,
-								{
-									totalCost: 0,
-									name: '',
-									typePayment: false, // Предоплата false - оплата true
+		if (jobs[jobIndex].stages[currentStageIndex].name !== '') {
+			setJobs(
+				jobs.map((job, i) =>
+					i === jobIndex
+						? {
+								...job,
+								stages: [
+									...job.stages,
+									{
+										totalCost: 0,
+										name: '',
+										typePayment: false, // Предоплата false - оплата true
 
-									dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
-									cost: 0,
-									prePay: true,
-									postPay: false,
-									payment: 0,
-									payed: false,
-									date: new Date(Date.now()),
-									workStarted: false,
+										dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
+										cost: 0,
+										prePay: true,
+										postPay: false,
+										payment: 0,
+										payed: false,
+										date: new Date(Date.now()),
+										workStarted: false,
 
-									// First payment
-									endPaymentPrice: 0,
-									endPaymentDate: new Date(Date.now()),
-									firstPaymentPayed: false,
+										// First payment
+										endPaymentPrice: 0,
+										endPaymentDate: new Date(Date.now()),
+										firstPaymentPayed: false,
 
-									// Start work
-									startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
-									isStartWork: false,
+										// Start work
+										startWorkDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+										isStartWork: false,
 
-									// end payment
-									firstPaymentDate: new Date(Date.now()),
-									fisrtPaymentPrice: 0,
-									endPaymentPayed: false,
+										// end payment
+										firstPaymentDate: new Date(Date.now()),
+										fisrtPaymentPrice: 0,
+										endPaymentPayed: false,
 
-									// end work
-									endWorkDate: new Date(Date.now()),
-									isEndWork: false,
+										// end work
+										endWorkDate: new Date(Date.now()),
+										isEndWork: false,
 
-									paymentDate: new Date(Date.now()),
-								},
-							],
-					  }
-					: job,
-			),
-		)
+										paymentDate: new Date(Date.now()),
+									},
+								],
+						  }
+						: job,
+				),
+			)
+		}
 	}
 
 	const sendInfo = () => {
@@ -626,12 +630,13 @@ const AddClient = ({}: IAddClient) => {
 										{job.stages.map((item, indexStage) => (
 											<>
 												<div
+													key={indexStage}
 													className={
 														currentStageIndex === indexStage
 															? s.ItemActive_
 															: s.ItemMain_
 													}>
-													<div>
+													<div className={s.StudentCard}>
 														<p>Название:</p>
 														<input
 															type="text"

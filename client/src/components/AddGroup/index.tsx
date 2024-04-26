@@ -29,8 +29,8 @@ import uploadFile from '../../assets/UploadFile.svg'
 import NowLevel from '../NowLevel/index'
 import InputPhoneNumber from '../InputPhoneNumber/index'
 import Input from '../Input'
-import DeleteIcon from '@mui/icons-material/Delete'
 
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import {
 	ELeftMenuPage,
 	IHistoryLessons,
@@ -707,26 +707,28 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const handleAddItem = () => {
-		setItems([
-			...items,
-			{
-				itemName: '',
-				tryLessonCheck: false,
-				tryLessonCost: '',
-				todayProgramStudent: '',
-				targetLesson: '',
-				programLesson: '',
-				typeLesson: '1',
-				placeLesson: '',
-				timeLesson: '',
-				startLesson: new Date(Date.now()),
-				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
-				nowLevel: 0,
-				valueMuiSelectArchive: 1,
-				lessonDuration: null,
-				timeLinesArray: getVoidWeek() as ITimeLine[],
-			},
-		])
+		if (items[currentItemIndex].itemName !== '') {
+			setItems([
+				...items,
+				{
+					itemName: '',
+					tryLessonCheck: false,
+					tryLessonCost: '',
+					todayProgramStudent: '',
+					targetLesson: '',
+					programLesson: '',
+					typeLesson: '1',
+					placeLesson: '',
+					timeLesson: '',
+					startLesson: new Date(Date.now()),
+					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
+					nowLevel: 0,
+					valueMuiSelectArchive: 1,
+					lessonDuration: null,
+					timeLinesArray: getVoidWeek() as ITimeLine[],
+				},
+			])
+		}
 	}
 	const closeTimePicker = (index: number, id: number) => {
 		//change
@@ -1354,7 +1356,7 @@ const AddGroup = ({className}: IAddGroup) => {
 																	)
 																}
 																className={s.ScheduleBtn_Delete}>
-																<DeleteIcon />
+																<DeleteOutlineIcon />
 															</button>
 															<button
 																onClick={() =>
@@ -1916,77 +1918,90 @@ const AddGroup = ({className}: IAddGroup) => {
 											component="div"
 											disablePadding>
 											<div className={s.ListObjectWrapper}>
-												{studentsHistoryLessons[currentStudentIndex]
-													.sort(compareDates)
-													.map((lesson, lessonIndex) => (
-														<div className={s.ListObject}>
-															<p
-																style={{
-																	fontWeight: '500',
-																	fontSize: '14px',
-																	marginRight: '5px',
-																	display: 'flex',
-																	flexDirection: 'row',
-																	alignItems: 'center',
-																}}>
-																<div
+												{studentsHistoryLessons[currentStudentIndex].length !==
+												0 ? (
+													studentsHistoryLessons[currentStudentIndex]
+														.sort(compareDates)
+														.map((lesson, lessonIndex) => (
+															<div className={s.ListObject}>
+																<p
 																	style={{
-																		backgroundColor: hashToColor(
-																			hashString(lesson.itemName),
-																		),
-																		width: '10px',
-																		height: '35px',
-																		borderTopLeftRadius: '8px',
-																		borderBottomLeftRadius: '8px',
+																		fontWeight: '500',
+																		fontSize: '14px',
 																		marginRight: '5px',
-																	}}></div>
-																{formatDate(lesson.date)}
-															</p>
-															<p
-																style={{
-																	fontWeight: '300',
-																	fontSize: '14px',
-																	width: '95px',
-																	minWidth: '95px',
-																	maxWidth: '95px',
-																	whiteSpace: 'nowrap',
-																	overflow: 'hidden',
-																	textOverflow: 'ellipsis',
-																}}>
-																{lesson.itemName}
-															</p>
-															<CheckBox
-																checked={lesson.isDone}
-																size="16px"
-																onChange={() =>
-																	setHistoryLessonIsDone(
-																		index,
-																		lessonIndex,
-																		!lesson.isDone,
-																	)
-																}
-															/>
-															<p style={{marginLeft: '55px', fontSize: '14px'}}>
-																{lesson.price}₽
-															</p>
-															<CheckBox
-																checked={lesson.isPaid}
-																size="16px"
-																onChange={() =>
-																	setHistoryLessonIsPaid(
-																		index,
-																		lessonIndex,
-																		!lesson.isPaid,
-																	)
-																}
-															/>
-															<button className={s.ButtonEdit}>
-																<CreateIcon
-																	style={{width: '18px', height: '18px'}}
+																		display: 'flex',
+																		flexDirection: 'row',
+																		alignItems: 'center',
+																	}}>
+																	<div
+																		style={{
+																			backgroundColor: hashToColor(
+																				hashString(lesson.itemName),
+																			),
+																			width: '10px',
+																			height: '35px',
+																			borderTopLeftRadius: '8px',
+																			borderBottomLeftRadius: '8px',
+																			marginRight: '5px',
+																		}}></div>
+																	{formatDate(lesson.date)}
+																</p>
+																<p
+																	style={{
+																		fontWeight: '300',
+																		fontSize: '14px',
+																		width: '95px',
+																		minWidth: '95px',
+																		maxWidth: '95px',
+																		whiteSpace: 'nowrap',
+																		overflow: 'hidden',
+																		textOverflow: 'ellipsis',
+																	}}>
+																	{lesson.itemName}
+																</p>
+																<CheckBox
+																	checked={lesson.isDone}
+																	size="16px"
+																	onChange={() =>
+																		setHistoryLessonIsDone(
+																			index,
+																			lessonIndex,
+																			!lesson.isDone,
+																		)
+																	}
 																/>
-															</button>
+																<p
+																	style={{
+																		marginLeft: '55px',
+																		fontSize: '14px',
+																	}}>
+																	{lesson.price}₽
+																</p>
+																<CheckBox
+																	checked={lesson.isPaid}
+																	size="16px"
+																	onChange={() =>
+																		setHistoryLessonIsPaid(
+																			index,
+																			lessonIndex,
+																			!lesson.isPaid,
+																		)
+																	}
+																/>
+																<button className={s.ButtonEdit}>
+																	<CreateIcon
+																		style={{width: '18px', height: '18px'}}
+																	/>
+																</button>
+															</div>
+														))
+												) : (
+													<>
+														<div className={s.ListNoInfo}>
+															<p>Информации нет</p>
 														</div>
-													))}
+													</>
+												)}
 											</div>
 										</mui.List>
 									</mui.Collapse>

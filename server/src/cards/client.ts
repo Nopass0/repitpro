@@ -355,7 +355,6 @@ export async function getClientsByDate(data: any) {
       clientId: true,
       workCount: true,
       workPrice: true,
-    
     },
   });
 

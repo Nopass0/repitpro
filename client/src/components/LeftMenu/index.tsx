@@ -224,7 +224,8 @@ const MainPage = () => {
 		// }
 		// sortData()
 	}, [sortedTypeData, filteredGroups, filteredStudents, filteredClients])
-
+	console.log(filteredStudents, 'filteredStudents-------', filteredGroups, 'filteredGroups-------', filteredClients, 'filteredClients-------');
+	
 	return (
 		<>
 			<button
@@ -450,6 +451,7 @@ const MainPage = () => {
 														<div className={s.ListItem}>
 															{student.phoneNumber ? (
 																<>
+																	<b>{student.contactFace && student.contactFace}</b>
 																	<p className={s.Phone}>
 																		{student.phoneNumber}
 																	</p>
@@ -575,6 +577,7 @@ const MainPage = () => {
 											<div className={s.ListItem}>
 												{item.phoneNumber ? (
 													<>
+														<b>{item.contactFace && item.contactFace}</b>
 														<p className={s.Phone}>{item.phoneNumber}</p>
 														<div className={s.Icons}>
 															<Link to={`tel:${item.phoneNumber}`}>

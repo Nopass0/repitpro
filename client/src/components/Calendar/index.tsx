@@ -162,6 +162,13 @@ export const Calendar = ({className, cells}: ICalendar) => {
 		console.log('getClientsByDate', data)
 		setClients(data)
 	})
+
+	useEffect(() => {
+		if (details) {
+			setPagePopup(PagePopup.None)
+			dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
+		}
+	}, [details])
 	return (
 		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />
@@ -536,126 +543,132 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{/* TODO */}
 			<div className={s.footer}>
 				<div className={s.info}>
-					<div className={s.block}>
-						<p className={s.Title}>Ученики</p>
-						<div className={s.ImgWrapper}>
-							<div className={s.infoImg}>
-								<img src={Home} alt={Home} />
-								<p>Занятие на дому</p>
+					<div className={s.info__init}>
+						<div className={s.block}>
+							<p className={s.Title}>Ученики</p>
+							<div className={s.ImgWrapper}>
+								<div className={s.infoImg}>
+									<img src={Home} alt={Home} />
+									<p>Занятие на дому</p>
+								</div>
+								<div className={s.infoImg}>
+									<img src={HomeStudent} alt={HomeStudent} />
+									<p>
+										Занятие <br /> у ученика
+									</p>
+								</div>
+								<div className={s.infoImg}>
+									<img src={Group} alt={Group} />
+									<p>Группа</p>
+								</div>
+								<div className={s.infoImg}>
+									<img src={Online} alt={Online} />
+									<p>Онлайн</p>
+								</div>
+								<div className={s.infoImg}>
+									<img src={GroupOnline} alt={GroupOnline} />
+									<p>Группа онлайн</p>
+								</div>
+								<div className={s.infoImgMobile}>
+									<img src={Client} alt={Client} />
+									<p>Заказчики</p>
+								</div>
+								<div className={s.devider}></div>
 							</div>
-							<div className={s.infoImg}>
-								<img src={HomeStudent} alt={HomeStudent} />
-								<p>
-									Занятие <br /> у ученика
-								</p>
-							</div>
-							<div className={s.infoImg}>
-								<img src={Group} alt={Group} />
-								<p>Группа</p>
-							</div>
-							<div className={s.infoImg}>
-								<img src={Online} alt={Online} />
-								<p>Онлайн</p>
-							</div>
-							<div className={s.infoImg}>
-								<img src={GroupOnline} alt={GroupOnline} />
-								<p>Группа онлайн</p>
-							</div>
-							<div className={s.infoImgMobile}>
-								<img src={Client} alt={Client} />
-								<p>Заказчики</p>
-							</div>
-							<div className={s.devider}></div>
 						</div>
-					</div>
-					<div className={s.ClientWrapper}>
-						<p className={s.Title}>Заказчики</p>
-						<div className={s.infoImg}>
-							<img src={Client} alt={Client} />
+						<div className={s.ClientWrapper}>
+							<p className={s.Title}>Заказчики</p>
+							<div className={s.infoImg}>
+								<img src={Client} alt={Client} />
+							</div>
 						</div>
 					</div>
 				</div>
 				<div className={s.IncomeNPrognosisWrapper}>
 					<div className={s.IncomeWrapper}>
-						<p className={s.Title}>Доход с начала месяца</p>
-						<div className={s.Lessons}>
-							<p>
-								Занятий:{' '}
-								<b>
-									{sumParamsOfWeeks.reduce((a, b) => a + b.lessonsCount, 0)}
+						<div className={s.IncomeInit}>
+							<p className={s.Title}>Доход с начала месяца</p>
+							<div className={s.Lessons}>
+								<p>
+									Занятий:{' '}
+									<b>
+										{sumParamsOfWeeks.reduce((a, b) => a + b.lessonsCount, 0)}
+									</b>
+								</p>
+								<b style={{display: hiddenNum ? 'none' : ''}}>
+									{toMoneyFormat(
+										sumParamsOfWeeks.reduce((a, b) => a + b.lessonsPrice, 0),
+									)}{' '}
+									₽
 								</b>
-							</p>
-							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(
-									sumParamsOfWeeks.reduce((a, b) => a + b.lessonsPrice, 0),
-								)}{' '}
-								₽
-							</b>
-						</div>
-						<div className={s.Works}>
-							<p>
-								Работ:{' '}
-								<b>{sumParamsOfWeeks.reduce((a, b) => a + b.workCount, 0)}</b>
-							</p>
-							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(
-									sumParamsOfWeeks.reduce((a, b) => a + b.workPrice, 0),
-								)}{' '}
-								₽
-							</b>
-						</div>
-						<div className={s.Income}>
-							<p>Доход</p>
-							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(
-									sumParamsOfWeeks.reduce(
-										(a, b) => a + b.lessonsPrice + b.workPrice,
-										0,
-									),
-								)}{' '}
-								₽
-							</b>
+							</div>
+							<div className={s.Works}>
+								<p>
+									Работ:{' '}
+									<b>{sumParamsOfWeeks.reduce((a, b) => a + b.workCount, 0)}</b>
+								</p>
+								<b style={{display: hiddenNum ? 'none' : ''}}>
+									{toMoneyFormat(
+										sumParamsOfWeeks.reduce((a, b) => a + b.workPrice, 0),
+									)}{' '}
+									₽
+								</b>
+							</div>
+							<div className={s.Income}>
+								<p>Доход</p>
+								<b style={{display: hiddenNum ? 'none' : ''}}>
+									{toMoneyFormat(
+										sumParamsOfWeeks.reduce(
+											(a, b) => a + b.lessonsPrice + b.workPrice,
+											0,
+										),
+									)}{' '}
+									₽
+								</b>
+							</div>
 						</div>
 					</div>
 					<div className={s.PrognosisWrapper}>
-						<p className={s.Title}>Прогноз на {months[currentMonth]}</p>
-						<div className={s.Lessons}>
-							<p>
-								Занятий:{' '}
-								<b>
-									{sumParamsOfWeeks.reduce((a, b) => a + b.lessonsCount, 0)}
+						<div className={s.PrognosisInit}>
+							<p className={s.Title}>Прогноз на {months[currentMonth]}</p>
+							<div className={s.Lessons}>
+								<p>
+									Занятий:{' '}
+									<b>
+										{sumParamsOfWeeks.reduce((a, b) => a + b.lessonsCount, 0)}
+									</b>
+								</p>
+								<b style={{display: hiddenNum ? 'none' : ''}}>
+									{toMoneyFormat(
+										sumParamsOfWeeks.reduce((a, b) => a + b.lessonsPrice, 0),
+									)}{' '}
+									₽
 								</b>
-							</p>
-							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(
-									sumParamsOfWeeks.reduce((a, b) => a + b.lessonsPrice, 0),
-								)}{' '}
-								₽
-							</b>
-						</div>
-						<div className={s.Works}>
-							<p>
-								Работ:{' '}
-								<b>{sumParamsOfWeeks.reduce((a, b) => a + b.workCount, 0)}</b>
-							</p>
-							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(
-									sumParamsOfWeeks.reduce((a, b) => a + b.workPrice, 0),
-								)}{' '}
-								₽
-							</b>
-						</div>
-						<div className={s.Income}>
-							<p>Доход</p>
-							<b style={{display: hiddenNum ? 'none' : ''}}>
-								{toMoneyFormat(
-									sumParamsOfWeeks.reduce(
-										(a, b) => a + b.lessonsPrice + b.workPrice,
-										0,
-									),
-								)}{' '}
-								₽
-							</b>
+							</div>
+							<div className={s.Works}>
+								<p>
+									Работ:{' '}
+									<b>{sumParamsOfWeeks.reduce((a, b) => a + b.workCount, 0)}</b>
+								</p>
+								<b style={{display: hiddenNum ? 'none' : ''}}>
+									{toMoneyFormat(
+										sumParamsOfWeeks.reduce((a, b) => a + b.workPrice, 0),
+									)}{' '}
+									₽
+								</b>
+							</div>
+							<div className={s.Income}>
+								<p>Доход</p>
+								<b style={{display: hiddenNum ? 'none' : ''}}>
+									{toMoneyFormat(
+										sumParamsOfWeeks.reduce(
+											(a, b) => a + b.lessonsPrice + b.workPrice,
+											0,
+										),
+									)}{' '}
+									₽
+								</b>
+							</div>
 						</div>
 					</div>
 				</div>

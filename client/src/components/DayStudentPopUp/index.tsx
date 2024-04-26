@@ -59,6 +59,7 @@ const DayStudentPopUp = ({
 		(state: any) => state.currentScheduleDay,
 	)
 
+	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
 
@@ -296,7 +297,7 @@ const DayStudentPopUp = ({
 						<h1>Выполнение домашней работы</h1>
 						{!isGroup ? (
 							<NowLevel
-							className={s.NowLevel}
+								className={s.NowLevel}
 								value={homeStudentsPoints}
 								onChange={(e) => setHomeStudentsPoints(e)}
 							/>
@@ -423,12 +424,12 @@ const DayStudentPopUp = ({
 						{!isGroup ? (
 							<>
 								<NowLevel
-											className={s.NowLevel}
+									className={s.NowLevel}
 									value={classroomStudentsPoints}
 									onChange={(e) => setClassroomStudentsPoints(e)}
 								/>
 								<div className={s.PrePay}>
-									<p>0 ₽</p>
+									<p>{!hiddenNum && <>0</>} ₽</p>
 									<CheckBox size="16px" />
 								</div>
 							</>
@@ -488,9 +489,7 @@ const DayStudentPopUp = ({
 									</div>
 									<Line width="100%" className={s.Line} />
 								</div>
-								<div className={s.Total}>
-									<p>Итог: 5555</p>
-								</div>
+								<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
 							</>
 						)}
 					</div>

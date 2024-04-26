@@ -55,19 +55,23 @@ const TimePicker: React.FC<TimePickerProps> = ({
 						{/* SVG for up arrow */}
 						<Arrow direction={ArrowType.up} />
 					</button>
-					<div className={s.PrevNextTime}>
+					<button
+						onClick={() => handleHourChange(-1)}
+						className={s.PrevNextTime}>
 						{selectedHours - 1 < 0
 							? 23
 							: (selectedHours - 1).toString().padStart(2, '0')}
-					</div>
+					</button>
 					<div className={s.timeDisplay}>
 						{selectedHours.toString().padStart(2, '0')}
 					</div>
-					<div className={s.PrevNextTime}>
+					<button
+						onClick={() => handleHourChange(1)}
+						className={s.PrevNextTime}>
 						{selectedHours + 1 > 23
 							? '00'
 							: (selectedHours + 1).toString().padStart(2, '0')}
-					</div>
+					</button>
 
 					<button className={s.arrowButton} onClick={() => handleHourChange(1)}>
 						{/* SVG for down arrow */}
@@ -85,13 +89,17 @@ const TimePicker: React.FC<TimePickerProps> = ({
 						<Arrow direction={ArrowType.up} />
 					</button>
 
-					<div className={s.PrevNextTime}>
+					<button
+						onClick={() => handleMinuteChange(-5)}
+						className={s.PrevNextTime}>
 						{selectedMinutes === 0
 							? 55
 							: selectedMinutes === 5
 							? '00'
+							: selectedMinutes === 10
+							? '05'
 							: selectedMinutes - 5}
-					</div>
+					</button>
 					<div className={s.timeDisplay}>
 						{selectedMinutes === 0
 							? '00'
@@ -99,18 +107,16 @@ const TimePicker: React.FC<TimePickerProps> = ({
 							? '05'
 							: selectedMinutes}
 					</div>
-					<div className={s.PrevNextTime}>
+					<button
+						onClick={() => handleMinuteChange(5)}
+						className={s.PrevNextTime}>
 						{selectedMinutes === 0
 							? '05'
 							: selectedMinutes === 55
 							? '00'
 							: selectedMinutes + 5}
-					</div>
-					{/* <div className={s.timeOptions}>
-						{renderTimeOption(selectedMinutes - 5)}
-						{renderTimeOption(selectedMinutes)}
-						{renderTimeOption(selectedMinutes + 5)}
-					</div> */}
+					</button>
+
 					<button
 						className={s.arrowButton}
 						onClick={() => handleMinuteChange(5)}>

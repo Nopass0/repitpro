@@ -228,6 +228,7 @@ export async function getGroupList(token) {
             nameStudent: true,
             phoneNumber: true,
             email: true,
+            contactFace: true,
           },
         },
       },

@@ -5,13 +5,13 @@
 	background: #ffffff;
 
 	.wrapperHeader {
-		max-width: 1920px;
-		margin: 0px auto 0px auto;
+		max-width: 1850px;
+		margin: 0px auto ;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0 28px;
+		// padding: 0 28px 0 0;
 	}
 
 	.HeaderLeft {
@@ -27,6 +27,7 @@
 	.LogoWrapper {
 		display: flex;
 		align-items: center;
+		justify-content: flex-start;
 		.logo {
 			width: 190px;
 			height: 60px;
@@ -246,6 +247,9 @@
 		position: fixed;
 		width: 100%;
 		z-index: 100;
+	}
+	.wrapperHeader {
+		padding: 0 10px !important;
 	}
 	.logo {
 		display: none;

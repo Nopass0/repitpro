@@ -98,6 +98,7 @@ const DayCalendarLineClient = ({
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
 
+	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const handleOpenCard = () => {
 		socket.emit('getGroupByStudentId', {
 			token: token,
@@ -199,7 +200,7 @@ const DayCalendarLineClient = ({
 							/>
 						</div>
 						<div className={s.Price}>
-							<p>{price} ₽</p>
+							<p>{!hiddenNum && price} ₽</p>
 							<CheckBox
 								checked={priceCheckState}
 								onChange={() => {

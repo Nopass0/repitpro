@@ -212,6 +212,7 @@ export async function getStudentList(token) {
         phoneNumber: true,
         isArchived: true,
         email: true,
+        contactFace: true,
       },
     });
 
