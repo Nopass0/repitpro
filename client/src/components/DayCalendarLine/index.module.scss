@@ -17,6 +17,12 @@ input {
 
 	white-space: nowrap;
 	font-size: 16px;
+	
+	.InputCstm {
+		input {
+			font-size: 16px;
+		}
+	}
 
 	.Icon {
 		margin-right: 20px;
@@ -76,6 +82,9 @@ input {
 			.InputCstm {
 				width: inherit;
 				max-width: inherit;
+				input {
+					font-size: 12px;
+				}
 			}
 			.Time {
 				width: 70px;
@@ -127,11 +136,11 @@ input {
 	background-color: #e2e2e2;
 }
 
-// .PopUp__wrapper {
-// 	position: absolute;
-// 	z-index: 100;
-// }
-// .PopUp {
-// 	position: relative;
-// 	Left: 350px;
-// }
+.PopUp__wrapper {
+	position: absolute;
+	z-index: 100;
+}
+.PopUp {
+	position: relative;
+	Left: 350px;
+}

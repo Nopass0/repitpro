@@ -369,17 +369,8 @@ const DayCalendarPopUp = ({
 								<Line className={s.Line} width="700px" />
 							</>
 						))}
-					{/* <DayCalendarLineClient
-						id="1"
-						key={1}
-						name="Группа 1"
-						item="Математика"
-						price="100"
-						studentId="cluy6blsd0008itfbuk3tz2jw"
-						procent="20"
-					/> */}
+					
 
-					{/* <Line className={s.Line} width="700px" /> */}
 					{students &&
 						students.map((student: any) => (
 							<>
@@ -437,6 +428,12 @@ const DayCalendarPopUp = ({
 								/>
 							</>
 						))}
+						{Array.from({length: 8}).map((_,index:number) => (
+							<>
+							<div className={s.FakeBlock} key={index}></div>
+							<Line className={s.Line} width="700px" />
+							</>
+						)) }
 				</section>
 			</div>
 			<div>

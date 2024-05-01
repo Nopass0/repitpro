@@ -6,7 +6,7 @@
 
 	.wrapperHeader {
 		max-width: 1850px;
-		margin: 0px auto ;
+		margin: 0px auto;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -161,7 +161,6 @@
 	flex-direction: row;
 	align-items: center;
 	// float: right;
-
 }
 
 .greenBtn {
@@ -242,6 +241,15 @@
 	border-radius: 8px;
 }
 
+.muiMenuItemRoot {
+	&:hover {
+		background-color: #1976d214 !important;
+	}
+}
+
+.muiMenuItemSelected {
+	background-color: #fff !important;
+}
 @media screen and (max-width: 1024px) {
 	.header {
 		position: fixed;
@@ -296,7 +304,7 @@
 	.greenBtn {
 		display: none;
 	}
-	
+
 	.muiSelect__menu {
 		display: none !important;
 	}
@@ -314,7 +322,6 @@
 	.muiSelect__ButtonsStat {
 		width: 20px;
 		height: 35px;
-		
 	}
 
 	.Buttons {
@@ -373,4 +380,3 @@
 		margin: 0 !important;
 	}
 }
-

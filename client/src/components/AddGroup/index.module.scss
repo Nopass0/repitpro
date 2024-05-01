@@ -94,12 +94,13 @@
 			input[type='email'] {
 				font-size: 16px;
 			}
-			.StudentCarName__Left {
-				display: flex;
-				flex-direction: row;
-				align-items: center;
-			}
+			
 		}
+	}
+	.StudentCarName__Left {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
 	}
 	.wrapperMenu {
 		// margin: 20px 5px 20px 20px;
@@ -629,7 +630,7 @@
 }
 .CloseIcon {
 	position: relative;
-	left: 360px;
+	right: 580px;
 	top: 10px;
 	width: 26px;
 	height: 26px;
@@ -641,8 +642,8 @@
 }
 .ExitPopUp {
 	position: relative;
-	top: 20px;
-	left: 400px;
+	top: 30px;
+	right: 450px;
 }
 
 @media screen and (max-width: 1024px) {

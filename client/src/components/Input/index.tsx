@@ -11,6 +11,9 @@ interface IInput {
 	onClick?: (e: any) => void
 	num?: boolean
 	disabled?: boolean
+	width?: string
+	maxWidth?: string
+	minWidth?:string
 }
 
 const Input: React.FC<IInput> = ({
@@ -23,6 +26,9 @@ const Input: React.FC<IInput> = ({
 	onClick,
 	disabled,
 	num,
+	width = '100%',
+	maxWidth = '181px',
+	minWidth,
 }: IInput) => {
 	const onlyNumbers = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const regex = /[^0-9]/g
@@ -34,7 +40,7 @@ const Input: React.FC<IInput> = ({
 
 	return (
 		<input
-			style={style}
+			style={{...style, width: width, maxWidth: maxWidth, minWidth: '2ch'}}
 			className={`${s.input} ${className}`}
 			type={type ? type : 'text'}
 			value={value}

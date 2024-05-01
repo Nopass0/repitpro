@@ -34,6 +34,7 @@ import {useNavigate} from 'react-router-dom'
 import {ELeftMenuPage} from '../../types'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
+import IconsPhone from '../IconsPhone'
 interface IAddClient {}
 enum PagePopup {
 	Exit,
@@ -427,7 +428,7 @@ const AddClient = ({}: IAddClient) => {
 								value={phoneNumber}
 								onChange={(e: any) => setPhoneNumber(e.target.value)}
 							/>
-							<div className={s.PhoneIcons}></div>
+							<IconsPhone phoneNumber={phoneNumber} email={email} />
 						</div>
 						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
@@ -442,7 +443,8 @@ const AddClient = ({}: IAddClient) => {
 
 						<div className={s.StudentCard}>
 							<p>Расходы по ученику:</p>
-							<input
+							<Input
+								width={`${costStudent.length}ch`}
 								type="text"
 								value={costStudent}
 								onChange={(e) => setCostStudent(e.target.value)}
@@ -554,9 +556,10 @@ const AddClient = ({}: IAddClient) => {
 										<div className={s.StudentCard}>
 											<p>Общая стоимость работы:</p>
 											<Input
+												width={`${Number(job.stages[0].totalCost.length)}ch`}
 												num
 												type="text"
-												value={job.stages[0].totalCost}
+												value={job.stages[0].totalCost || ''}
 												onChange={(e) => {
 													changeStage(index, 0, 'totalCost', e.target.value)
 												}}
@@ -573,9 +576,10 @@ const AddClient = ({}: IAddClient) => {
 										<div className={s.StudentCard}>
 											<p>Общая стоимость работы:</p>
 											<Input
+												width={`${job.stages[0].totalCost.length}ch`}
 												num
 												type="text"
-												value={job.stages[0].totalCost}
+												value={job.stages[0].totalCost || ''}
 												onChange={(e) => {
 													changeStage(index, 0, 'totalCost', e.target.value)
 												}}
@@ -659,6 +663,7 @@ const AddClient = ({}: IAddClient) => {
 															num
 															type="text"
 															value={item.totalCost}
+															width={`${item.totalCost.length}ch`}
 															onChange={(e) => {
 																changeStage(
 																	index,

@@ -15,6 +15,7 @@ import DayCalendarPopUp from '../DayCalendarPopUp/index'
 import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
 import DayClientPopUp from '../DayClientPopUp/index'
+import { format } from 'date-fns'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -169,6 +170,26 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
 		}
 	}, [details])
+
+	useEffect(() => {
+		dispatch({
+			type: 'SET_CALENDAR_NOW_POPUP',
+			payload: {
+				day: String(format(new Date(), 'dd')),
+				month: String(
+					(currentPartOfMonth == 1
+						? currentMonth + 1
+						: currentPartOfMonth == 0
+						? currentMonth - 1
+						: currentPartOfMonth == 2
+						? currentMonth + 2
+						: currentMonth) - 1,
+				),
+				year: String(currentYear),
+			},
+		})
+		setPagePopup(PagePopup.DayCalendar)
+	}, [])
 	return (
 		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />

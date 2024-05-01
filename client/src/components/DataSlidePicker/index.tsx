@@ -26,6 +26,7 @@ const DataSlidePicker = ({
 		dateMode ? currentMonth : defaultValueId,
 	)
 	const dispath = useDispatch()
+	const [selectOpen, setSelectOpen] = React.useState<false>(false)
 
 	//for date mode
 	let months = [
@@ -81,8 +82,10 @@ const DataSlidePicker = ({
 				</span>
 			</button>
 			<mui.Select
+				listboxOpen={selectOpen}
 				className={s.muiSelect}
 				multiple={true}
+				onClick={() => setSelectOpen(true)}
 				renderValue={(option: mui.SelectOption<number> | null) => {
 					if (option == null || option.value === null) {
 						return (
@@ -106,7 +109,7 @@ const DataSlidePicker = ({
 					)
 				}}>
 				<mui.Option className={s.muiOption} value={1}>
-					<CalendarPopUp />
+					<CalendarPopUp onExit={()=> setSelectOpen(false)}/>
 				</mui.Option>
 			</mui.Select>
 

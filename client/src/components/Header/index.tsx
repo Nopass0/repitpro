@@ -81,6 +81,10 @@ const Header = ({}: IHeader) => {
 						// value={valueMuiSelectArchive}
 					>
 						<mui.MenuItem
+							classes={{
+								root: s.muiMenuItemRoot,
+								selected: s.muiMenuItemSelected,
+							}}
 							onClick={() => {
 								dispatch({
 									type: 'SET_LEFT_MENU_PAGE',
@@ -91,6 +95,10 @@ const Header = ({}: IHeader) => {
 							Ученика
 						</mui.MenuItem>
 						<mui.MenuItem
+							classes={{
+								root: s.muiMenuItemRoot,
+								selected: s.muiMenuItemSelected,
+							}}
 							onClick={() => {
 								dispatch({
 									type: 'SET_LEFT_MENU_PAGE',
@@ -100,7 +108,10 @@ const Header = ({}: IHeader) => {
 							value={2}>
 							Группу
 						</mui.MenuItem>
-						<mui.MenuItem
+						<mui.MenuItem classes={{
+								root: s.muiMenuItemRoot,
+								selected: s.muiMenuItemSelected,
+							}}
 							onClick={() => {
 								dispatch({
 									type: 'SET_LEFT_MENU_PAGE',

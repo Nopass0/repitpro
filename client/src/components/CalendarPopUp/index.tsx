@@ -2,12 +2,14 @@ import React, {useState} from 'react'
 import s from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import {useDispatch, useSelector} from 'react-redux'
+import CloseIcon from '@mui/icons-material/Close'
+interface CalendarPopUpProps {
+	onExit?: () => void
+}
 
-interface CalendarPopUpProps {}
-
-const CalendarPopUp: React.FC<
-	CalendarPopUpProps
-> = ({}: CalendarPopUpProps) => {
+const CalendarPopUp: React.FC<CalendarPopUpProps> = ({
+	onExit,
+}: CalendarPopUpProps) => {
 	const dispath = useDispatch()
 	const currentYear = useSelector((state: any) => state.currentYear)
 	const currentMonth = useSelector((state: any) => state.currentMonth)
@@ -37,13 +39,17 @@ const CalendarPopUp: React.FC<
 	return (
 		<div className={s.wrapper}>
 			<div className={s.Header}>
-				<button className={s.ArrowBtn} onClick={handlePrevYear}>
-					<Arrow direction={ArrowType.left} />
-				</button>
-				<h1 className={s.Year}>{currentYear}</h1>
-				<button className={s.ArrowBtn} onClick={handleNextYear}>
-					<Arrow direction={ArrowType.right} />
-				</button>
+				<div></div>
+				<div className={s.Header__inside}>
+					<button className={s.ArrowBtn} onClick={handlePrevYear}>
+						<Arrow direction={ArrowType.left} />
+					</button>
+					<h1 className={s.Year}>{currentYear}</h1>
+					<button className={s.ArrowBtn} onClick={handleNextYear}>
+						<Arrow direction={ArrowType.right} />
+					</button>
+				</div>
+				<CloseIcon style={{cursor: 'pointer', color:'red', position: 'relative', bottom: '15px', left: '15px'}} onClick={onExit} />
 			</div>
 			<div className={s.Main}>
 				<table className={s.Table}>

@@ -37,10 +37,11 @@ import {useDispatch, useSelector} from 'react-redux'
 
 import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
-import {useNavigate} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import {addDays, differenceInDays, differenceInCalendarDays} from 'date-fns'
 import FileNLinks from '../FileNLinks/index'
 import RecordNListen from '../RecordNListen/index'
+import IconsPhone from '../IconsPhone/index'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -175,6 +176,8 @@ const AddStudent = ({}: IAddStudent) => {
 		window.location.reload()
 	}
 
+	const [textAreaHeight, setTextAreaHeight] = useState<number>(19)
+
 	// Block Student
 	const [nameStudent, setNameStudent] = useState<string>('')
 	const [contactFace, setContactFace] = useState<string>('')
@@ -185,8 +188,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [commentStudent, setCommentStudent] = useState<string>('')
 	const [prePayCost, setPrePayCost] = useState<string>('')
 	const [prePayDate, setPrePayDate] = useState<any>()
-	// const [selectedDate, setSelectedDate] = useState(null)
-	// const [storyLesson, setStoryLesson] = useState<string>('')
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
 
 	const [historyLesson, setHistoryLesson] = useState<any>([])
@@ -242,11 +243,6 @@ const AddStudent = ({}: IAddStudent) => {
 			timeLinesArray: getVoidWeek() as ITimeLine[],
 		},
 	])
-	// console.log(
-	// 	items.some((item) => {
-	// 		console.log(item, item.itemName)
-	// 	}),
-	// )
 
 	useEffect(() => {
 		if (data) {
@@ -267,7 +263,10 @@ const AddStudent = ({}: IAddStudent) => {
 
 	//add item function
 	const addItem = () => {
-		if (items[currentItemIndex].itemName !== '') {
+		if (
+			items[currentItemIndex].itemName !== '' &&
+			currentItemIndex === items.length - 1
+		) {
 			setItems([
 				...items,
 				{
@@ -289,6 +288,7 @@ const AddStudent = ({}: IAddStudent) => {
 					timeLinesArray: getVoidWeek() as ITimeLine[],
 				},
 			])
+			setCurrentItemIndex(currentItemIndex + 1)
 		}
 	}
 
@@ -440,6 +440,8 @@ const AddStudent = ({}: IAddStudent) => {
 					: item,
 			),
 		)
+		console.log(items, 'itemsitemsitems')
+
 		setShowEndTimePicker(-1)
 	}
 
@@ -879,7 +881,7 @@ const AddStudent = ({}: IAddStudent) => {
 								onChange={(e: any) => setPhoneNumber(e.target.value)}
 								placeholder="+7 (___) ___-__"
 							/>
-							<div className={s.PhoneIcons}></div>
+							<IconsPhone phoneNumber={phoneNumber} email={email} />
 						</div>
 						<Line width="100%" className={s.Line} />
 						<div className={s.StudentCard}>
@@ -893,19 +895,33 @@ const AddStudent = ({}: IAddStudent) => {
 						</div>
 
 						<Line width="100%" className={s.Line} />
-						<div className={s.StudentCard}>
+						<div
+							style={{
+								height: `${textAreaHeight}px`,
+							}}
+							className={s.StudentCard}>
 							<p>Источник:</p>
-							<input
-								type="text"
+							<textarea
+								style={{
+									resize: 'none',
+									height: `${textAreaHeight}px`,
+								}}
 								value={linkStudent}
 								disabled={isEditMode}
 								onChange={(e) => setLinkStudent(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter' && !e.shiftKey) {
+										e.preventDefault()
+										setTextAreaHeight(textAreaHeight + 20)
+									}
+								}}
 							/>
 						</div>
 						<Line width="100%" className={s.Line} />
-						<div className={s.StudentCard}>
+						<div className={`${s.StudentCard} `}>
 							<p>Расходы по ученику:</p>
 							<Input
+								width={`${costStudent.length}ch`}
 								num
 								type="text"
 								value={costStudent}
@@ -932,6 +948,7 @@ const AddStudent = ({}: IAddStudent) => {
 										layout: StyledPickersLayout,
 									}}
 									sx={{
+										maxWidth: '140px',
 										input: {
 											paddingTop: '0px',
 											paddingBottom: '0px',
@@ -1049,19 +1066,6 @@ const AddStudent = ({}: IAddStudent) => {
 							</mui.List>
 						</mui.Collapse>
 
-						<Line width="100%" className={s.Line} />
-						<div className={s.StudentCard}>
-							<p>Стоимость одного занятия:</p>
-							<Input
-								num
-								type="text"
-								value={costOneLesson}
-								disabled={isEditMode}
-								onChange={(e) => setCostOneLesson(e.target.value)}
-								style={{borderBottom: '1px solid #e2e2e9'}}
-							/>
-							<p>₽</p>
-						</div>
 						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
@@ -1344,15 +1348,27 @@ const AddStudent = ({}: IAddStudent) => {
 									</div>
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
+										<p>Стоимость одного занятия:</p>
+										<Input
+											width={`${costOneLesson.length}ch`}
+											num
+											type="text"
+											value={costOneLesson}
+											disabled={isEditMode}
+											onChange={(e) => setCostOneLesson(e.target.value)}
+											style={{borderBottom: '1px solid #e2e2e9'}}
+										/>
+										<p>₽</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.StudentCard}>
 										<p>Продолжительность занятия:</p>
 										<Input
 											num
 											disabled={isEditMode}
 											type="text"
-											value={item.lessonDuration}
-											onChange={(e: any) =>
-												handleLessonDurationChange(e, index)
-											}
+											value={item.lessonDuration || ''}
+											onChange={(e: any) => handleLessonDurationChange(e)}
 											style={{borderBottom: '1px solid #e2e2e9'}}
 										/>
 										<p>мин</p>
@@ -1470,17 +1486,18 @@ const AddStudent = ({}: IAddStudent) => {
 																				'0',
 																			)}:${timeline.startTime.minute
 																			.toString()
-																			.padStart(
-																				2,
-																				'0',
-																			)} - ${timeline.endTime.hour
-																			.toString()
-																			.padStart(
-																				2,
-																				'0',
-																			)}:${timeline.endTime.minute
-																			.toString()
-																			.padStart(2, '0')}`}
+																			.padStart(2, '0')} - ${
+																			timeline.endTime.hour || timeline.endTime.minute !== 0
+																				? `${timeline.endTime.hour
+																						.toString()
+																						.padStart(
+																							2,
+																							'0',
+																						)}:${timeline.endTime.minute
+																						.toString()
+																						.padStart(2, '0')}`
+																				: ''
+																		}`}
 																	</p>
 																)}
 															</div>
@@ -1592,7 +1609,8 @@ const AddStudent = ({}: IAddStudent) => {
 								<Line width="324px" className={s.Line} />
 								<div className={s.MathObject}>
 									<p>
-										Не оплачено: {historyLesson.filter((i) => !i.isPaid && i.isDone).length}
+										Не оплачено:{' '}
+										{historyLesson.filter((i) => !i.isPaid && i.isDone).length}
 									</p>
 									<p style={{display: 'flex', flexDirection: 'row'}}>
 										<p style={{marginRight: '5px'}}>Долг:</p>

@@ -32,6 +32,12 @@ interface IDayStudentPopUp {
 	isGroup?: boolean
 	groupId?: string
 }
+
+enum EPagePopUp {
+	PrePay,
+	None,
+}
+
 const DayStudentPopUp = ({
 	icon,
 	name,
@@ -62,6 +68,8 @@ const DayStudentPopUp = ({
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
+
+	const [pagePopUp, setPagePopUp] = useState<EPagePopUp>(EPagePopUp.None)
 
 	const [student, setStudent] = useState<any>({})
 	const [isOpened, setIsOpened] = useState(false)

@@ -21,6 +21,12 @@
 
 	margin-bottom: 20px;
 
+	&__inside {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
 	.Year {
 		font-size: 20px;
 		font-weight: 500;

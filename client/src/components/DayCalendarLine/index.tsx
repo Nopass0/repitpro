@@ -26,6 +26,7 @@ import ExitPopUp from '../ExitPopUp/index'
 
 enum PagePopup {
 	Exit,
+	PrePay,
 	None,
 }
 
@@ -422,8 +423,9 @@ const DayCalendarLine = ({
 					<CheckBox
 						checked={editPrevpay}
 						onChange={() => {
-							setEditPrevpay(!editPrevpay)
-							handleUpdate()
+							if (editPrice) {
+								setPagePopup(PagePopup.PrePay)
+							}
 						}}
 						className={s.Checkbox}
 						size={isMobile ? '12px' : '20px'}
@@ -450,6 +452,22 @@ const DayCalendarLine = ({
 							title="Вы действительно хотите удалить?"
 							yes={() => {
 								setIsDelete(true)
+								handleUpdate()
+								setPagePopup(PagePopup.None)
+							}}
+							no={() => setPagePopup(PagePopup.None)}
+						/>
+					</div>
+				</>
+			)}
+			{pagePopup === PagePopup.PrePay && (
+				<>
+					<div className={s.PopUp__wrapper}>
+						<ExitPopUp
+							className={s.PopUp}
+							title="Подтвердите действие"
+							yes={() => {
+								setEditPrevpay(!editPrevpay)
 								handleUpdate()
 								setPagePopup(PagePopup.None)
 							}}

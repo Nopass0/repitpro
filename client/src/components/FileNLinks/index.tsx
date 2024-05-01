@@ -13,7 +13,7 @@ interface IFileNLinks {
 }
 
 const FileNLinks: React.FC<IFileNLinks> = ({className}: IFileNLinks) => {
-	const [open, setOpen] = useState(true)
+	const [open, setOpen] = useState<boolean>(false)
 	const [files, setFiles] = useState<any>([])
 	const handleClick = () => {
 		setOpen(!open)

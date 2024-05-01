@@ -5,5 +5,9 @@
 
 .MuiSelect-select:focus,
 .MuiSelect-select:active {
-    background: none !important;
+	background: none !important;
 }
+
+/* .MuiPaper-root {
+	width: 310px;
+} */

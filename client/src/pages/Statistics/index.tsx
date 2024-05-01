@@ -133,7 +133,7 @@ const optionsBar = {
 	//width and height
 	aspectRatio: 2,
 }
-const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July']
+const labels = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль']
 
 let data = {
 	labels: labels,
@@ -616,7 +616,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'name'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -629,7 +629,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'lessons'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -642,7 +642,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'avg_cost'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -655,7 +655,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'cancel'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -668,7 +668,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'income'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -681,7 +681,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'consumption'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -694,7 +694,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'duty'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -707,7 +707,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'total'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -746,6 +746,36 @@ const Statistics = ({}: IStatistics) => {
 											</td>
 										</tr>
 									))}
+									{Array.from({length: Math.abs(10 - sortedData.length)}).map(
+										(_, index: number) => (
+											<tr key={index} className={s.Tr}>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+											</tr>
+										),
+									)}
 								</tbody>
 							</table>
 						</div>
@@ -932,7 +962,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'name'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -945,7 +975,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'lessons'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -958,7 +988,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'avg_cost'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -971,7 +1001,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'cancel'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -984,7 +1014,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'income'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -997,7 +1027,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'consumption'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -1010,7 +1040,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'duty'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -1023,7 +1053,7 @@ const Statistics = ({}: IStatistics) => {
 											style={{
 												borderBottom:
 													sortColumn === 'total'
-														? `2px solid ${
+														? `10px solid  ${
 																sortDirection === 'asc' ? 'green' : 'red'
 														  }`
 														: 'none',
@@ -1062,6 +1092,36 @@ const Statistics = ({}: IStatistics) => {
 											</td>
 										</tr>
 									))}
+									{Array.from({length: Math.abs(10 - sortedData2.length)}).map(
+										(_, index: number) => (
+											<tr key={index} className={s.Tr}>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+												<td className={s.Td}>
+													<p></p>
+												</td>
+											</tr>
+										),
+									)}
 								</tbody>
 							</table>
 						</div>
