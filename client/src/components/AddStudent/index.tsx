@@ -457,15 +457,17 @@ const AddStudent = ({}: IAddStudent) => {
 				index === itemIndex
 					? {
 							...item,
-							timeLinesArray: item.timeLinesArray.map((timeline) =>
-								timeline.id === id
-									? {
-											...timeline,
-											startTime: {hour, minute},
-											editingEnd: item.lessonDuration! > 0 ? false : true,
-											editingStart: false,
-									  }
-									: timeline,
+							timeLinesArray: item.timeLinesArray.map(
+								(timeline) =>
+									timeline.id === id
+										? {
+												...timeline,
+												startTime: {hour, minute},
+												editingEnd: item.lessonDuration! > 0 ? false : true,
+												editingStart: false,
+												active: false, // Закрываем окно выбора начала занятий
+										  }
+										: {...timeline, active: false}, // Закрываем окно выбора начала занятий для других строк
 							),
 					  }
 					: item,
@@ -503,8 +505,32 @@ const AddStudent = ({}: IAddStudent) => {
 		'historyLessonhistoryLessonhistoryLessonhistoryLessonhistoryLessonhistoryLessonhistoryLesson',
 	)
 
+	// const closeTimePicker = (index: number, id: number) => {
+	// 	//change
+	// 	setItems((prevItems) =>
+	// 		prevItems.map((item, itemIndex) =>
+	// 			itemIndex === index
+	// 				? {
+	// 						...item,
+	// 						timeLinesArray: item.timeLinesArray.map((timeline) =>
+	// 							timeline.id === id
+	// 								? {...timeline, editingEnd: false, active: false}
+	// 								: timeline,
+	// 						),
+	// 				  }
+	// 				: item,
+	// 		),
+	// 	)
+	// 	console.log('close', index, id)
+	// 	setShowEndTimePicker(-1)
+	// }
+
 	const closeTimePicker = (index: number, id: number) => {
-		//change
+		//get timeline
+		const timelineToUpdate = items[index].timeLinesArray.find(
+			(timeline) => timeline.id === id,
+		)
+
 		setItems((prevItems) =>
 			prevItems.map((item, itemIndex) =>
 				itemIndex === index
@@ -512,13 +538,38 @@ const AddStudent = ({}: IAddStudent) => {
 							...item,
 							timeLinesArray: item.timeLinesArray.map((timeline) =>
 								timeline.id === id
-									? {...timeline, editingEnd: false, active: false}
+									? {
+											...timeline,
+											editingEnd: false,
+											active: false,
+											startTime: {
+												hour:
+													timelineToUpdate?.startTime.hour &&
+													!timelineToUpdate?.endTime.hour
+														? 0
+														: timelineToUpdate?.startTime.hour!,
+												minute:
+													timelineToUpdate?.startTime.minute &&
+													!timelineToUpdate?.endTime.minute
+														? 0
+														: timelineToUpdate?.startTime.minute!,
+											},
+											endTime: {
+												hour: timelineToUpdate?.endTime.hour
+													? timelineToUpdate?.endTime.hour
+													: 0,
+												minute: timelineToUpdate?.endTime.minute
+													? timelineToUpdate?.endTime.minute
+													: 0,
+											}, // Reset endTime when closing without saving
+									  }
 									: timeline,
 							),
 					  }
 					: item,
 			),
 		)
+
 		console.log('close', index, id)
 		setShowEndTimePicker(-1)
 	}
@@ -631,6 +682,7 @@ const AddStudent = ({}: IAddStudent) => {
 						: item,
 				),
 			)
+			console.log('close', index, id)
 			setShowEndTimePicker(-1)
 		} else {
 			console.log('End time must be greater than start time')
@@ -674,15 +726,6 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const handleClick = () => {
 		setOpen(!open)
-	}
-
-	//phone mask
-	const maskPhone = (value: string) => {
-		//+7 (999) 999-99-99
-		const masked = value
-			.replace(/[^\d]/g, '')
-			.replace(/^(\d{2})(\d{3})(\d{2})(\d{2})(\d{2})$/, '+7 ($1) $2-$3-$4-$5')
-		return masked
 	}
 
 	function handlePrePayDate(newValue: any) {
@@ -1543,8 +1586,7 @@ const AddStudent = ({}: IAddStudent) => {
 																			)}:${timeline.startTime.minute
 																			.toString()
 																			.padStart(2, '0')} - ${
-																			timeline.endTime.hour ||
-																			timeline.endTime.minute !== 0
+																			timeline.endTime.hour || timeline.endTime.minute !== 0
 																				? `${timeline.endTime.hour
 																						.toString()
 																						.padStart(
@@ -1553,7 +1595,7 @@ const AddStudent = ({}: IAddStudent) => {
 																						)}:${timeline.endTime.minute
 																						.toString()
 																						.padStart(2, '0')}`
-																				: ''
+																				: '' // Display only start time if end time is not set
 																		}`}
 																	</p>
 																)}

@@ -578,33 +578,33 @@ export async function updateStudentSchedule(data: {
     new Date(Number(year), Number(month) - 1, Number(day))
   );
 
-  if (homeFiles) {
-    const uploadPromises = homeFiles.map(async (file: Buffer) => {
-      const filePath = await upload(file).catch((err) => {
-        console.log(err);
-        return null;
-      });
-      return filePath;
-    });
-    const uploadedHomeFiles = await Promise.all(uploadPromises);
-    updatedFields.homeFiles = homeFilePaths.concat(
-      uploadedHomeFiles.filter(Boolean)
-    );
-  }
+  // if (homeFiles) {
+  //   const uploadPromises = homeFiles.map(async (file: Buffer) => {
+  //     const filePath = await upload(file).catch((err) => {
+  //       console.log(err);
+  //       return null;
+  //     });
+  //     return filePath;
+  //   });
+  //   const uploadedHomeFiles = await Promise.all(uploadPromises);
+  //   updatedFields.homeFiles = homeFilePaths.concat(
+  //     uploadedHomeFiles.filter(Boolean)
+  //   );
+  // }
 
-  if (classFiles) {
-    const uploadPromises = classFiles.map(async (file: Buffer) => {
-      const filePath = await upload(file).catch((err) => {
-        console.log(err);
-        return null;
-      });
-      return filePath;
-    });
-    const uploadedClassFiles = await Promise.all(uploadPromises);
-    updatedFields.classFiles = classFilePaths.concat(
-      uploadedClassFiles.filter(Boolean)
-    );
-  }
+  // if (classFiles) {
+  //   const uploadPromises = classFiles.map(async (file: Buffer) => {
+  //     const filePath = await upload(file).catch((err) => {
+  //       console.log(err);
+  //       return null;
+  //     });
+  //     return filePath;
+  //   });
+  //   const uploadedClassFiles = await Promise.all(uploadPromises);
+  //   updatedFields.classFiles = classFilePaths.concat(
+  //     uploadedClassFiles.filter(Boolean)
+  //   );
+  // }
 
   if (startTime !== undefined || endTime !== undefined) {
     const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
