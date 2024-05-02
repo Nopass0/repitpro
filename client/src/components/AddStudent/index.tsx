@@ -1029,7 +1029,7 @@ const AddStudent = ({}: IAddStudent) => {
 							unmountOnExit>
 							<mui.List className={s.MuiList} component="div" disablePadding>
 								<div className={s.ListObjectWrapper}>
-									{historyLesson.length !== 0 ? (
+									{historyLesson.length !== 0 || prePayCost !== '' ? (
 										<>
 											{historyLesson
 												.sort(compareDates)

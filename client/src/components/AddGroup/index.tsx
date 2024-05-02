@@ -559,15 +559,17 @@ const AddGroup = ({className}: IAddGroup) => {
 				index === itemIndex
 					? {
 							...item,
-							timeLinesArray: item.timeLinesArray.map((timeline) =>
-								timeline.id === id
-									? {
-											...timeline,
-											startTime: {hour, minute},
-											editingEnd: item.lessonDuration! > 0 ? false : true,
-											editingStart: false,
-									  }
-									: timeline,
+							timeLinesArray: item.timeLinesArray.map(
+								(timeline) =>
+									timeline.id === id
+										? {
+												...timeline,
+												startTime: {hour, minute},
+												editingEnd: item.lessonDuration! > 0 ? false : true,
+												editingStart: false,
+												active: false, // Закрываем окно выбора начала занятий
+										  }
+										: {...timeline, active: false}, // Закрываем окно выбора начала занятий для других строк
 							),
 					  }
 					: item,
@@ -595,6 +597,7 @@ const AddGroup = ({className}: IAddGroup) => {
 						: item,
 				),
 			)
+			setShowEndTimePicker(-1)
 		} else {
 			setShowEndTimePicker(id)
 		}
@@ -629,6 +632,7 @@ const AddGroup = ({className}: IAddGroup) => {
 						: item,
 				),
 			)
+			console.log('close', index, id)
 			setShowEndTimePicker(-1)
 		} else {
 			console.log('End time must be greater than start time')
@@ -736,7 +740,11 @@ const AddGroup = ({className}: IAddGroup) => {
 		}
 	}
 	const closeTimePicker = (index: number, id: number) => {
-		//change
+		//get timeline
+		const timelineToUpdate = items[index].timeLinesArray.find(
+			(timeline) => timeline.id === id,
+		)
+
 		setItems((prevItems) =>
 			prevItems.map((item, itemIndex) =>
 				itemIndex === index
@@ -744,13 +752,38 @@ const AddGroup = ({className}: IAddGroup) => {
 							...item,
 							timeLinesArray: item.timeLinesArray.map((timeline) =>
 								timeline.id === id
-									? {...timeline, editingEnd: false, active: false}
+									? {
+											...timeline,
+											editingEnd: false,
+											active: false,
+											startTime: {
+												hour:
+													timelineToUpdate?.startTime.hour &&
+													!timelineToUpdate?.endTime.hour
+														? 0
+														: timelineToUpdate?.startTime.hour!,
+												minute:
+													timelineToUpdate?.startTime.minute &&
+													!timelineToUpdate?.endTime.minute
+														? 0
+														: timelineToUpdate?.startTime.minute!,
+											},
+											endTime: {
+												hour: timelineToUpdate?.endTime.hour
+													? timelineToUpdate?.endTime.hour
+													: 0,
+												minute: timelineToUpdate?.endTime.minute
+													? timelineToUpdate?.endTime.minute
+													: 0,
+											}, // Reset endTime when closing without saving
+									  }
 									: timeline,
 							),
 					  }
 					: item,
 			),
 		)
+
 		console.log('close', index, id)
 		setShowEndTimePicker(-1)
 	}
@@ -1337,17 +1370,19 @@ const AddGroup = ({className}: IAddGroup) => {
 																				'0',
 																			)}:${timeline.startTime.minute
 																			.toString()
-																			.padStart(
-																				2,
-																				'0',
-																			)} - ${timeline.endTime.hour
-																			.toString()
-																			.padStart(
-																				2,
-																				'0',
-																			)}:${timeline.endTime.minute
-																			.toString()
-																			.padStart(2, '0')}`}
+																			.padStart(2, '0')} - ${
+																			timeline.endTime.hour ||
+																			timeline.endTime.minute !== 0
+																				? `${timeline.endTime.hour
+																						.toString()
+																						.padStart(
+																							2,
+																							'0',
+																						)}:${timeline.endTime.minute
+																						.toString()
+																						.padStart(2, '0')}`
+																				: '' // Display only start time if end time is not set
+																		}`}
 																	</p>
 																)}
 															</div>
