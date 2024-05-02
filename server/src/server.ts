@@ -2,7 +2,7 @@ import io from "./socket";
 import { login } from "./auth/login";
 import { register } from "./auth/register";
 import db from "./db";
-import { upload } from "./files/files";
+
 import { calendar } from "./calendar/calendar";
 import {
   addStudent,
@@ -54,7 +54,6 @@ io.on("connection", (socket) => {
   //hooks
   socket.on("login", (data) => login(data));
   socket.on("register", (data) => register(data));
-  socket.on("upload", (file, callback) => upload(file, callback));
   socket.on("getMonth", (data) => calendar(data));
 
   socket.on("addStudent", (data) => addStudent(data));

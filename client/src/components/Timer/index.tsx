@@ -14,7 +14,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	title,
 	onExit,
 }: TimePickerProps) => {
-	const [selectedHours, setSelectedHours] = useState<number>(0)
+	const [selectedHours, setSelectedHours] = useState<number>(8)
 	const [selectedMinutes, setSelectedMinutes] = useState<number>(0)
 
 	const handleHourChange = (increment: number) => {
