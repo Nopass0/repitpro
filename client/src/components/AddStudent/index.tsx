@@ -19,7 +19,7 @@ import {DatePicker} from '@mui/x-date-pickers/DatePicker'
 import CreateIcon from '@mui/icons-material/Create'
 import './index.css'
 import {ru} from 'date-fns/locale/ru'
-
+import CalendarCloseButton from '../CalendarCloseButton'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 import ScheduleDate from '../ScheduleDate/index'
@@ -42,6 +42,9 @@ import {addDays, differenceInDays, differenceInCalendarDays} from 'date-fns'
 import FileNLinks from '../FileNLinks/index'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
+import {PickersCalendarHeader} from '@mui/x-date-pickers'
+import {sl} from 'date-fns/locale'
+import MiniCalendar from '../MiniCalendar'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -236,6 +239,7 @@ const AddStudent = ({}: IAddStudent) => {
 			placeLesson: '',
 			timeLesson: '',
 			valueMuiSelectArchive: 1,
+			costOneLesson: '',
 			startLesson: new Date(Date.now()),
 			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 			nowLevel: undefined,
@@ -281,6 +285,7 @@ const AddStudent = ({}: IAddStudent) => {
 					timeLesson: '',
 					valueMuiSelectArchive: 1,
 					startLesson: new Date(Date.now()),
+					costOneLesson: '',
 
 					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 					nowLevel: undefined,
@@ -776,14 +781,14 @@ const AddStudent = ({}: IAddStudent) => {
 						date: date,
 						itemName: items[i].itemName,
 						isDone: date <= new Date(Date.now()) ? true : false,
-						price: costOneLesson,
+						price: items[i].costOneLesson,
 						isPaid: false,
 					}
 
 					historyLessons_.push(hl)
 
 					countLessons++
-					countLessonsPrice = countLessons * Number(costOneLesson)
+					countLessonsPrice = countLessons * Number(items[i].costOneLesson)
 				}
 			}
 
@@ -803,7 +808,7 @@ const AddStudent = ({}: IAddStudent) => {
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-	}, [items, costOneLesson])
+	}, [items])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
 		setHistoryLesson((prevHistoryLesson: any) => [
@@ -840,7 +845,8 @@ const AddStudent = ({}: IAddStudent) => {
 								item.timeLesson !== '' ||
 								item.valueMuiSelectArchive !== 1 ||
 								item.nowLevel !== undefined ||
-								item.lessonDuration !== null
+								item.lessonDuration !== null ||
+								item.costOneLesson !== ''
 							)
 						}) ||
 						nameStudent !== '' ||
@@ -850,8 +856,7 @@ const AddStudent = ({}: IAddStudent) => {
 						costStudent !== '' ||
 						commentStudent !== '' ||
 						phoneNumber !== '' ||
-						prePayCost !== '' ||
-						costOneLesson !== ''
+						prePayCost !== ''
 					) {
 						setPagePopup(PagePopup.Exit)
 					} else {
@@ -1393,12 +1398,14 @@ const AddStudent = ({}: IAddStudent) => {
 									<div className={s.StudentCard}>
 										<p>Стоимость одного занятия:</p>
 										<Input
-											width={`${costOneLesson.length}ch`}
+											width={`${item.costOneLesson.length}ch`}
 											num
 											type="text"
-											value={costOneLesson}
+											value={item.costOneLesson}
 											disabled={isEditMode}
-											onChange={(e) => setCostOneLesson(e.target.value)}
+											onChange={(e) =>
+												changeItemValue(index, 'costOneLesson', e.target.value)
+											}
 											style={{borderBottom: '1px solid #e2e2e9'}}
 										/>
 										<p>₽</p>
@@ -1419,12 +1426,20 @@ const AddStudent = ({}: IAddStudent) => {
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Начало занятий:</p>
-										<LocalizationProvider
+										{/* <LocalizationProvider
 											dateAdapter={AdapterDateFns}
 											adapterLocale={ru}>
 											<DatePicker
 												slots={{
 													layout: StyledPickersLayout,
+													calendarHeader: PickersCalendarHeader,
+												}}
+												slotProps={{
+													calendarHeader: {
+														slots: {
+															switchViewButton: CalendarCloseButton,
+														},
+													},
 												}}
 												sx={{
 													input: {
@@ -1444,7 +1459,13 @@ const AddStudent = ({}: IAddStudent) => {
 												timezone="system"
 												showDaysOutsideCurrentMonth
 											/>
-										</LocalizationProvider>
+										</LocalizationProvider> */}
+										<MiniCalendar
+											value={item.startLesson}
+											onChange={(newDate) =>
+												changeItemValue(index, 'startLesson', newDate)
+											}
+										/>
 									</div>
 									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>

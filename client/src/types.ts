@@ -48,6 +48,7 @@ export interface ITimeLine {
 // Обновленный тип для IItemCard
 export interface IItemCard {
 	itemName: string
+	costOneLesson: string
 	tryLessonCheck: boolean
 	tryLessonCost: string
 	todayProgramStudent: string
