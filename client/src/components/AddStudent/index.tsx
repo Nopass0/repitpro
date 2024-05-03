@@ -1034,75 +1034,131 @@ const AddStudent = ({}: IAddStudent) => {
 							unmountOnExit>
 							<mui.List className={s.MuiList} component="div" disablePadding>
 								<div className={s.ListObjectWrapper}>
-									{historyLesson.length !== 0 ? (
-										historyLesson
-											.sort(compareDates)
-											.map((lesson: any, index: number) => (
-												<div key={index} className={s.ListObject}>
-													<p
-														style={{
-															fontWeight: '500',
-															fontSize: '14px',
-															marginRight: '5px',
-															display: 'flex',
-															flexDirection: 'row',
-															alignItems: 'center',
-														}}>
-														<div
+									{historyLesson.length !== 0 || prePayCost !== '' ? (
+										<>
+											{historyLesson
+												.sort(compareDates)
+												.map((lesson: any, index: number) => (
+													<div key={index} className={s.ListObject}>
+														<p
 															style={{
-																backgroundColor: hashToColor(
-																	hashString(lesson.itemName),
-																),
-																width: '10px',
-																height: '35px',
-																borderTopLeftRadius: '8px',
-																borderBottomLeftRadius: '8px',
+																fontWeight: '500',
+																fontSize: '14px',
 																marginRight: '5px',
-															}}></div>
-														{formatDate(lesson.date)}
-													</p>
-													<p
-														style={{
-															fontWeight: '300',
-															fontSize: '14px',
-															width: '95px',
-															minWidth: '95px',
-															maxWidth: '95px',
-															whiteSpace: 'nowrap',
-															overflow: 'hidden',
-															textOverflow: 'ellipsis',
-														}}>
-														{lesson.itemName}
-													</p>
-													<CheckBox
-														onChange={() =>
-															setHistoryLessonIsDone(index, !lesson.isDone)
-														}
-														size="16px"
-														checked={lesson.isDone}
-													/>
-													<p
-														style={{
-															fontSize: '14px',
-															width: '100px',
-															textAlign: 'end',
-														}}>
-														{lesson.price}₽
-													</p>
-													<CheckBox
-														onChange={() =>
-															setHistoryLessonIsPaid(index, !lesson.isPaid)
-														}
-														size="16px"
-														checked={lesson.isPaid}
-													/>
-													<button className={s.ButtonEdit}>
-														<CreateIcon
-															style={{width: '18px', height: '18px'}}
+																display: 'flex',
+																flexDirection: 'row',
+																alignItems: 'center',
+															}}>
+															<div
+																style={{
+																	backgroundColor: hashToColor(
+																		hashString(lesson.itemName),
+																	),
+																	width: '10px',
+																	height: '35px',
+																	borderTopLeftRadius: '8px',
+																	borderBottomLeftRadius: '8px',
+																	marginRight: '5px',
+																}}></div>
+															{formatDate(lesson.date)}
+														</p>
+														<p
+															style={{
+																fontWeight: '300',
+																fontSize: '14px',
+																width: '95px',
+																minWidth: '95px',
+																maxWidth: '95px',
+																whiteSpace: 'nowrap',
+																overflow: 'hidden',
+																textOverflow: 'ellipsis',
+															}}>
+															{lesson.itemName}
+														</p>
+														<CheckBox
+															onChange={() =>
+																setHistoryLessonIsDone(index, !lesson.isDone)
+															}
+															size="16px"
+															checked={lesson.isDone}
 														/>
-													</button>
-												</div>
-											))
+														<p
+															style={{
+																fontSize: '14px',
+																width: '100px',
+																textAlign: 'end',
+															}}>
+															{lesson.price}₽
+														</p>
+														<CheckBox
+															onChange={() =>
+																setHistoryLessonIsPaid(index, !lesson.isPaid)
+															}
+															size="16px"
+															checked={lesson.isPaid}
+														/>
+														<button className={s.ButtonEdit}>
+															<CreateIcon
+																style={{width: '18px', height: '18px'}}
+															/>
+														</button>
+													</div>
+												))}
+											{prePayCost && (
+												<>
+													<div className={s.ListObject}>
+														<p
+															style={{
+																fontWeight: '500',
+																fontSize: '14px',
+																marginRight: '5px',
+																display: 'flex',
+																flexDirection: 'row',
+																alignItems: 'center',
+															}}>
+															<div
+																style={{
+																	width: '10px',
+																	height: '35px',
+																	borderTopLeftRadius: '8px',
+																	borderBottomLeftRadius: '8px',
+																	marginRight: '5px',
+																}}></div>
+															{prePayDate && formatDate(new Date(prePayDate))}
+														</p>
+														<p
+															style={{
+																fontWeight: '300',
+																fontSize: '14px',
+																width: '95px',
+																minWidth: '95px',
+																maxWidth: '95px',
+																whiteSpace: 'nowrap',
+																overflow: 'hidden',
+																textOverflow: 'ellipsis',
+															}}>
+															Преодплата
+														</p>
+
+														<p
+															style={{
+																fontSize: '14px',
+																width: '100px',
+																textAlign: 'end',
+															}}>
+															{prePayCost}₽
+														</p>
+														{/* <CheckBox
+															onChange={() =>
+																setHistoryLessonIsPaid(index, !lesson.isPaid)
+															}
+															size="16px"
+															checked={lesson.isPaid}
+														/> */}
+													</div>
+												</>
+											)}
+										</>
 									) : (
 										<>
 											<div className={s.ListNoInfo}>
@@ -1550,10 +1606,9 @@ const AddStudent = ({}: IAddStudent) => {
 																				'0',
 																			)}:${timeline.startTime.minute
 																			.toString()
-																			.padStart(2, '0')}${
-																			timeline.endTime.hour !== 0 ||
-																			timeline.endTime.minute !== 0
-																				? ` - ${timeline.endTime.hour
+																			.padStart(2, '0')} - ${
+																			timeline.endTime.hour || timeline.endTime.minute !== 0
+																				? `${timeline.endTime.hour
 																						.toString()
 																						.padStart(
 																							2,
