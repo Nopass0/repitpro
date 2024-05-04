@@ -3,6 +3,7 @@ import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
 import db from "../db";
 import io from "../socket";
 import { addDays, differenceInDays, isWithinInterval } from "date-fns";
+
 import { upload } from "../files/files";
 
 // Получение дня недели, начиная с понедельника
@@ -320,12 +321,12 @@ export async function getStudentsByDate(data: {
     const student = item.group.students[0] || null;
     const timeLinesArray = schedule.timeLinesArray;
     const daySchedule = timeLinesArray[dayOfWeekIndex];
-    const homeFiles = schedule.homeFiles
-      ? schedule.homeFiles.map((file) => Buffer.from(file))
-      : [];
-    const classFiles = schedule.classFiles
-      ? schedule.classFiles.map((file) => Buffer.from(file))
-      : [];
+    const homeFiles = schedule.homeFiles;
+    // ? schedule.homeFiles.map((file) => Buffer.from(file))
+    // : [];
+    const classFiles = schedule.classFiles;
+    // ? schedule.classFiles.map((file) => Buffer.from(file))
+    // : [];
     const groupStudentSchedule = schedule.item.group.groupName;
 
     const scheduleData = {
@@ -336,6 +337,8 @@ export async function getStudentsByDate(data: {
       itemName: schedule.itemName,
       typeLesson: schedule.typeLesson,
       homeFiles,
+      // homeFilesPath: homeFiles.map((file) => file.toString("base64")),
+      // classFilesPath: classFiles.map((file) => file.toString("base64")),
       classFiles,
       homeWork: schedule.homeWork,
       classWork: schedule.classWork,
@@ -453,6 +456,45 @@ export async function getStudentsByDate(data: {
 //     };
 //   });
 // }
+import { randomBytes } from "crypto";
+import { join } from "path";
+import { mkdir, mkdirSync, writeFileSync } from "fs";
+import { promises as fsPromises } from "fs";
+import mime from "mime-types";
+
+async function getExtension(file: Buffer): Promise<string> {
+  // Determine MIME type of the file
+  const mimeType = mime.contentType(file);
+
+  // Get file extension from MIME type
+  const extension = mime.extension(mimeType);
+
+  // If extension exists, return it; otherwise, default to .bin
+  return extension ? `.${extension}` : ".bin";
+}
+
+function getFileExtension(fileName: string): string | null {
+  const match = fileName.match(/\.([^.]+)$/);
+  return match ? match[0] : null;
+}
+
+async function getMimeType(file: Buffer): Promise<string> {
+  // Here you can implement code to determine the MIME type from the file content
+  // For example, using a library like `mime-types` or detecting it based on the file content
+  return "application/octet-stream"; // Placeholder for demonstration
+}
+
+function getExtensionFromMimeType(mimeType: string): string | null {
+  // Here you can map MIME types to file extensions
+  // Example mappings:
+  const mimeToExtensionMap: { [key: string]: string } = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    // Add more mappings as needed
+  };
+
+  return mimeToExtensionMap[mimeType] || null;
+}
 
 export async function updateStudentSchedule(data: {
   id: string;
@@ -529,8 +571,37 @@ export async function updateStudentSchedule(data: {
     },
   });
 
-  const homeFilePaths: string[] = studentSchedule?.homeFiles || [];
-  const classFilePaths: string[] = studentSchedule?.classFiles || [];
+  const folderName = randomBytes(8).toString("hex");
+  const homeFilePaths: string[] = [];
+  const classFilePaths: string[] = [];
+
+  // Save home files
+  if (homeFiles) {
+    const homeFilesDir = join("/tmp", folderName, "home");
+    mkdirSync(homeFilesDir, { recursive: true }); // <-- Use mkdirSync with recursive option
+
+    for (let i = 0; i < homeFiles.length; i++) {
+      const file = homeFiles[i];
+      const fileName = `home_file_${i}${await getExtension(file)}`;
+      const filePath = join(homeFilesDir, fileName);
+      writeFileSync(filePath, file);
+      homeFilePaths.push(filePath);
+    }
+  }
+
+  // Save class files
+  if (classFiles) {
+    const classFilesDir = join("/tmp", folderName, "class");
+    mkdirSync(classFilesDir, { recursive: true }); // <-- Use mkdirSync with recursive option
+
+    for (let i = 0; i < classFiles.length; i++) {
+      const file = classFiles[i];
+      const fileName = `class_file_${i}${await getExtension(file)}`;
+      const filePath = join(classFilesDir, fileName);
+      writeFileSync(filePath, file);
+      classFilePaths.push(filePath);
+    }
+  }
 
   console.log("homeFiles", homeFiles, "classFiles", classFiles);
 
@@ -573,6 +644,8 @@ export async function updateStudentSchedule(data: {
   if (classStudentsPoints !== undefined)
     updatedFields.classStudentsPoints = classStudentsPoints;
   if (address !== undefined) updatedFields.address = address;
+  if (homeFiles !== undefined) updatedFields.homeFiles = homeFilePaths;
+  if (classFiles !== undefined) updatedFields.classFiles = classFilePaths;
 
   const dayOfWeekIndex = getDay(
     new Date(Number(year), Number(month) - 1, Number(day))

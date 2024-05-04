@@ -83,6 +83,8 @@ const DayStudentPopUp = ({
 		student?.classWork || '',
 	)
 	const [homeFiles, setHomeFiles] = useState<any>(student?.homeFiles || [])
+	const [homeFilesPaths, setHomeFilesPaths] = useState<string[]>([])
+	const [classroomFilesPaths, setClassroomFilesPaths] = useState<string[]>([])
 	const [classroomFiles, setClassroomFiles] = useState<any>(
 		student?.classFiles || [],
 	)
@@ -135,6 +137,8 @@ const DayStudentPopUp = ({
 			setClassroomComment(student?.classWork || '')
 			setHomeFiles(student?.homeFiles || [])
 			setClassroomFiles(student?.classFiles || [])
+			setHomeFilesPaths(student?.homeFilesPath || [])
+			setClassroomFilesPaths(student?.classFilesPath || [])
 			setHomeStudentsPoints(student?.homeStudentsPoints?.points || 1)
 			setClassroomStudentsPoints(student?.classStudentsPoints?.points || 1)
 		})
@@ -281,13 +285,9 @@ const DayStudentPopUp = ({
 								<Option className={s.Option} value={0}>
 									{homeFiles.length === 0
 										? 'Список пока пуст'
-										: homeFiles.map((file: any) => (
+										: homeFiles.map((file: any, index: number) => (
 												<div className={s.FileWrapper}>
-													<p>
-														{file.name.length > 25
-															? file.name.slice(0, 25) + '...'
-															: file.name}
-													</p>
+													<p>{file.slice(0, 25) + '...'}</p>
 													<button
 														className={s.DeleteBtn}
 														onClick={() =>
@@ -409,11 +409,7 @@ const DayStudentPopUp = ({
 										? 'Список пока пуст'
 										: classroomFiles.map((file: any) => (
 												<div className={s.FileWrapper}>
-													<p>
-														{file.name.length > 25
-															? file.name.slice(0, 25) + '...'
-															: file.name}
-													</p>
+													<p>{file.slice(0, 25) + '...'}</p>
 													<button
 														className={s.DeleteBtn}
 														onClick={() =>
