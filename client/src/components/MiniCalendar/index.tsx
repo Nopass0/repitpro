@@ -2,7 +2,9 @@ import React, {useState, useRef, useEffect} from 'react'
 import ReactDOM from 'react-dom'
 import styles from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
-
+import CloseIcon from '@mui/icons-material/Close'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import {log} from 'console'
 interface CalendarProps {
 	value?: string
 	onChange: (value: Date) => void
@@ -12,7 +14,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	value = formatDate(new Date()),
 	onChange,
 }) => {
-	const [isOpen, setIsOpen] = useState(false)
+	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
 	const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -44,6 +46,30 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		setTempYear((prevYear) => (tempMonth === 11 ? prevYear + 1 : prevYear))
 	}
 
+	const handleDateClick = (day: number) => {
+		const selectedDate = new Date(tempYear, tempMonth, day)
+		setSelectedDate(selectedDate)
+		setCurrentYear(tempYear)
+		setCurrentMonth(tempMonth)
+		const formattedDate = formatDate(selectedDate)
+		onChange(selectedDate)
+		console.log(
+			'Calendar data temp: ',
+			currentYear,
+			'- Current year',
+			currentMonth,
+			'- Current month',
+			tempMonth,
+			'- Temp month',
+			tempYear,
+			'- Temp year',
+			selectedDate,
+			'- Selected date',
+			formattedDate,
+		)
+
+		console.log(selectedDate, 'Selected date')
+	}
 	const renderDays = () => {
 		const days = []
 		let day = 1
@@ -83,30 +109,6 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		}
 		return days
 	}
-
-	const handleDateClick = (day: number) => {
-		const selectedDate = new Date(tempYear, tempMonth, day)
-		setSelectedDate(selectedDate)
-		setCurrentYear(tempYear)
-		setCurrentMonth(tempMonth)
-		const formattedDate = formatDate(selectedDate)
-		onChange(selectedDate)
-		console.log(
-			'Calendar data temp: ',
-			currentYear,
-			'- Current year',
-			currentMonth,
-			'- Current month',
-			tempMonth,
-			'- Temp month',
-			tempYear,
-			'- Temp year',
-			selectedDate,
-			'- Selected date',
-			formattedDate,
-		)
-	}
-
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -126,22 +128,42 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	useEffect(() => {
 		if (isOpen && calendarRef.current && inputRef.current) {
 			const inputRect = inputRef.current.getBoundingClientRect()
+			const { innerHeight: windowHeight, innerWidth: windowWidth } = window
+			const calendarHeight = calendarRef.current.getBoundingClientRect().height
+			let top = inputRect.bottom
+			let left = inputRect.left
+			let width = inputRect.width
+
+			if (top + calendarHeight > windowHeight) {
+				top = Math.max(0, inputRect.top - calendarHeight)
+			}
+
+			if (left + width > windowWidth) {
+				left = Math.max(0, windowWidth - width)
+			}
+
 			calendarRef.current.style.position = 'fixed'
-			calendarRef.current.style.left = `${inputRect.left}px`
-			calendarRef.current.style.top = `${inputRect.bottom}px`
+			calendarRef.current.style.top = `${top}px`
+			calendarRef.current.style.left = `${left}px`
 			calendarRef.current.style.zIndex = '9999'
 		}
 	}, [isOpen])
 
 	return (
 		<div className={styles.container}>
-			<input
-				type="text"
-				value={formatDate(value ? new Date(value) : new Date())}
-				onClick={() => setIsOpen(!isOpen)}
-				readOnly
-				ref={inputRef}
-			/>
+			<div className={styles.input__init}>
+				<input
+					type="text"
+					value={formatDate(value ? new Date(value) : new Date())}
+					onClick={() => setIsOpen(!isOpen)}
+					readOnly
+					ref={inputRef}
+					id="minicalendar__input-id"
+				/>
+				<label htmlFor="minicalendar__input-id">
+					<CalendarMonthIcon />
+				</label>
+			</div>
 			{ReactDOM.createPortal(
 				isOpen ? (
 					<div
@@ -149,36 +171,38 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 						ref={calendarRef}
 						onClick={(e) => e.stopPropagation()}>
 						<div className={styles.calendar}>
+							<button
+								className={styles.closeButton}
+								onClick={() => setIsOpen(false)}>
+								<CloseIcon className={styles.closeIcon} />
+							</button>
 							<div className={styles.header}>
-								<div>
+								<div className={styles.header__init}>
 									<span className={styles.monthYear}>
-										{tempYear}{' '}
 										{new Date(tempYear, tempMonth).toLocaleString('ru-RU', {
 											month: 'long',
-										})}
+										})}{' '}
+										{tempYear}
 									</span>
-									<button className={styles.navButton} onClick={prevMonth}>
-										<Arrow
-											direction={ArrowType.left}
-											className={styles.arrow}
-										/>
-									</button>
-									<button className={styles.navButton} onClick={nextMonth}>
-										<Arrow
-											direction={ArrowType.right}
-											className={styles.arrow}
-										/>
-									</button>
+									<div className={styles.navButtons}>
+										<button className={styles.navButton} onClick={prevMonth}>
+											<Arrow
+												direction={ArrowType.left}
+												className={styles.arrow}
+											/>
+										</button>
+										<button className={styles.navButton} onClick={nextMonth}>
+											<Arrow
+												direction={ArrowType.right}
+												className={styles.arrow}
+											/>
+										</button>
+									</div>
 								</div>
-								<button
-									className={styles.closeButton}
-									onClick={() => setIsOpen(false)}>
-									&#10005;
-								</button>
 							</div>
-							<table>
-								<thead>
-									<tr>
+							<table className={styles.table}>
+								<thead className={styles.thead}>
+									<tr className={styles.tr}>
 										<th>Пн</th>
 										<th>Вт</th>
 										<th>Ср</th>
@@ -188,7 +212,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 										<th className={styles.weekend}>Вс</th>
 									</tr>
 								</thead>
-								<tbody>{renderDays()}</tbody>
+								<tbody className={styles.tbody}>{renderDays()}</tbody>
 							</table>
 						</div>
 					</div>

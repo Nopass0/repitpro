@@ -9,6 +9,7 @@ import Client from '../../assets/6.svg'
 import DayCalendarLine from '../../components/DayCalendarLine'
 import DayCalendarLineClient from '../../components/DayCalendarLineClient/index'
 import DayClientPopUp from '../../components/DayClientPopUp/index'
+import MiniCalendar from '../../components/MiniCalendar/index';
 const Test = () => {
 	return (
 		<>
@@ -30,12 +31,13 @@ const Test = () => {
 				studentId="cluy6blsd0008itfbuk3tz2jw"
 				procent='20'
 			/> */}
-			<DayClientPopUp
+			{/* <DayClientPopUp
 				date="4 марта 2024"
 				item="Математика"
 				name="Петров"
 				totalPrice="100"
-			/>
+			/> */}
+			<MiniCalendar />
 		</>
 	)
 }

@@ -267,9 +267,13 @@ const AddStudent = ({}: IAddStudent) => {
 
 	//add item function
 	const addItem = () => {
+		const newItemName = items[currentItemIndex].itemName
+		const existingItemNames = items.map((item) => item.itemName)
+		console.log(existingItemNames.includes(newItemName), existingItemNames, newItemName, currentItemIndex)
+
 		if (
-			items[currentItemIndex].itemName !== '' &&
-			currentItemIndex === items.length - 1
+			newItemName !== '' &&
+			currentItemIndex === items.length - 1 
 		) {
 			setItems([
 				...items,
@@ -1233,9 +1237,19 @@ const AddStudent = ({}: IAddStudent) => {
 										<input
 											type="text"
 											disabled={isEditMode}
-											value={String(item.itemName)}
+											value={
+												item.itemName
+													? `${item.itemName[0].toUpperCase()}${item.itemName
+															.slice(1)
+															.toLowerCase()}`
+													: ''
+											}
 											onChange={(e) =>
-												changeItemValue(index, 'itemName', e.target.value)
+												changeItemValue(
+													index,
+													'itemName',
+													e.target.value.toLowerCase(),
+												)
 											}
 											placeholder="Наименование"
 										/>
@@ -1607,7 +1621,8 @@ const AddStudent = ({}: IAddStudent) => {
 																			)}:${timeline.startTime.minute
 																			.toString()
 																			.padStart(2, '0')} - ${
-																			timeline.endTime.hour || timeline.endTime.minute !== 0
+																			timeline.endTime.hour ||
+																			timeline.endTime.minute !== 0
 																				? `${timeline.endTime.hour
 																						.toString()
 																						.padStart(
