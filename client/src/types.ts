@@ -29,6 +29,12 @@ export enum ECurrentDayPopUp {
 	Group = 'Group',
 	None = 'None',
 }
+
+export enum EPagePopUpExit {
+	Exit = 'Exit',
+	None = 'None',
+}
+
 export interface ITimeLine {
 	id: number
 	day: string

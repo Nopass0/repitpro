@@ -33,6 +33,7 @@ import Input from '../Input'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import {
 	ELeftMenuPage,
+	EPagePopUpExit,
 	IHistoryLessons,
 	IItemCard,
 	IStudent,
@@ -53,10 +54,7 @@ import IconsPhone from '../IconsPhone/index'
 interface IAddGroup {
 	className?: string
 }
-enum PagePopup {
-	Exit,
-	None,
-}
+
 const AddGroup = ({className}: IAddGroup) => {
 	const [groupName, setGroupName] = useState<string>('')
 	// Block Student
@@ -68,8 +66,8 @@ const AddGroup = ({className}: IAddGroup) => {
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
 	const [costOneLesson, setCostOneLesson] = useState<number>(0)
-	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
 
+	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
 	const [allPriceGroup, setAllPriceGroup] = useState<number>(0)
 
@@ -988,7 +986,10 @@ const AddGroup = ({className}: IAddGroup) => {
 							)
 						})
 					) {
-						setPagePopup(PagePopup.Exit)
+						dispatch({
+							type: 'SET_PAGE_POPUP_EXIT',
+							payload: EPagePopUpExit.Exit,
+						})
 					} else {
 						dispatch({
 							type: 'SET_LEFT_MENU_PAGE',
@@ -1025,7 +1026,12 @@ const AddGroup = ({className}: IAddGroup) => {
 								<input
 									type="text"
 									value={groupName}
-									onChange={(e) => setGroupName(e.target.value)}
+									onChange={(e) =>
+										setGroupName(
+											e.target.value.charAt(0).toUpperCase() +
+												e.target.value.slice(1).toLowerCase(),
+										)
+									}
 									placeholder="Название группы"
 								/>
 							</div>
@@ -1070,7 +1076,12 @@ const AddGroup = ({className}: IAddGroup) => {
 											type="text"
 											value={item.itemName}
 											onChange={(e) =>
-												changeItemValue(index, 'itemName', e.target.value)
+												changeItemValue(
+													index,
+													'itemName',
+													e.target.value.charAt(0).toUpperCase() +
+														e.target.value.slice(1).toLowerCase(),
+												)
 											}
 											placeholder="Наименование"
 										/>
@@ -1091,7 +1102,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
-										<p>Программа ученика:</p>
+										<p>Программа занятия:</p>
 										<input
 											type="text"
 											value={item.programLesson}
@@ -1644,7 +1655,8 @@ const AddGroup = ({className}: IAddGroup) => {
 													changeStudentValue(
 														index,
 														'nameStudent',
-														e.target.value,
+														e.target.value.charAt(0).toUpperCase() +
+															e.target.value.slice(1).toLowerCase(),
 													)
 												}
 											/>
@@ -2093,7 +2105,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					</div>
 				</div>
 			</div>
-			{pagePopup === PagePopup.Exit && (
+			{PagePopUpExit === EPagePopUpExit.Exit && (
 				<div className={s.ExitPopUpWrap}>
 					<ExitPopUp
 						className={s.ExitPopUp}
@@ -2103,8 +2115,17 @@ const AddGroup = ({className}: IAddGroup) => {
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
 							})
+							dispatch({
+								type: 'SET_PAGE_POPUP_EXIT',
+								payload: EPagePopUpExit.None,
+							})
 						}}
-						no={() => setPagePopup(PagePopup.None)}
+						no={() =>
+							dispatch({
+								type: 'SET_PAGE_POPUP_EXIT',
+								payload: EPagePopUpExit.None,
+							})
+						}
 					/>
 				</div>
 			)}

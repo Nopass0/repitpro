@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.scss'
 import {createStore} from 'redux'
-import {IUser} from './types.ts'
+import {EPagePopUpExit, IUser} from './types.ts'
 import {Provider} from 'react-redux'
 import {Navigate, RouterProvider, createBrowserRouter} from 'react-router-dom'
 import Header from './components/Header'
@@ -27,6 +27,7 @@ let defaultState = {
 	currentMonth: new Date().getMonth(),
 	currentYear: new Date(Date.now()).getFullYear(),
 	leftMenu: ELeftMenuPage.MainPage,
+	pagePopUpExit: EPagePopUpExit.None,
 	calendarNowPopupDay: '0',
 	calendarNowPopupMonth: '0',
 	calendarNowPopupYear: '0',
@@ -39,7 +40,6 @@ let defaultState = {
 	currentScheduleDay: '', //ID of schedule dayIndex
 	mobileLeft: true,
 	currentScheduleDayClientId: '',
-
 	currentPopUpType: ECurrentDayPopUp.None,
 }
 socket.emit('getMonth', {
@@ -111,9 +111,12 @@ const reducer = (state = defaultState, action: any) => {
 			return {...state, currentYear: action.payload}
 		case 'SET_LEFT_MENU_PAGE':
 			return {...state, leftMenu: action.payload}
+
+		case 'SET_PAGE_POPUP_EXIT':
+			return {...state, pagePopUpExit: action.payload}
+			
 		case 'LOGOUT':
 			localStorage.removeItem('token')
-
 			return {...state, user: {...state.user, token: ''}}
 		case 'SET_HIDDEN_NUM':
 			return {...state, hiddenNum: action.payload}

@@ -31,7 +31,7 @@ import uploadFile from '../../assets/UploadFile.svg'
 import TimePicker from '../Timer/index'
 import NowLevel from '../NowLevel'
 import Input from '../Input'
-import {ELeftMenuPage, IItemCard, ITimeLine} from '../../types'
+import {ELeftMenuPage, EPagePopUpExit, IItemCard, ITimeLine} from '../../types'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
 
@@ -49,11 +49,6 @@ import MiniCalendar from '../MiniCalendar'
 interface IAddStudent {}
 interface IScheduleTimer {
 	id: number
-}
-
-enum PagePopup {
-	Exit,
-	None,
 }
 
 const ScheduleTimer = ({id: number}: IScheduleTimer) => {
@@ -80,7 +75,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [isEditMode, setIsEditMode] = useState(
 		currentOpenedStudent ? true : false,
 	)
-	console.log(currentOpenedStudent, 'currentOpenedStudent')
 
 	useEffect(() => {
 		socket.emit('getAllIdStudents', {token: token})
@@ -90,14 +84,6 @@ const AddStudent = ({}: IAddStudent) => {
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
-			console.log(
-				arr,
-				'\n---------arr-----------\n',
-				csp,
-				'\n--------------csp-------------',
-				currentOpenedStudent,
-				'currentOpenedStudent',
-			)
 		})
 
 		socket.on('getGroupByStudentId', (data: any) => {
@@ -106,27 +92,10 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [])
 
 	const nextStud = () => {
-		console.log(
-			currentStudPosition,
-			'currentStudPosition',
-			allIdStudent,
-			'allIdStudent',
-			allIdStudent[Number(currentStudPosition)],
-			'allIdStudent[Number(currentStudPosition)]',
-		)
 		if (Number(currentStudPosition) < allIdStudent.length - 1) {
 			setCurrentStudPosition(Number(currentStudPosition) + 1)
 			const newId = allIdStudent[Number(currentStudPosition)]
 
-			console.log(
-				'\n-------------\n',
-				newId,
-				'newId',
-				currentStudPosition,
-				'currentStudPosition',
-				'\n--------\n',
-			)
-			// console.log(newId, 'newId')
 			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
 			console.log(currentOpenedStudent, 'newIdDispatch')
 			socket.emit('getGroupByStudentId', {
@@ -140,14 +109,6 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	const prevStud = () => {
-		console.log(
-			currentStudPosition,
-			'currentStudPosition',
-			allIdStudent,
-			'allIdStudent',
-			allIdStudent[Number(currentStudPosition)],
-			'allIdStudent[Number(currentStudPosition)]',
-		)
 		if (Number(currentStudPosition) > 0) {
 			setCurrentStudPosition(Number(currentStudPosition) - 1)
 			const newId = allIdStudent[Number(currentStudPosition)]
@@ -197,7 +158,7 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
+	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const dispatch = useDispatch()
 
@@ -269,12 +230,14 @@ const AddStudent = ({}: IAddStudent) => {
 	const addItem = () => {
 		const newItemName = items[currentItemIndex].itemName
 		const existingItemNames = items.map((item) => item.itemName)
-		console.log(existingItemNames.includes(newItemName), existingItemNames, newItemName, currentItemIndex)
+		console.log(
+			existingItemNames.includes(newItemName),
+			existingItemNames,
+			newItemName,
+			currentItemIndex,
+		)
 
-		if (
-			newItemName !== '' &&
-			currentItemIndex === items.length - 1 
-		) {
+		if (newItemName !== '' && currentItemIndex === items.length - 1) {
 			setItems([
 				...items,
 				{
@@ -862,7 +825,10 @@ const AddStudent = ({}: IAddStudent) => {
 						phoneNumber !== '' ||
 						prePayCost !== ''
 					) {
-						setPagePopup(PagePopup.Exit)
+						dispatch({
+							type: 'SET_PAGE_POPUP_EXIT',
+							payload: EPagePopUpExit.Exit,
+						})
 					} else {
 						dispatch({
 							type: 'SET_LEFT_MENU_PAGE',
@@ -899,7 +865,12 @@ const AddStudent = ({}: IAddStudent) => {
 									type="text"
 									value={nameStudent}
 									disabled={isEditMode}
-									onChange={(e) => setNameStudent(e.target.value)}
+									onChange={(e) =>
+										setNameStudent(
+											e.target.value.charAt(0).toUpperCase() +
+												e.target.value.slice(1).toLowerCase(),
+										)
+									}
 								/>
 							</div>
 							<p>*</p>
@@ -1808,7 +1779,7 @@ const AddStudent = ({}: IAddStudent) => {
 				</div>
 			</div>
 
-			{pagePopup === PagePopup.Exit && (
+			{PagePopUpExit === EPagePopUpExit.Exit && (
 				<div className={s.ExitPopUpWrap}>
 					<ExitPopUp
 						className={s.ExitPopUp}
@@ -1818,8 +1789,17 @@ const AddStudent = ({}: IAddStudent) => {
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
 							})
+							dispatch({
+								type: 'SET_PAGE_POPUP_EXIT',
+								payload: EPagePopUpExit.None,
+							})
 						}}
-						no={() => setPagePopup(PagePopup.None)}
+						no={() =>
+							dispatch({
+								type: 'SET_PAGE_POPUP_EXIT',
+								payload: EPagePopUpExit.None,
+							})
+						}
 					/>
 				</div>
 			)}

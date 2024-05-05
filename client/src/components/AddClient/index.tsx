@@ -31,19 +31,16 @@ import {useDispatch, useSelector} from 'react-redux'
 import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
 import {useNavigate} from 'react-router-dom'
-import {ELeftMenuPage} from '../../types'
+import {ELeftMenuPage, EPagePopUpExit} from '../../types'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone'
 interface IAddClient {}
-enum PagePopup {
-	Exit,
-	None,
-}
+
 const AddClient = ({}: IAddClient) => {
 	const dispatch = useDispatch()
-	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
 
+	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	// Block Student
 	const [stages, setStages] = useState<number>(1)
 	const [nameStudent, setNameStudent] = useState<string>('')
@@ -370,7 +367,10 @@ const AddClient = ({}: IAddClient) => {
 		<>
 			<button
 				onClick={() => {
-					setPagePopup(PagePopup.Exit)
+					dispatch({
+						type: 'SET_PAGE_POPUP_EXIT',
+						payload: EPagePopUpExit.Exit,
+					})
 					// } else {
 					// 	dispatch({
 					// 		type: 'SET_LEFT_MENU_PAGE',
@@ -408,7 +408,12 @@ const AddClient = ({}: IAddClient) => {
 								<input
 									type="text"
 									value={nameStudent}
-									onChange={(e) => setNameStudent(e.target.value)}
+									onChange={(e) =>
+										setNameStudent(
+											e.target.value.charAt(0).toUpperCase() +
+												e.target.value.slice(1).toLowerCase(),
+										)
+									}
 								/>
 							</div>
 							<p>*</p>
@@ -513,7 +518,12 @@ const AddClient = ({}: IAddClient) => {
 										type="text"
 										value={job.itemName}
 										onChange={(e) => {
-											changeJob(index, 'itemName', e.target.value)
+											changeJob(
+												index,
+												'itemName',
+												e.target.value.charAt(0).toUpperCase() +
+													e.target.value.slice(1).toLowerCase(),
+											)
 										}}
 									/>
 								</div>
@@ -526,7 +536,12 @@ const AddClient = ({}: IAddClient) => {
 										type="text"
 										value={job.jobName}
 										onChange={(e) => {
-											changeJob(index, 'jobName', e.target.value)
+											changeJob(
+												index,
+												'jobName',
+												e.target.value.charAt(0).toUpperCase() +
+													e.target.value.slice(1).toLowerCase(),
+											)
 										}}
 									/>
 								</div>
@@ -650,7 +665,8 @@ const AddClient = ({}: IAddClient) => {
 																	index,
 																	indexStage,
 																	'name',
-																	e.target.value,
+																	e.target.value.charAt(0).toUpperCase() +
+																		e.target.value.slice(1).toLowerCase(),
 																)
 															}}
 														/>
@@ -1665,7 +1681,7 @@ const AddClient = ({}: IAddClient) => {
 					</div>
 				</div>
 			</div>
-			{pagePopup === PagePopup.Exit && (
+			{PagePopUpExit === EPagePopUpExit.Exit && (
 				<div className={s.ExitPopUpWrap}>
 					<ExitPopUp
 						className={s.ExitPopUp}
@@ -1675,8 +1691,17 @@ const AddClient = ({}: IAddClient) => {
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
 							})
+							dispatch({
+								type: 'SET_PAGE_POPUP_EXIT',
+								payload: EPagePopUpExit.None,
+							})
 						}}
-						no={() => setPagePopup(PagePopup.None)}
+						no={() =>
+							dispatch({
+								type: 'SET_PAGE_POPUP_EXIT',
+								payload: EPagePopUpExit.None,
+							})
+						}
 					/>
 				</div>
 			)}

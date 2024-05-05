@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {ICell, ECurrentDayPopUp} from '../../types'
+import {ICell, ECurrentDayPopUp, ELeftMenuPage} from '../../types'
 import s from './index.module.scss'
 import Arrow from '../../assets/arrow'
 import socket from '../../socket'
@@ -15,7 +15,7 @@ import DayCalendarPopUp from '../DayCalendarPopUp/index'
 import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
 import DayClientPopUp from '../DayClientPopUp/index'
-import { format } from 'date-fns'
+import {format} from 'date-fns'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -63,7 +63,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const currentScheduleDayClientId = useSelector(
 		(state: any) => state.currentScheduleDayClientId,
 	)
-
+	const currentLeftMenu = useSelector((state: any) => state.leftMenu)
+	
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
@@ -172,24 +173,28 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	}, [details])
 
 	useEffect(() => {
-		dispatch({
-			type: 'SET_CALENDAR_NOW_POPUP',
-			payload: {
-				day: String(format(new Date(), 'dd')),
-				month: String(
-					(currentPartOfMonth == 1
-						? currentMonth + 1
-						: currentPartOfMonth == 0
-						? currentMonth - 1
-						: currentPartOfMonth == 2
-						? currentMonth + 2
-						: currentMonth) - 1,
-				),
-				year: String(currentYear),
-			},
-		})
-		setPagePopup(PagePopup.DayCalendar)
-	}, [])
+		if (
+			currentLeftMenu === ELeftMenuPage.MainPage && pagePopup !== PagePopup.DayCalendar
+		) {
+			dispatch({
+				type: 'SET_CALENDAR_NOW_POPUP',
+				payload: {
+					day: String(format(new Date(), 'dd')),
+					month: String(
+						(currentPartOfMonth == 1
+							? currentMonth + 1
+							: currentPartOfMonth == 0
+							? currentMonth - 1
+							: currentPartOfMonth == 2
+							? currentMonth + 2
+							: currentMonth) - 1,
+					),
+					year: String(currentYear),
+				},
+			})
+			setPagePopup(PagePopup.DayCalendar)
+		}
+	}, [currentLeftMenu])
 	return (
 		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />

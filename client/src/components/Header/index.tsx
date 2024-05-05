@@ -12,12 +12,13 @@ import Exit from '../../assets/exit'
 import {Link, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {useState} from 'react'
-import {ELeftMenuPage} from '../../types'
+import {ELeftMenuPage, EPagePopUpExit} from '../../types'
 import mobileLogo from '../../assets/mobileLogo.svg'
 import {slide as Menu} from 'react-burger-menu'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
+import {WindowSharp} from '@mui/icons-material'
 interface IHeader {}
 
 const Header = ({}: IHeader) => {
@@ -26,7 +27,8 @@ const Header = ({}: IHeader) => {
 	const currentMonth = useSelector((state: any) => state.currentMonth) // new Date().getMonth()
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const details = useSelector((state: any) => state.details)
-
+	const pagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
+	const EleftMenu = useSelector((state: any) => state.leftMenu)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 	const handleLogout = () => {
@@ -42,11 +44,25 @@ const Header = ({}: IHeader) => {
 					<button
 						className={s.LogoWrapper}
 						onClick={() => {
-							navigate('../')
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.MainPage,
-							})
+							if (
+								ELeftMenuPage.MainPage !== EleftMenu &&
+								ELeftMenuPage.MyCabinet !== EleftMenu
+							) {
+								dispatch({
+									type: 'SET_PAGE_POPUP_EXIT',
+									payload: EPagePopUpExit.Exit,
+								})
+							} else {
+								navigate('../')
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.MainPage,
+								})
+								dispatch({
+									type: 'SET_PAGE_POPUP_EXIT',
+									payload: EPagePopUpExit.None,
+								})
+							}
 						}}>
 						<img src={logo} alt="logo" className={s.logo} />
 						<img src={mobileLogo} alt="mobileLogo" className={s.mobileLogo} />
@@ -108,7 +124,8 @@ const Header = ({}: IHeader) => {
 							value={2}>
 							Группу
 						</mui.MenuItem>
-						<mui.MenuItem classes={{
+						<mui.MenuItem
+							classes={{
 								root: s.muiMenuItemRoot,
 								selected: s.muiMenuItemSelected,
 							}}
@@ -217,10 +234,20 @@ const Header = ({}: IHeader) => {
 					<Link to={'/'} className={s.greenBtn}>
 						<p
 							onClick={() => {
-								dispatch({
-									type: 'SET_LEFT_MENU_PAGE',
-									payload: ELeftMenuPage.MyCabinet,
-								})
+								if (
+									EPagePopUpExit.None === pagePopUpExit &&
+									ELeftMenuPage.MainPage === EleftMenu
+								) {
+									dispatch({
+										type: 'SET_LEFT_MENU_PAGE',
+										payload: ELeftMenuPage.MyCabinet,
+									})
+								} else {
+									dispatch({
+										type: 'SET_PAGE_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
+									})
+								}
 							}}
 							className={s.btnText}>
 							Личный кабинет
