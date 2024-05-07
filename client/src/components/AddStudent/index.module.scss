@@ -155,8 +155,6 @@
 			}
 		}
 
-		
-
 		.StudentCardCheckBox {
 			width: 100%;
 			display: flex;
@@ -541,15 +539,6 @@
 	position: relative;
 }
 
-.timePickerWrapper {
-	position: absolute;
-	left: 460px;
-	top: 300px;
-	width: 190px;
-	height: 190px;
-	z-index: 100;
-}
-
 .CloseButton {
 	position: absolute;
 	z-index: 100;
@@ -581,10 +570,25 @@
 	font-size: 18px;
 	width: 100%;
 }
+.timePickerWrapper {
+	position: absolute;
+	z-index: 100;
+}
+@media screen and (min-width: 1024px) {
+	.timePickerWrapper {
+		position: absolute;
+		left: 460px;
+		top: 300px;
+		width: 190px;
+		height: 190px;
+		z-index: 100;
+	}
+}
+
 @media screen and (max-width: 1024px) {
 	.wrapper {
 		position: fixed;
-		left: 0;
+		left: 20px;
 		z-index: 100;
 
 		margin: 0;
@@ -596,7 +600,7 @@
 	}
 	.CloseIcon {
 		top: 0;
-		left: 300px;
+		left: 320px;
 	}
 	.ExitPopUpWrap {
 		position: fixed;
@@ -612,5 +616,30 @@
 @media screen and (min-width: 678px) and (max-width: 1024px) {
 	.wrapper {
 		max-height: 90%;
+	}
+}
+
+@media (max-height: 480px) {
+	.wrapper {
+		min-height: calc(100vh - 30px);
+		max-height: calc(100vh - 30px);
+	}
+}
+@media (min-height: 481px) and (max-height: 678px) {
+	.wrapper {
+		min-height: calc(100vh - 60px);
+		max-height: calc(100vh - 60px);
+	}
+}
+@media (min-height: 679px) and (max-height: 1024px) {
+	.wrapper {
+		min-height: calc(100vh - 90px);
+		max-height: calc(100vh - 90px);
+	}
+}
+@media (min-height: 1025px) {
+	.wrapper {
+		min-height: 872px;
+		max-height: 872px;
 	}
 }

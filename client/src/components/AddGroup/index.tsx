@@ -108,6 +108,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			nowLevel: 0,
 			valueMuiSelectArchive: 1,
 			timeLinesArray: getVoidWeek() as ITimeLine[],
+			costOneLesson: '',
 		},
 	])
 
@@ -128,6 +129,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			storyLesson: '',
 			targetLessonStudent: '',
 			todayProgramStudent: '',
+			startLesson: new Date(Date.now()),
+			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 		},
 	])
 
@@ -462,6 +465,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				nowLevel: undefined,
 				lessonDuration: null,
 				timeLinesArray: getVoidWeek() as ITimeLine[],
+				costOneLesson: '',
 			},
 		])
 	}
@@ -733,6 +737,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					valueMuiSelectArchive: 1,
 					lessonDuration: null,
 					timeLinesArray: getVoidWeek() as ITimeLine[],
+					costOneLesson: '',
 				},
 			])
 		}
@@ -798,26 +803,34 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const handleAddStudent = () => {
-		setStudents([
-			...students,
-			{
-				nameStudent: '',
-				contactFace: '',
-				phoneNumber: '',
-				email: '',
-				address: '',
-				linkStudent: '',
-				costStudent: '',
-				commentStudent: '',
-				prePayCost: '',
-				prePayDate: '',
-				selectedDate: null,
-				storyLesson: '',
-				costOneLesson: '',
-				targetLessonStudent: '',
-				todayProgramStudent: '',
-			},
-		])
+		if (
+			students[currentStudentIndex].nameStudent !== '' &&
+			currentStudentIndex === students.length - 1
+		) {
+			setStudents([
+				...students,
+				{
+					nameStudent: '',
+					contactFace: '',
+					phoneNumber: '',
+					email: '',
+					address: '',
+					linkStudent: '',
+					costStudent: '',
+					commentStudent: '',
+					prePayCost: '',
+					prePayDate: '',
+					selectedDate: null,
+					storyLesson: '',
+					costOneLesson: '',
+					targetLessonStudent: '',
+					todayProgramStudent: '',
+					startLesson: new Date(Date.now()),
+					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
+				},
+			])
+			setCurrentStudentIndex(currentStudentIndex + 1)
+		}
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -960,9 +973,96 @@ const AddGroup = ({className}: IAddGroup) => {
 		return DutyStudents[index]
 	}
 
-	const handleClick = () => {
-		setOpen(!open)
+	const handleStudentsHistoryLessons = (student: IStudent,index:number) => {
+		console.log(
+			studentsHistoryLessons[currentStudentIndex],
+			compareDates,
+			'FАА',
+		)
+
+		const filteredLessons = studentsHistoryLessons[currentStudentIndex]
+			.sort(compareDates)
+			.filter((lesson) => {
+				const lessonDate = new Date(lesson.date)
+				const startLesson = new Date(students[currentStudentIndex].startLesson)
+				const endLesson = new Date(students[currentStudentIndex].endLesson)
+				return lessonDate >= startLesson && lessonDate <= endLesson
+			})
+			.map((lesson, lessonIndex) => (
+				<div className={s.ListObject} key={lessonIndex}>
+					<p
+						style={{
+							fontWeight: '500',
+							fontSize: '14px',
+							marginRight: '5px',
+							display: 'flex',
+							flexDirection: 'row',
+							alignItems: 'center',
+						}}>
+						<div
+							style={{
+								backgroundColor: hashToColor(hashString(lesson.itemName)),
+								width: '10px',
+								height: '35px',
+								borderTopLeftRadius: '8px',
+								borderBottomLeftRadius: '8px',
+								marginRight: '5px',
+							}}></div>
+						{formatDate(lesson.date)}
+					</p>
+					<p
+						style={{
+							fontWeight: '300',
+							fontSize: '14px',
+							width: '95px',
+							minWidth: '95px',
+							maxWidth: '95px',
+							whiteSpace: 'nowrap',
+							overflow: 'hidden',
+							textOverflow: 'ellipsis',
+						}}>
+						{lesson.itemName}
+					</p>
+					<CheckBox
+						checked={lesson.isDone}
+						size="16px"
+						onChange={() =>
+							setHistoryLessonIsDone(index, lessonIndex, !lesson.isDone)
+						}
+					/>
+					<p
+						style={{
+							width: '100px',
+							textAlign: 'end',
+							fontSize: '14px',
+							textOverflow: 'ellipsis',
+							overflow: 'hidden',
+						}}>
+						{lesson.price || 0}₽
+					</p>
+					<CheckBox
+						checked={lesson.isPaid}
+						size="16px"
+						onChange={() =>
+							setHistoryLessonIsPaid(index, lessonIndex, !lesson.isPaid)
+						}
+					/>
+					<button className={s.ButtonEdit}>
+						<CreateIcon style={{width: '18px', height: '18px'}} />
+					</button>
+				</div>
+			))
+		return filteredLessons
 	}
+
+	useEffect(() => {
+		studentsHistoryLessons[currentStudentIndex] &&
+			students.map((student: IStudent) => {
+				handleStudentsHistoryLessons(student)
+			})
+
+		console.log(currentStudentIndex, students[currentStudentIndex], 'students[currentStudentIndex]')
+	}, [students, students[currentStudentIndex], currentStudentIndex])
 
 	return (
 		<>
@@ -1420,9 +1520,13 @@ const AddGroup = ({className}: IAddGroup) => {
 																<div
 																	className={s.timePickerWrapper}
 																	style={{
-																		transform: `translateY(${
-																			index * 40
-																		}px) translateX(-50%)`,
+																		...(window.innerWidth >= 1024
+																			? {
+																					transform: `translateY(${
+																						index * 40
+																					}px) translateX(-50%)`,
+																			  }
+																			: {}),
 																	}}>
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker
@@ -1637,7 +1741,7 @@ const AddGroup = ({className}: IAddGroup) => {
 							</button>
 						</div>
 
-						{students.map((student, index) => (
+						{students.map((student: IStudent, index: number) => (
 							<>
 								<div
 									className={
@@ -1843,6 +1947,14 @@ const AddGroup = ({className}: IAddGroup) => {
 														paddingBottom: '0px',
 													},
 												}}
+												value={student.startLesson}
+												onChange={(newValue) => {
+													changeStudentValue(
+														currentItemIndex,
+														'startLesson',
+														String(newValue!),
+													)
+												}}
 												timezone="system"
 												showDaysOutsideCurrentMonth
 											/>
@@ -1866,6 +1978,14 @@ const AddGroup = ({className}: IAddGroup) => {
 														paddingBottom: '0px',
 													},
 												}}
+												value={student.endLesson}
+												onChange={(newValue) =>
+													changeStudentValue(
+														currentItemIndex,
+														'endLesson',
+														String(newValue!),
+													)
+												}
 												timezone="system"
 												showDaysOutsideCurrentMonth
 											/>
@@ -1978,83 +2098,10 @@ const AddGroup = ({className}: IAddGroup) => {
 											component="div"
 											disablePadding>
 											<div className={s.ListObjectWrapper}>
-												{studentsHistoryLessons[currentStudentIndex].length !==
-												0 ? (
-													studentsHistoryLessons[currentStudentIndex]
-														.sort(compareDates)
-														.map((lesson, lessonIndex) => (
-															<div className={s.ListObject}>
-																<p
-																	style={{
-																		fontWeight: '500',
-																		fontSize: '14px',
-																		marginRight: '5px',
-																		display: 'flex',
-																		flexDirection: 'row',
-																		alignItems: 'center',
-																	}}>
-																	<div
-																		style={{
-																			backgroundColor: hashToColor(
-																				hashString(lesson.itemName),
-																			),
-																			width: '10px',
-																			height: '35px',
-																			borderTopLeftRadius: '8px',
-																			borderBottomLeftRadius: '8px',
-																			marginRight: '5px',
-																		}}></div>
-																	{formatDate(lesson.date)}
-																</p>
-																<p
-																	style={{
-																		fontWeight: '300',
-																		fontSize: '14px',
-																		width: '95px',
-																		minWidth: '95px',
-																		maxWidth: '95px',
-																		whiteSpace: 'nowrap',
-																		overflow: 'hidden',
-																		textOverflow: 'ellipsis',
-																	}}>
-																	{lesson.itemName}
-																</p>
-																<CheckBox
-																	checked={lesson.isDone}
-																	size="16px"
-																	onChange={() =>
-																		setHistoryLessonIsDone(
-																			index,
-																			lessonIndex,
-																			!lesson.isDone,
-																		)
-																	}
-																/>
-																<p
-																	style={{
-																		marginLeft: '55px',
-																		fontSize: '14px',
-																	}}>
-																	{lesson.price || 0}₽
-																</p>
-																<CheckBox
-																	checked={lesson.isPaid}
-																	size="16px"
-																	onChange={() =>
-																		setHistoryLessonIsPaid(
-																			index,
-																			lessonIndex,
-																			!lesson.isPaid,
-																		)
-																	}
-																/>
-																<button className={s.ButtonEdit}>
-																	<CreateIcon
-																		style={{width: '18px', height: '18px'}}
-																	/>
-																</button>
-															</div>
-														))
+												{studentsHistoryLessons[currentStudentIndex] &&
+												studentsHistoryLessons[currentStudentIndex].length !==
+													0 ? (
+													<>{handleStudentsHistoryLessons(student,index)}</>
 												) : (
 													<>
 														<div className={s.ListNoInfo}>

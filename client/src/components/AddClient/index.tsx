@@ -105,7 +105,10 @@ const AddClient = ({}: IAddClient) => {
 	])
 
 	const addJob = () => {
-		if (jobs[currentJobIndex].itemName !== '') {
+		if (
+			jobs[currentJobIndex].itemName !== '' &&
+			currentJobIndex === jobs.length - 1
+		) {
 			setJobs([
 				...jobs,
 				{
@@ -150,6 +153,7 @@ const AddClient = ({}: IAddClient) => {
 					],
 				},
 			])
+			setCurrentJobIndex(currentJobIndex + 1)
 		}
 	}
 
@@ -178,7 +182,10 @@ const AddClient = ({}: IAddClient) => {
 	}
 
 	const addStage = (jobIndex: number) => {
-		if (jobs[jobIndex].stages[currentStageIndex].name !== '') {
+		if (
+			jobs[jobIndex].stages[currentStageIndex].name !== '' &&
+			currentStageIndex === jobs[jobIndex].stages.length - 1
+		) {
 			setJobs(
 				jobs.map((job, i) =>
 					i === jobIndex
@@ -225,6 +232,7 @@ const AddClient = ({}: IAddClient) => {
 						: job,
 				),
 			)
+			setCurrentStageIndex(currentStageIndex + 1)
 		}
 	}
 
@@ -447,7 +455,7 @@ const AddClient = ({}: IAddClient) => {
 						<Line width="100%" className={s.Line} />
 
 						<div className={s.StudentCard}>
-							<p>Расходы по ученику:</p>
+							<p>Расходы по заказчику:</p>
 							<Input
 								width={`${costStudent.length}ch`}
 								type="text"
@@ -571,7 +579,7 @@ const AddClient = ({}: IAddClient) => {
 										<div className={s.StudentCard}>
 											<p>Общая стоимость работы:</p>
 											<Input
-												width={`${Number(job.stages[0].totalCost.length)}ch`}
+												width={`${String(job.stages[0].totalCost).length}ch`}
 												num
 												type="text"
 												value={job.stages[0].totalCost || ''}
@@ -591,7 +599,7 @@ const AddClient = ({}: IAddClient) => {
 										<div className={s.StudentCard}>
 											<p>Общая стоимость работы:</p>
 											<Input
-												width={`${job.stages[0].totalCost.length}ch`}
+												width={`${String(job.stages[0].totalCost).length}ch`}
 												num
 												type="text"
 												value={job.stages[0].totalCost || ''}
@@ -678,13 +686,13 @@ const AddClient = ({}: IAddClient) => {
 															style={{borderBottom: '1px solid #e2e2e9'}}
 															num
 															type="text"
-															value={item.totalCost}
-															width={`${item.totalCost.length}ch`}
+															value={item.cost || ''}
+															width={`${String(item.cost).length}ch`}
 															onChange={(e) => {
 																changeStage(
 																	index,
 																	indexStage,
-																	'totalCost',
+																	'cost',
 																	e.target.value,
 																)
 															}}
@@ -840,7 +848,22 @@ const AddClient = ({}: IAddClient) => {
 																			)
 																		}
 																	/>
-																	<p style={{width: '33px'}}>0%</p>
+																	<p
+																		style={{
+																			width: '33px',
+																			overflow: 'hidden',
+																			whiteSpace: 'nowrap',
+																		}}>
+																		{item.fisrtPaymentPrice &&
+																		item.cost &&
+																		String(item.cost) !== '0'
+																			? Math.round(
+																					(item.fisrtPaymentPrice / item.cost) *
+																						100,
+																			  )
+																			: '0'}
+																		%
+																	</p>
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
@@ -948,7 +971,22 @@ const AddClient = ({}: IAddClient) => {
 																			)
 																		}
 																	/>
-																	<p style={{width: '33px'}}>0%</p>
+																	<p
+																		style={{
+																			width: '33px',
+																			overflow: 'hidden',
+																			whiteSpace: 'nowrap',
+																		}}>
+																		{item.endPaymentPrice &&
+																		item.cost &&
+																		String(item.cost) !== '0'
+																			? Math.round(
+																					(item.endPaymentPrice / item.cost) *
+																						100,
+																			  )
+																			: '0'}
+																		%
+																	</p>
 																</div>
 															</>
 														) : (
@@ -1011,7 +1049,22 @@ const AddClient = ({}: IAddClient) => {
 																			)
 																		}
 																	/>
-																	<p style={{width: '33px'}}>0%</p>
+																	<p
+																		style={{
+																			width: '33px',
+																			overflow: 'hidden',
+																			whiteSpace: 'nowrap',
+																		}}>
+																		{item.fisrtPaymentPrice &&
+																		item.cost &&
+																		String(item.cost) !== '0'
+																			? Math.round(
+																					(item.fisrtPaymentPrice / item.cost) *
+																						100,
+																			  )
+																			: '0'}
+																		%
+																	</p>
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
@@ -1119,7 +1172,22 @@ const AddClient = ({}: IAddClient) => {
 																			)
 																		}
 																	/>
-																	<p style={{width: '33px'}}>0%</p>
+																	<p
+																		style={{
+																			width: '33px',
+																			overflow: 'hidden',
+																			whiteSpace: 'nowrap',
+																		}}>
+																		{item.endPaymentPrice &&
+																		item.cost &&
+																		String(item.cost) !== '0'
+																			? Math.round(
+																					(item.endPaymentPrice / item.cost) *
+																						100,
+																			  )
+																			: '0'}
+																		%
+																	</p>
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
@@ -1168,7 +1236,6 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}></p>
 																</div>
-																<Line width="317px" className={s.Line} />
 															</>
 														)}
 													</div>
@@ -1275,12 +1342,12 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].endPaymentDate!}
+																value={job.stages[0].firstPaymentDate!}
 																onChange={(newValue) => {
 																	changeStage(
 																		index,
 																		0,
-																		'endPaymentDate',
+																		'firstPaymentDate',
 																		newValue,
 																	)
 																}}
@@ -1291,6 +1358,9 @@ const AddClient = ({}: IAddClient) => {
 														<div className={s.PayInput}>
 															<p>Оплата</p>
 															<Input
+																width={`${
+																	String(job.stages[0].fisrtPaymentPrice).length
+																}ch`}
 																num
 																type="text"
 																value={String(job.stages[0].fisrtPaymentPrice)}
@@ -1317,7 +1387,23 @@ const AddClient = ({}: IAddClient) => {
 																)
 															}
 														/>
-														<p style={{width: '33px'}}>0%</p>
+														<p
+															style={{
+																width: '33px',
+																overflow: 'hidden',
+																whiteSpace: 'nowrap',
+															}}>
+															{job.stages[0].fisrtPaymentPrice &&
+															job.stages[0].totalCost &&
+															String(job.stages[0].totalCost) !== '0'
+																? Math.round(
+																		(job.stages[0].fisrtPaymentPrice /
+																			job.stages[0].totalCost) *
+																			100,
+																  )
+																: '0'}
+															%
+														</p>
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
@@ -1378,12 +1464,12 @@ const AddClient = ({}: IAddClient) => {
 																		paddingLeft: '0px',
 																	},
 																}}
-																value={job.stages[0].firstPaymentDate}
+																value={job.stages[0].endPaymentDate}
 																onChange={(newValue) => {
 																	changeStage(
 																		index,
 																		0,
-																		'firstPaymentDate',
+																		'endPaymentDate',
 																		newValue,
 																	)
 																}}
@@ -1394,9 +1480,14 @@ const AddClient = ({}: IAddClient) => {
 														<div className={s.PayInput}>
 															<p>Оплата</p>
 															<Input
+																width={`${
+																	String(job.stages[0].endPaymentPrice).length
+																}ch`}
 																num
 																type="text"
-																value={String(job.stages[0].endPaymentPrice)}
+																value={`${String(
+																	job.stages[0].endPaymentPrice,
+																)}`}
 																onChange={(e) =>
 																	changeStage(
 																		index,
@@ -1420,7 +1511,23 @@ const AddClient = ({}: IAddClient) => {
 																)
 															}
 														/>
-														<p style={{width: '33px'}}>0%</p>
+														<p
+															style={{
+																width: '33px',
+																overflow: 'hidden',
+																whiteSpace: 'nowrap',
+															}}>
+															{job.stages[0].endPaymentPrice &&
+															job.stages[0].totalCost &&
+															String(job.stages[0].totalCost) !== '0'
+																? Math.round(
+																		(job.stages[0].endPaymentPrice /
+																			job.stages[0].totalCost) *
+																			100,
+																  )
+																: '0'}
+															%
+														</p>
 													</div>
 												</>
 											) : (
@@ -1473,17 +1580,33 @@ const AddClient = ({}: IAddClient) => {
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].endPaymentPayed}
+															checked={job.stages[0].firstPaymentPayed}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
 																	'endPaymentPayed',
-																	!job.stages[0].endPaymentPayed,
+																	!job.stages[0].firstPaymentPayed,
 																)
 															}
 														/>
-														<p style={{width: '33px'}}>0%</p>
+														<p
+															style={{
+																width: '33px',
+																overflow: 'hidden',
+																whiteSpace: 'nowrap',
+															}}>
+															{job.stages[0].fisrtPaymentPrice &&
+															job.stages[0].totalCost &&
+															String(job.stages[0].totalCost) !== '0'
+																? Math.round(
+																		(job.stages[0].fisrtPaymentPrice /
+																			job.stages[0].totalCost) *
+																			100,
+																  )
+																: '0'}
+															%
+														</p>
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
@@ -1581,17 +1704,33 @@ const AddClient = ({}: IAddClient) => {
 														</div>
 														<CheckBox
 															size="18px"
-															checked={job.stages[0].firstPaymentPayed}
+															checked={job.stages[0].endPaymentPayed}
 															onChange={() =>
 																changeStage(
 																	index,
 																	0,
 																	'firstPaymentPayed',
-																	!job.stages[0].firstPaymentPayed,
+																	!job.stages[0].endPaymentPayed,
 																)
 															}
 														/>
-														<p style={{width: '33px'}}>0%</p>
+														<p
+															style={{
+																width: '33px',
+																overflow: 'hidden',
+																whiteSpace: 'nowrap',
+															}}>
+															{job.stages[0].endPaymentPrice &&
+															job.stages[0].totalCost &&
+															String(job.stages[0].totalCost) !== '0'
+																? Math.round(
+																		(job.stages[0].endPaymentPrice /
+																			job.stages[0].totalCost) *
+																			100,
+																  )
+																: '0'}
+															%
+														</p>
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
@@ -1635,7 +1774,6 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}></p>
 													</div>
-													<Line width="317px" className={s.Line} />
 												</>
 											)}
 										</div>

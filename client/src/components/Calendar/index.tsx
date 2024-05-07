@@ -16,6 +16,7 @@ import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
 import DayClientPopUp from '../DayClientPopUp/index'
 import {format} from 'date-fns'
+import {log} from 'console'
 
 const daysInMonth = (date: Date) => {
 	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -64,7 +65,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 		(state: any) => state.currentScheduleDayClientId,
 	)
 	const currentLeftMenu = useSelector((state: any) => state.leftMenu)
-	
+
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
@@ -174,7 +175,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	useEffect(() => {
 		if (
-			currentLeftMenu === ELeftMenuPage.MainPage && pagePopup !== PagePopup.DayCalendar
+			currentLeftMenu === ELeftMenuPage.MainPage &&
+			pagePopup !== PagePopup.DayCalendar
 		) {
 			dispatch({
 				type: 'SET_CALENDAR_NOW_POPUP',
@@ -316,6 +318,24 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										weekIndex,
 									)
 
+									const today = new Date(Date.now())
+									const todayDay = today.getDate()
+									const todayMonth = today.getMonth()
+									const todayYear = today.getFullYear()
+
+									let firstDayOfMonth = new Date(
+										todayYear,
+										todayMonth - 1,
+										1,
+									).getDay()
+									if (firstDayOfMonth === 0) {
+										firstDayOfMonth = 7
+									}
+
+									const weekIndexToday = Math.ceil(
+										(todayDay + firstDayOfMonth - 1) / 7,
+									)
+									console.log(todayDay, '1235', todayMonth, weekIndexToday)
 									return (
 										<td
 											className={s.td}
@@ -342,12 +362,12 @@ export const Calendar = ({className, cells}: ICalendar) => {
 											<div className={s.content}>
 												<p
 													id="day"
-													className={
-														s.dayIndex +
-														' ' +
-														(dayIndex === 6 || dayIndex === 5 ? s.red : '') +
-														' ' +
-														(currentPartOfMonth !== 1 && s.grey)
+													className={`
+														${s.dayIndex}
+														${(dayIndex === 6 || dayIndex === 5 ? s.red : '')} 
+														${(currentPartOfMonth !== 1 && s.grey)} ${day === todayDay &&
+															currentMonth === todayMonth &&
+															weekIndex === weekIndexToday && !details && s.dayToday}` 
 													}>
 													{day}
 												</p>
