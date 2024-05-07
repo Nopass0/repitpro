@@ -2,6 +2,7 @@ import io from "./socket";
 import { login } from "./auth/login";
 import { register } from "./auth/register";
 import db from "./db";
+import { strongCache, cache } from "utils/Cache";
 
 import { calendar } from "./calendar/calendar";
 import {

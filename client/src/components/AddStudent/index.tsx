@@ -208,6 +208,7 @@ const AddStudent = ({}: IAddStudent) => {
 			timeLinesArray: getVoidWeek() as ITimeLine[],
 		},
 	])
+	const [files, setFiles] = useState<{}[]>([])
 
 	useEffect(() => {
 		if (data) {
@@ -222,9 +223,24 @@ const AddStudent = ({}: IAddStudent) => {
 			setCommentStudent(data.students[0].commentStudent)
 			setCostStudent(data.students[0].costStudent)
 			setItems(data.items)
-			console.log(data.items)
+			setFiles(data.students[0].filesData)
+			console.log('--data-------', data)
 		}
 	}, [data])
+
+	const handleFileNLinks = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		console.log(file, name, type, size)
+		setFiles((prevData) => [
+			...prevData,
+			{name: name, type: type, size: size, file: file},
+		])
+		console.log(files)
+	}
 
 	//add item function
 	const addItem = () => {
@@ -291,6 +307,7 @@ const AddStudent = ({}: IAddStudent) => {
 				costOneLesson,
 				items,
 				token,
+				files,
 				phoneNumber,
 			},
 			'sendData',
@@ -307,6 +324,7 @@ const AddStudent = ({}: IAddStudent) => {
 				prePayCost,
 				prePayDate,
 				costOneLesson,
+				files,
 				items,
 				token,
 				phoneNumber,
@@ -321,6 +339,7 @@ const AddStudent = ({}: IAddStudent) => {
 				commentStudent,
 				prePayCost,
 				prePayDate,
+				files,
 				costOneLesson,
 				items,
 				token,
@@ -1758,7 +1777,7 @@ const AddStudent = ({}: IAddStudent) => {
 								<p>Список пока пуст</p>
 							</mui.List>
 						</mui.Collapse> */}
-						<FileNLinks />
+						<FileNLinks alreadyUploaded={files} callback={handleFileNLinks} />
 					</div>
 				</div>
 				<div className={s.FooterWrapper}>

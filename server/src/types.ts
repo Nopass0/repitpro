@@ -53,3 +53,10 @@ export interface IStudentCardResponse {
   items: IItemCard[];
   token: string;
 }
+
+export interface IUploadFiles {
+  name: string;
+  file: Buffer;
+  type: string;
+  size: number;
+}
