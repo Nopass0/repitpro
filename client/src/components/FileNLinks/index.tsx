@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import s from './index.module.scss'
 import {Collapse, List, ListItemButton, ListItemText} from '@mui/material'
 import Line from '../Line'
@@ -10,15 +10,33 @@ interface IFileNLinks {
 	className?: string
 	stateName?: string
 	stateSet?: string
+	alreadyUploaded?: {file: any; name: string; size: number; type: string}[]
+	callback?: (file: any, name: string, size: number, type: string) => void
 }
 
-const FileNLinks: React.FC<IFileNLinks> = ({className}: IFileNLinks) => {
+const FileNLinks: React.FC<IFileNLinks> = ({
+	className,
+	alreadyUploaded,
+	callback,
+}: IFileNLinks) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const [files, setFiles] = useState<any>([])
+	const [filesToUpload, setFilesToUpload] = useState<
+		{name: string; type: string; size: number; file: any}[]
+	>([])
 	const handleClick = () => {
 		setOpen(!open)
 	}
 
+	useEffect(() => {
+		console.log(
+			'\n------------alreadyUploaded----------------\n',
+			alreadyUploaded,
+			'\n------------alreadyUploaded----------------\n',
+		)
+		setFiles(alreadyUploaded)
+		console.log(files)
+	}, [alreadyUploaded])
 
 	return (
 		<>
@@ -33,16 +51,31 @@ const FileNLinks: React.FC<IFileNLinks> = ({className}: IFileNLinks) => {
 					style={{display: 'none'}}
 					onChange={(e) => {
 						const DefFiles = Array.from(e.target.files)
+
 						DefFiles.forEach((file) => {
-							const fileReader = new FileReader()
-							fileReader.onload = () => {
-								const arrayBuffer = fileReader.result as ArrayBuffer
-								const byteArray = new Uint8Array(arrayBuffer)
-								const blob = new Blob([byteArray])
-								const url = URL.createObjectURL(blob)
-								setFiles((prevFiles) => [...prevFiles, {name: file.name, url}])
-							}
-							fileReader.readAsArrayBuffer(file)
+							// setFilesToUpload((prevFiles) => [
+							// 	...prevFiles,
+							// 	{name: file.name, type: file.type, size: file.size, file: file},
+							// ])
+							callback && callback(file, file.name, file.type, file.size)
+							setFiles((prevFiles: any) => [
+								...prevFiles,
+								{
+									name: file.name,
+									type: file.type,
+									size: file.size,
+									file: file,
+								},
+							])
+							// const fileReader = new FileReader()
+							// fileReader.onload = () => {
+							// 	const arrayBuffer = fileReader.result as ArrayBuffer
+							// 	const byteArray = new Uint8Array(arrayBuffer)
+							// 	const blob = new Blob([byteArray])
+							// 	const url = URL.createObjectURL(blob)
+							// 	setFiles((prevFiles) => [...prevFiles, {name: file.name, url}])
+							// }
+							// fileReader.readAsArrayBuffer(file)
 						})
 					}}
 				/>

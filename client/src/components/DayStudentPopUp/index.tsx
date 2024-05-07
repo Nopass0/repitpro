@@ -96,9 +96,18 @@ const DayStudentPopUp = ({
 
 	const handleAddHomeFile = (e: any) => {
 		const fileToAdd = e.target.files[0]
-		// Проверяем, есть ли уже такой файл в массиве homeFiles
+		console.log('FiletoAdd', fileToAdd)
+		// // Проверяем, есть ли уже такой файл в массиве homeFiles
 		if (!homeFiles.some((file) => file.name === fileToAdd.name)) {
-			setHomeFiles([...homeFiles, fileToAdd])
+			setHomeFiles([
+				...homeFiles,
+				{
+					name: fileToAdd.name,
+					size: fileToAdd.size,
+					type: fileToAdd.type,
+					file: fileToAdd,
+				},
+			])
 		} else {
 			console.log('Этот файл уже был добавлен.')
 		}
@@ -108,7 +117,15 @@ const DayStudentPopUp = ({
 		const fileToAdd = e.target.files[0]
 		// Проверяем, есть ли уже такой файл в массиве classroomFiles
 		if (!classroomFiles.some((file) => file.name === fileToAdd.name)) {
-			setClassroomFiles([...classroomFiles, fileToAdd])
+			setClassroomFiles([
+				...classroomFiles,
+				{
+					name: fileToAdd.name,
+					size: fileToAdd.size,
+					type: fileToAdd.type,
+					file: fileToAdd,
+				},
+			])
 		} else {
 			console.log('Этот файл уже был добавлен.')
 		}
@@ -287,12 +304,14 @@ const DayStudentPopUp = ({
 										? 'Список пока пуст'
 										: homeFiles.map((file: any, index: number) => (
 												<div className={s.FileWrapper}>
-													<p>{file.slice(0, 25) + '...'}</p>
+													<p>{file.name.slice(0, 25) + '...'}</p>
 													<button
 														className={s.DeleteBtn}
 														onClick={() =>
 															setHomeFiles(
-																homeFiles.filter((f: any) => f !== file),
+																homeFiles.filter(
+																	(f: any) => f.name !== file.name,
+																),
 															)
 														}>
 														<DeleteOutlineIcon />
@@ -409,12 +428,14 @@ const DayStudentPopUp = ({
 										? 'Список пока пуст'
 										: classroomFiles.map((file: any) => (
 												<div className={s.FileWrapper}>
-													<p>{file.slice(0, 25) + '...'}</p>
+													<p>{file.name.slice(0, 25) + '...'}</p>
 													<button
 														className={s.DeleteBtn}
 														onClick={() =>
 															setClassroomFiles(
-																classroomFiles.filter((f: any) => f !== file),
+																classroomFiles.filter(
+																	(f: any) => f.name !== file.name,
+																),
 															)
 														}>
 														<DeleteOutlineIcon />

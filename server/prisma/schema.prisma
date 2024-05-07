@@ -15,8 +15,8 @@ datasource db {
 
   //sqlite3 dev
   provider = "postgresql"
-  // url      = "postgresql://postgres:root@localhost:5432/repitpro"
-  url               = env("DATABASE_URL")
+  url      = "postgresql://postgres:root@localhost:5432/repitpro"
+  // url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DB_URL")
 }
 
@@ -101,6 +101,7 @@ model Item {
   startLesson  DateTime
   endLesson  DateTime
   nowLevel  Int?
+  costOneLesson  String
   lessonDuration  Int?
   timeLinesArray Json //Objects
 
@@ -237,4 +238,16 @@ model Stage {
   userId            String
 }
 
+model File {
+  id        String   @id @default(cuid())
+  name      String
+  path      String   @unique
+  type      String
+  size      Int
+  hashSum   String
+
+  extraType String?
+
+  userId    String
+}
 // ... (остальные модели)

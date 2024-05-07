@@ -1,9 +1,18 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
+import {
+  IStudentCardResponse,
+  ITimeLine,
+  IItemCard,
+  IUploadFiles,
+} from "../types";
 import db from "../db";
 import io from "../socket";
 import { addDays, differenceInDays, isWithinInterval } from "date-fns";
-
+import { randomBytes } from "crypto";
+import { join } from "path";
+import { mkdir, mkdirSync, writeFileSync } from "fs";
+import { promises as fsPromises } from "fs";
+import mime from "mime-types";
 import { upload } from "../files/files";
 
 // Получение дня недели, начиная с понедельника
@@ -37,9 +46,12 @@ export async function addStudent(data) {
       commentStudent,
       link,
       cost,
+      files,
       items,
       token,
     } = data;
+
+    console.log(data, "Schedule", data.items[0].timeLinesArray[0].startTime);
 
     const token_ = await db.token.findFirst({
       where: {
@@ -76,6 +88,7 @@ export async function addStudent(data) {
             startLesson: item.startLesson ? new Date(item.startLesson) : null,
             endLesson: item.endLesson ? new Date(item.endLesson) : null,
             nowLevel: item.nowLevel || 0,
+            costOneLesson: item.costOneLesson || "",
             lessonDuration: item.lessonDuration || null,
             timeLinesArray: item.timeLinesArray || {},
             userId: userId,
@@ -138,21 +151,6 @@ export async function addStudent(data) {
           scheduleForDay.endTime.minute === 0;
 
         //get lessonPrice
-        const costOneLesson = await db.group.findUnique({
-          where: {
-            id: createdGroup.id,
-          },
-          select: {
-            students: {
-              where: {
-                userId: userId,
-              },
-              select: {
-                costOneLesson: true,
-              },
-            },
-          },
-        });
 
         //get day of month (number)
         const dayOfMonth = date.getDate();
@@ -161,7 +159,7 @@ export async function addStudent(data) {
           // Создаем запись в базе данных только для активных дней
           console.log(
             "Создаем запись в базе данных только для активных дней",
-            costOneLesson.students[0].costOneLesson,
+            item.costOneLesson,
             "group",
             createdGroup
           );
@@ -171,7 +169,7 @@ export async function addStudent(data) {
               groupId: createdGroup.id,
               workCount: 0, // Здесь укажите данные, которые нужно добавить в запись
               lessonsCount: 1,
-              lessonsPrice: Number(costOneLesson.students[0].costOneLesson),
+              lessonsPrice: Number(item.costOneLesson),
               workPrice: 0,
               month: (date.getMonth() + 1).toString(),
               timeLinesArray: item.timeLinesArray,
@@ -187,6 +185,31 @@ export async function addStudent(data) {
         }
       }
     }
+
+    let filePaths: string[] = [];
+
+    if (files.length > 0) {
+      filePaths = await upload(files, userId, "", (ids: string[]) => {
+        filePaths = ids;
+      });
+    }
+
+    const sFiles = await db.student.update({
+      where: {
+        id: createdGroup.students[0].id,
+      },
+      data: {
+        files: filePaths,
+      },
+    });
+
+    console.log(
+      "\n-----------files--------------\n",
+      filePaths,
+      "\n",
+      files,
+      "\n----------------------------------"
+    );
   } catch (error) {
     console.error("Error creating group:", error);
   }
@@ -321,10 +344,14 @@ export async function getStudentsByDate(data: {
     const student = item.group.students[0] || null;
     const timeLinesArray = schedule.timeLinesArray;
     const daySchedule = timeLinesArray[dayOfWeekIndex];
-    const homeFiles = schedule.homeFiles;
+    const homeFiles = await db.file.findMany({
+      where: { id: { in: schedule.homeFiles }, extraType: "home" },
+    });
     // ? schedule.homeFiles.map((file) => Buffer.from(file))
     // : [];
-    const classFiles = schedule.classFiles;
+    const classFiles = await db.file.findMany({
+      where: { id: { in: schedule.classFiles }, extraType: "class" },
+    });
     // ? schedule.classFiles.map((file) => Buffer.from(file))
     // : [];
     const groupStudentSchedule = schedule.item.group.groupName;
@@ -456,45 +483,6 @@ export async function getStudentsByDate(data: {
 //     };
 //   });
 // }
-import { randomBytes } from "crypto";
-import { join } from "path";
-import { mkdir, mkdirSync, writeFileSync } from "fs";
-import { promises as fsPromises } from "fs";
-import mime from "mime-types";
-
-async function getExtension(file: Buffer): Promise<string> {
-  // Determine MIME type of the file
-  const mimeType = mime.contentType(file);
-
-  // Get file extension from MIME type
-  const extension = mime.extension(mimeType);
-
-  // If extension exists, return it; otherwise, default to .bin
-  return extension ? `.${extension}` : ".bin";
-}
-
-function getFileExtension(fileName: string): string | null {
-  const match = fileName.match(/\.([^.]+)$/);
-  return match ? match[0] : null;
-}
-
-async function getMimeType(file: Buffer): Promise<string> {
-  // Here you can implement code to determine the MIME type from the file content
-  // For example, using a library like `mime-types` or detecting it based on the file content
-  return "application/octet-stream"; // Placeholder for demonstration
-}
-
-function getExtensionFromMimeType(mimeType: string): string | null {
-  // Here you can map MIME types to file extensions
-  // Example mappings:
-  const mimeToExtensionMap: { [key: string]: string } = {
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    // Add more mappings as needed
-  };
-
-  return mimeToExtensionMap[mimeType] || null;
-}
 
 export async function updateStudentSchedule(data: {
   id: string;
@@ -504,8 +492,8 @@ export async function updateStudentSchedule(data: {
   lessonsPrice?: number;
   itemName?: string;
   typeLesson?: number;
-  homeFiles?: Buffer[];
-  classFiles?: Buffer[];
+  homeFiles?: IUploadFiles[];
+  classFiles?: IUploadFiles[];
   homeWork?: string;
   classWork?: string;
   isChecked?: boolean;
@@ -560,47 +548,31 @@ export async function updateStudentSchedule(data: {
 
   console.log("data", data);
 
-  //get exist filenames in db
-  const studentSchedule = await db.studentSchedule.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      homeFiles: true,
-      classFiles: true,
-    },
-  });
-
-  const folderName = randomBytes(8).toString("hex");
-  const homeFilePaths: string[] = [];
-  const classFilePaths: string[] = [];
+  let homeFilePaths: string[] = [];
+  let classFilePaths: string[] = [];
 
   // Save home files
-  if (homeFiles) {
-    const homeFilesDir = join("/tmp", folderName, "home");
-    mkdirSync(homeFilesDir, { recursive: true }); // <-- Use mkdirSync with recursive option
-
-    for (let i = 0; i < homeFiles.length; i++) {
-      const file = homeFiles[i];
-      const fileName = `home_file_${i}${await getExtension(file)}`;
-      const filePath = join(homeFilesDir, fileName);
-      writeFileSync(filePath, file);
-      homeFilePaths.push(filePath);
-    }
+  if (homeFiles.length > 0) {
+    homeFilePaths = await upload(
+      homeFiles,
+      userId,
+      "home",
+      (paths: string[]) => {
+        homeFilePaths = paths;
+      }
+    );
   }
 
   // Save class files
-  if (classFiles) {
-    const classFilesDir = join("/tmp", folderName, "class");
-    mkdirSync(classFilesDir, { recursive: true }); // <-- Use mkdirSync with recursive option
-
-    for (let i = 0; i < classFiles.length; i++) {
-      const file = classFiles[i];
-      const fileName = `class_file_${i}${await getExtension(file)}`;
-      const filePath = join(classFilesDir, fileName);
-      writeFileSync(filePath, file);
-      classFilePaths.push(filePath);
-    }
+  if (classFiles.length > 0) {
+    classFilePaths = await upload(
+      classFiles,
+      userId,
+      "class",
+      (paths: string[]) => {
+        classFilePaths = paths;
+      }
+    );
   }
 
   console.log("homeFiles", homeFiles, "classFiles", classFiles);
@@ -610,8 +582,8 @@ export async function updateStudentSchedule(data: {
     itemName?: string;
     typeLesson?: number;
     isChecked?: boolean;
-    homeFiles?: string[];
-    classFiles?: string[];
+    homeFiles?: string[]; //ids
+    classFiles?: string[]; //ids
     address?: string;
     studentName?: string;
     homeWork?: string;
@@ -644,8 +616,18 @@ export async function updateStudentSchedule(data: {
   if (classStudentsPoints !== undefined)
     updatedFields.classStudentsPoints = classStudentsPoints;
   if (address !== undefined) updatedFields.address = address;
-  if (homeFiles !== undefined) updatedFields.homeFiles = homeFilePaths;
-  if (classFiles !== undefined) updatedFields.classFiles = classFilePaths;
+  if (
+    homeFilePaths !== undefined &&
+    homeFilePaths.length > 0 &&
+    homeFiles !== undefined
+  )
+    updatedFields.homeFiles = homeFilePaths;
+  if (
+    classFilePaths !== undefined &&
+    classFilePaths.length > 0 &&
+    classFiles !== undefined
+  )
+    updatedFields.classFiles = classFilePaths;
 
   const dayOfWeekIndex = getDay(
     new Date(Number(year), Number(month) - 1, Number(day))
@@ -765,7 +747,24 @@ export async function getGroupByStudentId(data: any) {
       },
     });
 
-    io.emit("getGroupByStudentId", group);
+    const files = await db.file.findMany({
+      where: {
+        id: {
+          in: group.group.students[0].files,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        path: true,
+        type: true,
+      },
+    });
+    console.log(files, "files");
+    //group to object
+    const group_ = JSON.parse(JSON.stringify(group));
+    group_.group.students[0].filesData = files;
+    io.emit("getGroupByStudentId", group_);
     return group.group;
   } catch (error) {
     console.error("Error retrieving group:", error);
@@ -1092,6 +1091,7 @@ export async function createStudentSchedule(data: any) {
         typeLesson: 0,
         placeLesson: "",
         timeLesson: "",
+        costOneLesson: "",
         valueMuiSelectArchive: 0,
         tryLessonCost: "",
         timeLinesArray: [],
