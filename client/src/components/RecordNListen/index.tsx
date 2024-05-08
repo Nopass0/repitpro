@@ -2,61 +2,129 @@ import React, {useEffect, useState} from 'react'
 import s from './index.module.scss'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
+
 interface IRecordNListen {
 	className?: string
+	alreadyRecorded?: {
+		file: File
+		name: string
+		type: string
+		size: number
+	}[]
+	callback?: (file: File, name: string, type: string, size: number) => void
 }
 
 const RecordNListen: React.FC<IRecordNListen> = ({
 	className,
-}: IRecordNListen) => {
+	alreadyRecorded = [],
+	callback,
+}) => {
 	const [isRecording, setIsRecording] = useState(false)
 	const [audioChunks, setAudioChunks] = useState([])
 	const [audioBlob, setAudioBlob] = useState(null)
 	const [isPlaying, setIsPlaying] = useState(false)
-	let mediaRecorder // Initialize mediaRecorder with a default value of null
+	const [recordedAudios, setRecordedAudios] = useState(alreadyRecorded)
+	const [showAudioList, setShowAudioList] = useState(false)
+	const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
+
+	useEffect(() => {
+		setRecordedAudios(alreadyRecorded)
+	}, [alreadyRecorded])
+
+	const getFileLinkById = (id: string) => {
+		// !TODO: Remake after deploy on server with domain
+		const baseLinkToThisSite = window.location.origin.replace(
+			`:${window.location.port}`,
+			':3000',
+		)
+
+		return `${baseLinkToThisSite}/files/${id}`
+	}
 
 	const startRecording = async () => {
 		try {
+			if (mediaRecorder) {
+				mediaRecorder.stream.getTracks().forEach((track) => track.stop())
+				setMediaRecorder(null)
+			}
+
 			const stream = await navigator.mediaDevices.getUserMedia({audio: true})
-			mediaRecorder = new MediaRecorder(stream) // Update mediaRecorder when startRecording is called
-
-			mediaRecorder.addEventListener('dataavailable', (event) => {
-				setAudioChunks((prev) => [...prev, event.data])
-			})
-
-			mediaRecorder.addEventListener('stop', () => {
-				const audioBlob = new Blob(audioChunks, {
-					type: 'audio/ogg; codecs=opus',
+			if (stream) {
+				const newMediaRecorder = new MediaRecorder(stream)
+				setMediaRecorder(newMediaRecorder)
+				setAudioBlob(null) // Сбрасываем audioBlob перед началом новой записи
+				newMediaRecorder.addEventListener('dataavailable', (event) => {
+					setAudioChunks((prev) => [...prev, event.data])
 				})
-				setAudioBlob(audioBlob)
-				setAudioChunks([])
-			})
-
-			mediaRecorder.start()
-			setIsRecording(true)
+				newMediaRecorder.addEventListener('stop', () => {
+					const audioBlob = new Blob(audioChunks, {
+						type: 'audio/ogg; codecs=opus',
+					})
+					setAudioBlob(audioBlob)
+					setAudioChunks([])
+				})
+				newMediaRecorder.start()
+				setIsRecording(true)
+				console.log('Recording started')
+			} else {
+				console.error('Не удалось получить доступ к микрофону')
+			}
 		} catch (error) {
-			console.error('Error accessing microphone:', error)
+			console.error('Ошибка доступа к микрофону:', error)
 		}
 	}
+
 	const stopRecording = () => {
 		setIsRecording(false)
-		if (mediaRecorder) {
-			mediaRecorder.stop() // Now mediaRecorder should be defined
+		if (mediaRecorder && mediaRecorder.state === 'recording') {
+			console.log('stopping recording')
+			mediaRecorder.stop()
+			mediaRecorder.ondataavailable = (event) => {
+				if (event.data && event.data.size > 0) {
+					const audioBlob = new Blob([event.data], {type: 'audio/ogg'})
+					const timestamp = new Date().toISOString().replace(/[-:\\.]/g, '')
+					const fileName = `recorded_audio_${timestamp}.ogg`
+					const audioFile = new File([audioBlob], fileName, {type: 'audio/ogg'})
+					const newAudio = {
+						file: audioFile,
+						name: fileName,
+						size: audioBlob.size,
+						type: 'audio/ogg',
+					}
+					setRecordedAudios((prevAudios) => [...prevAudios, newAudio])
+					setAudioBlob(null)
+					console.log('Recording stopped')
+					if (callback) {
+						callback(audioFile, newAudio.name, newAudio.type, newAudio.size)
+					}
+				}
+			}
 		}
 	}
-	const playAudio = () => {
-		if (audioBlob) {
-			const audioURL = URL.createObjectURL(audioBlob)
-			const audio = new Audio(audioURL)
-			audio.play()
-			setIsPlaying(true)
 
-			audio.addEventListener('ended', () => {
-				setIsPlaying(false)
-				URL.revokeObjectURL(audioURL)
-			})
-		}
+	const playAudio = (audioFile: File) => {
+		const audioURL = URL.createObjectURL(audioFile)
+		const audio = new Audio(audioURL)
+		audio.play()
+		setIsPlaying(true)
+		audio.addEventListener('ended', () => {
+			setIsPlaying(false)
+			URL.revokeObjectURL(audioURL)
+		})
 	}
+
+	const playRecordedAudio = (id: string) => {
+		const audioURL = getFileLinkById(id)
+		console.log('audioURL', audioURL)
+		const audio = new Audio(audioURL)
+		audio.play()
+		setIsPlaying(true)
+		audio.addEventListener('ended', () => {
+			setIsPlaying(false)
+			URL.revokeObjectURL(audioURL)
+		})
+	}
+
 	const handleRecordButtonClick = () => {
 		if (isRecording) {
 			stopRecording()
@@ -64,24 +132,25 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 			startRecording()
 		}
 	}
+
 	const handleListenButtonClick = () => {
-		if (audioBlob) {
-			playAudio()
-		}
+		setShowAudioList(!showAudioList)
 	}
+
 	useEffect(() => {
 		return () => {
 			if (mediaRecorder) {
-				mediaRecorder.stop()
+				mediaRecorder.stream.getTracks().forEach((track) => track.stop())
 			}
 		}
 	}, [mediaRecorder])
+
 	return (
 		<div className={`${s.RecordNListen} ${className}`}>
 			<button
 				className={`${s.Record} ${isRecording ? s.pulsating : ''}`}
 				onClick={handleRecordButtonClick}>
-				<p>Аудио</p>
+				<p>{isRecording ? 'Остановить' : 'Аудио'}</p>
 				<img src={microSVG} alt={microSVG} />
 			</button>
 			<button
@@ -90,6 +159,29 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 				<p>Прослушать</p>
 				<img src={Listen} alt={Listen} />
 			</button>
+			{showAudioList && (
+				<div className={s.audioListContainer}>
+					<div className={s.audioList}>
+						<h2>Recorded Audios</h2>
+						<ul>
+							{recordedAudios.map((audio, index) => (
+								<li key={index}>
+									{audio.path || audio.id ? (
+										<span onClick={() => playRecordedAudio(audio.id)}>
+											{audio.name}
+										</span>
+									) : (
+										<span onClick={() => playAudio(audio.file)}>
+											{audio.name}
+										</span>
+									)}
+								</li>
+							))}
+						</ul>
+						<button onClick={() => setShowAudioList(false)}>Close</button>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

@@ -46,3 +46,65 @@
 		// box-shadow: 0 0 0 0px #b1e7ad;
 	}
 }
+
+.audioListContainer {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 100;
+
+	.audioList {
+		background-color: white;
+		padding: 20px;
+		border-radius: 5px;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+		max-width: 400px;
+		width: 100%;
+
+		h2 {
+			margin-top: 0;
+			font-size: 1.2rem;
+			margin-bottom: 10px;
+		}
+
+		ul {
+			list-style-type: none;
+			padding: 0;
+			margin: 0;
+
+			li {
+				cursor: pointer;
+				padding: 10px;
+				border-bottom: 1px solid #ccc;
+
+				&:hover {
+					background-color: #f5f5f5;
+				}
+
+				&:last-child {
+					border-bottom: none;
+				}
+			}
+		}
+
+		button {
+			margin-top: 10px;
+			padding: 8px 16px;
+			background-color: #25991c;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+
+			&:hover {
+				background-color: #1e7a17;
+			}
+		}
+	}
+}

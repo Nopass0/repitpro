@@ -76,6 +76,19 @@ const AddStudent = ({}: IAddStudent) => {
 		currentOpenedStudent ? true : false,
 	)
 
+	const [audios, setAudios] = useState<any>([])
+
+	const handleAddAudio = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		setAudios([...audios, {file: file, name: name, type: type, size: size}])
+
+		console.log('\n--------audio--------\n', audios, '\n--------\n')
+	}
+
 	useEffect(() => {
 		socket.emit('getAllIdStudents', {token: token})
 		socket.on('getAllIdStudents', (data: any) => {
@@ -224,6 +237,7 @@ const AddStudent = ({}: IAddStudent) => {
 			setCostStudent(data.students[0].costStudent)
 			setItems(data.items)
 			setFiles(data.students[0].filesData)
+			setAudios(data.students[0].audiosData)
 			console.log('--data-------', data)
 		}
 	}, [data])
@@ -306,6 +320,7 @@ const AddStudent = ({}: IAddStudent) => {
 				prePayDate,
 				costOneLesson,
 				items,
+				audios,
 				token,
 				files,
 				phoneNumber,
@@ -340,13 +355,14 @@ const AddStudent = ({}: IAddStudent) => {
 				prePayCost,
 				prePayDate,
 				files,
+				audios,
 				costOneLesson,
 				items,
 				token,
 				phoneNumber,
 			})
 		}
-		window.location.reload()
+		// window.location.reload()
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -1177,7 +1193,11 @@ const AddStudent = ({}: IAddStudent) => {
 						<Line width="100%" className={s.Line} />
 					</div>
 
-					<RecordNListen className={s.RecordNListen} />
+					<RecordNListen
+						alreadyRecorded={audios}
+						callback={handleAddAudio}
+						className={s.RecordNListen}
+					/>
 
 					<div className={s.ItemWrapper}>
 						<div className={s.ItemHeader}>

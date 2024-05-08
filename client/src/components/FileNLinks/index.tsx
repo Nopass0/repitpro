@@ -38,6 +38,8 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		console.log(files)
 	}, [alreadyUploaded])
 
+	const idRdn = Math.random().toString()
+
 	return (
 		<>
 			<ListItemButton
@@ -46,7 +48,8 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 				onClick={handleClick}>
 				<input
 					type="file"
-					id="file"
+					//random id
+					id={idRdn}
 					multiple
 					style={{display: 'none'}}
 					onChange={(e) => {
@@ -79,7 +82,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 						})
 					}}
 				/>
-				<label htmlFor="file" style={{cursor: 'pointer'}}>
+				<label htmlFor={idRdn} style={{cursor: 'pointer'}}>
 					<img src={uploadFile} alt={uploadFile} />
 				</label>
 				<ListItemText primary="Файлы/ссылки" />

@@ -31,7 +31,7 @@ import EyeF from '../../assets/EyeVisibilityF.svg'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
 import CloseIcon from '@mui/icons-material/Close'
-import { ELeftMenuPage } from '../../types'
+import {ELeftMenuPage} from '../../types'
 
 interface IMyCabinet {}
 
@@ -52,6 +52,22 @@ const MyCabinet = ({}: IMyCabinet) => {
 	const [fileOpen, setFileOpen] = useState<boolean>(false)
 	const [questionOpen, setQuestionOpen] = useState<boolean>(false)
 
+	const [files, setFiles] = useState<any[]>([])
+
+	const handleAddFile = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		setFiles([...files, {file, name, type, size}])
+		console.log('\n----------files-------------\n', files)
+		socket.emit('uploadUsersFiles', {
+			token: token,
+			files: [{file, name, type, size}],
+		})
+	}
+
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
 	const dispatch = useDispatch()
@@ -61,6 +77,7 @@ const MyCabinet = ({}: IMyCabinet) => {
 			console.log(data)
 			setName(data.userName)
 			setEmail(data.email)
+			setFiles(data.files)
 		})
 	}, [])
 
@@ -265,7 +282,11 @@ const MyCabinet = ({}: IMyCabinet) => {
 								<Line width="336px" className={s.Line} />
 							</mui.List>
 						</mui.Collapse>
-						<FileNLinks className={s.ListItemButton} />
+						<FileNLinks
+							alreadyUploaded={files}
+							callback={handleAddFile}
+							className={s.ListItemButton}
+						/>
 						<mui.ListItemButton
 							className={s.ListItemButton}
 							style={{marginTop: '10px'}}

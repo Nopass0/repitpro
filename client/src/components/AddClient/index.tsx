@@ -57,8 +57,38 @@ const AddClient = ({}: IAddClient) => {
 	const [currentJobIndex, setCurrentJobIndex] = useState<number>(0)
 	const [currentStageIndex, setCurrentStageIndex] = useState<number>(0)
 
+	const [files, setFiles] = useState<any>([])
+
+	const [audios, setAudios] = useState<any>([])
+
+	const handleAddAudio = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		setAudios([...audios, {file, name, type, size}])
+	}
+
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
+
+	const handleAddFile = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		console.log(
+			'\n-----------client-files------------------\n',
+			file,
+			name,
+			type,
+			size,
+			'\n------------\n',
+		)
+		setFiles([...files, {file, name, type, size}])
+	}
 
 	const [jobs, setJobs] = useState([
 		{
@@ -236,7 +266,9 @@ const AddClient = ({}: IAddClient) => {
 			costStudent: costStudent,
 			commentClient: commentClient,
 			jobs: jobs,
+			files: files,
 			token: token,
+			audios: audios,
 		})
 
 		window.location.reload()
@@ -273,10 +305,6 @@ const AddClient = ({}: IAddClient) => {
 	})
 	const [open, setOpen] = useState(true)
 
-	const handleClick = () => {
-		setOpen(!open)
-	}
-
 	const [data, setData] = useState<any>(null)
 	const [allIdsClient, setAllIdsClient] = useState<string[]>([])
 	const currentOpenedClient = useSelector(
@@ -302,7 +330,9 @@ const AddClient = ({}: IAddClient) => {
 			setPhoneNumber(data.phoneNumber)
 			setEmail(data.email)
 			setCostStudent(data.costStudent)
+			setFiles(data.files)
 			setcommentClient(data.commentClient)
+			setAudios(data.audios)
 		})
 	}, [])
 
@@ -313,7 +343,9 @@ const AddClient = ({}: IAddClient) => {
 			setPhoneNumber(data.phoneNumber)
 			setEmail(data.email)
 			setCostStudent(data.costStudent)
+			setFiles(data.files)
 			setcommentClient(data.commentClient)
+			setAudios(data.audios)
 		}
 	}, [data])
 
@@ -334,6 +366,7 @@ const AddClient = ({}: IAddClient) => {
 				setEmail(data.email)
 				setCostStudent(data.costStudent)
 				setcommentClient(data.commentClient)
+				setAudios(data.audios)
 			})
 		}
 	}
@@ -355,6 +388,7 @@ const AddClient = ({}: IAddClient) => {
 				setEmail(data.email)
 				setCostStudent(data.costStudent)
 				setcommentClient(data.commentClient)
+				setAudios(data.audios)
 			})
 		}
 	}
@@ -470,7 +504,7 @@ const AddClient = ({}: IAddClient) => {
 					</div>
 					<Line width="100%" className={s.Line} />
 
-					<RecordNListen />
+					<RecordNListen alreadyRecorded={audios} callback={handleAddAudio} />
 
 					<div className={s.ItemWrapper}>
 						<div className={s.ItemHeader}>
@@ -612,7 +646,7 @@ const AddClient = ({}: IAddClient) => {
 									</div> */}
 										<Line width="100%" className={s.Line} />
 
-										<RecordNListen />
+										{/* <RecordNListen /> */}
 										<div className={s.ItemHeader}>
 											<div className={s.dataSlidePicker}>
 												<button
@@ -1643,7 +1677,7 @@ const AddClient = ({}: IAddClient) => {
 								)}
 								{/* NO DATA */}
 
-								<FileNLinks />
+								<FileNLinks alreadyUploaded={files} callback={handleAddFile} />
 								<Line width="100%" className={s.Line} />
 
 								<div className={s.StudentCard}>
@@ -1655,7 +1689,7 @@ const AddClient = ({}: IAddClient) => {
 								</div>
 								<Line width="100%" className={s.Line} />
 
-								<RecordNListen />
+								{/* <RecordNListen /> */}
 							</div>
 						))}
 					</div>

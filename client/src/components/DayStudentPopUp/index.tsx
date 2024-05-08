@@ -85,6 +85,37 @@ const DayStudentPopUp = ({
 	const [homeFiles, setHomeFiles] = useState<any>(student?.homeFiles || [])
 	const [homeFilesPaths, setHomeFilesPaths] = useState<string[]>([])
 	const [classroomFilesPaths, setClassroomFilesPaths] = useState<string[]>([])
+
+	const [audios, setAudios] = useState<any>(student?.audios || [])
+
+	const [classAudio, setClassAudio] = useState<any>(student?.classAudio || [])
+
+	const handleAddHomeAudio = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		console.log(file, name, type, size)
+		setAudios([...homeFiles, {name: name, type: type, size: size, file: file}])
+
+		console.log('\n--------home-audio--------\n', audios, '\n--------\n')
+	}
+
+	const handleAddClassroomAudio = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		console.log(file, name, type, size)
+		setClassAudio([
+			...classAudio,
+			{name: name, type: type, size: size, file: file},
+		])
+		console.log('\n--------class-audio--------\n', classAudio, '\n--------\n')
+	}
+
 	const [classroomFiles, setClassroomFiles] = useState<any>(
 		student?.classFiles || [],
 	)
@@ -154,6 +185,8 @@ const DayStudentPopUp = ({
 			setClassroomComment(student?.classWork || '')
 			setHomeFiles(student?.homeFiles || [])
 			setClassroomFiles(student?.classFiles || [])
+			// setAudios(student?.audios || [])
+			// setClassAudio(student?.classAudio || [])
 			setHomeFilesPaths(student?.homeFilesPath || [])
 			setClassroomFilesPaths(student?.classFilesPath || [])
 			setHomeStudentsPoints(student?.homeStudentsPoints?.points || 1)
@@ -211,6 +244,8 @@ const DayStudentPopUp = ({
 				},
 				homeFiles: homeFiles,
 				homeWork: homeWorkComment,
+				// audios: audios,
+				// classAudio: classAudio,
 				homeStudentsPoints: {
 					studentId: currentOpenedStudent,
 					points: homeStudentsPoints,
@@ -257,7 +292,11 @@ const DayStudentPopUp = ({
 							onChange={(e) => setHomeWorkComment(e.target.value)}
 						/>
 						<div className={s.MediaBlock}>
-							<RecordNListen className={s.RecordNListen} />
+							<RecordNListen
+								alreadyRecorded={audios}
+								callback={handleAddHomeAudio}
+								className={s.RecordNListen}
+							/>
 							<input
 								type="file"
 								id="inputFile1"
@@ -381,7 +420,11 @@ const DayStudentPopUp = ({
 							onChange={(e) => setClassroomComment(e.target.value)}
 						/>
 						<div className={s.MediaBlock}>
-							<RecordNListen className={s.RecordNListen} />
+							<RecordNListen
+								alreadyRecorded={classAudio}
+								callback={handleAddClassroomAudio}
+								className={s.RecordNListen}
+							/>
 							<input
 								type="file"
 								id="inputFile2"

@@ -4,7 +4,7 @@ import styles from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import {log} from 'console'
+
 interface CalendarProps {
 	value?: string
 	onChange: (value: Date) => void
@@ -15,11 +15,15 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	onChange,
 }) => {
 	const [isOpen, setIsOpen] = useState<boolean>(false)
-	const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
-	const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
+	const [currentYear, setCurrentYear] = useState<number>(
+		new Date().getFullYear(),
+	)
+	const [currentMonth, setCurrentMonth] = useState<number>(
+		new Date().getMonth(),
+	)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-	const [tempYear, setTempYear] = useState(currentYear)
-	const [tempMonth, setTempMonth] = useState(currentMonth)
+	const [tempYear, setTempYear] = useState<number>(currentYear)
+	const [tempMonth, setTempMonth] = useState<number>(currentMonth)
 	const inputRef = useRef<HTMLInputElement>(null)
 	const calendarRef = useRef<HTMLDivElement>(null)
 
@@ -33,55 +37,47 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	}, [value])
 
 	const daysInMonth = new Date(tempYear, tempMonth + 1, 0).getDate()
-	let firstDayOfMonth = new Date(tempYear, tempMonth, 1).getDay() - 1
-	if (firstDayOfMonth < 0) firstDayOfMonth = 6
+	const firstDayOfMonth = new Date(tempYear, tempMonth, 1).getDay()
 
 	const prevMonth = () => {
 		setTempMonth((prevMonth) => (prevMonth === 0 ? 11 : prevMonth - 1))
-		setTempYear((prevYear) => (tempMonth === 0 ? prevYear - 1 : prevYear))
+		setTempYear((prevYear) => (prevMonth === 0 ? prevYear - 1 : prevYear))
 	}
 
 	const nextMonth = () => {
 		setTempMonth((prevMonth) => (prevMonth === 11 ? 0 : prevMonth + 1))
-		setTempYear((prevYear) => (tempMonth === 11 ? prevYear + 1 : prevYear))
+		setTempYear((prevYear) => (prevMonth === 11 ? prevYear + 1 : prevYear))
 	}
 
 	const handleDateClick = (day: number) => {
 		const selectedDate = new Date(tempYear, tempMonth, day)
 		setSelectedDate(selectedDate)
-		setCurrentYear(tempYear)
-		setCurrentMonth(tempMonth)
-		const formattedDate = formatDate(selectedDate)
-		onChange(selectedDate)
-		console.log(
-			'Calendar data temp: ',
-			currentYear,
-			'- Current year',
-			currentMonth,
-			'- Current month',
-			tempMonth,
-			'- Temp month',
-			tempYear,
-			'- Temp year',
-			selectedDate,
-			'- Selected date',
-			formattedDate,
-		)
 
-		console.log(selectedDate, 'Selected date')
+		if (inputRef.current) {
+			inputRef.current.value = formatDate(selectedDate)
+		}
+
+		onChange(selectedDate)
 	}
+
 	const renderDays = () => {
 		const days = []
+		const numDaysInMonth = new Date(tempYear, tempMonth + 1, 0).getDate()
 		let day = 1
+
+		// Determine how many empty cells to render at the start
+		const startOffset = (firstDayOfMonth + 6) % 7
+
 		for (let i = 0; i < 6; i++) {
 			const week = []
 			for (let j = 0; j < 7; j++) {
-				if (i === 0 && j < firstDayOfMonth) {
+				if (i === 0 && j < startOffset) {
+					// Render empty cell
 					week.push(<td key={`empty-${j}`}></td>)
-				} else if (day > daysInMonth) {
+				} else if (day > numDaysInMonth) {
+					// Stop rendering if we've reached the end of the month
 					break
 				} else {
-					const isWeekend = j === 5 || j === 6
 					const isSelected =
 						selectedDate &&
 						selectedDate.getDate() === day &&
@@ -90,9 +86,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 					week.push(
 						<td
 							key={day}
-							className={`${isWeekend ? styles.weekend : ''} ${
-								isSelected ? styles.selected : ''
-							}`}
+							className={`${isSelected ? styles.selected : ''}`}
 							onClick={() => handleDateClick(day)}>
 							<span
 								className={`${styles.dateCircle} ${
@@ -106,9 +100,11 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 				}
 			}
 			days.push(<tr key={i}>{week}</tr>)
+			if (day > numDaysInMonth) break // Break the loop if we've rendered all days
 		}
 		return days
 	}
+
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -128,7 +124,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	useEffect(() => {
 		if (isOpen && calendarRef.current && inputRef.current) {
 			const inputRect = inputRef.current.getBoundingClientRect()
-			const { innerHeight: windowHeight, innerWidth: windowWidth } = window
+			const {innerHeight: windowHeight, innerWidth: windowWidth} = window
 			const calendarHeight = calendarRef.current.getBoundingClientRect().height
 			let top = inputRect.bottom
 			let left = inputRect.left
@@ -154,7 +150,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 			<div className={styles.input__init}>
 				<input
 					type="text"
-					value={formatDate(value ? new Date(value) : new Date())}
+					value={formatDate(selectedDate ? selectedDate : new Date())}
 					onClick={() => setIsOpen(!isOpen)}
 					readOnly
 					ref={inputRef}
@@ -226,7 +222,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 const formatDate = (date: Date): string => {
 	const day = date.getDate().toString().padStart(2, '0')
 	const month = (date.getMonth() + 1).toString().padStart(2, '0')
-	const year = date.getFullYear()
+	const year = date.getFullYear().toString()
 	return `${day}.${month}.${year}`
 }
 

@@ -59,6 +59,7 @@ export interface IItemCard {
 	tryLessonCost: string
 	todayProgramStudent: string
 	targetLesson: string
+	files: any
 	lessonDuration: number | null
 	programLesson: string
 	typeLesson: string
@@ -76,6 +77,7 @@ export interface IStudent {
 	contactFace: string
 	phoneNumber: string
 	email: string
+	files: any
 	address: string
 	linkStudent: string
 	costStudent: string

@@ -3,6 +3,7 @@ import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
 import db from "../db";
 import io from "../socket";
 import { addDays, differenceInDays } from "date-fns";
+import { upload } from "files/files";
 
 function getDay(date) {
   const dayIndex = date.getDay() - 1;
@@ -11,7 +12,16 @@ function getDay(date) {
 
 export async function addGroup(data) {
   try {
-    const { groupName, items, students, token } = data;
+    const {
+      groupName,
+      items,
+      students,
+      token,
+      files,
+      filesItems,
+      audiosItems,
+      audiosStudents,
+    } = data;
 
     const token_ = await db.token.findFirst({
       where: {
@@ -44,6 +54,7 @@ export async function addGroup(data) {
             typeLesson: Number(item.typeLesson) || 1,
             placeLesson: item.placeLesson || "",
             timeLesson: item.timeLesson || "",
+            costOneLesson: "",
             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
             startLesson: item.startLesson ? new Date(item.startLesson) : null,
             endLesson: item.endLesson ? new Date(item.endLesson) : null,
@@ -86,36 +97,6 @@ export async function addGroup(data) {
         students: true,
       },
     });
-
-    // const createdItems = await Promise.all(
-    //   items.map((item) =>
-    //     db.item.create({
-    //       data: {
-    //         itemName: item.itemName,
-    //         tryLessonCheck: item.tryLessonCheck || false,
-    //         tryLessonCost: item.tryLessonCost || "",
-    //         todayProgramStudent: item.todayProgramStudent || "",
-    //         targetLesson: item.targetLesson || "",
-    //         programLesson: item.programLesson || "",
-    //         typeLesson: Number(item.typeLesson) || 1,
-    //         placeLesson: item.placeLesson || "",
-    //         timeLesson: item.timeLesson || "",
-    //         valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
-    //         startLesson: item.startLesson ? new Date(item.startLesson) : null,
-    //         endLesson: item.endLesson ? new Date(item.endLesson) : null,
-    //         nowLevel: item.nowLevel || 0,
-    //         lessonDuration: Number(item.lessonDuration) || null,
-    //         timeLinesArray: item.timeLinesArray || {},
-    //         userId: userId,
-    //         group: {
-    //           connect: {
-    //             id: createdGroup.id,
-    //           },
-    //         },
-    //       },
-    //     })
-    //   )
-    // );
 
     for (const item of createdGroup.items) {
       // Определяем диапазон дат
@@ -188,6 +169,65 @@ export async function addGroup(data) {
         }
       }
     }
+
+    let filesIds = [];
+    let filesItemsIds = [];
+
+    if (files.length > 0) {
+      filesIds = await upload(files, userId, "group/files", (ids: string[]) => {
+        filesIds = ids;
+      });
+    }
+
+    if (filesItems.length > 0) {
+      filesItemsIds = await upload(
+        filesItems,
+        userId,
+        "group/filesItems",
+        (ids: string[]) => {
+          filesItemsIds = ids;
+        }
+      );
+    }
+
+    let audiosItemsIds = [];
+    let audiosStudentsIds = [];
+
+    if (audiosItems.length > 0) {
+      audiosItemsIds = await upload(
+        audiosItems,
+        userId,
+        "group/audioItems",
+        (ids: string[]) => {
+          audiosItemsIds = ids;
+        }
+      );
+    }
+
+    if (audiosStudents.length > 0) {
+      audiosStudentsIds = await upload(
+        audiosStudents,
+        userId,
+        "group/audioStudents",
+        (ids: string[]) => {
+          audiosStudentsIds = ids;
+        }
+      );
+    }
+
+    await db.group.update({
+      where: {
+        id: createdGroup.id,
+      },
+      data: {
+        files: Object.assign(
+          filesIds,
+          filesItemsIds,
+          audiosItemsIds,
+          audiosStudentsIds
+        ),
+      },
+    });
   } catch (error) {
     console.error("Error creating group:", error);
   }
@@ -361,7 +401,6 @@ export async function getGroupsByDate(data: any) {
         },
       },
     },
-    
   });
 
   return groupSchedules.reduce((groups, schedule) => {
@@ -407,10 +446,53 @@ export async function getGroupById(data: any) {
         isArchived: true,
         items: true,
         groupName: true,
+        files: true,
         students: true,
       },
     });
-    io.emit("getGroupById", group);
+
+    console.log(group, "getGroupById", group.files, "files");
+
+    const files = await db.file.findMany({
+      where: {
+        id: {
+          in: group.files,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        extraType: true,
+        size: true,
+        type: true,
+      },
+    });
+
+    console.log(files, "files");
+
+    //with extra type 'group/files'
+    const etFiles = files.filter((file) => file.extraType === "group/files");
+
+    //with extra type 'group/filesItems'
+    const etGroupItems = files.filter(
+      (item) => item.extraType === "group/filesItems"
+    );
+
+    const etAudioItems = files.filter(
+      (item) => item.extraType === "group/audioItems"
+    );
+
+    const etAudioStudents = files.filter(
+      (item) => item.extraType === "group/audioStudents"
+    );
+
+    const group_ = JSON.parse(JSON.stringify(group));
+    group_.files = etFiles;
+    group_.filesItems = etGroupItems;
+    group_.audioItems = etAudioItems;
+    group_.audioStudents = etAudioStudents;
+
+    io.emit("getGroupById", group_);
     return group;
   } catch (error) {
     console.error("Error getting group by id:", error);

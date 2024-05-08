@@ -45,8 +45,6 @@ import socket from '../../socket'
 import {addDays, differenceInDays} from 'date-fns'
 import ExitPopUp from '../ExitPopUp'
 import CloseIcon from '@mui/icons-material/Close'
-
-import {useNavigate} from 'react-router-dom'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
@@ -65,14 +63,32 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
-	const [costOneLesson, setCostOneLesson] = useState<number>(0)
 
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
 	const [allPriceGroup, setAllPriceGroup] = useState<number>(0)
+	const [files, setFiles] = useState<{}[]>([])
+	const [filesItems, setFilesItems] = useState<{}[]>([])
+
+	const [audioItems, setAudioItems] = useState<{}[]>([])
+	const [audioStudents, setAudioStudents] = useState<{}[]>([])
 
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
+
+	const handleAddAudioItems = (file, name, type, size) => {
+		setAudioItems([
+			...audioItems,
+			{name: name, type: type, file: file, size: size},
+		])
+	}
+
+	const handleAddAudioStudents = (file, name, type, size) => {
+		setAudioStudents([
+			...audioStudents,
+			{name: name, type: type, file: file, size: size},
+		])
+	}
 
 	const getVoidWeek = (): ITimeLine[] => {
 		const week = daysOfWeek.map((day, index) => ({
@@ -99,6 +115,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			programLesson: '',
 			typeLesson: '1',
 			placeLesson: '',
+			costOneLesson: '',
+			files: [],
 			timeLesson: '',
 			startLesson: new Date(Date.now()),
 			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
@@ -125,6 +143,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			prePayCost: '',
 			prePayDate: '',
 			selectedDate: null,
+			files: [],
 			storyLesson: '',
 			targetLessonStudent: '',
 			todayProgramStudent: '',
@@ -132,49 +151,36 @@ const AddGroup = ({className}: IAddGroup) => {
 	])
 
 	const sendInfo = () => {
-		if (groupName && students.every((student) => student.nameStudent)) {
-			socket.emit('addGroup', {
-				groupName: groupName,
-				items: items,
-				students: students,
-				token: token,
-			})
-
-			window.location.reload()
+		if (currentOpenedGroup !== '') {
+			// !TODO
+		} else {
+			console.log(
+				'\n----------------------------sendInfo----------------\n',
+				groupName,
+				items,
+				students,
+				token,
+				files,
+				filesItems,
+				'\n----------------------------sendInfo----------------\n',
+			)
+			if (groupName && students.every((student) => student.nameStudent)) {
+				socket.emit('addGroup', {
+					groupName: groupName,
+					items: items,
+					students: students,
+					token: token,
+					files: files,
+					filesItems: filesItems,
+					audiosItems: audioItems,
+					audiosStudents: audioStudents,
+				})
+			}
 		}
+		// window.location.reload()
 	}
 
 	const [historyLesson, setHistoryLesson] = useState<any>([])
-
-	// Function to get the total sum of paid prices
-	const getTotalPaidPrice = (data) => {
-		return data.reduce((total, item) => {
-			if (item.isPaid) {
-				total += Number(item.price)
-			}
-			return total
-		}, 0)
-	}
-
-	// Function to get the count of paid objects
-	const getCountOfPaidObjects = (data) => {
-		return data.reduce((count, item) => {
-			if (item.isPaid) {
-				count++
-			}
-			return count
-		}, 0)
-	}
-
-	// Function to get the count of objects where isDone is true
-	const getCountOfDoneObjects = (data) => {
-		return data.reduce((count, item) => {
-			if (item.isDone) {
-				count++
-			}
-			return count
-		}, 0)
-	}
 
 	function getDay(date: any) {
 		const dayIndex = date.getDay() - 1
@@ -207,6 +213,10 @@ const AddGroup = ({className}: IAddGroup) => {
 			setGroupName(data.groupName)
 			setItems(data.items)
 			setStudents(data.students)
+			setFiles(data.files)
+			setFilesItems(data.filesItems)
+			setAudioItems(data.audioItems)
+			setAudioStudents(data.audioStudents)
 		})
 	}, [])
 
@@ -217,6 +227,10 @@ const AddGroup = ({className}: IAddGroup) => {
 			setGroupName(data.groupName)
 			setItems(data.items)
 			setStudents(data.students)
+			setFiles(data.files)
+			setFilesItems(data.filesItems)
+			setAudioItems(data.audioItems)
+			setAudioStudents(data.audioStudents)
 		}
 	}, [data])
 
@@ -234,6 +248,10 @@ const AddGroup = ({className}: IAddGroup) => {
 				setGroupName(data.groupName)
 				setItems(data.items)
 				setStudents(data.students)
+				setFiles(data.files)
+				setFilesItems(data.filesItems)
+				setAudioItems(data.audioItems)
+				setAudioStudents(data.audioStudents)
 			})
 		}
 	}
@@ -252,124 +270,13 @@ const AddGroup = ({className}: IAddGroup) => {
 				setGroupName(data.groupName)
 				setItems(data.items)
 				setStudents(data.students)
+				setFiles(data.files)
+				setFilesItems(data.filesItems)
+				setAudioItems(data.audioItems)
+				setAudioStudents(data.audioStudents)
 			})
 		}
 	}
-
-	// socket.on('getGroupById', (data) => {
-	// 	console.log(data, 'getGroupById')
-	// 	setItems(data.items)
-
-	// 	//get position data.id in groupsIndexes
-	// 	const index = groupsIndexes.indexOf(data.id)
-	// 	setCurrentGroupIndex(index)
-	// 	console.log(
-	// 		'Current index:',
-	// 		index,
-	// 		'groupsIndexes:',
-	// 		groupsIndexes,
-	// 		'data.id:',
-	// 		data.id,
-	// 	)
-
-	// 	setStudents(data.students)
-	// 	setGroupName(data.groupName)
-	// })
-
-	// useEffect(() => {
-	// 	socket.emit('getGroupList', token)
-	// 	socket.on('getGroupList', (data) => {
-	// 		console.log(data, 'getGroupList')
-	// 		const groupIndexes = []
-	// 		data.forEach((element) => {
-	// 			groupIndexes.push(element.id)
-	// 		})
-	// 		setGroupsIndexes(groupIndexes)
-	// 		console.log(groupIndexes, 'groupIndexes')
-	// 	})
-	// 	socket.on('getGroupById', (data) => {
-	// 		console.log(data, 'getGroupById')
-	// 		setItems(data.items)
-
-	// 		//get position data.id in groupsIndexes
-	// 		const index = groupsIndexes.indexOf(data.id)
-	// 		setCurrentGroupIndex(index)
-	// 		setCurrentID
-	// 		console.log(
-	// 			'Current index:',
-	// 			index,
-	// 			'groupsIndexes:',
-	// 			groupsIndexes,
-	// 			'data.id:',
-	// 			data.id,
-	// 		)
-
-	// 		setStudents(data.students)
-	// 		setGroupName(data.groupName)
-	// 	})
-	// }, [])
-
-	// useEffect(() => {
-	// 	socket.emit('getGroupById', {token: token, groupId: currentID})
-	// }, [groupsIndexes, currentOpenedGroup])
-
-	// const handleGroupChange = (index) => {
-	// 	const newId = groupsIndexes[index]
-	// 	dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
-	// 	socket.emit('getGroupById', {
-	// 		token: token,
-	// 		groupId: newId,
-	// 	})
-	// }
-	// socket.once('getGroupById', (data) => {
-	// 	setGroupName(data.groupName)
-	// 	setItems(data.items)
-	// 	setStudents(data.students)
-	// 	setCurrentGroupIndex(index) // Установить индекс только здесь
-	// })
-
-	// const nextGroup = () => {
-	// 	if (currentGroupIndex < groupsIndexes.length - 1) {
-	// 		handleGroupChange(currentGroupIndex + 1)
-	// 	}
-	// }
-
-	// const prevGroup = () => {
-	// 	if (currentGroupIndex > 0) {
-	// 		handleGroupChange(currentGroupIndex - 1)
-	// 	}
-	// }
-
-	// useEffect(() => {
-	// 	socket.emit('getGroupList', token)
-	// 	socket.once('getGroupList', (data) => {
-	// 		const groupIndexes = data.map((element) => element.id)
-	// 		setGroupsIndexes(groupIndexes)
-	// 	})
-
-	// 	const getGroupByIdListener = (data) => {
-	// 		console.log(data, 'getGroupById')
-	// 		setItems(data.items)
-	// 		const index = groupsIndexes.indexOf(data.id)
-	// 		setCurrentGroupIndex(index)
-	// 		setStudents(data.students)
-	// 		setGroupName(data.groupName)
-	// 	}
-
-	// 	socket.once('getGroupById', getGroupByIdListener)
-
-	// 	return () => {
-	// 		socket.off('getGroupById', getGroupByIdListener)
-	// 	}
-	// }, [])
-
-	// useEffect(() => {
-	// 	if (currentGroupIndex >= 0 && currentGroupIndex < groupsIndexes.length) {
-	// 		const newId = groupsIndexes[currentGroupIndex]
-	// 		setCurrentID(newId)
-	// 		socket.emit('getGroupById', {token: token, groupId: newId})
-	// 	}
-	// }, [currentGroupIndex, groupsIndexes])
 
 	const [studentsHistoryLessons, setStudentsHistoryLessons] = useState(
 		students.map(() => []),
@@ -455,6 +362,8 @@ const AddGroup = ({className}: IAddGroup) => {
 				programLesson: '',
 				typeLesson: '1',
 				placeLesson: '',
+				costOneLesson: '',
+				files: [],
 				timeLesson: '',
 				valueMuiSelectArchive: 1,
 				startLesson: new Date(Date.now()),
@@ -725,6 +634,8 @@ const AddGroup = ({className}: IAddGroup) => {
 					targetLesson: '',
 					programLesson: '',
 					typeLesson: '1',
+					costOneLesson: '',
+					files: [],
 					placeLesson: '',
 					timeLesson: '',
 					startLesson: new Date(Date.now()),
@@ -737,6 +648,35 @@ const AddGroup = ({className}: IAddGroup) => {
 			])
 		}
 	}
+
+	const handleAddFile = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		console.log(file, name, type, size)
+		setFiles((prevData) => [
+			...prevData,
+			{name: name, type: type, size: size, file: file},
+		])
+		console.log('\n-------files---------\n', files)
+	}
+
+	const handleAddFileItems = (
+		file: any,
+		name: string,
+		type: string,
+		size: number,
+	) => {
+		console.log(file, name, type, size)
+		setFilesItems((prevData) => [
+			...prevData,
+			{name: name, type: type, size: size, file: file},
+		])
+		console.log(filesItems)
+	}
+
 	const closeTimePicker = (index: number, id: number) => {
 		//get timeline
 		const timelineToUpdate = items[index].timeLinesArray.find(
@@ -812,6 +752,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				prePayCost: '',
 				prePayDate: '',
 				selectedDate: null,
+				files: [],
 				storyLesson: '',
 				costOneLesson: '',
 				targetLessonStudent: '',
@@ -958,10 +899,6 @@ const AddGroup = ({className}: IAddGroup) => {
 
 		DutyStudents[index] = duty
 		return DutyStudents[index]
-	}
-
-	const handleClick = () => {
-		setOpen(!open)
 	}
 
 	return (
@@ -1591,7 +1528,10 @@ const AddGroup = ({className}: IAddGroup) => {
 										</div>
 									</div>
 
-									<FileNLinks />
+									<FileNLinks
+										alreadyUploaded={filesItems}
+										callback={handleAddFileItems}
+									/>
 
 									<Line width="100%" className={s.Line} />
 
@@ -1611,7 +1551,10 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 									<Line width="100%" className={s.Line} />
-									<RecordNListen />
+									<RecordNListen
+										alreadyRecorded={audioItems}
+										callback={handleAddAudioItems}
+									/>
 								</div>
 							</>
 						))}
@@ -2067,7 +2010,10 @@ const AddGroup = ({className}: IAddGroup) => {
 									</mui.Collapse>
 									<Line width="100%" className={s.Line} />
 
-									<FileNLinks />
+									<FileNLinks
+										alreadyUploaded={files}
+										callback={handleAddFile}
+									/>
 
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
@@ -2078,7 +2024,10 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 									<Line width="100%" className={s.Line} />
-									<RecordNListen />
+									<RecordNListen
+										alreadyRecorded={audioStudents}
+										callback={handleAddAudioStudents}
+									/>
 								</div>
 							</>
 						))}

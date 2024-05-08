@@ -13,7 +13,8 @@ import { join } from "path";
 import { mkdir, mkdirSync, writeFileSync } from "fs";
 import { promises as fsPromises } from "fs";
 import mime from "mime-types";
-import { upload } from "../files/files";
+import { getBufferByFilePath, upload } from "../files/files";
+import { cache, strongCache } from "utils/Cache";
 
 // Получение дня недели, начиная с понедельника
 function getDay(date) {
@@ -45,6 +46,7 @@ export async function addStudent(data) {
       costOneLesson,
       commentStudent,
       link,
+      audios,
       cost,
       files,
       items,
@@ -194,6 +196,23 @@ export async function addStudent(data) {
       });
     }
 
+    let audiosIds: string[] = [];
+
+    if (audios.length > 0) {
+      audiosIds = await upload(
+        audios,
+        userId,
+        "student/audio",
+        (ids: string[]) => {
+          audiosIds = ids;
+        }
+      );
+    }
+
+    console.log("audiosIds", audiosIds, "audios", audios);
+
+    filePaths = Object.assign(filePaths, audiosIds);
+
     const sFiles = await db.student.update({
       where: {
         id: createdGroup.students[0].id,
@@ -202,7 +221,6 @@ export async function addStudent(data) {
         files: filePaths,
       },
     });
-
     console.log(
       "\n-----------files--------------\n",
       filePaths,
@@ -496,6 +514,8 @@ export async function updateStudentSchedule(data: {
   classFiles?: IUploadFiles[];
   homeWork?: string;
   classWork?: string;
+  audios?: IUploadFiles[];
+  classAudios?: IUploadFiles[];
   isChecked?: boolean;
   homeStudentsPoints?: { studentId: string; points: number }[];
   classStudentsPoints?: { studentId: string; points: number }[];
@@ -520,6 +540,8 @@ export async function updateStudentSchedule(data: {
     homeStudentsPoints,
     classStudentsPoints,
     address,
+    audios,
+    classAudios,
     token,
     isChecked,
     studentName,
@@ -575,6 +597,50 @@ export async function updateStudentSchedule(data: {
     );
   }
 
+  // const onjAudios = JSON.parse(JSON.stringify(audios));
+  // const onjClassAudios = JSON.parse(JSON.stringify(classAudios));
+
+  // // Save audios
+  // //check if audio.name in strongCache, then not filter
+  // let audios_ = onjAudios.filter((audio) => {
+  //   return !strongCache.has(audio.name);
+  // });
+
+  // let classAudios_ = onjClassAudios.filter((audio) => {
+  //   return !strongCache.has(audio.name);
+  // });
+
+  // let homeAudiosPaths: string[] = [];
+  // let classAudiosPaths: string[] = [];
+
+  // if (audios_.length > 0) {
+  //   homeAudiosPaths = await upload(
+  //     audios_,
+  //     userId,
+  //     "home/audio",
+  //     (paths: string[]) => {
+  //       homeAudiosPaths = paths;
+  //     }
+  //   );
+  // }
+
+  // //add to strong cache
+  // audios_.forEach((audio) => strongCache.add(audio.name));
+
+  // if (classAudios_.length > 0) {
+  //   classAudiosPaths = await upload(
+  //     classAudios_,
+  //     userId,
+  //     "class/audio",
+  //     (paths: string[]) => {
+  //       classAudiosPaths = paths;
+  //     }
+  //   );
+  // }
+
+  // //add to strong cache
+  // classAudios_.forEach((audio) => strongCache.add(audio.name));
+
   console.log("homeFiles", homeFiles, "classFiles", classFiles);
 
   const updatedFields: {
@@ -584,6 +650,8 @@ export async function updateStudentSchedule(data: {
     isChecked?: boolean;
     homeFiles?: string[]; //ids
     classFiles?: string[]; //ids
+    // homeAudios?: string[]; //ids
+    // classAudios?: string[]; //ids
     address?: string;
     studentName?: string;
     homeWork?: string;
@@ -628,6 +696,10 @@ export async function updateStudentSchedule(data: {
     classFiles !== undefined
   )
     updatedFields.classFiles = classFilePaths;
+  // if (homeAudiosPaths !== undefined && homeAudiosPaths.length > 0)
+  //   updatedFields.homeAudios = homeAudiosPaths;
+  // if (classAudiosPaths !== undefined && classAudiosPaths.length > 0)
+  //   updatedFields.classAudios = classAudiosPaths;
 
   const dayOfWeekIndex = getDay(
     new Date(Number(year), Number(month) - 1, Number(day))
@@ -752,6 +824,7 @@ export async function getGroupByStudentId(data: any) {
         id: {
           in: group.group.students[0].files,
         },
+        extraType: "",
       },
       select: {
         id: true,
@@ -760,10 +833,43 @@ export async function getGroupByStudentId(data: any) {
         type: true,
       },
     });
+
+    const audios = await db.file.findMany({
+      where: {
+        id: {
+          in: group.group.students[0].files,
+        },
+        extraType: "student/audio",
+      },
+      select: {
+        id: true,
+        name: true,
+        path: true,
+        type: true,
+      },
+    });
+
     console.log(files, "files");
     //group to object
     const group_ = JSON.parse(JSON.stringify(group));
     group_.group.students[0].filesData = files;
+    group_.group.students[0].audiosData = audios;
+
+    // //get audios buffers
+    // const audiosBuffers = await JSON.parse(JSON.stringify(audios)).map(
+    //   (audio) => {
+    //     return getBufferByFilePath(audio.path);
+    //   }
+    // );
+
+    // console.log(audiosBuffers, "audiosBuffers");
+
+    // //add audios buffers to every audio object
+
+    // await group_.group.students[0].audiosData.forEach(async (audio, index) => {
+    //   audio.buffer = await audiosBuffers[index];
+    // });
+
     io.emit("getGroupByStudentId", group_);
     return group.group;
   } catch (error) {

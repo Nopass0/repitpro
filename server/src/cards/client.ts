@@ -3,6 +3,7 @@ import db from "../db";
 import io from "../socket";
 import { Prisma, Job } from "@prisma/client";
 import { differenceInDays, addDays, getDay } from "date-fns";
+import { upload } from "files/files";
 
 export async function addClient(data: any) {
   const {
@@ -11,6 +12,8 @@ export async function addClient(data: any) {
     email,
     costStudent,
     commentClient,
+    files,
+    audios,
     jobs, // Assuming jobs is an array of job objects with nested stages
     token,
   } = data;
@@ -75,7 +78,7 @@ export async function addClient(data: any) {
       },
     });
 
-    console.log("New client created:", newClient);
+    // console.log("New client created:", newClient);
 
     // Create StudentSchedule records
     const jobsWithStages = await db.job.findMany({
@@ -131,6 +134,7 @@ export async function addClient(data: any) {
                 targetLesson: "",
                 timeLesson: "",
                 todayProgramStudent: "",
+                costOneLesson: "",
                 typeLesson: 3,
                 tryLessonCheck: false,
                 tryLessonCost: "",
@@ -178,6 +182,39 @@ export async function addClient(data: any) {
         }
       }
     }
+
+    let filesIds = [];
+    if (files.length > 0) {
+      filesIds = await upload(files, userId, "client", (ids: string[]) => {
+        filesIds = ids;
+      });
+    }
+
+    let audioIds = [];
+
+    if (audios.length > 0) {
+      audioIds = await upload(
+        audios,
+        userId,
+        "client/audio",
+        (ids: string[]) => {
+          audioIds = ids;
+        }
+      );
+    }
+
+    console.log("Files:", files, "FileIDS", filesIds);
+
+    const updateClient = await db.client.update({
+      where: {
+        id: newClient.id,
+      },
+      data: {
+        files: Object.assign(filesIds, audioIds),
+      },
+    });
+
+    return updateClient;
   } catch (error) {
     console.error("Error creating client:", error);
   }
@@ -209,6 +246,7 @@ export async function getClientById(data: { clientId: string; token: string }) {
         nameStudent: true,
         phoneNumber: true,
         email: true,
+        files: true,
         commentClient: true,
         costStudent: true,
         isArchived: true,
@@ -227,7 +265,38 @@ export async function getClientById(data: { clientId: string; token: string }) {
       },
     });
 
-    io.emit("getClientById", client);
+    const dbFiles = await db.file.findMany({
+      where: {
+        id: {
+          in: client.files,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        path: true,
+        userId: true,
+        extraType: true,
+        size: true,
+        type: true,
+      },
+    });
+
+    const dbFilesJson = JSON.parse(JSON.stringify(dbFiles));
+
+    //filtr extraType client
+    const filesDB = dbFilesJson.filter((file) => file.extraType === "client");
+
+    //filter extraType client/audio
+    const audiosDB = dbFilesJson.filter(
+      (file) => file.extraType === "client/audio"
+    );
+
+    const client_ = JSON.parse(JSON.stringify(client));
+    client_.files = filesDB;
+    client_.audios = audiosDB;
+
+    io.emit("getClientById", client_);
     return client;
   } catch (error) {
     console.error("Error fetching client:", error);

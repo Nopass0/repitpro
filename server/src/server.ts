@@ -19,7 +19,7 @@ import {
   updateStudentSchedule,
   // updateStudents,
 } from "./cards/student";
-import { getUserData, setUserData } from "./auth/user";
+import { getUserData, setUserData, uploadUsersFiles } from "./auth/user";
 import {
   addGroup,
   deleteGroup,
@@ -100,6 +100,8 @@ io.on("connection", (socket) => {
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));
   socket.on("updateStudentAndItems", (data) => updateStudentAndItems(data));
+
+  socket.on("uploadUsersFiles", (data) => uploadUsersFiles(data));
 
   socket.on("setUserData", (data) => setUserData(data));
 

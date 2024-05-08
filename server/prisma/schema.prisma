@@ -41,7 +41,7 @@ model User {
   totalLessonsDebt Int?
   isArchived Boolean?
   isDeleted  Boolean?
-  filesIds   String?
+  filesIds   String[]
   linksIds   String?
 }
 
@@ -71,6 +71,7 @@ model Group {
   groupName       String
   items           Item[]
   students        Student[]
+  files           String[]
   userId          String
   isArchived       Boolean @default(false)
 }
@@ -185,6 +186,7 @@ model Client {
   commentClient String
   jobs          Job[]
   stages        Stage[]
+  files         String[]
   isArchived    Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
