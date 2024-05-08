@@ -43,7 +43,7 @@
 	.MainBlock {
 		display: flex;
 		flex-direction: column;
-
+		min-width: 1000px;
 		.GraphicBlock {
 			display: flex;
 			flex-direction: row;

@@ -68,6 +68,13 @@
 							// bottom: 24px;
 							// left: 12px;
 						}
+						@media screen and (max-width: 678px) {
+							.dayToday {
+								border: 1px solid #25991c;
+								border-radius: 8px;
+								padding: 5px 0;
+							}
+						}
 
 						.data {
 							// position: absolute;

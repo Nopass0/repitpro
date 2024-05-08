@@ -89,6 +89,8 @@ export interface IStudent {
 	storyLesson: string
 	targetLessonStudent: string
 	todayProgramStudent: string
+	startLesson: Date | null
+	endLesson: Date | null
 }
 
 export interface IHistoryLessons {

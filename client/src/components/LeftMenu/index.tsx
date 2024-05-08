@@ -14,7 +14,8 @@ import AddClient from '../AddClient'
 import MyCabinet from '../MyCabinet'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore, Telegram} from '@mui/icons-material'
-
+import SortByAlphaIcon from '@mui/icons-material/SortByAlpha'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn'
 import Home from '../../assets/5.svg'
 
@@ -368,7 +369,9 @@ const MainPage = () => {
 						</div>
 					</div>
 					<div className={s.SortData}>
-						<mui.Select
+						<SwapVertIcon style={{cursor: 'pointer', color: sortedTypeData === 0 ? '#25991c' : ''}} onClick={() => setSortedTypeData(0)} />
+						<SortByAlphaIcon style={{cursor: 'pointer', color: sortedTypeData === 1 ? '#25991c' : ''}} onClick={() => setSortedTypeData(1)} />
+						{/* <mui.Select
 							className={s.muiSelectSort}
 							variant={'standard'}
 							value={sortedTypeData}
@@ -397,7 +400,7 @@ const MainPage = () => {
 									<p>По алфавиту</p>
 								</div>
 							</mui.MenuItem>
-						</mui.Select>
+						</mui.Select> */}
 					</div>
 				</div>
 				<div className={s.MainLeftMenu}>

@@ -1097,6 +1097,7 @@ const AddStudent = ({}: IAddStudent) => {
 																fontSize: '14px',
 																width: '100px',
 																textAlign: 'end',
+																textOverflow: 'ellipsis',
 															}}>
 															{lesson.price}₽
 														</p>
@@ -1676,9 +1677,14 @@ const AddStudent = ({}: IAddStudent) => {
 																<div
 																	className={s.timePickerWrapper}
 																	style={{
-																		transform: `translateY(${
-																			index * 40
-																		}px) translateX(-50%)`,
+																		...(window.innerWidth >= 1024
+																			? {
+																					transform: `translateY(${
+																						index * 40
+																					}px) translateX(-50%)`,
+																			  }
+																			: {
+																			}),
 																	}}>
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker
