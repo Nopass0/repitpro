@@ -654,7 +654,7 @@ const AddClient = ({}: IAddClient) => {
 									</div> */}
 										<Line width="100%" className={s.Line} />
 
-										{/* <RecordNListen /> */}
+										<RecordNListen />
 										<div className={s.ItemHeader}>
 											<div className={s.dataSlidePicker}>
 												<button
@@ -1022,6 +1022,18 @@ const AddClient = ({}: IAddClient) => {
 																		%
 																	</p>
 																</div>
+																{item.fisrtPaymentPrice +
+																	item.endPaymentPrice >=
+																	item.cost && (
+																	<>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<p style={{color: '#25c25c'}}>
+																				Этап оплачен полностью
+																			</p>
+																		</div>
+																	</>
+																)}
 															</>
 														) : (
 															<>
@@ -1270,6 +1282,18 @@ const AddClient = ({}: IAddClient) => {
 																	/>
 																	<p style={{width: '33px'}}></p>
 																</div>
+																{item.fisrtPaymentPrice +
+																	item.endPaymentPrice >=
+																	item.cost && (
+																	<>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<p style={{color: '#25c25c'}}>
+																				Этап оплачен полностью
+																			</p>
+																		</div>
+																	</>
+																)}
 															</>
 														)}
 													</div>
@@ -1563,6 +1587,18 @@ const AddClient = ({}: IAddClient) => {
 															%
 														</p>
 													</div>
+													{job.stages[0].fisrtPaymentPrice +
+														job.stages[0].endPaymentPrice >=
+														job.stages[0].totalCost && (
+														<>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<p style={{color: '#25c25c'}}>
+																	Работа оплачена полностью
+																</p>
+															</div>
+														</>
+													)}
 												</>
 											) : (
 												<>
@@ -1808,6 +1844,18 @@ const AddClient = ({}: IAddClient) => {
 														/>
 														<p style={{width: '33px'}}></p>
 													</div>
+													{job.stages[0].fisrtPaymentPrice +
+														job.stages[0].endPaymentPrice >=
+														job.stages[0].totalCost && (
+														<>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<p style={{color: '#25c25c'}}>
+																	Работа оплачена полностью
+																</p>
+															</div>
+														</>
+													)}
 												</>
 											)}
 										</div>

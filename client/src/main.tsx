@@ -41,6 +41,8 @@ let defaultState = {
 	mobileLeft: true,
 	currentScheduleDayClientId: '',
 	currentPopUpType: ECurrentDayPopUp.None,
+	
+	editedCards: false,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -126,6 +128,8 @@ const reducer = (state = defaultState, action: any) => {
 		case 'SET_MOBILE_LEFT':
 			return {...state, mobileLeft: action.payload}
 
+		case 'SET_EDITED_CARDS':
+			return {...state, editedCards: action.payload}
 		default:
 			return state
 	}

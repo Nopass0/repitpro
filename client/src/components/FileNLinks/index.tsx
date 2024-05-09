@@ -82,8 +82,11 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 						})
 					}}
 				/>
-				<label htmlFor={idRdn} style={{cursor: 'pointer'}}>
-					<img src={uploadFile} alt={uploadFile} />
+				<label
+					htmlFor={idRdn}
+					style={{cursor: 'pointer'}}
+					className={s.LabelForFile}>
+					<img src={uploadFile} className={s.ImgForFile} alt={uploadFile} />
 				</label>
 				<ListItemText primary="Файлы/ссылки" />
 				{open ? <ExpandLess /> : <ExpandMore />}
@@ -93,41 +96,42 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 				<List
 					style={{
 						display: 'flex',
-						alignItems: 'center',
+						// alignItems: 'center',
 						justifyContent: 'center',
 						flexDirection: 'column',
 					}}
 					component="div"
 					disablePadding>
-					<Line width="296px" className={s.Line} />
-					<div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+					<Line width="100%" className={s.Line} />
+					<div className={s.FileList}>
 						{files.length ? (
 							files.map((file, index) => (
-								<div
-									key={index}
-									style={{
-										display: 'flex',
-										justifyContent: 'space-between',
-										width: '100%',
-									}}>
-									<p>
-										{file.name.length > 20
-											? `${file.name.slice(0, 20)}...`
-											: file.name}
-									</p>
-									<button
-										onClick={() =>
-											setFiles((prevFiles) =>
-												prevFiles.filter((_, i) => i !== index),
-											)
-										}>
-										<DeleteOutlineIcon />
-									</button>
-								</div>
+								<>
+									<div key={index} className={s.FileItem}>
+										<p>
+											{file.name.length > 20
+												? `${file.name.slice(0, 20)}...`
+												: file.name}
+										</p>
+										<button
+											onClick={() =>
+												setFiles((prevFiles) =>
+													prevFiles.filter((_, i) => i !== index),
+												)
+											}>
+											<DeleteOutlineIcon />
+										</button>
+									</div>
+									{index === files.length - 1 && (
+										<Line width="100%" className={s.FileLine} />
+									)}
+								</>
 							))
 						) : (
 							<>
-								<p>Список пока пуст</p>
+								<p style={{textAlign: 'center', width: '100%'}}>
+									Список пока пуст
+								</p>
 							</>
 						)}
 					</div>

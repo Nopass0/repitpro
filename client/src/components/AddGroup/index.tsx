@@ -180,7 +180,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				})
 			}
 		}
-		// window.location.reload()
+		window.location.reload()
 	}
 
 	const [historyLesson, setHistoryLesson] = useState<any>([])
@@ -627,7 +627,16 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const handleAddItem = () => {
-		if (items[currentItemIndex].itemName !== '') {
+		const newItemName = items[currentItemIndex].itemName
+		const existingItemsNames = items
+			.filter((item, index) => index !== currentItemIndex)
+			.map((item) => item.itemName)
+
+		if (
+			items[currentItemIndex].itemName !== '' &&
+			currentItemIndex === items.length - 1 &&
+			!existingItemsNames.includes(newItemName)
+		) {
 			setItems([
 				...items,
 				{
@@ -651,6 +660,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					costOneLesson: '',
 				},
 			])
+			setCurrentItemIndex(currentItemIndex + 1)
 		}
 	}
 
@@ -767,6 +777,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					todayProgramStudent: '',
 					startLesson: new Date(Date.now()),
 					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
+					files:[],
 				},
 			])
 			setCurrentStudentIndex(currentStudentIndex + 1)

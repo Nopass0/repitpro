@@ -219,6 +219,7 @@ const AddStudent = ({}: IAddStudent) => {
 			nowLevel: undefined,
 			lessonDuration: null,
 			timeLinesArray: getVoidWeek() as ITimeLine[],
+			files: [],
 		},
 	])
 	const [files, setFiles] = useState<{}[]>([])
@@ -259,15 +260,15 @@ const AddStudent = ({}: IAddStudent) => {
 	//add item function
 	const addItem = () => {
 		const newItemName = items[currentItemIndex].itemName
-		const existingItemNames = items.map((item) => item.itemName)
-		console.log(
-			existingItemNames.includes(newItemName),
-			existingItemNames,
-			newItemName,
-			currentItemIndex,
-		)
+		const existingItemsNames = items
+			.filter((item, index) => index !== currentItemIndex)
+			.map((item) => item.itemName)
 
-		if (newItemName !== '' && currentItemIndex === items.length - 1) {
+		if (
+			newItemName !== '' &&
+			currentItemIndex === items.length - 1 &&
+			!existingItemsNames.includes(newItemName)
+		) {
 			setItems([
 				...items,
 				{
@@ -284,6 +285,7 @@ const AddStudent = ({}: IAddStudent) => {
 					startLesson: new Date(Date.now()),
 					costOneLesson: '',
 
+					files: [],
 					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 					nowLevel: undefined,
 					lessonDuration: null,
@@ -362,7 +364,7 @@ const AddStudent = ({}: IAddStudent) => {
 				phoneNumber,
 			})
 		}
-		// window.location.reload()
+		window.location.reload()
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -507,30 +509,7 @@ const AddStudent = ({}: IAddStudent) => {
 			setShowEndTimePicker(id)
 		}
 	}
-	console.log(
-		historyLesson,
-		'historyLessonhistoryLessonhistoryLessonhistoryLessonhistoryLessonhistoryLessonhistoryLesson',
-	)
 
-	// const closeTimePicker = (index: number, id: number) => {
-	// 	//change
-	// 	setItems((prevItems) =>
-	// 		prevItems.map((item, itemIndex) =>
-	// 			itemIndex === index
-	// 				? {
-	// 						...item,
-	// 						timeLinesArray: item.timeLinesArray.map((timeline) =>
-	// 							timeline.id === id
-	// 								? {...timeline, editingEnd: false, active: false}
-	// 								: timeline,
-	// 						),
-	// 				  }
-	// 				: item,
-	// 		),
-	// 	)
-	// 	console.log('close', index, id)
-	// 	setShowEndTimePicker(-1)
-	// }
 
 	const closeTimePicker = (index: number, id: number) => {
 		//get timeline
@@ -794,18 +773,7 @@ const AddStudent = ({}: IAddStudent) => {
 				}
 			}
 
-			// for (let j = 0; j < items[i].timeLinesArray.length; j++) {
-			// 	if (
-			// 		items[i].timeLinesArray[j].endTime.hour === 0 &&
-			// 		items[i].timeLinesArray[j].endTime.minute === 0 &&
-			// 		items[i].timeLinesArray[j].startTime.hour === 0 &&
-			// 		items[i].timeLinesArray[j].startTime.minute === 0
-			// 	) {
-			// 		continue
-			// 	} else {
-			// 		countWeekLesson++
-			// 	}
-			// }
+			
 		}
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
@@ -827,6 +795,10 @@ const AddStudent = ({}: IAddStudent) => {
 			...prevHistoryLesson.slice(index + 1),
 		])
 	}
+
+	useEffect(() => {
+		dispatch({type: 'SET_EDITED_CARDS', payload: true})
+	}, [items])
 
 	return (
 		<>
@@ -1683,8 +1655,7 @@ const AddStudent = ({}: IAddStudent) => {
 																						index * 40
 																					}px) translateX(-50%)`,
 																			  }
-																			: {
-																			}),
+																			: {}),
 																	}}>
 																	{timeline.active && !timeline.editingEnd && (
 																		<TimePicker

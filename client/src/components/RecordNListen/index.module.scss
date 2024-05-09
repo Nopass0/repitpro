@@ -32,6 +32,60 @@
 	.Record {
 		margin-right: 2px;
 	}
+
+	.Listen__button {
+		width: 100%;
+
+		font-size: 16px;
+		font-weight: 400;
+		cursor: pointer;
+
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: nowrap;
+		&.pulsating {
+			animation: pulse 1.5s infinite;
+		}
+	}
+}
+.Option {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	background-color: #fff;
+	min-width: 100px;
+	border-radius: 6px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+	.audioList {
+		list-style-type: none;
+	}
+
+	.audioItemContainer {
+		&:hover {
+			background-color: #eee;
+		}
+		.audioItem {
+			list-style-type: none;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			width: 80%;
+			cursor: pointer;
+			padding: 10px;
+
+			img {
+				margin-right: 5px;
+			}
+		}
+
+		.Line {
+			margin: 0 !important;
+			background-color: #eee;
+		}
+	}
 }
 @keyframes pulse {
 	0% {
