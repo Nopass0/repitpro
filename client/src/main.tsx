@@ -41,7 +41,7 @@ let defaultState = {
 	mobileLeft: true,
 	currentScheduleDayClientId: '',
 	currentPopUpType: ECurrentDayPopUp.None,
-	
+	dayStudents: [],
 	editedCards: false,
 }
 socket.emit('getMonth', {
@@ -66,6 +66,8 @@ const reducer = (state = defaultState, action: any) => {
 
 			return {...state, user: {...state.user, token: action.payload}}
 
+		case 'SET_DAY_STUDENTS':
+			return {...state, dayStudents: action.payload}
 		case 'SET_CURRENT_OPENED_SCHEDULE_DAY':
 			return {...state, currentScheduleDay: action.payload}
 
@@ -116,7 +118,7 @@ const reducer = (state = defaultState, action: any) => {
 
 		case 'SET_PAGE_POPUP_EXIT':
 			return {...state, pagePopUpExit: action.payload}
-			
+
 		case 'LOGOUT':
 			localStorage.removeItem('token')
 			return {...state, user: {...state.user, token: ''}}

@@ -261,6 +261,46 @@ const DayStudentPopUp = ({
 		classroomStudentsPoints,
 	])
 
+	const [students, setStudents] = useState([])
+	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
+	const currentStudent = students[currentIndex] // Get the current student
+
+	useEffect(() => {
+		socket.emit('getStudentsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+		socket.once('getStudentsByDate', (data) => {
+			setStudents(data)
+		})
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
+
+	useEffect(() => {
+		// Find the index of the current student based on the currentScheduleDay
+		const currentStudentIndex = students.findIndex(
+			(student) => student.id === currentScheduleDay,
+		)
+
+		// If the current student is found in the array, set the currentIndex
+		if (currentStudentIndex !== -1) {
+			setCurrentIndex(currentStudentIndex)
+		}
+	}, [students, currentScheduleDay])
+
+	const handlePrevStudent = () => {
+		setCurrentIndex((prevIndex) =>
+			prevIndex === 0 ? students.length - 1 : prevIndex - 1,
+		)
+	}
+
+	const handleNextStudent = () => {
+		setCurrentIndex((prevIndex) =>
+			prevIndex === students.length - 1 ? 0 : prevIndex + 1,
+		)
+	}
+
 	return (
 		<div style={style} className={s.wrapper}>
 			<div className={s.InfoBlock}>
@@ -273,7 +313,7 @@ const DayStudentPopUp = ({
 						<div className={s.Devider}></div>
 						<div className={s.AddressHeader}>
 							<p>Адрес:</p>
-							<p>{address}</p>
+							<p>{student?.place}</p>
 						</div>
 						<div className={s.Devider}></div>
 						<div className={s.DateHeader}>
@@ -567,18 +607,18 @@ const DayStudentPopUp = ({
 				<button onClick={onExit}>
 					<CloseIcon className={s.closeIcon} />
 				</button>
-				{/* <div className={s.btn}>
-					<button className={s.btnRight}>
+				<div className={s.btn}>
+					<button className={s.btnRight} onClick={handleNextStudent}>
 						<span>
 							<Arrow direction={ArrowType.right} />
 						</span>
 					</button>
-					<button className={s.btnLeft}>
+					<button className={s.btnLeft} onClick={handlePrevStudent}>
 						<span>
 							<Arrow direction={ArrowType.left} />
 						</span>
 					</button>
-				</div> */}
+				</div>
 			</div>
 		</div>
 	)

@@ -53,7 +53,7 @@ export async function addStudent(data) {
       token,
     } = data;
 
-    console.log(data, "Schedule", data.items[0].timeLinesArray[0].startTime);
+    // console.log(data, "Schedule", data.items[0].timeLinesArray[0].startTime);
 
     const token_ = await db.token.findFirst({
       where: {
@@ -92,7 +92,7 @@ export async function addStudent(data) {
             nowLevel: item.nowLevel || 0,
             costOneLesson: item.costOneLesson || "",
             lessonDuration: item.lessonDuration || null,
-            timeLinesArray: item.timeLinesArray || {},
+            timeLinesArray: item.timeLinesArray || {}, // Example: [{ startTime: { hour: 10, minute: 0 }, endTime: { hour: 11, minute: 0 } }, ...]
             userId: userId,
           })),
         },
@@ -144,18 +144,98 @@ export async function addStudent(data) {
       // Для каждой даты проверяем наличие активных записей в расписании
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
-        const scheduleForDay = item.timeLinesArray[dayOfWeek]; // Здесь укажите переменную, содержащую ваше недельное расписание
+        const scheduleForDay = item.timeLinesArray[dayOfWeek];
+        const dayOfMonth = date.getDate();
 
+        // Проверяем существующие записи в расписании для этого дня
+        const existingSchedules = await db.studentSchedule.findMany({
+          where: {
+            day: dayOfMonth.toString(),
+            month: (date.getMonth() + 1).toString(),
+            year: date.getFullYear().toString(),
+            userId: userId,
+          },
+        });
+
+        console.log(
+          "\n-------existing-schedules--------\n",
+          existingSchedules,
+          "\n-------\n"
+        );
+
+        const conflictingSchedules = existingSchedules.filter((schedule) => {
+          const scheduleStartTime =
+            schedule.timeLinesArray[dayOfWeek].startTime;
+          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+
+          const newStartTime = scheduleForDay.startTime;
+          const newEndTime = scheduleForDay.endTime;
+
+          // Проверяем, если новое время пересекается с существующим расписанием
+          return (
+            (newStartTime.hour < scheduleEndTime.hour ||
+              (newStartTime.hour === scheduleEndTime.hour &&
+                newStartTime.minute <= scheduleEndTime.minute)) &&
+            (newEndTime.hour > scheduleStartTime.hour ||
+              (newEndTime.hour === scheduleStartTime.hour &&
+                newEndTime.minute >= scheduleStartTime.minute))
+          );
+        });
+
+        if (conflictingSchedules.length > 0) {
+          // Формируем сообщение об ошибке
+          const daysOfWeek = [
+            "Воскресенье",
+            "Понедельник",
+            "Вторник",
+            "Среда",
+            "Четверг",
+            "Пятница",
+            "Суббота",
+          ];
+          const dayName = daysOfWeek[dayOfWeek];
+          const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
+          const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
+
+          let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
+
+          // Собираем информацию о свободных промежутках времени
+          const freeTimeSlots = [];
+          for (const schedule of existingSchedules) {
+            const scheduleStartTime =
+              schedule.timeLinesArray[dayOfWeek].startTime;
+            const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+            freeTimeSlots.push(
+              `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
+            );
+          }
+
+          console.log("freeTimeSlots", freeTimeSlots);
+
+          if (freeTimeSlots.length > 0) {
+            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
+              ", "
+            )}`;
+          }
+
+          //delete created group and items and students
+          db.group.delete({ where: { id: createdGroup.id } });
+          db.item.deleteMany({ where: { groupId: createdGroup.id } });
+          db.student.deleteMany({
+            where: { id: createdGroup.students[0].id },
+          });
+
+          // Выводим сообщение об ошибке
+          io.emit("addStudent", { error: errorMessage, ok: false });
+          return;
+        }
+
+        // Если нет конфликтов, создаем запись в базе данных
         const cond =
           scheduleForDay.startTime.hour === 0 &&
           scheduleForDay.startTime.minute === 0 &&
           scheduleForDay.endTime.hour === 0 &&
           scheduleForDay.endTime.minute === 0;
-
-        //get lessonPrice
-
-        //get day of month (number)
-        const dayOfMonth = date.getDate();
 
         if (!cond) {
           // Создаем запись в базе данных только для активных дней
@@ -209,7 +289,7 @@ export async function addStudent(data) {
       );
     }
 
-    console.log("audiosIds", audiosIds, "audios", audios);
+    // console.log("audiosIds", audiosIds, "audios", audios);
 
     filePaths = Object.assign(filePaths, audiosIds);
 
@@ -221,13 +301,14 @@ export async function addStudent(data) {
         files: filePaths,
       },
     });
-    console.log(
-      "\n-----------files--------------\n",
-      filePaths,
-      "\n",
-      files,
-      "\n----------------------------------"
-    );
+    // console.log(
+    //   "\n-----------files--------------\n",
+    //   filePaths,
+    //   "\n",
+    //   files,
+    //   "\n----------------------------------"
+    // );
+    io.emit("addStudent", { ok: true });
   } catch (error) {
     console.error("Error creating group:", error);
   }
@@ -386,6 +467,7 @@ export async function getStudentsByDate(data: {
       // classFilesPath: classFiles.map((file) => file.toString("base64")),
       classFiles,
       homeWork: schedule.homeWork,
+      place: item.placeLesson,
       classWork: schedule.classWork,
       homeStudentsPoints: schedule.homeStudentsPoints,
       classStudentsPoints: schedule.classStudentsPoints,

@@ -113,6 +113,82 @@ export async function addGroup(data) {
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+        const dayOfMonth = date.getDate();
+
+        // Проверяем существующие записи в расписании для этого дня
+        const existingSchedules = await db.studentSchedule.findMany({
+          where: {
+            day: dayOfMonth.toString(),
+            month: (date.getMonth() + 1).toString(),
+            year: date.getFullYear().toString(),
+            userId: userId,
+          },
+        });
+
+        const conflictingSchedules = existingSchedules.filter((schedule) => {
+          const scheduleStartTime =
+            schedule.timeLinesArray[dayOfWeek].startTime;
+          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+
+          const newStartTime = scheduleForDay.startTime;
+          const newEndTime = scheduleForDay.endTime;
+
+          // Проверяем, если новое время пересекается с существующим расписанием
+          return (
+            (newStartTime.hour < scheduleEndTime.hour ||
+              (newStartTime.hour === scheduleEndTime.hour &&
+                newStartTime.minute <= scheduleEndTime.minute)) &&
+            (newEndTime.hour > scheduleStartTime.hour ||
+              (newEndTime.hour === scheduleStartTime.hour &&
+                newEndTime.minute >= scheduleStartTime.minute))
+          );
+        });
+
+        if (conflictingSchedules.length > 0) {
+          // Формируем сообщение об ошибке
+          const daysOfWeek = [
+            "Воскресенье",
+            "Понедельник",
+            "Вторник",
+            "Среда",
+            "Четверг",
+            "Пятница",
+            "Суббота",
+          ];
+          const dayName = daysOfWeek[dayOfWeek];
+          const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
+          const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
+
+          let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
+
+          // Собираем информацию о свободных промежутках времени
+          const freeTimeSlots = [];
+          for (const schedule of existingSchedules) {
+            const scheduleStartTime =
+              schedule.timeLinesArray[dayOfWeek].startTime;
+            const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+            freeTimeSlots.push(
+              `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
+            );
+          }
+
+          if (freeTimeSlots.length > 0) {
+            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
+              ", "
+            )}`;
+          }
+
+          // Удаляем созданную группу и связанные записи
+          db.group.delete({ where: { id: createdGroup.id } });
+          db.item.deleteMany({ where: { groupId: createdGroup.id } });
+          db.student.deleteMany({
+            where: { id: { in: createdGroup.students.map((s) => s.id) } },
+          });
+
+          // Выводим сообщение об ошибке
+          io.emit("addGroup", { error: errorMessage, ok: false });
+          return;
+        }
 
         const cond =
           scheduleForDay.startTime.hour === 0 &&
@@ -138,7 +214,7 @@ export async function addGroup(data) {
         });
 
         //get day of month (number)
-        const dayOfMonth = date.getDate();
+        // const dayOfMonth = date.getDate();
 
         if (!cond) {
           // Создаем запись в базе данных только для активных дней
@@ -228,6 +304,7 @@ export async function addGroup(data) {
         ),
       },
     });
+    io.emit("addGroup", { ok: true });
   } catch (error) {
     console.error("Error creating group:", error);
   }

@@ -111,7 +111,13 @@ export async function getStudentFinanceData(data: {
       },
     });
 
+    if (!token_) {
+      console.error("Invalid token");
+      return;
+    }
+
     const userId = token_.userId;
+
     const data_ = await db.studentSchedule.findMany({
       where: {
         year: {
@@ -140,19 +146,25 @@ export async function getStudentFinanceData(data: {
         year: true,
       },
     });
+
+    if (data_.length === 0) {
+      console.log("No data found for the given date range and subject IDs.");
+      return;
+    }
+
     console.log(data_, "data_");
-    
+
     const grouped = groupByMonth(data_);
     console.log(grouped, "grouped");
-    
+
     const labels = Object.keys(grouped);
     console.log(labels, "labels");
-    
+
     const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName; // Предполагается, что все элементы в группе имеют одинаковое itemName
+      const itemName = group[0].itemName;
       const values = group.map((item) => item.lessonsPrice);
       console.log(itemName, values, "itemName, values");
-      
+
       return {
         label: itemName,
         data: values,
@@ -161,11 +173,18 @@ export async function getStudentFinanceData(data: {
         borderColor: hashToColor(hashString(itemName)),
       };
     });
+
     console.log(
       labels,
       datasets,
       " --------------------------------------------------"
     );
+
+    if (labels.length === 0 || datasets.length === 0) {
+      console.log("No data available for the chart.");
+      return;
+    }
+
     io.emit("getStudentFinanceData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {

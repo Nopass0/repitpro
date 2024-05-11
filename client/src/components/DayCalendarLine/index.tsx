@@ -52,7 +52,7 @@ interface IDayCalendarLine {
 	editMode?: boolean
 	isGroup?: boolean
 	groupId?: string
-
+	students?: any
 	type?: string
 
 	iconClick?: () => void
@@ -78,6 +78,7 @@ const DayCalendarLine = ({
 	item,
 	price,
 	key,
+	students,
 	studentId,
 	groupId,
 	prevpay,
@@ -192,6 +193,7 @@ const DayCalendarLine = ({
 			studentId: studentId,
 		})
 
+		dispatch({type: 'SET_DAY_STUDENTS', payload: students})
 		//SET_CURRENT_OPENED_STUDENT with studentid
 		dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: studentId})
 		//SET_LEFT_MENU_PAGE

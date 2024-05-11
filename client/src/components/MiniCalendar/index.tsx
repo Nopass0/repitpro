@@ -29,8 +29,6 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 
 	useEffect(() => {
 		const parsedDate = value ? new Date(value) : new Date()
-		setCurrentYear(parsedDate.getFullYear())
-		setCurrentMonth(parsedDate.getMonth())
 		setSelectedDate(parsedDate)
 		setTempYear(parsedDate.getFullYear())
 		setTempMonth(parsedDate.getMonth())
@@ -50,19 +48,27 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	}
 
 	const handleDateClick = (day: number) => {
-		const selectedDate = new Date(tempYear, tempMonth, day)
-		setSelectedDate(selectedDate)
+		if (selectedDate) {
+			const newDate = new Date(selectedDate)
+			newDate.setDate(day)
+			newDate.setMonth(tempMonth)
+			newDate.setFullYear(tempYear)
+			setSelectedDate(newDate)
 
-		if (inputRef.current) {
-			inputRef.current.value = formatDate(selectedDate)
+			// Update currentYear and currentMonth
+			setCurrentYear(newDate.getFullYear())
+			setCurrentMonth(newDate.getMonth())
+
+			if (inputRef.current) {
+				inputRef.current.value = formatDate(newDate)
+			}
+
+			onChange(newDate)
 		}
-
-		onChange(selectedDate)
 	}
 
 	const renderDays = () => {
 		const days = []
-		const numDaysInMonth = new Date(tempYear, tempMonth + 1, 0).getDate()
 		let day = 1
 
 		// Determine how many empty cells to render at the start
@@ -74,7 +80,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 				if (i === 0 && j < startOffset) {
 					// Render empty cell
 					week.push(<td key={`empty-${j}`}></td>)
-				} else if (day > numDaysInMonth) {
+				} else if (day > daysInMonth) {
 					// Stop rendering if we've reached the end of the month
 					break
 				} else {
@@ -100,7 +106,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 				}
 			}
 			days.push(<tr key={i}>{week}</tr>)
-			if (day > numDaysInMonth) break // Break the loop if we've rendered all days
+			if (day > daysInMonth) break // Break the loop if we've rendered all days
 		}
 		return days
 	}
@@ -218,12 +224,10 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		</div>
 	)
 }
-
 const formatDate = (date: Date): string => {
 	const day = date.getDate().toString().padStart(2, '0')
 	const month = (date.getMonth() + 1).toString().padStart(2, '0')
 	const year = date.getFullYear().toString()
 	return `${day}.${month}.${year}`
 }
-
 export default MiniCalendar

@@ -183,8 +183,25 @@ const AddGroup = ({className}: IAddGroup) => {
 				})
 			}
 		}
-		window.location.reload()
+		// window.location.reload()
 	}
+
+	const [errorList, setErrorList] = useState<string[]>([])
+
+	socket.once('addGroup', (data) => {
+		console.log('\n---------ADD DATA---------\n', data)
+
+		let ok: boolean = data.ok
+
+		if (ok === true) {
+			window.location.reload()
+		} else {
+			const meesage = data.error
+			if (errorList.indexOf(meesage) === -1) {
+				setErrorList([...errorList, meesage])
+			}
+		}
+	})
 
 	const [historyLesson, setHistoryLesson] = useState<any>([])
 
@@ -2120,6 +2137,13 @@ const AddGroup = ({className}: IAddGroup) => {
 										callback={handleAddAudioStudents}
 									/>
 								</div>
+								{errorList.length > 0 && (
+									<div className={s.ErrorList}>
+										{errorList.map((i) => (
+											<p key={i}>{i}</p>
+										))}
+									</div>
+								)}
 							</>
 						))}
 					</div>

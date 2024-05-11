@@ -76,6 +76,7 @@ const DayCalendarPopUp = ({
 			nameStudent: string
 			costOneLesson: string
 			studentId: string
+			place: string
 			itemName: string
 			tryLessonCheck: boolean
 			groupName?: string
@@ -302,7 +303,6 @@ const DayCalendarPopUp = ({
 		})
 	}
 
-
 	return (
 		<div
 			style={style}
@@ -377,8 +377,10 @@ const DayCalendarPopUp = ({
 								<DayCalendarLine
 									key={student._id}
 									id={student.id}
+									place={student.place}
 									studentId={student.studentId}
 									groupId={student.groupId}
+									students={students}
 									onUpdate={(
 										id,
 										editIcon,

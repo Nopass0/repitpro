@@ -359,8 +359,24 @@ const AddStudent = ({}: IAddStudent) => {
 				phoneNumber,
 			})
 		}
-		window.location.reload()
 	}
+
+	const [errorList, setErrorList] = useState<string[]>([])
+
+	socket.once('addStudent', (data) => {
+		console.log('\n---------ADD DATA---------\n', data)
+
+		let ok: boolean = data.ok
+
+		if (ok === true) {
+			window.location.reload()
+		} else {
+			const meesage = data.error
+			if (errorList.indexOf(meesage) === -1) {
+				setErrorList([...errorList, meesage])
+			}
+		}
+	})
 
 	const StyledPickersLayout = styled('span')({
 		'.MuiDateCalendar-root': {
@@ -1828,6 +1844,14 @@ const AddStudent = ({}: IAddStudent) => {
 							</mui.List>
 						</mui.Collapse> */}
 						<FileNLinks alreadyUploaded={files} callback={handleFileNLinks} />
+
+						{errorList.length > 0 && (
+							<div className={s.ErrorList}>
+								{errorList.map((i) => (
+									<p key={i}>{i}</p>
+								))}
+							</div>
+						)}
 					</div>
 				</div>
 				<div className={s.FooterWrapper}>

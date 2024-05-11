@@ -644,3 +644,19 @@
 		max-height: 872px;
 	}
 }
+
+.ErrorList {
+	display: flex;
+	flex-direction: column;
+
+	background-color: #cf6767;
+	border: 1px solid #e05353;
+	border-radius: 10px;
+	padding: 10px;
+	margin-bottom: 10px;
+
+	p {
+		width: 100%;
+		font-size: 14px;
+	}
+}

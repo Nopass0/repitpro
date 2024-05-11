@@ -94,7 +94,6 @@
 			input[type='email'] {
 				font-size: 16px;
 			}
-			
 		}
 	}
 	.StudentCarName__Left {
@@ -571,7 +570,6 @@
 	position: relative;
 }
 
-
 .ItemMain {
 	display: none;
 }
@@ -697,7 +695,7 @@
 		max-height: calc(100vh - 60px);
 	}
 }
-@media (min-height: 679px) and (max-height: 1024px)  and (max-width: 1024px){
+@media (min-height: 679px) and (max-height: 1024px) and (max-width: 1024px) {
 	.wrapper {
 		min-height: calc(100vh - 90px);
 		max-height: calc(100vh - 90px);
@@ -707,5 +705,21 @@
 	.wrapper {
 		min-height: 872px;
 		max-height: 872px;
+	}
+}
+
+.ErrorList {
+	display: flex;
+	flex-direction: column;
+
+	background-color: #cf6767;
+	border: 1px solid #e05353;
+	border-radius: 10px;
+	padding: 10px;
+	margin-bottom: 10px;
+
+	p {
+		width: 100%;
+		font-size: 14px;
 	}
 }
