@@ -48,6 +48,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
+import {useNavigate} from 'react-router-dom'
 
 interface IAddGroup {
 	className?: string
@@ -65,11 +66,13 @@ const AddGroup = ({className}: IAddGroup) => {
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
 
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
+	const editedCards = useSelector((state: any) => state.editedCards)
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
 	const [allPriceGroup, setAllPriceGroup] = useState<number>(0)
 	const [files, setFiles] = useState<{}[]>([])
 	const [filesItems, setFilesItems] = useState<{}[]>([])
 
+	const navigate = useNavigate()
 	const [audioItems, setAudioItems] = useState<{}[]>([])
 	const [audioStudents, setAudioStudents] = useState<{}[]>([])
 
@@ -777,7 +780,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					todayProgramStudent: '',
 					startLesson: new Date(Date.now()),
 					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
-					files:[],
+					files: [],
 				},
 			])
 			setCurrentStudentIndex(currentStudentIndex + 1)
@@ -1019,28 +1022,48 @@ const AddGroup = ({className}: IAddGroup) => {
 		)
 	}, [students, students[currentStudentIndex], currentStudentIndex])
 
+	useEffect(() => {
+		if (
+			items.some((item) => {
+				return (
+					item.itemName !== '' ||
+					item.tryLessonCheck !== false ||
+					item.tryLessonCost !== '' ||
+					item.todayProgramStudent !== '' ||
+					item.targetLesson !== '' ||
+					item.programLesson !== '' ||
+					item.typeLesson !== '1' ||
+					item.placeLesson !== '' ||
+					item.timeLesson !== '' ||
+					item.valueMuiSelectArchive !== 1 ||
+					item.nowLevel !== 0 ||
+					item.lessonDuration !== null
+					// item.startLesson !== new Date(Date.now()) ||
+					// item.endLesson !== new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2)
+				)
+			}) ||
+			groupName !== '' ||
+			students.some((student) => {
+				return (
+					student.nameStudent !== '' ||
+					student.contactFace !== '' ||
+					student.email !== '' ||
+					student.linkStudent !== '' ||
+					student.costStudent !== '' ||
+					student.commentStudent !== '' ||
+					student.phoneNumber !== '' ||
+					student.prePayCost !== ''
+				)
+			})
+		) {
+			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		}
+	}, [items, students, groupName])
 	return (
 		<>
 			<button
 				onClick={() => {
-					if (
-						items.some((item) => {
-							return (
-								item.itemName !== '' ||
-								item.tryLessonCheck !== false ||
-								item.tryLessonCost !== '' ||
-								item.todayProgramStudent !== '' ||
-								item.targetLesson !== '' ||
-								item.programLesson !== '' ||
-								item.typeLesson !== '1' ||
-								item.placeLesson !== '' ||
-								item.timeLesson !== '' ||
-								item.valueMuiSelectArchive !== 1 ||
-								item.nowLevel !== undefined ||
-								item.lessonDuration !== null
-							)
-						})
-					) {
+					if (editedCards) {
 						dispatch({
 							type: 'SET_PAGE_POPUP_EXIT',
 							payload: EPagePopUpExit.Exit,
@@ -2125,6 +2148,7 @@ const AddGroup = ({className}: IAddGroup) => {
 						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
+							dispatch({type: 'SET_EDITED_CARDS', payload: false})
 							dispatch({
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
@@ -2133,6 +2157,7 @@ const AddGroup = ({className}: IAddGroup) => {
 								type: 'SET_PAGE_POPUP_EXIT',
 								payload: EPagePopUpExit.None,
 							})
+							navigate('../')
 						}}
 						no={() =>
 							dispatch({

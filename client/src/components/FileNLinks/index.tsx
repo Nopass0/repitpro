@@ -37,7 +37,20 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		setFiles(alreadyUploaded)
 		console.log(files)
 	}, [alreadyUploaded])
+	const getFileLinkById = (id: string) => {
+		// !TODO: Remake after deploy on server with domain
+		const baseLinkToThisSite = window.location.origin.replace(
+			`:${window.location.port}`,
+			':3000',
+		)
 
+		window.open(`${baseLinkToThisSite}/files/${id}`, '_blank')
+	}
+
+	const openLocalFile = (file: any) => {
+		const url = URL.createObjectURL(file)
+		window.open(url, '')
+	}
 	const idRdn = Math.random().toString()
 
 	return (
@@ -105,9 +118,19 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					<Line width="100%" className={s.Line} />
 					<div className={s.FileList}>
 						{files.length ? (
-							files.map((file, index) => (
+							files.map((file: any, index: number) => (
 								<>
-									<div key={index} className={s.FileItem}>
+									<div
+										key={index}
+										className={s.FileItem}
+										onClick={() => {
+											// !TODO : If file.id is not null getFileLinkById
+											if (file.id) {
+												getFileLinkById(file.id)
+											} else {
+												openLocalFile(file.file)
+											}
+										}}>
 										<p>
 											{file.name.length > 20
 												? `${file.name.slice(0, 20)}...`

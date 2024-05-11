@@ -114,12 +114,12 @@ const MainPage = () => {
 			value: students.length + groups.length + clients.length,
 		},
 		{
-			label: 'Группы',
-			value: groups.length,
-		},
-		{
 			label: 'Ученики',
 			value: students.length,
+		},
+		{
+			label: 'Группы',
+			value: groups.length,
 		},
 		{
 			label: 'Заказчики',
@@ -369,8 +369,20 @@ const MainPage = () => {
 						</div>
 					</div>
 					<div className={s.SortData}>
-						<SwapVertIcon style={{cursor: 'pointer', color: sortedTypeData === 0 ? '#25991c' : ''}} onClick={() => setSortedTypeData(0)} />
-						<SortByAlphaIcon style={{cursor: 'pointer', color: sortedTypeData === 1 ? '#25991c' : ''}} onClick={() => setSortedTypeData(1)} />
+						<SwapVertIcon
+							style={{
+								cursor: 'pointer',
+								color: sortedTypeData === 0 ? '#25991c' : '',
+							}}
+							onClick={() => setSortedTypeData(0)}
+						/>
+						<SortByAlphaIcon
+							style={{
+								cursor: 'pointer',
+								color: sortedTypeData === 1 ? '#25991c' : '',
+							}}
+							onClick={() => setSortedTypeData(1)}
+						/>
 						{/* <mui.Select
 							className={s.muiSelectSort}
 							variant={'standard'}
@@ -406,10 +418,13 @@ const MainPage = () => {
 				<div className={s.MainLeftMenu}>
 					{allCards.map((item: any, index: number) => (
 						<>
+							{index === 0 && (
+								<Line className={s.LineListFirst} width="296px" />
+							)}
 							{valueMuiSelectArchive === 0 ? (
 								<>
 									{item.type === 'group' &&
-									(valueMuiSelectType === 0 || valueMuiSelectType === 1) ? (
+									(valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
 										<>
 											<div className={s.GroupWrapper}>
 												<mui.ListItemButton
@@ -550,7 +565,7 @@ const MainPage = () => {
 											</div>
 										</>
 									) : item.type === 'student' &&
-									  (valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
+									  (valueMuiSelectType === 0 || valueMuiSelectType === 1) ? (
 										<>
 											<MUI.Select
 												key={index}
@@ -757,7 +772,7 @@ const MainPage = () => {
 							) : valueMuiSelectArchive === 1 && item.isArchived ? (
 								<>
 									{item.type === 'group' &&
-									(valueMuiSelectType === 0 || valueMuiSelectType === 1) ? (
+									(valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
 										<>
 											<mui.ListItemButton
 												className={s.ListGroup}
@@ -889,7 +904,7 @@ const MainPage = () => {
 											<Line className={s.LineList} width="296px" />
 										</>
 									) : item.type === 'student' &&
-									  (valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
+									  (valueMuiSelectType === 0 || valueMuiSelectType === 1) ? (
 										<>
 											<MUI.Select
 												key={index}
@@ -1098,7 +1113,7 @@ const MainPage = () => {
 								!item.isArchived && (
 									<>
 										{item.type === 'group' &&
-										(valueMuiSelectType === 0 || valueMuiSelectType === 1) ? (
+										(valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
 											<>
 												<mui.ListItemButton
 													className={s.ListGroup}
@@ -1237,7 +1252,7 @@ const MainPage = () => {
 												<Line className={s.LineList} width="296px" />
 											</>
 										) : item.type === 'student' &&
-										  (valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
+										  (valueMuiSelectType === 0 || valueMuiSelectType === 1) ? (
 											<>
 												<MUI.Select
 													key={index}

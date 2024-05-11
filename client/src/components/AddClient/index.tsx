@@ -39,7 +39,7 @@ interface IAddClient {}
 
 const AddClient = ({}: IAddClient) => {
 	const dispatch = useDispatch()
-
+	const editedCards = useSelector((state: any) => state.editedCards)
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	// Block Student
 	const [stages, setStages] = useState<number>(1)
@@ -57,6 +57,7 @@ const AddClient = ({}: IAddClient) => {
 	const [currentJobIndex, setCurrentJobIndex] = useState<number>(0)
 	const [currentStageIndex, setCurrentStageIndex] = useState<number>(0)
 
+	const navigate = useNavigate()
 	const [files, setFiles] = useState<any>([])
 
 	const [audios, setAudios] = useState<any>([])
@@ -405,20 +406,59 @@ const AddClient = ({}: IAddClient) => {
 		console.log(jobs, jobs[0].stages, '<Job stages>')
 	}, [jobs])
 
+	useEffect(() => {
+		if (
+			nameStudent !== '' ||
+			phoneNumber !== '' ||
+			email !== '' ||
+			costStudent !== '' ||
+			commentClient !== '' ||
+			jobs.some((job) => {
+				return (
+					job.jobName !== '' ||
+					job.itemName !== '' ||
+					job.cost !== 0 ||
+					job.stages.some((stage) => {
+						return (
+							stage.totalCost !== 0 ||
+							stage.name !== '' ||
+							stage.typePayment !== false ||
+							stage.cost !== 0 ||
+							stage.prePay !== true ||
+							stage.postPay !== false ||
+							stage.endPaymentPrice !== 0 ||
+							stage.firstPaymentPayed !== false ||
+							stage.isStartWork !== false ||
+							stage.fisrtPaymentPrice !== 0 ||
+							stage.endPaymentPayed !== false ||
+							stage.isEndWork !== false ||
+							stage.payment !== 0 ||
+							stage.payed !== false ||
+							stage.workStarted !== false
+						)
+					})
+				)
+			})
+		) {
+			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		}
+	}, [nameStudent, phoneNumber, email, costStudent, commentClient, jobs])
+
 	return (
 		<>
 			<button
 				onClick={() => {
-					dispatch({
-						type: 'SET_PAGE_POPUP_EXIT',
-						payload: EPagePopUpExit.Exit,
-					})
-					// } else {
-					// 	dispatch({
-					// 		type: 'SET_LEFT_MENU_PAGE',
-					// 		payload: ELeftMenuPage.MainPage,
-					// 	})
-					// }
+					if (editedCards) {
+						dispatch({
+							type: 'SET_PAGE_POPUP_EXIT',
+							payload: EPagePopUpExit.Exit,
+						})
+					} else {
+						dispatch({
+							type: 'SET_LEFT_MENU_PAGE',
+							payload: ELeftMenuPage.MainPage,
+						})
+					}
 				}}
 				className={s.CloseButton}>
 				<CloseIcon className={s.CloseIcon} />
@@ -1907,6 +1947,7 @@ const AddClient = ({}: IAddClient) => {
 						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
+							dispatch({type: 'SET_EDITED_CARDS', payload: false})
 							dispatch({
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
@@ -1915,6 +1956,7 @@ const AddClient = ({}: IAddClient) => {
 								type: 'SET_PAGE_POPUP_EXIT',
 								payload: EPagePopUpExit.None,
 							})
+							navigate('../')
 						}}
 						no={() =>
 							dispatch({

@@ -30,7 +30,7 @@ const Header = ({}: IHeader) => {
 	const pagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const EleftMenu = useSelector((state: any) => state.leftMenu)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-
+	const editedCards = useSelector((state: any) => state.editedCards)
 	const handleLogout = () => {
 		dispatch({type: 'LOGOUT'})
 		navigate('/login')
@@ -46,7 +46,8 @@ const Header = ({}: IHeader) => {
 						onClick={() => {
 							if (
 								ELeftMenuPage.MainPage !== EleftMenu &&
-								ELeftMenuPage.MyCabinet !== EleftMenu
+								ELeftMenuPage.MyCabinet !== EleftMenu &&
+								editedCards
 							) {
 								dispatch({
 									type: 'SET_PAGE_POPUP_EXIT',
@@ -236,7 +237,8 @@ const Header = ({}: IHeader) => {
 							onClick={() => {
 								if (
 									EPagePopUpExit.None === pagePopUpExit &&
-									ELeftMenuPage.MainPage === EleftMenu
+									ELeftMenuPage.MainPage === EleftMenu &&
+									!editedCards
 								) {
 									dispatch({
 										type: 'SET_LEFT_MENU_PAGE',

@@ -5,7 +5,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
 import Search from '../../assets/search'
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import {debounce} from 'lodash'
 import microSVG from '../../assets/Microphone1.svg'
@@ -70,12 +70,14 @@ const AddStudent = ({}: IAddStudent) => {
 	const currentOpenedStudent = useSelector(
 		(state: any) => state.currentOpenedStudent,
 	)
-
+	const editedCards = useSelector((state: any) => state.editedCards)
+	const listRef = useRef(null)
 	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
 	const [isEditMode, setIsEditMode] = useState(
 		currentOpenedStudent ? true : false,
 	)
 
+	const navigate = useNavigate()
 	const [audios, setAudios] = useState<any>([])
 
 	const handleAddAudio = (
@@ -401,7 +403,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
 	const [lessonDuration, setLessonDuration] = useState()
 
-	const navigate = useNavigate()
 	const handleClick_delete = (itemIndex: number, id: number) => {
 		setItems((prevItems) =>
 			prevItems.map((item, index) =>
@@ -509,7 +510,6 @@ const AddStudent = ({}: IAddStudent) => {
 			setShowEndTimePicker(id)
 		}
 	}
-
 
 	const closeTimePicker = (index: number, id: number) => {
 		//get timeline
@@ -721,6 +721,18 @@ const AddStudent = ({}: IAddStudent) => {
 		const dayIndex = date.getDay() - 1
 		return dayIndex === -1 ? 6 : dayIndex
 	}
+	const today = new Date()
+	let nearestDateIndex = 0
+	let nearestDateDiff = Infinity
+
+	for (let i = 0; i < historyLesson.length; i++) {
+		const lessonDate = new Date(historyLesson[i].date)
+		const diff = Math.abs(today.getTime() - lessonDate.getTime())
+		if (diff < nearestDateDiff) {
+			nearestDateIndex = i
+			nearestDateDiff = diff
+		}
+	}
 
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
@@ -772,8 +784,6 @@ const AddStudent = ({}: IAddStudent) => {
 					countLessonsPrice = countLessons * Number(items[i].costOneLesson)
 				}
 			}
-
-			
 		}
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
@@ -796,42 +806,70 @@ const AddStudent = ({}: IAddStudent) => {
 		])
 	}
 
+	const [scrollPosition, setScrollPosition] = useState(0)
+	const collapseRef = useRef(null)
 	useEffect(() => {
-		dispatch({type: 'SET_EDITED_CARDS', payload: true})
-	}, [items])
+		if (listRef.current && collapseRef.current) {
+			const listHeight = listRef.current.offsetHeight
+			const windowHeight = window.innerHeight
+			const middlePosition = listHeight / 2 + 'px'
+			const collapseIsOpen = Boolean(collapseRef.current.state.expanded)
+
+			if (collapseIsOpen) {
+				setScrollPosition(window.scrollY + windowHeight / 2 - listHeight / 2)
+				listRef.current.scrollTop = scrollPosition
+			}
+		}
+	}, [listRef, scrollPosition, collapseRef])
+
+	useEffect(() => {
+		if (
+			items.some((item) => {
+				return (
+					item.itemName !== '' ||
+					item.tryLessonCheck !== false ||
+					item.tryLessonCost !== '' ||
+					item.todayProgramStudent !== '' ||
+					item.targetLesson !== '' ||
+					item.programLesson !== '' ||
+					item.typeLesson !== '1' ||
+					item.placeLesson !== '' ||
+					item.timeLesson !== '' ||
+					item.valueMuiSelectArchive !== 1 ||
+					item.nowLevel !== undefined ||
+					item.lessonDuration !== null ||
+					item.costOneLesson !== ''
+				)
+			}) ||
+			nameStudent !== '' ||
+			contactFace !== '' ||
+			email !== '' ||
+			linkStudent !== '' ||
+			costStudent !== '' ||
+			commentStudent !== '' ||
+			phoneNumber !== '' ||
+			prePayCost !== ''
+		) {
+			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		}
+	}, [
+		items,
+		nameStudent,
+		contactFace,
+		email,
+		linkStudent,
+		costStudent,
+		commentStudent,
+		phoneNumber,
+		prePayCost,
+	])
 
 	return (
 		<>
 			<button
 				className={s.CloseButton}
 				onClick={() => {
-					if (
-						items.some((item) => {
-							return (
-								item.itemName !== '' ||
-								item.tryLessonCheck !== false ||
-								item.tryLessonCost !== '' ||
-								item.todayProgramStudent !== '' ||
-								item.targetLesson !== '' ||
-								item.programLesson !== '' ||
-								item.typeLesson !== '1' ||
-								item.placeLesson !== '' ||
-								item.timeLesson !== '' ||
-								item.valueMuiSelectArchive !== 1 ||
-								item.nowLevel !== undefined ||
-								item.lessonDuration !== null ||
-								item.costOneLesson !== ''
-							)
-						}) ||
-						nameStudent !== '' ||
-						contactFace !== '' ||
-						email !== '' ||
-						linkStudent !== '' ||
-						costStudent !== '' ||
-						commentStudent !== '' ||
-						phoneNumber !== '' ||
-						prePayCost !== ''
-					) {
+					if (editedCards) {
 						dispatch({
 							type: 'SET_PAGE_POPUP_EXIT',
 							payload: EPagePopUpExit.Exit,
@@ -1013,13 +1051,18 @@ const AddStudent = ({}: IAddStudent) => {
 							className={s.MuiCollapse}
 							in={open}
 							timeout="auto"
+							ref={listRef}
 							unmountOnExit>
-							<mui.List className={s.MuiList} component="div" disablePadding>
+							<mui.List
+								className={s.MuiList}
+								component="div"
+								disablePadding
+								ref={collapseRef}>
 								<div className={s.ListObjectWrapper}>
 									{historyLesson.length !== 0 || prePayCost !== '' ? (
 										<>
 											{historyLesson
-												.sort(compareDates)
+												.sort((a, b) => new Date(b.date) - new Date(a.date))
 												.map((lesson: any, index: number) => (
 													<div key={index} className={s.ListObject}>
 														<p
@@ -1087,6 +1130,7 @@ const AddStudent = ({}: IAddStudent) => {
 														</button>
 													</div>
 												))}
+											<Line width="100%" className={s.Line} />
 											{prePayCost && (
 												<>
 													<div className={s.ListObject}>
@@ -1801,6 +1845,7 @@ const AddStudent = ({}: IAddStudent) => {
 						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
+							dispatch({type: 'SET_EDITED_CARDS', payload: false})
 							dispatch({
 								type: 'SET_LEFT_MENU_PAGE',
 								payload: ELeftMenuPage.MainPage,
@@ -1809,6 +1854,7 @@ const AddStudent = ({}: IAddStudent) => {
 								type: 'SET_PAGE_POPUP_EXIT',
 								payload: EPagePopUpExit.None,
 							})
+							navigate('../')
 						}}
 						no={() =>
 							dispatch({

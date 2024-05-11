@@ -302,6 +302,7 @@ const DayCalendarPopUp = ({
 		})
 	}
 
+
 	return (
 		<div
 			style={style}
@@ -369,7 +370,6 @@ const DayCalendarPopUp = ({
 								<Line className={s.Line} width="700px" />
 							</>
 						))}
-					
 
 					{students &&
 						students.map((student: any) => (
@@ -428,12 +428,12 @@ const DayCalendarPopUp = ({
 								/>
 							</>
 						))}
-						{Array.from({length: 8}).map((_,index:number) => (
-							<>
+					{Array.from({length: 8}).map((_, index: number) => (
+						<>
 							<div className={s.FakeBlock} key={index}></div>
 							<Line className={s.Line} width="700px" />
-							</>
-						)) }
+						</>
+					))}
 				</section>
 			</div>
 			<div>

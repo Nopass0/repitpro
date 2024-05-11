@@ -150,10 +150,11 @@ body {
 } */
 @media screen and (max-width: 1366px) {
 	body {
-		zoom: 0.7;
+		zoom: 0.75;
+		overflow: auto !important;
 	}
 } 
-@media screen and (max-width: 1220px) {
+@media screen and (max-width: 1290px) {
 	body {
 		zoom: 0.6;
 	}

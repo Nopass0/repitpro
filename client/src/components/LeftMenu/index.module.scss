@@ -10,6 +10,8 @@
 	border: 1px solid #e2e2e9;
 	border-radius: 20px;
 
+	overflow-x: hidden !important;
+
 	.Line {
 		background: #e2e2e9;
 		margin: 0 16px;
@@ -91,7 +93,7 @@
 	.SortData {
 		display: flex;
 		flex-direction: row;
-		justify-content: flex-end;
+		justify-content: flex-start;
 		align-items: center;
 
 		color: #333;
@@ -116,7 +118,15 @@
 		flex-direction: column;
 		overflow-x: hidden;
 		max-height: 590px;
+		overflow-x: hidden;
 		overflow-y: auto;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
 
 		.muiSelect__menu {
 			margin-bottom: 10px;
@@ -212,6 +222,12 @@
 .LineList {
 	background: #e2e2e9;
 	min-height: 1px;
+}
+
+.LineListFirst {
+	background: #e2e2e9;
+	min-height: 1px;
+	margin-top: 0;
 }
 .CloseButton {
 	display: none;
