@@ -361,7 +361,7 @@ const AddClient = ({}: IAddClient) => {
 	const nextClient = () => {
 		if (Number(currentClientPosition) < allIdsClient.length - 1) {
 			setCurrentClientPosition(Number(currentClientPosition) + 1)
-			const newId = allIdsClient[Number(currentClientPosition)]
+			const newId = allIdsClient[Number(currentClientPosition) + 1]
 
 			dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
 			socket.emit('getClientById', {token: token, clientId: newId})
@@ -383,7 +383,7 @@ const AddClient = ({}: IAddClient) => {
 	const prevClient = () => {
 		if (Number(currentClientPosition) > 0) {
 			setCurrentClientPosition(Number(currentClientPosition) - 1)
-			const newId = allIdsClient[Number(currentClientPosition)]
+			const newId = allIdsClient[Number(currentClientPosition) - 1]
 
 			dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
 			socket.emit('getClientById', {token: token, clientId: newId})
@@ -473,8 +473,11 @@ const AddClient = ({}: IAddClient) => {
 								</span>
 							</button>
 							<p className={s.btnText}>
-								Карточка заказчика {currentClientPosition + 1}/
-								{allIdsClient.length}
+								Карточка заказчика{' '}
+								{currentOpenedClient
+									? `${currentClientPosition + 1}/
+								${allIdsClient.length}`
+									: `${allIdsClient.length + 1} / ${allIdsClient.length + 1}`}
 							</p>
 							<button className={s.btn} onClick={nextClient}>
 								<span>

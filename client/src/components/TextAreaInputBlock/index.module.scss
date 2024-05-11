@@ -1,0 +1,46 @@
+.textarea {
+	display: block;
+	border: none;
+	background: none;
+	outline: none;
+	white-space: normal;
+	min-width: 6ch !important;
+	width: 100%;
+	font-size: 16px;
+
+	position: absolute;
+	text-indent: 120px;
+	top: 0;
+
+	resize: none;
+
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	overflow: hidden;
+}
+
+.StudentCard{
+	width: 100%;
+	max-width: 320px; // prev 296px
+	font-size: 16px;
+	white-space: nowrap;
+
+	display: flex;
+	flex-direction: row;
+	// flex-wrap: wrap;
+
+	p {
+		font-weight: 600;
+		margin-right: 2px;
+	}
+
+	label {
+		width: 100%;
+		position: relative;
+		display: flex;
+	}
+}

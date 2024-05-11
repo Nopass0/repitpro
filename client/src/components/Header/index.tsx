@@ -19,9 +19,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
 import {WindowSharp} from '@mui/icons-material'
+import socket from '../../socket'
 interface IHeader {}
 
 const Header = ({}: IHeader) => {
+	const user = useSelector((state: any) => state.user)
+	const token = user.token
 	const navigate = useNavigate()
 	const dispatch = useDispatch()
 	const currentMonth = useSelector((state: any) => state.currentMonth) // new Date().getMonth()
@@ -31,12 +34,69 @@ const Header = ({}: IHeader) => {
 	const EleftMenu = useSelector((state: any) => state.leftMenu)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const editedCards = useSelector((state: any) => state.editedCards)
+	const mobileLeftSelector = useSelector((state: any) => state.mobileLeft)
 	const handleLogout = () => {
 		dispatch({type: 'LOGOUT'})
 		navigate('/login')
 	}
-	const mobileLeftSelector = useSelector((state: any) => state.mobileLeft)
+	const addStudent = () => {
+		dispatch({
+			type: 'SET_CURRENT_OPENED_STUDENT',
+			payload: '',
+		})
 
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+
+		socket.emit('getGroupByStudentId', {
+			token: token,
+			studentId: '',
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddStudent,
+			})
+		}, 10)
+	}
+
+	const addGroup = () => {
+		dispatch({
+			type: 'SET_CURRENT_OPENED_GROUP',
+			payload: '',
+		})
+		socket.emit('getGroupById', {token: token, groupId: ''})
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddGroup,
+			})
+		}, 10)
+	}
+
+	const addClient = () => {
+		dispatch({
+			type: 'SET_CURRENT_OPENED_CLIENT',
+			payload: '',
+		})
+		socket.emit('getClientById', {token: token, clientId: ''})
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddClient,
+			})
+		}, 10)
+	}
 	return (
 		<header className={s.header}>
 			<div className={s.wrapperHeader}>
@@ -103,10 +163,7 @@ const Header = ({}: IHeader) => {
 								selected: s.muiMenuItemSelected,
 							}}
 							onClick={() => {
-								dispatch({
-									type: 'SET_LEFT_MENU_PAGE',
-									payload: ELeftMenuPage.AddStudent,
-								})
+								addStudent()
 							}}
 							value={1}>
 							Ученика
@@ -117,10 +174,7 @@ const Header = ({}: IHeader) => {
 								selected: s.muiMenuItemSelected,
 							}}
 							onClick={() => {
-								dispatch({
-									type: 'SET_LEFT_MENU_PAGE',
-									payload: ELeftMenuPage.AddGroup,
-								})
+								addGroup()
 							}}
 							value={2}>
 							Группу
@@ -131,10 +185,7 @@ const Header = ({}: IHeader) => {
 								selected: s.muiMenuItemSelected,
 							}}
 							onClick={() => {
-								dispatch({
-									type: 'SET_LEFT_MENU_PAGE',
-									payload: ELeftMenuPage.AddClient,
-								})
+								addClient()
 							}}
 							value={3}>
 							Заказчика

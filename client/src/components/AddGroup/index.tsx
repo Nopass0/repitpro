@@ -243,7 +243,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	const nextGroup = () => {
 		if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
 			setCurrentGroupIndex(Number(currentGroupIndex) + 1)
-			const newId = groupsIndexes[Number(currentGroupIndex)]
+			const newId = groupsIndexes[Number(currentGroupIndex) + 1]
 
 			dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
 			socket.emit('getGroupById', {token: token, groupId: newId})
@@ -265,7 +265,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	const prevGroup = () => {
 		if (Number(currentGroupIndex) > 0) {
 			setCurrentGroupIndex(Number(currentGroupIndex) - 1)
-			const newId = groupsIndexes[Number(currentGroupIndex)]
+			const newId = groupsIndexes[Number(currentGroupIndex) - 1]
 
 			dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
 			socket.emit('getGroupById', {token: token, groupId: newId})
@@ -1088,7 +1088,10 @@ const AddGroup = ({className}: IAddGroup) => {
 								</span>
 							</button>
 							<p className={s.btnText}>
-								Карточка группы {currentGroupIndex + 1} / {groupsIndexes.length}
+								Карточка группы{' '}
+								{currentOpenedGroup
+									? `${currentGroupIndex + 1} / ${groupsIndexes.length}`
+									: `${groupsIndexes.length + 1} / ${groupsIndexes.length + 1}`}
 							</p>
 							<button className={s.btn} onClick={() => nextGroup()}>
 								<span>

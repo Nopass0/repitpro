@@ -45,6 +45,8 @@ import IconsPhone from '../IconsPhone/index'
 import {PickersCalendarHeader} from '@mui/x-date-pickers'
 import {sl} from 'date-fns/locale'
 import MiniCalendar from '../MiniCalendar'
+import TextArea from '../TextAreaInputBlock'
+import TextAreaInputBlock from '../TextAreaInputBlock'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -99,17 +101,26 @@ const AddStudent = ({}: IAddStudent) => {
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
+			console.log(
+				arr,
+				csp,
+				currentStudPosition,
+				currentOpenedStudent,
+				'arr, csp, currentStudPosition',
+				'currentOpenedStudent',
+			)
 		})
 
 		socket.on('getGroupByStudentId', (data: any) => {
 			setData(data.group)
 		})
 	}, [])
+	console.log(currentStudPosition, 'currentStudPosition')
 
 	const nextStud = () => {
 		if (Number(currentStudPosition) < allIdStudent.length - 1) {
 			setCurrentStudPosition(Number(currentStudPosition) + 1)
-			const newId = allIdStudent[Number(currentStudPosition)]
+			const newId = allIdStudent[Number(currentStudPosition) + 1]
 
 			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
 			console.log(currentOpenedStudent, 'newIdDispatch')
@@ -126,9 +137,10 @@ const AddStudent = ({}: IAddStudent) => {
 	const prevStud = () => {
 		if (Number(currentStudPosition) > 0) {
 			setCurrentStudPosition(Number(currentStudPosition) - 1)
-			const newId = allIdStudent[Number(currentStudPosition)]
+			const newId = allIdStudent[Number(currentStudPosition) - 1]
 
 			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			console.log(currentOpenedStudent, newId, 'newIdDispatch')
 			socket.emit('getGroupByStudentId', {
 				token: token,
 				studentId: newId,
@@ -225,25 +237,6 @@ const AddStudent = ({}: IAddStudent) => {
 		},
 	])
 	const [files, setFiles] = useState<{}[]>([])
-
-	useEffect(() => {
-		if (data) {
-			setNameStudent(data.students[0].nameStudent)
-			setCostOneLesson(data.students[0].costOneLesson)
-			setPrePayCost(data.students[0].prePayCost)
-			setPrePayDate(data.students[0].prePayDate)
-			setContactFace(data.students[0].contactFace)
-			setPhoneNumber(data.students[0].phoneNumber)
-			setEmail(data.students[0].email)
-			setLinkStudent(data.students[0].linkStudent)
-			setCommentStudent(data.students[0].commentStudent)
-			setCostStudent(data.students[0].costStudent)
-			setItems(data.items)
-			setFiles(data.students[0].filesData)
-			setAudios(data.students[0].audiosData)
-			console.log('--data-------', data)
-		}
-	}, [data])
 
 	const handleFileNLinks = (
 		file: any,
@@ -864,6 +857,25 @@ const AddStudent = ({}: IAddStudent) => {
 		prePayCost,
 	])
 
+	useEffect(() => {
+		if (data) {
+			setNameStudent(data.students[0].nameStudent)
+			setCostOneLesson(data.students[0].costOneLesson)
+			setPrePayCost(data.students[0].prePayCost)
+			setPrePayDate(data.students[0].prePayDate)
+			setContactFace(data.students[0].contactFace)
+			setPhoneNumber(data.students[0].phoneNumber)
+			setEmail(data.students[0].email)
+			setLinkStudent(data.students[0].linkStudent)
+			setCommentStudent(data.students[0].commentStudent)
+			setCostStudent(data.students[0].costStudent)
+			setItems(data.items)
+			setFiles(data.students[0].filesData)
+			setAudios(data.students[0].audiosData)
+			console.log('--data-------', data)
+		}
+	}, [data])
+
 	return (
 		<>
 			<button
@@ -893,7 +905,10 @@ const AddStudent = ({}: IAddStudent) => {
 								</span>
 							</button>
 							<p className={s.btnText}>
-								Карточка ученика {currentStudPosition + 1}/{allIdStudent.length}
+								Карточка ученика{' '}
+								{currentOpenedStudent
+									? `${currentStudPosition + 1}/${allIdStudent.length}`
+									: `${allIdStudent.length + 1}/${allIdStudent.length + 1}`}
 							</p>
 							<button onClick={nextStud} className={s.btn}>
 								<span>
@@ -1199,14 +1214,14 @@ const AddStudent = ({}: IAddStudent) => {
 
 						<Line width="100%" className={s.Line} />
 
-						<div className={s.StudentCard}>
-							<p>Комментарий:</p>
-							<textarea
-								value={commentStudent}
-								disabled={isEditMode}
-								onChange={(e) => setCommentStudent(e.target.value)}
-							/>
-						</div>
+						<TextAreaInputBlock
+							title="Комментарии:"
+							value={commentStudent}
+							disabled={isEditMode}
+							onChange={(e) => {
+								setCommentStudent(e.target.value)
+							}}
+						/>
 						<Line width="100%" className={s.Line} />
 					</div>
 
