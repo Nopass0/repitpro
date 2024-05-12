@@ -21,6 +21,8 @@ import {useEffect, useState} from 'react'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import ExitPopUp from '../ExitPopUp'
+import ReactDOM from 'react-dom'
 interface IDayStudentPopUp {
 	icon?: any
 	name?: string
@@ -31,6 +33,7 @@ interface IDayStudentPopUp {
 	onExit?: () => void
 	isGroup?: boolean
 	groupId?: string
+	price?: string
 }
 
 enum EPagePopUp {
@@ -48,6 +51,7 @@ const DayStudentPopUp = ({
 	onExit,
 	isGroup,
 	groupId,
+	price,
 }: IDayStudentPopUp) => {
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
@@ -70,7 +74,7 @@ const DayStudentPopUp = ({
 	const token = user.token
 
 	const [pagePopUp, setPagePopUp] = useState<EPagePopUp>(EPagePopUp.None)
-
+	const [payChecked, setPayChecked] = useState<boolean>(false)
 	const [student, setStudent] = useState<any>({})
 	const [isOpened, setIsOpened] = useState(false)
 	const [openSelect1, setOpenSelect1] = useState(false)
@@ -302,56 +306,70 @@ const DayStudentPopUp = ({
 	}
 
 	return (
-		<div style={style} className={s.wrapper}>
-			<div className={s.InfoBlock}>
-				<div className={s.Header}>
-					<div className={s.MainHeader}>
-						<div className={s.IconHeader}>
-							<img src={icon} alt="icon" />
-							<p>{student?.nameStudent}</p>
-						</div>
-						<div className={s.Devider}></div>
-						<div className={s.AddressHeader}>
-							<p>Адрес:</p>
-							<p>{student?.place}</p>
-						</div>
-						<div className={s.Devider}></div>
-						<div className={s.DateHeader}>
-							<p>{date}</p>
-							<p>{time}</p>
+		<>
+			<div style={style} className={s.wrapper}>
+				<div className={s.InfoBlock}>
+					<div className={s.Header}>
+						<div className={s.MainHeader}>
+							<div className={s.IconHeader}>
+								<img src={icon} alt="icon" />
+								<p>{student?.nameStudent}</p>
+							</div>
+							<div className={s.Devider}></div>
+							<div className={s.AddressHeader}>
+								<p>Адрес:</p>
+								<p>{student?.place}</p>
+							</div>
+							<div className={s.Devider}></div>
+							<div className={s.DateHeader}>
+								<p>{date}</p>
+								<p>{time}</p>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div className={s.MainBlock}>
-					<div className={s.HomeWorkWrapper}>
-						<h1>Домашняя работа</h1>
-						<textarea
-							className={s.TextArea}
-							placeholder="Задания, комментарий"
-							value={homeWorkComment}
-							onChange={(e) => setHomeWorkComment(e.target.value)}
-						/>
-						<div className={s.MediaBlock}>
-							<RecordNListen
-								alreadyRecorded={audios}
-								callback={handleAddHomeAudio}
-								className={s.RecordNListen}
+					<div className={s.MainBlock}>
+						<div className={s.HomeWorkWrapper}>
+							<h1>Домашняя работа</h1>
+							<textarea
+								className={s.TextArea}
+								placeholder="Задания, комментарий"
+								value={homeWorkComment}
+								onChange={(e) => setHomeWorkComment(e.target.value)}
 							/>
-							<input
-								type="file"
-								id="inputFile1"
-								className={s.InputFile}
-								onChange={handleAddHomeFile}
-							/>
-							{/* <label htmlFor="inputFile1" className={s.LabelFile}>
+							<div className={s.MediaBlock}>
+								<RecordNListen
+									alreadyRecorded={audios}
+									callback={handleAddHomeAudio}
+									className={s.RecordNListen}
+								/>
+								<input
+									type="file"
+									id="inputFile1"
+									className={s.InputFile}
+									onChange={handleAddHomeFile}
+								/>
+								{/* <label htmlFor="inputFile1" className={s.LabelFile}>
 								<img src={uploadFile} alt="uploadFile" />
 							</label> */}
-							<Select
-								className={s.Select}
-								multiple
-								onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
-								renderValue={(option: SelectOption<number> | null) => {
-									if (option == null || option.value === null) {
+								<Select
+									className={s.Select}
+									multiple
+									onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
+									renderValue={(option: SelectOption<number> | null) => {
+										if (option == null || option.value === null) {
+											return (
+												<>
+													<div className={s.ListWrapper}>
+														<label htmlFor="inputFile1" className={s.LabelFile}>
+															<img src={uploadFile} alt="uploadFile" />
+														</label>
+														<div className={s.Icons}>
+															{openSelect1 ? <ExpandLess /> : <ExpandMore />}
+														</div>
+													</div>
+												</>
+											)
+										}
 										return (
 											<>
 												<div className={s.ListWrapper}>
@@ -364,122 +382,122 @@ const DayStudentPopUp = ({
 												</div>
 											</>
 										)
-									}
-									return (
-										<>
-											<div className={s.ListWrapper}>
-												<label htmlFor="inputFile1" className={s.LabelFile}>
-													<img src={uploadFile} alt="uploadFile" />
-												</label>
-												<div className={s.Icons}>
-													{openSelect1 ? <ExpandLess /> : <ExpandMore />}
-												</div>
-											</div>
-										</>
-									)
-								}}>
-								<Option className={s.Option} value={0}>
-									{homeFiles.length === 0
-										? 'Список пока пуст'
-										: homeFiles.map((file: any, index: number) => (
-												<div className={s.FileWrapper}>
-													<p>{file.name.slice(0, 25) + '...'}</p>
-													<button
-														className={s.DeleteBtn}
-														onClick={() =>
-															setHomeFiles(
-																homeFiles.filter(
-																	(f: any) => f.name !== file.name,
-																),
-															)
-														}>
-														<DeleteOutlineIcon />
-													</button>
-												</div>
-										  ))}
-								</Option>
-							</Select>
+									}}>
+									<Option className={s.Option} value={0}>
+										{homeFiles.length === 0
+											? 'Список пока пуст'
+											: homeFiles.map((file: any, index: number) => (
+													<div className={s.FileWrapper}>
+														<p>{file.name.slice(0, 25) + '...'}</p>
+														<button
+															className={s.DeleteBtn}
+															onClick={() =>
+																setHomeFiles(
+																	homeFiles.filter(
+																		(f: any) => f.name !== file.name,
+																	),
+																)
+															}>
+															<DeleteOutlineIcon />
+														</button>
+													</div>
+											  ))}
+									</Option>
+								</Select>
+							</div>
+							<h1>Выполнение домашней работы</h1>
+							{!isGroup ? (
+								<NowLevel
+									className={s.NowLevel}
+									value={homeStudentsPoints}
+									onChange={(e) => setHomeStudentsPoints(e)}
+								/>
+							) : (
+								<>
+									<div className={s.HomeWorkGroups}>
+										<div className={s.HomeWorkStud}>
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={homeStudentsPoints}
+												onChange={(e) => setHomeStudentsPoints(e)}
+											/>
+										</div>
+										<Line width="371px" className={s.Line} />
+										<div className={s.HomeWorkStud}>
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={homeStudentsPoints}
+												onChange={(e) => setHomeStudentsPoints(e)}
+											/>
+										</div>
+										<Line width="371px" className={s.Line} />
+										<div className={s.HomeWorkStud}>
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={homeStudentsPoints}
+												onChange={(e) => setHomeStudentsPoints(e)}
+											/>
+										</div>
+										<Line width="371px" className={s.Line} />
+										<div className={s.HomeWorkStud}>
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={homeStudentsPoints}
+												onChange={(e) => setHomeStudentsPoints(e)}
+											/>
+										</div>
+										<Line width="371px" className={s.Line} />
+									</div>
+								</>
+							)}
 						</div>
-						<h1>Выполнение домашней работы</h1>
-						{!isGroup ? (
-							<NowLevel
-								className={s.NowLevel}
-								value={homeStudentsPoints}
-								onChange={(e) => setHomeStudentsPoints(e)}
+						<div className={s.Devider}></div>
+						<div className={s.LessonWrapper}>
+							<h1>Занятие</h1>
+							<textarea
+								className={s.TextArea}
+								placeholder="Комментарий"
+								value={classroomComment}
+								onChange={(e) => setClassroomComment(e.target.value)}
 							/>
-						) : (
-							<>
-								<div className={s.HomeWorkGroups}>
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-								</div>
-							</>
-						)}
-					</div>
-					<div className={s.Devider}></div>
-					<div className={s.LessonWrapper}>
-						<h1>Занятие</h1>
-						<textarea
-							className={s.TextArea}
-							placeholder="Комментарий"
-							value={classroomComment}
-							onChange={(e) => setClassroomComment(e.target.value)}
-						/>
-						<div className={s.MediaBlock}>
-							<RecordNListen
-								alreadyRecorded={classAudio}
-								callback={handleAddClassroomAudio}
-								className={s.RecordNListen}
-							/>
-							<input
-								type="file"
-								id="inputFile2"
-								className={s.InputFile}
-								onChange={handleAddClassroomFile}
-							/>
-							{/* <label htmlFor="inputFile2" className={s.LabelFile}>
+							<div className={s.MediaBlock}>
+								<RecordNListen
+									alreadyRecorded={classAudio}
+									callback={handleAddClassroomAudio}
+									className={s.RecordNListen}
+								/>
+								<input
+									type="file"
+									id="inputFile2"
+									className={s.InputFile}
+									onChange={handleAddClassroomFile}
+								/>
+								{/* <label htmlFor="inputFile2" className={s.LabelFile}>
 								<img src={uploadFile} alt="uploadFile" />
 							</label> */}
-							<Select
-								className={s.Select}
-								multiple
-								onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
-								renderValue={(option: SelectOption<number> | null) => {
-									if (option == null || option.value === null) {
+								<Select
+									className={s.Select}
+									multiple
+									onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
+									renderValue={(option: SelectOption<number> | null) => {
+										if (option == null || option.value === null) {
+											return (
+												<>
+													<div className={s.ListWrapper}>
+														<label htmlFor="inputFile2" className={s.LabelFile}>
+															<img src={uploadFile} alt="uploadFile" />
+														</label>
+														<div className={s.Icons}>
+															{openSelect2 ? <ExpandLess /> : <ExpandMore />}
+														</div>
+													</div>
+												</>
+											)
+										}
 										return (
 											<>
 												<div className={s.ListWrapper}>
@@ -492,135 +510,146 @@ const DayStudentPopUp = ({
 												</div>
 											</>
 										)
-									}
-									return (
-										<>
-											<div className={s.ListWrapper}>
-												<label htmlFor="inputFile2" className={s.LabelFile}>
-													<img src={uploadFile} alt="uploadFile" />
-												</label>
-												<div className={s.Icons}>
-													{openSelect2 ? <ExpandLess /> : <ExpandMore />}
-												</div>
-											</div>
-										</>
-									)
-								}}>
-								<Option className={s.Option} value={0}>
-									{classroomFiles.length === 0
-										? 'Список пока пуст'
-										: classroomFiles.map((file: any) => (
-												<div className={s.FileWrapper}>
-													<p>{file.name.slice(0, 25) + '...'}</p>
-													<button
-														className={s.DeleteBtn}
-														onClick={() =>
-															setClassroomFiles(
-																classroomFiles.filter(
-																	(f: any) => f.name !== file.name,
-																),
-															)
-														}>
-														<DeleteOutlineIcon />
-													</button>
-												</div>
-										  ))}
-								</Option>
-							</Select>
+									}}>
+									<Option className={s.Option} value={0}>
+										{classroomFiles.length === 0
+											? 'Список пока пуст'
+											: classroomFiles.map((file: any) => (
+													<div className={s.FileWrapper}>
+														<p>{file.name.slice(0, 25) + '...'}</p>
+														<button
+															className={s.DeleteBtn}
+															onClick={() =>
+																setClassroomFiles(
+																	classroomFiles.filter(
+																		(f: any) => f.name !== file.name,
+																	),
+																)
+															}>
+															<DeleteOutlineIcon />
+														</button>
+													</div>
+											  ))}
+									</Option>
+								</Select>
+							</div>
+							<h1>Работа на занятии</h1>
+							{!isGroup ? (
+								<>
+									<NowLevel
+										className={s.NowLevel}
+										value={classroomStudentsPoints}
+										onChange={(e) => setClassroomStudentsPoints(e)}
+									/>
+									<div className={s.PrePay}>
+										<p>{!hiddenNum && <>{student?.costOneLesson}</>} ₽</p>
+										<CheckBox
+											checked={payChecked}
+											onChange={() => {
+												setPagePopUp(EPagePopUp.PrePay)
+												console.log(pagePopUp)
+											}}
+											size="16px"
+										/>
+									</div>
+								</>
+							) : (
+								<>
+									<div className={s.WorkClassGroup}>
+										<div className={s.WorkClassStud}>
+											<CheckBox borderRadius={10} size="16px" />
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={classroomStudentsPoints}
+												onChange={(e) => setClassroomStudentsPoints(e)}
+											/>
+
+											<CheckBox className={s.CheckboxComment} size="16px" />
+											<p>Предоплата</p>
+										</div>
+										<Line width="100%" className={s.Line} />
+										<div className={s.WorkClassStud}>
+											<CheckBox borderRadius={10} size="16px" />
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={classroomStudentsPoints}
+												onChange={(e) => setClassroomStudentsPoints(e)}
+											/>
+
+											<CheckBox className={s.CheckboxComment} size="16px" />
+											<p>Предоплата</p>
+										</div>
+										<Line width="100%" className={s.Line} />
+										<div className={s.WorkClassStud}>
+											<CheckBox borderRadius={10} size="16px" />
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={classroomStudentsPoints}
+												onChange={(e) => setClassroomStudentsPoints(e)}
+											/>
+
+											<CheckBox className={s.CheckboxComment} size="16px" />
+											<p>Предоплата</p>
+										</div>
+										<Line width="100%" className={s.Line} />
+										<div className={s.WorkClassStud}>
+											<CheckBox borderRadius={10} size="16px" />
+											<p>Петров</p>
+											<NowLevel
+												className={s.NowLevel}
+												value={classroomStudentsPoints}
+												onChange={(e) => setClassroomStudentsPoints(e)}
+											/>
+
+											<CheckBox className={s.CheckboxComment} size="16px" />
+											<p>Предоплата</p>
+										</div>
+										<Line width="100%" className={s.Line} />
+									</div>
+									<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
+								</>
+							)}
 						</div>
-						<h1>Работа на занятии</h1>
-						{!isGroup ? (
-							<>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-								<div className={s.PrePay}>
-									<p>{!hiddenNum && <>0</>} ₽</p>
-									<CheckBox size="16px" />
-								</div>
-							</>
-						) : (
-							<>
-								<div className={s.WorkClassGroup}>
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
-
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
-
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
-
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
-
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-								</div>
-								<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
-							</>
-						)}
+					</div>
+				</div>
+				<div className={s.buttons}>
+					<button onClick={onExit}>
+						<CloseIcon className={s.closeIcon} />
+					</button>
+					<div className={s.btn}>
+						<button className={s.btnRight} onClick={handleNextStudent}>
+							<span>
+								<Arrow direction={ArrowType.right} />
+							</span>
+						</button>
+						<button className={s.btnLeft} onClick={handlePrevStudent}>
+							<span>
+								<Arrow direction={ArrowType.left} />
+							</span>
+						</button>
 					</div>
 				</div>
 			</div>
-			<div className={s.buttons}>
-				<button onClick={onExit}>
-					<CloseIcon className={s.closeIcon} />
-				</button>
-				<div className={s.btn}>
-					<button className={s.btnRight} onClick={handleNextStudent}>
-						<span>
-							<Arrow direction={ArrowType.right} />
-						</span>
-					</button>
-					<button className={s.btnLeft} onClick={handlePrevStudent}>
-						<span>
-							<Arrow direction={ArrowType.left} />
-						</span>
-					</button>
-				</div>
-			</div>
-		</div>
+			{ReactDOM.createPortal(
+				pagePopUp === EPagePopUp.PrePay && (
+					<div className={s.PopUp__wrapper} style={{maxWidth: '190px', position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)'}}>
+						<ExitPopUp
+							className={s.PopUp}
+							title="Подтвердите действие"
+							yes={() => {
+								setPayChecked(!payChecked)
+								setPagePopUp(EPagePopUp.None)
+							}}
+							no={() => setPagePopUp(EPagePopUp.None)}
+						/>
+					</div>
+				),
+				document.body,
+			)}
+		</>
 	)
 }
 

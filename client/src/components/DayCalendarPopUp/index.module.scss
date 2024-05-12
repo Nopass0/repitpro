@@ -289,3 +289,14 @@ input {
 .FakeBlock {
 	min-height: 71px;
 }
+
+.PopUp__wrapper {
+	position: absolute;
+	z-index: 100;
+	max-width: 200px !important;
+}
+.PopUp {
+	position: relative;
+	left: 350px;
+	z-index: 100;
+}

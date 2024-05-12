@@ -49,6 +49,8 @@ import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
 import {useNavigate} from 'react-router-dom'
+import TextAreaInputBlock from '../TextAreaInputBlock'
+import MiniCalendar from '../MiniCalendar'
 
 interface IAddGroup {
 	className?: string
@@ -1364,6 +1366,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'startLesson', newDate)
 											}
+											calendarId='startLesson'
 										/>
 
 										<p style={{color: 'red'}}>*</p>
@@ -1376,6 +1379,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'endLesson', newDate)
 											}
+											calendarId='endLesson'
 										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>
@@ -1806,6 +1810,8 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'prePayDate', newDate)
 											}
+											
+											calendarId='prePay'
 										/>
 
 										<Input
@@ -1885,6 +1891,8 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'startLesson', newDate)
 											}
+											
+											calendarId='startLessonStudent'
 										/>
 
 										<p style={{color: 'red'}}>*</p>
@@ -1897,6 +1905,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'endLesson', newDate)
 											}
+											calendarId='endLessonStudent'
 										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>

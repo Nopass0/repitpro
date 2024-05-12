@@ -128,35 +128,16 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 							<MiniCalendar
 								value={DateStartState}
 								onChange={(newData) => OnChangeDateStart(newData)}
+								calendarId={title}
 							/>
 						</div>
 						<Line width="20px" className={s.LineDate} />
 						<div className={s.DatePicker}>
-							<LocalizationProvider
-								dateAdapter={AdapterDateFns}
-								adapterLocale={ru}>
-								<DatePicker
-									value={DateEndState}
-									onChange={OnChangeDateEnd}
-									slots={{
-										layout: StyledPickersLayout,
-									}}
-									sx={{
-										input: {
-											paddingTop: '0px',
-											paddingBottom: '0px',
-											paddingLeft: '4px',
-											fontWeight: '500',
-										},
-										svg: {
-											width: '18px',
-											height: '18px',
-										},
-									}}
-									timezone="system"
-									showDaysOutsideCurrentMonth
-								/>
-							</LocalizationProvider>
+							<MiniCalendar
+								value={DateEndState}
+								onChange={(newData) => OnChangeDateEnd(newData)}
+								calendarId={`${title}-right`}
+							/>
 						</div>
 					</div>
 					<div className={s.DataBlock}>

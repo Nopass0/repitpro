@@ -178,7 +178,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [costStudent, setCostStudent] = useState<string>('')
 	const [commentStudent, setCommentStudent] = useState<string>('')
 	const [prePayCost, setPrePayCost] = useState<string>('')
-	const [prePayDate, setPrePayDate] = useState<any>()
+	const [prePayDate, setPrePayDate] = useState<any>(new Date(Date.now()))
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
 
 	const [historyLesson, setHistoryLesson] = useState<any>([])
@@ -1027,6 +1027,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<MiniCalendar
 								value={prePayDate}
 								onChange={(newDate) => handlePrePayDate(newDate)}
+								calendarId="prePay"
 							/>
 
 							<Input
@@ -1561,6 +1562,7 @@ const AddStudent = ({}: IAddStudent) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'startLesson', newDate)
 											}
+											calendarId="startLesson"
 										/>
 									</div>
 									<Line width="100%" className={s.Line} />
@@ -1571,6 +1573,8 @@ const AddStudent = ({}: IAddStudent) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'endLesson', newDate)
 											}
+											
+											calendarId="endLesson"
 										/>
 									</div>
 									<div className={s.ScheduleWrapper}>

@@ -35,6 +35,9 @@ import {ELeftMenuPage, EPagePopUpExit} from '../../types'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone'
+import TextAreaInputBlock from '../TextAreaInputBlock'
+import MiniCalendar from '../MiniCalendar'
+import {formatDate} from 'date-fns'
 interface IAddClient {}
 
 const AddClient = ({}: IAddClient) => {
@@ -823,15 +826,16 @@ const AddClient = ({}: IAddClient) => {
 															<>
 																<div className={s.PaymentRow}>
 																	<MiniCalendar
-																		value={new Date(item.startWorkDate)}
+																		value={item.startWorkDate}
 																		onChange={(newDate) =>
 																			changeStage(
 																				index,
 																				indexStage,
 																				'startWorkDate',
-																				formatDate(newDate),
+																				newDate,
 																			)
 																		}
+																		calendarId="startWorkDate"
 																	/>
 																	<div className={s.PayText}>
 																		<p>Начало работы</p>
@@ -853,13 +857,13 @@ const AddClient = ({}: IAddClient) => {
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<MiniCalendar
-																		value={new Date(item.firstPaymentDate)}
+																		value={item.firstPaymentDate}
 																		onChange={(newDate) =>
 																			changeStage(
 																				index,
 																				indexStage,
 																				'firstPaymentDate',
-																				formatDate(newDate),
+																				newDate,
 																			)
 																		}
 																	/>
@@ -912,13 +916,13 @@ const AddClient = ({}: IAddClient) => {
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
 																	<MiniCalendar
-																		value={new Date(item.endWorkDate)}
+																		value={item.endWorkDate}
 																		onChange={(newDate) =>
 																			changeStage(
 																				index,
 																				indexStage,
 																				'endWorkDate',
-																				formatDate(newDate),
+																				newDate,
 																			)
 																		}
 																	/>
@@ -941,34 +945,18 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
-																	<LocalizationProvider
-																		dateAdapter={AdapterDateFns}
-																		adapterLocale={ru}>
-																		<DatePicker
-																			className={s.DatePickerPayment}
-																			slots={{
-																				layout: StyledPickersLayout,
-																			}}
-																			sx={{
-																				input: {
-																					paddingTop: '0px',
-																					paddingBottom: '0px',
-																					paddingLeft: '0px',
-																				},
-																			}}
-																			value={item.endPaymentDate}
-																			onChange={(newValue) => {
-																				changeStage(
-																					index,
-																					indexStage,
-																					'endPaymentDate',
-																					newValue,
-																				)
-																			}}
-																			timezone="system"
-																			showDaysOutsideCurrentMonth
-																		/>
-																	</LocalizationProvider>
+																	<MiniCalendar
+																		value={item.endPaymentDate}
+																		onChange={(newDate) =>
+																			changeStage(
+																				index,
+																				indexStage,
+																				'endPaymentDate',
+																				newDate,
+																			)
+																		}
+																		calendarId="endPaymentDate"
+																	/>
 																	<div className={s.PayInput}>
 																		<p>Оплата</p>
 																		<Input
@@ -1031,34 +1019,18 @@ const AddClient = ({}: IAddClient) => {
 														) : (
 															<>
 																<div className={s.PaymentRow}>
-																	<LocalizationProvider
-																		dateAdapter={AdapterDateFns}
-																		adapterLocale={ru}>
-																		<DatePicker
-																			className={s.DatePickerPayment}
-																			slots={{
-																				layout: StyledPickersLayout,
-																			}}
-																			sx={{
-																				input: {
-																					paddingTop: '0px',
-																					paddingBottom: '0px',
-																					paddingLeft: '0px',
-																				},
-																			}}
-																			value={item.firstPaymentDate}
-																			onChange={(newValue) => {
-																				changeStage(
-																					index,
-																					indexStage,
-																					'firstPaymentDate',
-																					newValue,
-																				)
-																			}}
-																			timezone="system"
-																			showDaysOutsideCurrentMonth
-																		/>
-																	</LocalizationProvider>
+																	<MiniCalendar
+																		value={item.firstPaymentDate}
+																		onChange={(newDate) =>
+																			changeStage(
+																				index,
+																				indexStage,
+																				'firstPaymentDate',
+																				newDate,
+																			)
+																		}
+																		calendarId="firstPaymentDate"
+																	/>
 																	<div className={s.PayInput}>
 																		<p>Оплата</p>
 																		<Input
@@ -1107,34 +1079,18 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
-																	<LocalizationProvider
-																		dateAdapter={AdapterDateFns}
-																		adapterLocale={ru}>
-																		<DatePicker
-																			className={s.DatePickerPayment}
-																			slots={{
-																				layout: StyledPickersLayout,
-																			}}
-																			sx={{
-																				input: {
-																					paddingTop: '0px',
-																					paddingBottom: '0px',
-																					paddingLeft: '0px',
-																				},
-																			}}
-																			value={item.startWorkDate!}
-																			onChange={(newValue) => {
-																				changeStage(
-																					index,
-																					indexStage,
-																					'startWorkDate',
-																					newValue,
-																				)
-																			}}
-																			timezone="system"
-																			showDaysOutsideCurrentMonth
-																		/>
-																	</LocalizationProvider>
+																	<MiniCalendar
+																		value={item.startWorkDate!}
+																		onChange={(newDate) =>
+																			changeStage(
+																				index,
+																				indexStage,
+																				'startWorkDate',
+																				newDate,
+																			)
+																		}
+																		calendarId="startWorkDate"
+																	/>
 																	<div className={s.PayText}>
 																		<p>Начало работы</p>
 																	</div>
@@ -1154,34 +1110,18 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
-																	<LocalizationProvider
-																		dateAdapter={AdapterDateFns}
-																		adapterLocale={ru}>
-																		<DatePicker
-																			className={s.DatePickerPayment}
-																			slots={{
-																				layout: StyledPickersLayout,
-																			}}
-																			sx={{
-																				input: {
-																					paddingTop: '0px',
-																					paddingBottom: '0px',
-																					paddingLeft: '0px',
-																				},
-																			}}
-																			value={item.endPaymentDate!}
-																			onChange={(newValue) => {
-																				changeStage(
-																					index,
-																					indexStage,
-																					'endPaymentDate',
-																					newValue,
-																				)
-																			}}
-																			timezone="system"
-																			showDaysOutsideCurrentMonth
-																		/>
-																	</LocalizationProvider>
+																	<MiniCalendar
+																		value={item.endPaymentDate!}
+																		onChange={(newDate) =>
+																			changeStage(
+																				index,
+																				indexStage,
+																				'endPaymentDate',
+																				newDate,
+																			)
+																		}
+																		calendarId="endPaymentDate"
+																	/>
 																	<div className={s.PayInput}>
 																		<p>Оплата</p>
 																		<Input
@@ -1230,34 +1170,18 @@ const AddClient = ({}: IAddClient) => {
 																</div>
 																<Line width="317px" className={s.Line} />
 																<div className={s.PaymentRow}>
-																	<LocalizationProvider
-																		dateAdapter={AdapterDateFns}
-																		adapterLocale={ru}>
-																		<DatePicker
-																			className={s.DatePickerPayment}
-																			slots={{
-																				layout: StyledPickersLayout,
-																			}}
-																			sx={{
-																				input: {
-																					paddingTop: '0px',
-																					paddingBottom: '0px',
-																					paddingLeft: '0px',
-																				},
-																			}}
-																			value={job.stages[0].endWorkDate}
-																			onChange={(newValue) => {
-																				changeStage(
-																					index,
-																					indexStage,
-																					'endWorkDate',
-																					newValue,
-																				)
-																			}}
-																			timezone="system"
-																			showDaysOutsideCurrentMonth
-																		/>
-																	</LocalizationProvider>
+																	<MiniCalendar
+																		value={job.stages[0].endWorkDate}
+																		onChange={(newValue) => {
+																			changeStage(
+																				index,
+																				indexStage,
+																				'endWorkDate',
+																				newValue,
+																			)
+																		}}
+																		calendarId="endWorkDate"
+																	/>
 																	<div className={s.PayText}>
 																		<p>Сдача работы</p>
 																	</div>
@@ -1331,34 +1255,13 @@ const AddClient = ({}: IAddClient) => {
 											{job.stages[0].typePayment === true ? (
 												<>
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].startWorkDate}
-																onChange={(newValue) => {
-																	changeStage(
-																		index,
-																		0,
-																		'startWorkDate',
-																		newValue,
-																	)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].startWorkDate}
+															onChange={(newValue) => {
+																changeStage(index, 0, 'startWorkDate', newValue)
+															}}
+															calendarId="startWorkDate"
+														/>
 														<div className={s.PayText}>
 															<p>Начало работы</p>
 														</div>
@@ -1378,34 +1281,18 @@ const AddClient = ({}: IAddClient) => {
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].firstPaymentDate!}
-																onChange={(newValue) => {
-																	changeStage(
-																		index,
-																		0,
-																		'firstPaymentDate',
-																		newValue,
-																	)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].firstPaymentDate}
+															onChange={(newValue) => {
+																changeStage(
+																	index,
+																	0,
+																	'firstPaymentDate',
+																	newValue,
+																)
+															}}
+															calendarId="firstPaymentDate"
+														/>
 														<div className={s.PayInput}>
 															<p>Оплата</p>
 															<Input
@@ -1458,29 +1345,13 @@ const AddClient = ({}: IAddClient) => {
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].endWorkDate}
-																onChange={(newValue) => {
-																	changeStage(index, 0, 'endWorkDate', newValue)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].endWorkDate}
+															onChange={(newValue) => {
+																changeStage(index, 0, 'endWorkDate', newValue)
+															}}
+															calendarId="endWorkDate"
+														/>
 														<div className={s.PayText}>
 															<p>Сдача работы</p>
 														</div>
@@ -1500,34 +1371,18 @@ const AddClient = ({}: IAddClient) => {
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].endPaymentDate}
-																onChange={(newValue) => {
-																	changeStage(
-																		index,
-																		0,
-																		'endPaymentDate',
-																		newValue,
-																	)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].endPaymentDate}
+															onChange={(newValue) => {
+																changeStage(
+																	index,
+																	0,
+																	'endPaymentDate',
+																	newValue,
+																)
+															}}
+															calendarId="endPaymentDate"
+														/>
 														<div className={s.PayInput}>
 															<p>Оплата</p>
 															<Input
@@ -1596,34 +1451,18 @@ const AddClient = ({}: IAddClient) => {
 											) : (
 												<>
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].firstPaymentDate}
-																onChange={(newValue) => {
-																	changeStage(
-																		index,
-																		0,
-																		'firstPaymentDate',
-																		newValue,
-																	)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].firstPaymentDate}
+															onChange={(newValue) => {
+																changeStage(
+																	index,
+																	0,
+																	'firstPaymentDate',
+																	newValue,
+																)
+															}}
+															calendarId="firstPaymentDate"
+														/>
 														<div className={s.PayInput}>
 															<p>Оплата</p>
 															<Input
@@ -1673,34 +1512,13 @@ const AddClient = ({}: IAddClient) => {
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].startWorkDate}
-																onChange={(newValue) => {
-																	changeStage(
-																		index,
-																		0,
-																		'startWorkDate',
-																		newValue,
-																	)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].startWorkDate}
+															onChange={(newValue) => {
+																changeStage(index, 0, 'startWorkDate', newValue)
+															}}
+															calendarId="startWorkDate"
+														/>
 														<div className={s.PayText}>
 															<p>Начало работы</p>
 														</div>
@@ -1720,34 +1538,18 @@ const AddClient = ({}: IAddClient) => {
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].endPaymentDate}
-																onChange={(newValue) => {
-																	changeStage(
-																		index,
-																		0,
-																		'endPaymentDate',
-																		newValue,
-																	)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].endPaymentDate}
+															onChange={(newValue) => {
+																changeStage(
+																	index,
+																	0,
+																	'endPaymentDate',
+																	newValue,
+																)
+															}}
+															calendarId="endPaymentDate"
+														/>
 														<div className={s.PayInput}>
 															<p>Оплата</p>
 															<Input
@@ -1797,29 +1599,18 @@ const AddClient = ({}: IAddClient) => {
 													</div>
 													<Line width="317px" className={s.Line} />
 													<div className={s.PaymentRow}>
-														<LocalizationProvider
-															dateAdapter={AdapterDateFns}
-															adapterLocale={ru}>
-															<DatePicker
-																className={s.DatePickerPayment}
-																slots={{
-																	layout: StyledPickersLayout,
-																}}
-																sx={{
-																	input: {
-																		paddingTop: '0px',
-																		paddingBottom: '0px',
-																		paddingLeft: '0px',
-																	},
-																}}
-																value={job.stages[0].endWorkDate}
-																onChange={(newValue) => {
-																	changeStage(index, 0, 'endWorkDate', newValue)
-																}}
-																timezone="system"
-																showDaysOutsideCurrentMonth
-															/>
-														</LocalizationProvider>
+														<MiniCalendar
+															value={job.stages[0].endWorkDate}
+															onChange={(newValue) => {
+																changeStage(
+																	index,
+																	0,
+																	'endWorkDate',
+																	newValue,
+																)
+															}}
+															calendarId="endWorkDate"
+														/>
 														<div className={s.PayText}>
 															<p>Сдача работы</p>
 														</div>
