@@ -49,6 +49,7 @@ import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
 import {useNavigate} from 'react-router-dom'
+import TextAreaInputBlock from '../TextAreaInputBlock'
 
 interface IAddGroup {
 	className?: string
@@ -1186,29 +1187,26 @@ const AddGroup = ({className}: IAddGroup) => {
 									</div>
 
 									<Line width="100%" className={s.Line} />
-
-									<div className={s.StudentCard}>
-										<p>Цель занятий:</p>
-										<input
-											type="text"
-											value={item.targetLesson}
-											onChange={(e) =>
-												changeItemValue(index, 'targetLesson', e.target.value)
-											}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Цель занятий:"
+										value={item.targetLesson}
+										// disabled={isEditMode}
+										onChange={(e) => {
+											changeItemValue(index, 'targetLesson', e.target.value)
+										}}
+										textIndent="110px"
+									/>
 
 									<Line width="100%" className={s.Line} />
-									<div className={s.StudentCard}>
-										<p>Программа занятия:</p>
-										<input
-											type="text"
-											value={item.programLesson}
-											onChange={(e) =>
-												changeItemValue(index, 'programLesson', e.target.value)
-											}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Программа занятия:"
+										value={item.programLesson}
+										// disabled={isEditMode}
+										onChange={(e) => {
+											changeItemValue(index, 'programLesson', e.target.value)
+										}}
+										textIndent="160px"
+									/>
 
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
@@ -1814,17 +1812,16 @@ const AddGroup = ({className}: IAddGroup) => {
 										/>
 									</div>
 									<Line width="100%" className={s.Line} />
+									<TextAreaInputBlock
+										title="Источник:"
+										value={student.linkStudent}
+										// disabled={isEditMode}
+										onChange={(e) => {
+											changeStudentValue(index, 'linkStudent', e.target.value)
+										}}
+										textIndent="90px"
+									/>
 
-									<div className={s.StudentCard}>
-										<p>Источник:</p>
-										<input
-											type="text"
-											value={student.linkStudent}
-											onChange={(e) =>
-												changeStudentValue(index, 'linkStudent', e.target.value)
-											}
-										/>
-									</div>
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Расходы по ученику:</p>
@@ -1903,20 +1900,20 @@ const AddGroup = ({className}: IAddGroup) => {
 										<NowLevel amountInputs={5} />
 									</div>
 									<Line width="100%" className={s.Line} />
-									<div className={s.StudentCard}>
-										<p>Текущая программа ученика:</p>
-										<input
-											type="text"
-											value={student.todayProgramStudent}
-											onChange={(e) => {
-												changeStudentValue(
-													index,
-													'todayProgramStudent',
-													e.target.value,
-												)
-											}}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Текущая программа ученика:"
+										value={student.todayProgramStudent}
+										// disabled={isEditMode}
+										onChange={(e) => {
+											changeStudentValue(
+												index,
+												'todayProgramStudent',
+												e.target.value,
+											)
+										}}
+										textIndent="230px"
+									/>
+
 									<Line width="100%" className={s.Line} />
 
 									<div className={s.StudentCard}>
@@ -2124,13 +2121,17 @@ const AddGroup = ({className}: IAddGroup) => {
 									/>
 
 									<Line width="100%" className={s.Line} />
-									<div className={s.StudentCard}>
-										<p>Комментарий:</p>
-										<textarea
-											value={commentStudent}
-											onChange={(e) => setCommentStudent(e.target.value)}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Комментарий:"
+										value={commentStudent}
+										// disabled={isEditMode}
+										onChange={(e) => {
+											
+											setCommentStudent(e.target.value)
+										}}
+										textIndent="120px"
+									/>
+									
 									<Line width="100%" className={s.Line} />
 									<RecordNListen
 										alreadyRecorded={audioStudents}

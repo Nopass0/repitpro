@@ -35,6 +35,7 @@ import {ELeftMenuPage, EPagePopUpExit} from '../../types'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone'
+import TextAreaInputBlock from '../TextAreaInputBlock'
 interface IAddClient {}
 
 const AddClient = ({}: IAddClient) => {
@@ -544,14 +545,15 @@ const AddClient = ({}: IAddClient) => {
 						</div>
 
 						<Line width="100%" className={s.Line} />
-
-						<div className={s.StudentCard}>
-							<p>Комментарий:</p>
-							<textarea
-								value={commentClient}
-								onChange={(e) => setcommentClient(e.target.value)}
-							/>
-						</div>
+						<TextAreaInputBlock
+							title="Комментарий:"
+							value={commentClient}
+							// disabled={isEditMode}
+							onChange={(e) => {
+								setcommentClient(e.target.value)
+							}}
+							textIndent="120px"
+						/>
 					</div>
 					<Line width="100%" className={s.Line} />
 
@@ -1908,14 +1910,16 @@ const AddClient = ({}: IAddClient) => {
 
 								<FileNLinks alreadyUploaded={files} callback={handleAddFile} />
 								<Line width="100%" className={s.Line} />
+								<TextAreaInputBlock
+									title="Комментарий:"
+									value={generalComment}
+									// disabled={isEditMode}
+									onChange={(e) => {
+										setGeneralComment(e.target.value)
+									}}
+									textIndent="120px"
+								/>
 
-								<div className={s.StudentCard}>
-									<p>Комментарий:</p>
-									<textarea
-										value={generalComment}
-										onChange={(e) => setGeneralComment(e.target.value)}
-									/>
-								</div>
 								<Line width="100%" className={s.Line} />
 
 								{/* <RecordNListen /> */}

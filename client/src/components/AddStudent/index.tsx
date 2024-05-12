@@ -1002,6 +1002,7 @@ const AddStudent = ({}: IAddStudent) => {
 								setLinkStudent(e.target.value)
 							}}
 							textIndent="80px"
+							firstMinSymbols={27}
 						/>
 
 						<Line width="100%" className={s.Line} />
@@ -1361,29 +1362,28 @@ const AddStudent = ({}: IAddStudent) => {
 									/>
 
 									<Line width="100%" className={s.Line} />
-									<div className={s.StudentCard}>
-										<p>Цель занятий:</p>
-										<input
-											disabled={isEditMode}
-											type="text"
-											value={item.targetLesson!}
-											onChange={(e) =>
-												changeItemValue(index, 'targetLesson', e.target.value)
-											}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Цель занятий:"
+										value={item.targetLesson!}
+										disabled={isEditMode}
+										onChange={(e) => {
+											changeItemValue(index, 'targetLesson', e.target.value)
+										}}
+										textIndent="110px"
+										firstMinSymbols={22}
+									/>
+
 									<Line width="100%" className={s.Line} />
-									<div className={s.StudentCard}>
-										<p>Программа ученика:</p>
-										<input
-											disabled={isEditMode}
-											type="text"
-											value={item.programLesson!}
-											onChange={(e) =>
-												changeItemValue(index, 'programLesson', e.target.value)
-											}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Программа ученика:"
+										value={item.programLesson!}
+										disabled={isEditMode}
+										onChange={(e) => {
+											changeItemValue(index, 'programLesson', e.target.value)
+										}}
+										textIndent="160px"
+									/>
+
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<div
