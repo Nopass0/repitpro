@@ -49,6 +49,8 @@ import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
 import {useNavigate} from 'react-router-dom'
+import TextAreaInputBlock from '../TextAreaInputBlock'
+import MiniCalendar from '../MiniCalendar'
 
 interface IAddGroup {
 	className?: string
@@ -2033,12 +2035,11 @@ const AddGroup = ({className}: IAddGroup) => {
 										value={commentStudent}
 										// disabled={isEditMode}
 										onChange={(e) => {
-											
 											setCommentStudent(e.target.value)
 										}}
 										textIndent="120px"
 									/>
-									
+
 									<Line width="100%" className={s.Line} />
 									<RecordNListen
 										alreadyRecorded={audioStudents}

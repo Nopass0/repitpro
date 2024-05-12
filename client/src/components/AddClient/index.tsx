@@ -35,6 +35,7 @@ import {ELeftMenuPage, EPagePopUpExit} from '../../types'
 import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone'
+import TextAreaInputBlock from '../TextAreaInputBlock'
 interface IAddClient {}
 
 const AddClient = ({}: IAddClient) => {
