@@ -1023,29 +1023,10 @@ const AddStudent = ({}: IAddStudent) => {
 
 						<div className={s.StudentCard}>
 							<p>Предоплата:</p>
-							<LocalizationProvider
-								dateAdapter={AdapterDateFns}
-								adapterLocale={ru}>
-								<DatePicker
-									value={prePayDate}
-									onChange={(newValue) => {
-										handlePrePayDate(newValue)
-									}}
-									slots={{
-										layout: StyledPickersLayout,
-									}}
-									sx={{
-										maxWidth: '140px',
-										input: {
-											paddingTop: '0px',
-											paddingBottom: '0px',
-										},
-									}}
-									timezone="system"
-									disabled={isEditMode}
-									showDaysOutsideCurrentMonth
-								/>
-							</LocalizationProvider>
+							<MiniCalendar
+								value={prePayDate}
+								onChange={(newDate) => handlePrePayDate(newDate)}
+							/>
 
 							<Input
 								num
@@ -1585,28 +1566,12 @@ const AddStudent = ({}: IAddStudent) => {
 									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>
 										<p>Окончание занятий:</p>
-										<LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={item.endLesson}
-												disabled={isEditMode}
-												onChange={(newValue) => {
-													changeItemValue(index, 'endLesson', String(newValue!))
-												}}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider>
+										<MiniCalendar
+											value={item.endLesson}
+											onChange={(newDate) =>
+												changeItemValue(index, 'endLesson', newDate)
+											}
+										/>
 									</div>
 									<div className={s.ScheduleWrapper}>
 										<div className={s.ScheduleHeader}>
