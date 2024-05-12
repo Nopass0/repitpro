@@ -994,28 +994,16 @@ const AddStudent = ({}: IAddStudent) => {
 						</div>
 
 						<Line width="100%" className={s.Line} />
-						<div
-							style={{
-								height: `${textAreaHeight}px`,
+						<TextAreaInputBlock
+							title="Источник:"
+							value={linkStudent}
+							disabled={isEditMode}
+							onChange={(e) => {
+								setLinkStudent(e.target.value)
 							}}
-							className={s.StudentCard}>
-							<p>Источник:</p>
-							<textarea
-								style={{
-									resize: 'none',
-									height: `${textAreaHeight}px`,
-								}}
-								value={linkStudent}
-								disabled={isEditMode}
-								onChange={(e) => setLinkStudent(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter' && !e.shiftKey) {
-										e.preventDefault()
-										setTextAreaHeight(textAreaHeight + 20)
-									}
-								}}
-							/>
-						</div>
+							textIndent="80px"
+						/>
+
 						<Line width="100%" className={s.Line} />
 						<div className={`${s.StudentCard} `}>
 							<p>Расходы по ученику:</p>
@@ -1357,22 +1345,21 @@ const AddStudent = ({}: IAddStudent) => {
 										/>
 									</div>
 									<Line width="100%" className={s.Line} />
+									<TextAreaInputBlock
+										title="Текущая программа ученика:"
+										value={item.todayProgramStudent}
+										disabled={isEditMode}
+										onChange={(e) => {
+											changeItemValue(
+												index,
+												'todayProgramStudent',
+												e.target.value,
+											)
+										}}
+										textIndent="230px"
+										firstMinSymbols={10}
+									/>
 
-									<div className={s.StudentCard}>
-										<p>Текущая программа ученика:</p>
-										<input
-											type="text"
-											value={item.todayProgramStudent}
-											disabled={isEditMode}
-											onChange={(e) =>
-												changeItemValue(
-													index,
-													'todayProgramStudent',
-													e.target.value,
-												)
-											}
-										/>
-									</div>
 									<Line width="100%" className={s.Line} />
 									<div className={s.StudentCard}>
 										<p>Цель занятий:</p>

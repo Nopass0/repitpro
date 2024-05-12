@@ -164,6 +164,7 @@ export async function addStudent(data) {
         );
 
         const conflictingSchedules = existingSchedules.filter((schedule) => {
+          console.log(schedule, "schedule---");
           const scheduleStartTime =
             schedule.timeLinesArray[dayOfWeek].startTime;
           const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
@@ -185,13 +186,13 @@ export async function addStudent(data) {
         if (conflictingSchedules.length > 0) {
           // Формируем сообщение об ошибке
           const daysOfWeek = [
-            "Воскресенье",
             "Понедельник",
             "Вторник",
             "Среда",
             "Четверг",
             "Пятница",
             "Суббота",
+            "Воскресенье",
           ];
           const dayName = daysOfWeek[dayOfWeek];
           const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;

@@ -16,6 +16,8 @@ interface ITextArea {
 	maxWidth?: string
 	minWidth?: string
 	title?: string
+	textIndent?: string
+	firstMinSymbols?: number
 }
 
 const TextAreaInputBlock: React.FC<ITextArea> = ({
@@ -28,6 +30,8 @@ const TextAreaInputBlock: React.FC<ITextArea> = ({
 	onClick,
 	disabled,
 	title,
+	textIndent,
+	firstMinSymbols = 36,
 }: ITextArea) => {
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const currentHeight = 19
@@ -58,10 +62,10 @@ const TextAreaInputBlock: React.FC<ITextArea> = ({
 	// const debouncedAdjustTextareaHeight = debounce(getAdjustedHeight, 3)
 
 	const getAdjustedHeight = () => {
-		if (value?.length > 35) {
-			setLines(Math.floor((value?.length - 36) / 57))
+		if (value?.length > firstMinSymbols - 1) {
+			setLines(Math.floor((value?.length - firstMinSymbols) / 57))
 		}
-		if (value?.length < 36) {
+		if (value?.length < firstMinSymbols) {
 			setLines(-1)
 		}
 	}
@@ -71,7 +75,7 @@ const TextAreaInputBlock: React.FC<ITextArea> = ({
 			console.log('1234')
 
 			setHeight(48)
-		} else if (value?.length < 36 || lines === -1) {
+		} else if (value?.length < firstMinSymbols || lines === -1) {
 			console.log('ABG')
 
 			setHeight(19)
@@ -118,7 +122,6 @@ const TextAreaInputBlock: React.FC<ITextArea> = ({
 					<p>{title}</p>
 					<textarea
 						className={`${s.textarea} ${className}`}
-						style={style}
 						value={value}
 						disabled={disabled}
 						onChange={(e) => {
@@ -132,7 +135,16 @@ const TextAreaInputBlock: React.FC<ITextArea> = ({
 								onClick(e)
 							}
 						}}
-						style={{height: `${height}px`}}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault()
+							}
+						}}
+						style={{
+							...style,
+							height: `${height}px`,
+							textIndent: `${textIndent ? textIndent : '120px'}`,
+						}}
 						ref={textareaRef}
 					/>
 				</label>

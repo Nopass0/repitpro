@@ -1,19 +1,99 @@
 import React, {useState, useRef, useEffect} from 'react'
 import ReactDOM from 'react-dom'
-import styles from './index.module.scss'
-import Arrow, {ArrowType} from '../../assets/arrow'
+import s from './index.module.scss'
+import Ardiv, {ArdivType} from '../../assets/ardiv'
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
+import * as pr from 'react-multi-date-picker'
 interface CalendarProps {
-	value?: string
+	// value?: string
 	onChange: (value: Date) => void
 }
 
 const MiniCalendar: React.FC<CalendarProps> = ({
-	value = formatDate(new Date()),
+	// value = formatDate(new Date()),
 	onChange,
 }) => {
+	const [date, setDate] = useState()
+	const inputStart = useRef()
+	const inputEnd = useRef()
+
+	const [sDate, setSDate] = useState('')
+	const [eDate, setEDate] = useState('')
+
+	useEffect(() => {
+		if (Array.isArray(date)) {
+			console.log(
+				new Date(date[0]).toLocaleDateString(),
+				'date0',
+				new Date(date[1]).toLocaleDateString(),
+				'date1',
+			)
+			setSDate(new Date(date[0]).toLocaleDateString())
+			setEDate(new Date(date[1]).toLocaleDateString())
+
+			inputStart.current.value = sDate || ''
+			inputEnd.current.value = eDate || ''
+		}
+	}, [date, sDate, eDate])
+
+	var dateInputMask = function dateInputMask(elm) {
+		elm.addEventListener('keypress', function (e) {
+			if (e.keyCode < 47 || e.keyCode > 57) {
+				e.preventDefault()
+			}
+
+			var len = elm.value.length
+
+			// If we're at a particular place, let the user type the slash
+			// i.e., 12/12/1212
+			if (len !== 1 || len !== 3) {
+				if (e.keyCode == 47) {
+					e.preventDefault()
+				}
+			}
+
+			// If they don't add the slash, do it for them...
+			if (len === 2) {
+				elm.value += '.'
+			}
+
+			// If they don't add the slash, do it for them...
+			if (len === 5) {
+				elm.value += '.'
+			}
+		})
+	}
+
+	const monthNames = [
+		'Январь',
+		'Февраль',
+		'Март',
+		'Апрель',
+		'Май',
+		'Июнь',
+		'Июль',
+		'Август',
+		'Сентябрь',
+		'Октябрь',
+		'Ноябрь',
+		'Декабрь',
+	]
+
+	const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+	//2 yours for now (get date) (generayte array of strings like 2023, 2024, ...). Only years
+	const yearsGen = () => {
+		const currentYear = new Date().getFullYear()
+		const years = []
+		for (let i = 0; i < 3; i++) {
+			years.push(currentYear + i)
+		}
+		return years
+	}
+
+	const years = yearsGen()
+	const [value, setValue] = useState(years)
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [currentYear, setCurrentYear] = useState<number>(
 		new Date().getFullYear(),
@@ -92,11 +172,11 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 					week.push(
 						<td
 							key={day}
-							className={`${isSelected ? styles.selected : ''}`}
+							className={`${isSelected ? s.selected : ''}`}
 							onClick={() => handleDateClick(day)}>
 							<span
-								className={`${styles.dateCircle} ${
-									isSelected ? styles.selected : ''
+								className={`${s.dateCircle} ${
+									isSelected ? s.selected : ''
 								}`}>
 								{day}
 							</span>
@@ -152,8 +232,8 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	}, [isOpen])
 
 	return (
-		<div className={styles.container}>
-			<div className={styles.input__init}>
+		<div className={s.container}>
+			<div className={s.input__init}>
 				<input
 					type="text"
 					value={formatDate(selectedDate ? selectedDate : new Date())}
@@ -168,55 +248,91 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 			</div>
 			{ReactDOM.createPortal(
 				isOpen ? (
-					<div
-						className={`${styles.calendarWrapper} ${isOpen ? styles.open : ''}`}
-						ref={calendarRef}
-						onClick={(e) => e.stopPropagation()}>
-						<div className={styles.calendar}>
-							<button
-								className={styles.closeButton}
-								onClick={() => setIsOpen(false)}>
-								<CloseIcon className={styles.closeIcon} />
-							</button>
-							<div className={styles.header}>
-								<div className={styles.header__init}>
-									<span className={styles.monthYear}>
-										{new Date(tempYear, tempMonth).toLocaleString('ru-RU', {
-											month: 'long',
-										})}{' '}
-										{tempYear}
-									</span>
-									<div className={styles.navButtons}>
-										<button className={styles.navButton} onClick={prevMonth}>
-											<Arrow
-												direction={ArrowType.left}
-												className={styles.arrow}
+					<div className={s.wrapper} ref={calendarRef}>
+						<pr.Calendar
+							value={date}
+							onChange={(dateObject) => {
+								setDate(dateObject)
+							}}
+							numberOfMonths={2}
+							disableMonthPicker={true}
+							disableYearPicker={true}
+							months={monthNames}
+							weekDays={weekDays}
+							range
+							className={s.Calendar}
+							minDate={Date.now()}
+							monthYearSeparator=" "
+							mapDays={({
+								date,
+								today,
+								selectedDate,
+								currentMonth,
+								isSameDate,
+							}) => {
+								let props = {}
+
+								props.style = {
+									borderRadius: '18px',
+									backgrounddivor: isSameDate(date, selectedDate)
+										? '#4169E1'
+										: '',
+									// divor: 'white',4169E1
+								}
+
+								if (isSameDate(date, today))
+									props.style = {
+										...props.style,
+										divor: '#4169E1',
+									}
+
+								if (isSameDate(date, selectedDate))
+									props.style = {
+										...props.style,
+										divor: 'white',
+										backgrounddivor: '#4169E1',
+									}
+
+								return props
+							}}
+							renderButton={(direction, handleClick) => (
+								<button onClick={handleClick}>
+									{direction === 'right' ? (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											className="mr-3"
+											fill="none">
+											<path
+												d="M10.5 17L15.5 12L10.5 7"
+												stroke="#808080"
+												stroke-width="1.4"
+												stroke-linecap="round"
+												stroke-linejoin="round"
 											/>
-										</button>
-										<button className={styles.navButton} onClick={nextMonth}>
-											<Arrow
-												direction={ArrowType.right}
-												className={styles.arrow}
+										</svg>
+									) : (
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="8"
+											height="12"
+											viewBox="0 0 8 12"
+											className="ml-3"
+											fill="none">
+											<path
+												d="M6.5 11L1.5 6L6.5 1"
+												stroke="#808080"
+												stroke-width="1.4"
+												stroke-linecap="round"
+												stroke-linejoin="round"
 											/>
-										</button>
-									</div>
-								</div>
-							</div>
-							<table className={styles.table}>
-								<thead className={styles.thead}>
-									<tr className={styles.tr}>
-										<th>Пн</th>
-										<th>Вт</th>
-										<th>Ср</th>
-										<th>Чт</th>
-										<th>Пт</th>
-										<th className={styles.weekend}>Сб</th>
-										<th className={styles.weekend}>Вс</th>
-									</tr>
-								</thead>
-								<tbody className={styles.tbody}>{renderDays()}</tbody>
-							</table>
-						</div>
+										</svg>
+									)}
+								</button>
+							)}
+						/>
 					</div>
 				) : null,
 				document.body,
