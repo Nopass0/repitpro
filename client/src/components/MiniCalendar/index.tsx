@@ -9,11 +9,13 @@ import * as pr from 'react-multi-date-picker'
 interface CalendarProps {
 	value?: string
 	onChange: (value: Date) => void
+	calendarId?: string
 }
 
 const MiniCalendar: React.FC<CalendarProps> = ({
-	value = formatDate(new Date()),
+	value = formatDate(new Date(Date.now())),
 	onChange,
+	calendarId,
 }) => {
 	const [date, setDate] = useState()
 	const inputStart = useRef()
@@ -180,9 +182,9 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 					onClick={() => setIsOpen(!isOpen)}
 					readOnly
 					ref={inputRef}
-					id="minicalendar__input-id"
+					id={`minicalendar__input-id-${calendarId}`}
 				/>
-				<label htmlFor="minicalendar__input-id">
+				<label htmlFor={`minicalendar__input-id-${calendarId}`}>
 					<CalendarMonthIcon />
 				</label>
 			</div>
@@ -196,13 +198,13 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 							value={value}
 							onChange={onChange}
 							numberOfMonths={1}
-							disableMonthPicker={true}
+							disableMonthPicker={false}
 							disableYearPicker={true}
 							months={monthNames}
 							weekDays={weekDays}
 							// range
 							className={s.Calendar}
-							minDate={Date.now()}
+							// minDate={Date.now()}
 							monthYearSeparator=" "
 							mapDays={({
 								date,

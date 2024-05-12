@@ -446,7 +446,12 @@ const DayCalendarLine = ({
 				<Line className={s.Line} width="700px" />
 			</div>
 			{isDetailsShow && (
-				<DayStudentPopUp icon={icon} name={editName} time={editTime} />
+				<DayStudentPopUp
+					icon={icon}
+					name={editName}
+					time={editTime}
+					price={editPrice}
+				/>
 			)}
 			{pagePopup === PagePopup.Exit && (
 				<>
