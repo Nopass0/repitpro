@@ -78,6 +78,17 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 	const [date, setDate] = useState<number>(0)
 	const [dateStart, setDateStart] = useState<Date | null>(null)
 	const [dateEnd, setDateEnd] = useState<Date | null>(null)
+	const [dataSet, setDataSet] = useState<any>()
+
+	useEffect(() => {
+		console.log('\n----------data----------\n', data, '\n----------\n')
+		setDataSet(data)
+	}, [data])
+
+	// if (data === undefined) {
+	// 	return <></>
+	// }
+
 	return (
 		<>
 			<div className={s.GraphicBlock}>
@@ -123,6 +134,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						</MenuItem>
 					</Select>
 					<Line width="260px" />
+
 					<div className={s.Dates}>
 						<div className={s.DatePicker}>
 							<MiniCalendar
@@ -183,6 +195,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 								<div className={s.ChartWrap}>
 									<p>{title}</p>
 									<div className={s.chart_container}>
+										{/* <p>{JSON.stringify(dataSet)}</p> */}
 										<LineGraph
 											className={s.Graphic}
 											data={data}
@@ -198,6 +211,8 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 								<div className={s.ChartWrap}>
 									<p>{title}</p>
 									<div className={s.chart_container}>
+										{/* <p>{JSON.stringify(dataSet)}</p> */}
+
 										<Bar
 											className={s.Graphic}
 											data={data}

@@ -142,35 +142,35 @@ let data = {
 	datasets: [
 		{
 			label: 'Dataset 1',
-			data: [],
+			data: [1, 2, 3, 4, 5, 6, 7],
 			fill: false,
 			backgroundColor: '#FF0000',
 			borderColor: '#FF0000',
 		},
 		{
 			label: 'Dataset 2',
-			data: [],
+			data: [1, 2, 3, 4, 5, 6, 7],
 			fill: false,
 			backgroundColor: '#9747FF',
 			borderColor: '#9747FF',
 		},
 		{
 			label: 'Dataset 3',
-			data: [],
+			data: [1, 2, 3, 4, 5, 6, 7],
 			fill: false,
 			backgroundColor: '#0027FF',
 			borderColor: '#0027FF',
 		},
 		{
 			label: 'Dataset 4',
-			data: [],
+			data: [1, 2, 3, 4, 5, 6, 7],
 			fill: false,
 			backgroundColor: '#25991C',
 			borderColor: '#25991C',
 		},
 		{
 			label: 'Dataset 5',
-			data: [],
+			data: [1, 2, 3, 4, 5, 6, 7],
 			fill: false,
 			backgroundColor: '#C7CB00',
 			borderColor: '#C7CB00',
@@ -250,7 +250,7 @@ const Statistics = ({}: IStatistics) => {
 		new Date(Date.now()).getTime() - 30 * 24 * 60 * 60 * 1000,
 	)
 	const [studFinDateEnd, setStudFinDateEnd] = useState<Date>(
-		new Date(Date.now()),
+		new Date(Date.now()).getTime() + 30 * 24 * 60 * 60 * 3000,
 	)
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
@@ -330,26 +330,62 @@ const Statistics = ({}: IStatistics) => {
 		}
 	}
 
+	const [itemsIds, setItemsIds] = useState([])
+	const [financeData, setFinanceData] = useState<any>({
+		labels: [],
+		datasets: [],
+	})
+	const [studentCountData, setStudentCountData] = useState<any>({
+		labels: [],
+		datasets: [],
+	})
+	const [studentCountItemsData, setStudentCountItemsData] = useState<any>({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsFinanceData, setClientsFinanceData] = useState<any>({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsCountData, setClientsCountData] = useState<any>({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsWorksData, setClientsWorksData] = useState<any>({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsNstudentsCompareData, setClientsNstudentsCompareData] =
+		useState<any>({
+			labels: [],
+			datasets: [],
+		})
+
 	useEffect(() => {
 		socket.emit('getAllItemsIdsAndNames', token)
 		socket.on('getAllItemsIdsAndNames', (data: any) => {
-			console.log('getAllItemsIdsAndNames', data)
+			// console.log('getAllItemsIdsAndNames', data)
 			const namesTemp = ['Все предметы']
 			// Get all itemName !== 'void'
 			for (let i = 0; i < data.length; i++) {
 				if (data[i].itemName !== 'void') {
 					namesTemp.push(data[i].itemName)
 				}
+				//get ids
+				if (data[i].id !== '') {
+					itemsIds.push(data[i].id)
+				}
 			}
+
 			setNames(namesTemp)
-			console.log(names, 'namesTempnamesTempnamesTemp')
+			// console.log(names, 'namesTempnamesTempnamesTemp')
 		})
 		socket.emit('getTableData', {
 			token: token,
 			dateRange: {start: startData, end: endData},
 		})
 		socket.on('getTableData', (data: any) => {
-			console.log('getTableData', data)
+			// console.log('getTableData', data)
 			setStudentsData(data)
 		})
 
@@ -359,8 +395,118 @@ const Statistics = ({}: IStatistics) => {
 		})
 
 		socket.on('getClientTableData', (data: any) => {
-			console.log('getClientTableData', data)
+			// console.log('getClientTableData', data)
 			setClientData(data)
+		})
+		console.log('\n------itemsIds------\n', itemsIds, '\n------\n')
+		socket.emit('getStudentFinanceData', {
+			token: token,
+			startDate: studFinDateStart,
+			endDate: studFinDateEnd,
+			subjectIds: itemsIds,
+		})
+		socket.on('getStudentFinanceData', (data: any) => {
+			console.log(
+				'\n-------------------getStudentFinanceData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setFinanceData(data)
+		})
+		socket.emit('getStudentCountData', {
+			token: token,
+			startDate: studAmDateStart,
+			endDate: studAmDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.on('getStudentCountData', (data: any) => {
+			console.log(
+				'\n-------------------getStudentCountData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setStudentCountData(data)
+		})
+
+		socket.emit('getStudentLessonsData', {
+			token: token,
+			startDate: studRelatDateStart,
+			endDate: studRelatDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.on('getStudentLessonsData', (data: any) => {
+			console.log(
+				'\n-------------------getStudentLessonsData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setStudentCountItemsData(data)
+		})
+
+		socket.emit('getClientFinanceData', {
+			token: token,
+			startDate: cliAmDateStart,
+			endDate: cliAmDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.on('getClientFinanceData', (data: any) => {
+			console.log(
+				'\n-------------------getClientFinanceData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setClientsFinanceData(data)
+		})
+
+		socket.emit('getClientCountData', {
+			token: token,
+			startDate: cliFinDateStart,
+			endDate: cliFinDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.on('getClientCountData', (data: any) => {
+			console.log(
+				'\n-------------------getClientCountData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setClientsCountData(data)
+		})
+
+		socket.emit('getClientWorksData', {
+			token: token,
+			startDate: cliWorkDateStart,
+			endDate: cliWorkDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.on('getClientWorksData', (data: any) => {
+			console.log(
+				'\n-------------------getClientWorksData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setClientsWorksData(data)
+		})
+
+		socket.emit('getStudentClientComparisonData', {
+			token: token,
+			startDate: cliAmDateStart,
+			endDate: cliAmDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.on('getStudentClientComparisonData', (data: any) => {
+			console.log(
+				'\n-------------------getStudentClientComparisonData-----------------\n',
+				data,
+				'\n-------------------\n',
+			)
+			setClientsNstudentsCompareData(data)
 		})
 	}, [])
 
@@ -398,24 +544,48 @@ const Statistics = ({}: IStatistics) => {
 			token: token,
 			dateRange: {start: cliAmDateStart, end: cliAmDateEnd},
 		})
-		console.log(sortedData, 'sortedData')
-	}, [startData, endData])
-
-	socket.once('getStudentFinanceData', (data: any) => {
-		console.log('getStudentFinanceData', data)
-	})
-	useEffect(() => {
+		// console.log(sortedData, 'sortedData')
 		socket.emit('getStudentFinanceData', {
 			token: token,
 			startDate: studFinDateStart,
 			endDate: studFinDateEnd,
-			subjectIds: [
-				'clv10ubqx0003fbi91ucd904u',
-				'clv11nno10001346txhqgrqle',
-				'clv12inew000i346t8bdne1c4',
-			],
+			subjectIds: itemsIds,
 		})
-	}, [])
+		socket.emit('getStudentCountData', {
+			token: token,
+			startDate: studAmDateStart,
+			endDate: studAmDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.emit('getStudentLessonsData', {
+			token: token,
+			startDate: studRelatDateStart,
+			endDate: studRelatDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.emit('getClientFinanceData', {
+			token: token,
+			startDate: cliAmDateStart,
+			endDate: cliAmDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.emit('getClientCountData', {
+			token: token,
+			startDate: cliFinDateStart,
+			endDate: cliFinDateEnd,
+			subjectIds: itemsIds,
+		})
+
+		socket.emit('getStudentClientComparisonData', {
+			token: token,
+			startDate: cliAmDateStart,
+			endDate: cliAmDateEnd,
+			subjectIds: itemsIds,
+		})
+	}, [chooseGraphic, startData, endData])
 
 	return (
 		<>
@@ -442,23 +612,27 @@ const Statistics = ({}: IStatistics) => {
 					</button>
 				</div>
 				<div className={s.MainBlock}>
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={studFinItem}
-						OnChangeItem={(e: any) => setStudFinItem(e.target.value)}
-						DateState={studFinDate}
-						OnChangeDate={(e: any) => setStudFinDate(e.target.value)}
-						DateStartState={studFinDateStart}
-						OnChangeDateStart={(e: any) => setStudFinDateStart(e.target.value)}
-						DateEndState={studFinDateEnd}
-						OnChangeDateEnd={(e: any) => setStudFinDateEnd(e.target.value)}
-						chooseGraphic={chooseGraphic}
-						data={data}
-						options={options}
-						optionsBar={optionsBar}
-						title="Ученики-Финансы"
-					/>
+					{financeData && (
+						<GraphicBlock
+							StyledPickersLayout={StyledPickersLayout}
+							names={names}
+							ItemState={studFinItem}
+							OnChangeItem={(e: any) => setStudFinItem(e.target.value)}
+							DateState={financeData}
+							OnChangeDate={(e: any) => setStudFinDate(e.target.value)}
+							DateStartState={studFinDateStart}
+							OnChangeDateStart={(e: any) =>
+								setStudFinDateStart(e.target.value)
+							}
+							DateEndState={studFinDateEnd}
+							OnChangeDateEnd={(e: any) => setStudFinDateEnd(e.target.value)}
+							chooseGraphic={chooseGraphic}
+							data={financeData}
+							options={options}
+							optionsBar={optionsBar}
+							title="Ученики-Финансы"
+						/>
+					)}
 					<Line width="100%" className={s.Line} />
 					<GraphicBlock
 						StyledPickersLayout={StyledPickersLayout}
@@ -472,7 +646,7 @@ const Statistics = ({}: IStatistics) => {
 						DateEndState={studAmDateEnd}
 						OnChangeDateEnd={(e: any) => setStudAmDateEnd(e.target.value)}
 						chooseGraphic={chooseGraphic}
-						data={data}
+						data={studentCountData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Ученики-Количество"
@@ -490,7 +664,7 @@ const Statistics = ({}: IStatistics) => {
 						DateEndState={studLesDateEnd}
 						OnChangeDateEnd={(e: any) => setStudLesDateEnd(e.target.value)}
 						chooseGraphic={chooseGraphic}
-						data={data}
+						data={studentCountItemsData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Ученики-Занятия"
@@ -759,7 +933,7 @@ const Statistics = ({}: IStatistics) => {
 						DateEndState={cliFinDateEnd}
 						OnChangeDateEnd={(e: any) => setCliFinDateEnd(e.target.value)}
 						chooseGraphic={chooseGraphic}
-						data={data}
+						data={clientsFinanceData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Заказчики-Финансы"
@@ -778,7 +952,7 @@ const Statistics = ({}: IStatistics) => {
 						DateEndState={cliAmDateEnd}
 						OnChangeDateEnd={(e: any) => setCliAmDateEnd(e.target.value)}
 						chooseGraphic={chooseGraphic}
-						data={data}
+						data={clientsCountData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Заказчики-Количество"
@@ -797,7 +971,7 @@ const Statistics = ({}: IStatistics) => {
 						DateEndState={cliWorkDateEnd}
 						OnChangeDateEnd={(e: any) => setCliAmDateEnd(e.target.value)}
 						chooseGraphic={chooseGraphic}
-						data={data}
+						data={clientsWorksData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Заказчики-Работы"
@@ -1069,7 +1243,7 @@ const Statistics = ({}: IStatistics) => {
 						DateEndState={studRelatDateEnd}
 						OnChangeDateEnd={(e: any) => setStudAmDateEnd(e.target.value)}
 						chooseGraphic={chooseGraphic}
-						data={data}
+						data={clientsNstudentsCompareData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Ученики - Заказчики сравнительный график"

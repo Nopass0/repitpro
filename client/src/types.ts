@@ -100,3 +100,16 @@ export interface IHistoryLessons {
 	price: string
 	isPaid: boolean
 }
+
+export interface Dataset {
+	label: string
+	data: number[]
+	fill: boolean
+	backgroundColor: string
+	borderColor: string
+}
+
+export interface ChartData {
+	labels: string[]
+	datasets: Dataset[]
+}

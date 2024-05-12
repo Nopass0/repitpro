@@ -120,26 +120,12 @@ export async function getStudentFinanceData(data: {
 
     const data_ = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: new Date(startDate).getFullYear().toString(),
-          lte: new Date(endDate).getFullYear().toString(),
-        },
-        month: {
-          gte: (new Date(startDate).getMonth() + 1).toString().padStart(2, "0"),
-          lte: (new Date(endDate).getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: new Date(startDate).getDate().toString().padStart(2, "0"),
-          lte: new Date(endDate).getDate().toString().padStart(2, "0"),
-        },
-        itemId: {
-          in: subjectIds.map((id) => id),
-        },
         userId: userId,
       },
       select: {
         createdAt: true,
         lessonsPrice: true,
+        lessonsCount: true,
         itemName: true,
         day: true,
         month: true,
@@ -147,38 +133,64 @@ export async function getStudentFinanceData(data: {
       },
     });
 
-    if (data_.length === 0) {
+    // Создадим объект, где ключом будет комбинация года, месяца и дня
+    const combinedData: {
+      [date: string]: {
+        lessonsPrice: { [itemName: string]: number };
+        lessonsCount: number[];
+      };
+    } = {};
+
+    // Обходим полученные данные
+    for (const item of data_) {
+      // Формируем строку, представляющую комбинацию года, месяца и дня
+      const dateKey = `${item.year}-${item.month}-${item.day}`;
+
+      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значения lessonsPrice и lessonsCount
+      if (!combinedData[dateKey]) {
+        combinedData[dateKey] = {
+          lessonsPrice: {},
+          lessonsCount: [],
+        };
+      }
+
+      // Если itemName еще не добавлен в объект lessonsPrice, добавляем его со значением 0
+      if (!combinedData[dateKey].lessonsPrice[item.itemName]) {
+        combinedData[dateKey].lessonsPrice[item.itemName] = 0;
+      }
+
+      // Увеличиваем значение lessonsPrice для соответствующего itemName и добавляем значение lessonsCount в массив
+      combinedData[dateKey].lessonsPrice[item.itemName] += item.lessonsPrice;
+      combinedData[dateKey].lessonsCount.push(item.lessonsCount);
+    }
+
+    // Преобразуем объединенные данные в массив объектов
+    const combinedDataArray = Object.keys(combinedData).map((dateKey) => ({
+      date: new Date(dateKey),
+      lessonsPrice: combinedData[dateKey].lessonsPrice,
+      lessonsCount: combinedData[dateKey].lessonsCount,
+    }));
+
+    if (combinedDataArray.length === 0) {
       console.log("No data found for the given date range and subject IDs.");
       return;
     }
 
-    console.log(data_, "data_");
-
-    const grouped = groupByMonth(data_);
-    console.log(grouped, "grouped");
-
-    const labels = Object.keys(grouped);
-    console.log(labels, "labels");
-
-    const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName;
-      const values = group.map((item) => item.lessonsPrice);
-      console.log(itemName, values, "itemName, values");
-
-      return {
-        label: itemName,
-        data: values,
-        fill: false,
-        backgroundColor: hashToColor(hashString(itemName)),
-        borderColor: hashToColor(hashString(itemName)),
-      };
-    });
-
-    console.log(
-      labels,
-      datasets,
-      " --------------------------------------------------"
+    const labels = combinedDataArray.map((item) =>
+      item.date.toLocaleDateString()
     );
+
+    const uniqueItemNames = [...new Set(data_.map((item) => item.itemName))];
+
+    const datasets = uniqueItemNames.map((itemName) => ({
+      label: itemName,
+      data: combinedDataArray.map((item) => item.lessonsPrice[itemName] || 0),
+      fill: false,
+      backgroundColor: hashToColor(hashString(itemName)),
+      borderColor: hashToColor(hashString(itemName)),
+    }));
+
+    console.log(labels, datasets);
 
     if (labels.length === 0 || datasets.length === 0) {
       console.log("No data available for the chart.");
@@ -207,23 +219,16 @@ export async function getStudentCountData(data: {
       },
     });
 
+    if (!token_) {
+      console.error("Invalid token");
+      return;
+    }
+
     const userId = token_.userId;
 
-    const data = await db.studentSchedule.findMany({
+    const data_ = await db.studentSchedule.findMany({
       where: {
         userId: userId,
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
         itemId: {
           in: subjectIds.map((id) => id),
         },
@@ -238,23 +243,70 @@ export async function getStudentCountData(data: {
       },
     });
 
-    const grouped = groupByMonth(data);
-    const labels = Object.keys(grouped);
-    const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName;
-      const hash = hashString(itemName);
-      const color = hashToColor(hash);
-      const values = group.map((item) => item.lessonsCount);
-      return {
-        label: itemName,
-        data: values,
-        fill: false,
-        backgroundColor: color,
-        borderColor: color,
+    // Создадим объект, где ключом будет комбинация года, месяца и дня
+    const combinedData: {
+      [date: string]: {
+        lessonsCount: { [itemName: string]: number[] };
       };
-    });
+    } = {};
+
+    // Обходим полученные данные
+    for (const item of data_) {
+      // Формируем строку, представляющую комбинацию года, месяца и дня
+      const dateKey = `${item.year}-${item.month}-${item.day}`;
+
+      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значение lessonsCount
+      if (!combinedData[dateKey]) {
+        combinedData[dateKey] = {
+          lessonsCount: {},
+        };
+      }
+
+      // Если itemName еще не добавлен в объект lessonsCount, добавляем его с пустым массивом
+      if (!combinedData[dateKey].lessonsCount[item.itemName]) {
+        combinedData[dateKey].lessonsCount[item.itemName] = [];
+      }
+
+      // Добавляем значение lessonsCount в массив для соответствующего itemName
+      combinedData[dateKey].lessonsCount[item.itemName].push(item.lessonsCount);
+    }
+
+    // Преобразуем объединенные данные в массив объектов
+    const combinedDataArray = Object.keys(combinedData).map((dateKey) => ({
+      date: new Date(dateKey),
+      lessonsCount: combinedData[dateKey].lessonsCount,
+    }));
+
+    if (combinedDataArray.length === 0) {
+      console.log("No data found for the given date range and subject IDs.");
+      return;
+    }
+
+    const labels = combinedDataArray.map((item) =>
+      item.date.toLocaleDateString()
+    );
+
+    const uniqueItemNames = [...new Set(data_.map((item) => item.itemName))];
+
+    const datasets = uniqueItemNames.map((itemName) => ({
+      label: itemName,
+      data: combinedDataArray.map(
+        (item) => item.lessonsCount[itemName]?.reduce((a, b) => a + b, 0) || 0
+      ),
+      fill: false,
+      backgroundColor: hashToColor(hashString(itemName)),
+      borderColor: hashToColor(hashString(itemName)),
+    }));
+
+    console.log(labels, datasets);
+
+    if (labels.length === 0 || datasets.length === 0) {
+      console.log("No data available for the chart.");
+      return;
+    }
 
     io.emit("getStudentCountData", { labels, datasets });
+    return { labels, datasets };
   } catch (error) {
     console.error("Error fetching student count data:", error);
   }
@@ -275,26 +327,19 @@ export async function getStudentLessonsData(data: {
       },
     });
 
+    if (!token_) {
+      console.error("Invalid token");
+      return;
+    }
+
     const userId = token_.userId;
 
-    const data = await db.studentSchedule.findMany({
+    const data_ = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
+        userId: userId,
         itemId: {
           in: subjectIds.map((id) => id),
         },
-        userId: userId,
       },
       select: {
         createdAt: true,
@@ -302,26 +347,66 @@ export async function getStudentLessonsData(data: {
         day: true,
         month: true,
         year: true,
-        lessonsPrice: true,
         itemName: true,
       },
     });
 
-    const grouped = groupByMonth(data);
-    const labels = Object.keys(grouped);
-    const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName;
-      const hash = hashString(itemName);
-      const color = hashToColor(hash);
-      const values = group.map((item) => item.lessonsCount);
-      return {
-        label: itemName,
-        data: values,
-        fill: false,
-        backgroundColor: color,
-        borderColor: color,
+    // Создадим объект, где ключом будет userId
+    const combinedData: {
+      [userId: string]: {
+        lessonsCount: { [itemName: string]: number[] };
       };
-    });
+    } = {};
+
+    // Обходим полученные данные
+    for (const item of data_) {
+      // Если userId еще нет в объекте, добавляем его и инициализируем значение lessonsCount
+      if (!combinedData[userId]) {
+        combinedData[userId] = {
+          lessonsCount: {},
+        };
+      }
+
+      // Если itemName еще не добавлен в объект lessonsCount, добавляем его с пустым массивом
+      if (!combinedData[userId].lessonsCount[item.itemName]) {
+        combinedData[userId].lessonsCount[item.itemName] = [];
+      }
+
+      // Добавляем значение lessonsCount в массив для соответствующего itemName
+      combinedData[userId].lessonsCount[item.itemName].push(item.lessonsCount);
+    }
+
+    // Преобразуем объединенные данные в массив объектов
+    const combinedDataArray = Object.keys(combinedData).map((userId) => ({
+      userId,
+      lessonsCount: combinedData[userId].lessonsCount,
+    }));
+
+    if (combinedDataArray.length === 0) {
+      console.log("No data found for the given date range and subject IDs.");
+      return;
+    }
+
+    const labels = combinedDataArray.map((item) => `User ${item.userId}`);
+
+    const uniqueItemNames = [...new Set(data_.map((item) => item.itemName))];
+
+    const datasets = uniqueItemNames.map((itemName) => ({
+      label: itemName,
+      data: combinedDataArray.map(
+        (item) => item.lessonsCount[itemName]?.reduce((a, b) => a + b, 0) || 0
+      ),
+      fill: false,
+      backgroundColor: hashToColor(hashString(itemName)),
+      borderColor: hashToColor(hashString(itemName)),
+    }));
+
+    console.log(labels, datasets);
+
+    if (labels.length === 0 || datasets.length === 0) {
+      console.log("No data available for the chart.");
+      return;
+    }
 
     io.emit("getStudentLessonsData", { labels, datasets });
     return { labels, datasets };
@@ -344,22 +429,15 @@ export async function getClientFinanceData(data: {
       },
     });
 
+    if (!token_) {
+      console.error("Invalid token");
+      return;
+    }
+
     const userId = token_.userId;
 
-    const data = await db.studentSchedule.findMany({
+    const data_ = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
         userId: userId,
         clientId: {
           not: null,
@@ -372,26 +450,59 @@ export async function getClientFinanceData(data: {
         day: true,
         month: true,
         year: true,
-        lessonsPrice: true,
         itemName: true,
+        clientId: true,
       },
     });
 
-    const grouped = groupByMonth(data);
-    const labels = Object.keys(grouped);
-    const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName;
-      const hash = hashString(itemName);
-      const color = hashToColor(hash);
-      const values = group.map((item) => item.workPrice);
-      return {
-        label: itemName,
-        data: values,
-        fill: false,
-        backgroundColor: color,
-        borderColor: color,
+    // Создадим объект, где ключом будет clientId
+    const combinedData: {
+      [clientId: string]: {
+        workPrice: number;
       };
-    });
+    } = {};
+
+    // Обходим полученные данные
+    for (const item of data_) {
+      // Если clientId еще нет в объекте, добавляем его и инициализируем значение workPrice
+      if (!combinedData[item.clientId]) {
+        combinedData[item.clientId] = {
+          workPrice: 0,
+        };
+      }
+
+      // Увеличиваем значение workPrice для соответствующего clientId
+      combinedData[item.clientId].workPrice += item.workPrice;
+    }
+
+    // Преобразуем объединенные данные в массив объектов
+    const combinedDataArray = Object.keys(combinedData).map((clientId) => ({
+      clientId,
+      workPrice: combinedData[clientId].workPrice,
+    }));
+
+    if (combinedDataArray.length === 0) {
+      console.log("No data found for the given date range.");
+      return;
+    }
+
+    const labels = combinedDataArray.map((item) => `Client ${item.clientId}`);
+    const datasets = [
+      {
+        label: "Work Price",
+        data: combinedDataArray.map((item) => item.workPrice),
+        fill: false,
+        backgroundColor: "rgba(75,192,192,0.4)",
+        borderColor: "rgba(75,192,192,1)",
+      },
+    ];
+
+    console.log(labels, datasets);
+
+    if (labels.length === 0 || datasets.length === 0) {
+      console.log("No data available for the chart.");
+      return;
+    }
 
     io.emit("getClientFinanceData", { labels, datasets });
     return { labels, datasets };
@@ -414,27 +525,24 @@ export async function getClientCountData(data: {
       },
     });
 
+    if (!token_) {
+      console.error("Invalid token");
+      return;
+    }
+
     const userId = token_.userId;
 
-    const data = await db.studentSchedule.findMany({
+    const data_ = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
         userId: userId,
         clientId: {
           not: null,
         },
         isArchived: false,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
       },
       select: {
         createdAt: true,
@@ -442,26 +550,58 @@ export async function getClientCountData(data: {
         day: true,
         month: true,
         year: true,
-        lessonsPrice: true,
-        itemName: true,
+        clientId: true,
       },
     });
 
-    const grouped = groupByMonth(data);
-    const labels = Object.keys(grouped);
-    const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName;
-      const hash = hashString(itemName);
-      const color = hashToColor(hash);
-      const values = group.map((item) => item.workCount);
-      return {
-        label: itemName,
-        data: values,
-        fill: false,
-        backgroundColor: color,
-        borderColor: color,
+    // Создадим объект, где ключом будет clientId
+    const combinedData: {
+      [clientId: string]: {
+        workCount: number;
       };
-    });
+    } = {};
+
+    // Обходим полученные данные
+    for (const item of data_) {
+      // Если clientId еще нет в объекте, добавляем его и инициализируем значение workCount
+      if (!combinedData[item.clientId]) {
+        combinedData[item.clientId] = {
+          workCount: 0,
+        };
+      }
+
+      // Увеличиваем значение workCount для соответствующего clientId
+      combinedData[item.clientId].workCount += item.workCount;
+    }
+
+    // Преобразуем объединенные данные в массив объектов
+    const combinedDataArray = Object.keys(combinedData).map((clientId) => ({
+      clientId,
+      workCount: combinedData[clientId].workCount,
+    }));
+
+    if (combinedDataArray.length === 0) {
+      console.log("No data found for the given date range.");
+      return;
+    }
+
+    const labels = combinedDataArray.map((item) => `Client ${item.clientId}`);
+    const datasets = [
+      {
+        label: "Work Count",
+        data: combinedDataArray.map((item) => item.workCount),
+        fill: false,
+        backgroundColor: "rgba(75,192,192,0.4)",
+        borderColor: "rgba(75,192,192,1)",
+      },
+    ];
+
+    console.log(labels, datasets);
+
+    if (labels.length === 0 || datasets.length === 0) {
+      console.log("No data available for the chart.");
+      return;
+    }
 
     io.emit("getClientCountData", { labels, datasets });
     return { labels, datasets };
@@ -478,28 +618,25 @@ export async function getClientWorksData(data: {
 }) {
   const { startDate, endDate, token } = data;
   try {
-    const token_ = await db.token.findFirst({ where: { token } });
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      console.error("Invalid token");
+      return;
+    }
 
     const userId = token_.userId;
 
-    const data = await db.studentSchedule.findMany({
+    const data_ = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
+        userId: userId,
         clientId: {
           not: null,
         },
-        userId: userId,
         isArchived: false,
       },
       select: {
@@ -509,25 +646,69 @@ export async function getClientWorksData(data: {
         day: true,
         month: true,
         year: true,
-        lessonsPrice: true,
+        clientId: true,
       },
     });
 
-    const grouped = groupByMonth(data);
-    const labels = Object.keys(grouped);
-    const datasets = Object.values(grouped).map((group) => {
-      const itemName = group[0].itemName;
-      const hash = hashString(itemName);
-      const color = hashToColor(hash);
-      const values = group.map((item) => item.workCount);
-      return {
-        label: itemName,
-        data: values,
-        fill: false,
-        backgroundColor: color,
-        borderColor: color,
+    // Создадим объект, где ключом будет комбинация clientId и itemName
+    const combinedData: {
+      [key: string]: {
+        studentNames: string[];
       };
-    });
+    } = {};
+
+    // Обходим полученные данные
+    for (const item of data_) {
+      const key = `${item.clientId}-${item.itemName}`;
+
+      // Если такая комбинация еще нет в объекте, добавляем ее и инициализируем массив studentNames
+      if (!combinedData[key]) {
+        combinedData[key] = {
+          studentNames: [],
+        };
+      }
+
+      // Добавляем studentName в массив studentNames для соответствующей комбинации clientId и itemName
+      combinedData[key].studentNames.push(item.studentName);
+    }
+
+    // Преобразуем объединенные данные в массив объектов
+    const combinedDataArray = Object.keys(combinedData).map((key) => ({
+      clientId: key.split("-")[0],
+      itemName: key.split("-")[1],
+      studentNames: combinedData[key].studentNames,
+    }));
+
+    if (combinedDataArray.length === 0) {
+      console.log("No data found for the given date range.");
+      return;
+    }
+
+    const labels = Array.from(
+      new Set(combinedDataArray.map((item) => `Client ${item.clientId}`))
+    );
+    const datasets = Array.from(
+      new Set(combinedDataArray.map((item) => item.itemName))
+    ).map((itemName) => ({
+      label: itemName,
+      data: labels.map((label) => {
+        const clientId = label.split(" ")[1];
+        const data = combinedDataArray.find(
+          (item) => item.clientId === clientId && item.itemName === itemName
+        );
+        return data ? data.studentNames.length : 0;
+      }),
+      fill: false,
+      backgroundColor: hashToColor(hashString(itemName)),
+      borderColor: hashToColor(hashString(itemName)),
+    }));
+
+    console.log(labels, datasets);
+
+    if (labels.length === 0 || datasets.length === 0) {
+      console.log("No data available for the chart.");
+      return;
+    }
 
     io.emit("getClientWorksData", { labels, datasets });
     return { labels, datasets };
@@ -543,33 +724,29 @@ export async function getStudentClientComparisonData(data: {
   token: string;
 }) {
   const { startDate, endDate, token } = data;
-
   const token_ = await db.token.findFirst({
     where: {
       token,
     },
   });
 
+  if (!token_) {
+    console.error("Invalid token");
+    return;
+  }
+
   const userId = token_.userId;
 
   try {
     const studentData = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
         clientId: null,
         isArchived: false,
         userId: userId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
       },
       select: {
         createdAt: true,
@@ -584,23 +761,15 @@ export async function getStudentClientComparisonData(data: {
 
     const clientData = await db.studentSchedule.findMany({
       where: {
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString().padStart(2, "0"),
-          lte: (endDate.getMonth() + 1).toString().padStart(2, "0"),
-        },
-        day: {
-          gte: startDate.getDate().toString().padStart(2, "0"),
-          lte: endDate.getDate().toString().padStart(2, "0"),
-        },
         clientId: {
           not: null,
         },
         userId: userId,
         isArchived: false,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
       },
       select: {
         createdAt: true,
@@ -615,36 +784,106 @@ export async function getStudentClientComparisonData(data: {
       },
     });
 
-    const grouped = groupByMonth([...studentData, ...clientData]);
-    const labels = Object.keys(grouped);
+    const combinedData = [...studentData, ...clientData];
 
-    const studentValues = Object.values(grouped).map((group) => {
-      const studentGroup = group.filter((item) => item.clientId === null);
-      const lessonsCount = studentGroup.reduce(
-        (total, item) => total + item.lessonsCount,
-        0
-      );
-      const lessonsPrice = studentGroup.reduce(
-        (total, item) => total + item.lessonsPrice,
-        0
-      );
-      return { lessonsCount, lessonsPrice };
-    });
+    // Создадим объект, где ключом будет комбинация года, месяца и дня
+    const groupedData: {
+      [date: string]: {
+        studentData: {
+          lessonsCount: number;
+          lessonsPrice: number;
+          itemName: string;
+        }[];
+        clientData: {
+          workCount: number;
+          workPrice: number;
+          itemName: string;
+        }[];
+      };
+    } = {};
 
-    const clientValues = Object.values(grouped).map((group) => {
-      const clientGroup = group.filter((item) => item.clientId !== null);
-      const workCount = clientGroup.reduce(
-        (total, item) => total + item.workCount,
-        0
-      );
-      const workPrice = clientGroup.reduce(
-        (total, item) => total + item.workPrice,
-        0
-      );
-      return { workCount, workPrice };
-    });
+    // Обходим полученные данные
+    for (const item of combinedData) {
+      // Формируем строку, представляющую комбинацию года, месяца и дня
+      const dateKey = `${item.year}-${item.month}-${item.day}`;
 
-    return { labels, studentValues, clientValues };
+      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значения
+      if (!groupedData[dateKey]) {
+        groupedData[dateKey] = {
+          studentData: [],
+          clientData: [],
+        };
+      }
+
+      // Обновляем значения для студентов и клиентов
+      if (item.clientId === null) {
+        groupedData[dateKey].studentData.push({
+          lessonsCount: item.lessonsCount || 0,
+          lessonsPrice: item.lessonsPrice || 0,
+          itemName: item.itemName,
+        });
+      } else {
+        groupedData[dateKey].clientData.push({
+          workCount: item.workCount || 0,
+          workPrice: item.workPrice || 0,
+          itemName: item.itemName,
+        });
+      }
+    }
+
+    // Удалим все записи с нулевыми значениями
+    const nonZeroData = Object.entries(groupedData).filter(
+      ([_, value]) =>
+        value.studentData.length > 0 || value.clientData.length > 0
+    );
+
+    if (nonZeroData.length === 0) {
+      console.log("No non-zero data available for the chart.");
+      return;
+    }
+
+    // Преобразуем объединенные данные в массивы
+    const labels = nonZeroData.map(([dateKey]) =>
+      new Date(dateKey).toLocaleDateString()
+    );
+
+    const datasets = [
+      {
+        label: "Ученики",
+        data: labels.map((_, index) => {
+          const [dateKey, value] = nonZeroData[index];
+          const lessonsCount = value.studentData.reduce(
+            (total, item) => total + item.lessonsCount,
+            0
+          );
+          return isNaN(lessonsCount) || lessonsCount === null
+            ? 0
+            : lessonsCount;
+        }),
+        fill: false,
+        backgroundColor: "rgba(75, 192, 192, 0.4)",
+        borderColor: "rgba(75, 192, 192, 1)",
+      },
+      {
+        label: "Заказчики",
+        data: labels.map((_, index) => {
+          const [dateKey, value] = nonZeroData[index];
+          const workCount = value.clientData.reduce(
+            (total, item) => total + item.workCount,
+            0
+          );
+          return isNaN(workCount) || workCount === null ? 0 : workCount;
+        }),
+        fill: false,
+        backgroundColor: "rgba(255, 99, 132, 0.4)",
+        borderColor: "rgba(255, 99, 132, 1)",
+      },
+    ];
+
+    console.log(labels, datasets);
+
+    io.emit("getStudentClientComparisonData", { labels, datasets });
+    return { labels, datasets };
   } catch (error) {
     console.error("Error fetching student-client comparison data:", error);
   }
