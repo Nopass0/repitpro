@@ -7,12 +7,12 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
 import * as pr from 'react-multi-date-picker'
 interface CalendarProps {
-	// value?: string
+	value?: string
 	onChange: (value: Date) => void
 }
 
 const MiniCalendar: React.FC<CalendarProps> = ({
-	// value = formatDate(new Date()),
+	value = formatDate(new Date()),
 	onChange,
 }) => {
 	const [date, setDate] = useState()
@@ -21,22 +21,6 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 
 	const [sDate, setSDate] = useState('')
 	const [eDate, setEDate] = useState('')
-
-	useEffect(() => {
-		if (Array.isArray(date)) {
-			console.log(
-				new Date(date[0]).toLocaleDateString(),
-				'date0',
-				new Date(date[1]).toLocaleDateString(),
-				'date1',
-			)
-			setSDate(new Date(date[0]).toLocaleDateString())
-			setEDate(new Date(date[1]).toLocaleDateString())
-
-			inputStart.current.value = sDate || ''
-			inputEnd.current.value = eDate || ''
-		}
-	}, [date, sDate, eDate])
 
 	var dateInputMask = function dateInputMask(elm) {
 		elm.addEventListener('keypress', function (e) {
@@ -93,7 +77,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	}
 
 	const years = yearsGen()
-	const [value, setValue] = useState(years)
+	// const [value, setValue] = useState(years)
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [currentYear, setCurrentYear] = useState<number>(
 		new Date().getFullYear(),
@@ -145,50 +129,6 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 
 			onChange(newDate)
 		}
-	}
-
-	const renderDays = () => {
-		const days = []
-		let day = 1
-
-		// Determine how many empty cells to render at the start
-		const startOffset = (firstDayOfMonth + 6) % 7
-
-		for (let i = 0; i < 6; i++) {
-			const week = []
-			for (let j = 0; j < 7; j++) {
-				if (i === 0 && j < startOffset) {
-					// Render empty cell
-					week.push(<td key={`empty-${j}`}></td>)
-				} else if (day > daysInMonth) {
-					// Stop rendering if we've reached the end of the month
-					break
-				} else {
-					const isSelected =
-						selectedDate &&
-						selectedDate.getDate() === day &&
-						selectedDate.getMonth() === tempMonth &&
-						selectedDate.getFullYear() === tempYear
-					week.push(
-						<td
-							key={day}
-							className={`${isSelected ? s.selected : ''}`}
-							onClick={() => handleDateClick(day)}>
-							<span
-								className={`${s.dateCircle} ${
-									isSelected ? s.selected : ''
-								}`}>
-								{day}
-							</span>
-						</td>,
-					)
-					day++
-				}
-			}
-			days.push(<tr key={i}>{week}</tr>)
-			if (day > daysInMonth) break // Break the loop if we've rendered all days
-		}
-		return days
 	}
 
 	useEffect(() => {
@@ -249,17 +189,18 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 			{ReactDOM.createPortal(
 				isOpen ? (
 					<div className={s.wrapper} ref={calendarRef}>
+						<button className={s.closeButton} onClick={() => setIsOpen(false)}>
+							<CloseIcon className={s.closeIcon} />
+						</button>
 						<pr.Calendar
-							value={date}
-							onChange={(dateObject) => {
-								setDate(dateObject)
-							}}
-							numberOfMonths={2}
+							value={value}
+							onChange={onChange}
+							numberOfMonths={1}
 							disableMonthPicker={true}
 							disableYearPicker={true}
 							months={monthNames}
 							weekDays={weekDays}
-							range
+							// range
 							className={s.Calendar}
 							minDate={Date.now()}
 							monthYearSeparator=" "
@@ -340,7 +281,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		</div>
 	)
 }
-const formatDate = (date: Date): string => {
+export const formatDate = (date: Date): string => {
 	const day = date.getDate().toString().padStart(2, '0')
 	const month = (date.getMonth() + 1).toString().padStart(2, '0')
 	const year = date.getFullYear().toString()

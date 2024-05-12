@@ -54,6 +54,7 @@ interface IDayCalendarLine {
 	groupId?: string
 	students?: any
 	type?: string
+	place?: string
 
 	iconClick?: () => void
 	LineClick?: () => void
@@ -77,6 +78,7 @@ const DayCalendarLine = ({
 	name,
 	item,
 	price,
+	place,
 	key,
 	students,
 	studentId,

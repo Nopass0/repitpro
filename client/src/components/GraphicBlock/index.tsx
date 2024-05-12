@@ -26,6 +26,7 @@ import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 import {useNavigate} from 'react-router-dom'
 import {useSelector} from 'react-redux'
 import CheckBox from '../CheckBox'
+import MiniCalendar from '../MiniCalendar'
 
 interface IGraphicBlock {
 	className?: string
@@ -124,31 +125,10 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 					<Line width="260px" />
 					<div className={s.Dates}>
 						<div className={s.DatePicker}>
-							<LocalizationProvider
-								dateAdapter={AdapterDateFns}
-								adapterLocale={ru}>
-								<DatePicker
-									value={DateStartState}
-									onChange={OnChangeDateStart}
-									slots={{
-										layout: StyledPickersLayout,
-									}}
-									sx={{
-										input: {
-											paddingTop: '0px',
-											paddingBottom: '0px',
-											paddingLeft: '4px',
-											fontWeight: '500',
-										},
-										svg: {
-											width: '18px',
-											height: '18px',
-										},
-									}}
-									timezone="system"
-									showDaysOutsideCurrentMonth
-								/>
-							</LocalizationProvider>
+							<MiniCalendar
+								value={DateStartState}
+								onChange={(newData) => OnChangeDateStart(newData)}
+							/>
 						</div>
 						<Line width="20px" className={s.LineDate} />
 						<div className={s.DatePicker}>

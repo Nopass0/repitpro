@@ -28,6 +28,8 @@ import {useNavigate} from 'react-router-dom'
 import {useSelector} from 'react-redux'
 import socket from '../../socket'
 import GraphicBlock from '../../components/GraphicBlock/index'
+import MiniCalendar from '../../components/MiniCalendar'
+import Arrow from '../../assets/arrow'
 
 ChartJS.register(
 	ArcElement,
@@ -252,6 +254,12 @@ const Statistics = ({}: IStatistics) => {
 	)
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
+
+	const [startDataS1, setStartDataS1] = useState<Date>()
+	const [startDataS2, setStartDataS2] = useState<Date>()
+
+	const [endDataS1, setEndDataS1] = useState<Date>()
+	const [endDataS2, setEndDataS2] = useState<Date>()
 
 	const [studAmItem, setStudAmItem] = useState<string[]>(['Все предметы'])
 	const [studAmDate, setStudAmDate] = useState<number>(0)
@@ -516,59 +524,17 @@ const Statistics = ({}: IStatistics) => {
 							<Line width="260px" />
 							<div className={s.Dates}>
 								<div className={s.DatePicker}>
-									<LocalizationProvider
-										dateAdapter={AdapterDateFns}
-										adapterLocale={ru}>
-										<DatePicker
-											slots={{
-												layout: StyledPickersLayout,
-											}}
-											sx={{
-												input: {
-													paddingTop: '0px',
-													paddingBottom: '0px',
-													paddingLeft: '4px',
-													fontWeight: '500',
-												},
-												svg: {
-													width: '18px',
-													height: '18px',
-												},
-											}}
-											value={startData}
-											onChange={(date) => setStartData(date)}
-											timezone="system"
-											showDaysOutsideCurrentMonth
-										/>
-									</LocalizationProvider>
+									<MiniCalendar
+										value={startData}
+										onChange={(newDate) => setStartData(newDate)}
+									/>
 								</div>
 								<Line width="20px" className={s.LineDate} />
 								<div className={s.DatePicker}>
-									<LocalizationProvider
-										dateAdapter={AdapterDateFns}
-										adapterLocale={ru}>
-										<DatePicker
-											slots={{
-												layout: StyledPickersLayout,
-											}}
-											sx={{
-												input: {
-													paddingTop: '0px',
-													paddingBottom: '0px',
-													paddingLeft: '4px',
-													fontWeight: '500',
-												},
-												svg: {
-													width: '18px',
-													height: '18px',
-												},
-											}}
-											value={endData}
-											onChange={(date) => setEndData(date)}
-											timezone="system"
-											showDaysOutsideCurrentMonth
-										/>
-									</LocalizationProvider>
+									<MiniCalendar
+										value={endData}
+										onChange={(newDate) => setEndData(newDate)}
+									/>
 								</div>
 							</div>
 							<div className={s.DataBlock}>
@@ -622,7 +588,7 @@ const Statistics = ({}: IStatistics) => {
 														: 'none',
 											}}
 											className={s.Th}>
-											Учеников:
+											Учеников: <Arrow direction="up" />
 										</th>
 										<th
 											onClick={() => handleSort('lessons')}
@@ -866,55 +832,17 @@ const Statistics = ({}: IStatistics) => {
 							<Line width="260px" />
 							<div className={s.Dates}>
 								<div className={s.DatePicker}>
-									<LocalizationProvider
-										dateAdapter={AdapterDateFns}
-										adapterLocale={ru}>
-										<DatePicker
-											slots={{
-												layout: StyledPickersLayout,
-											}}
-											sx={{
-												input: {
-													paddingTop: '0px',
-													paddingBottom: '0px',
-													paddingLeft: '4px',
-													fontWeight: '500',
-												},
-												svg: {
-													width: '18px',
-													height: '18px',
-												},
-											}}
-											timezone="system"
-											showDaysOutsideCurrentMonth
-										/>
-									</LocalizationProvider>
+									<MiniCalendar
+										value={startDataS1}
+										onChange={(newDate) => setStartDataS1(newDate)}
+									/>
 								</div>
 								<Line width="20px" className={s.LineDate} />
 								<div className={s.DatePicker}>
-									<LocalizationProvider
-										dateAdapter={AdapterDateFns}
-										adapterLocale={ru}>
-										<DatePicker
-											slots={{
-												layout: StyledPickersLayout,
-											}}
-											sx={{
-												input: {
-													paddingTop: '0px',
-													paddingBottom: '0px',
-													paddingLeft: '4px',
-													fontWeight: '500',
-												},
-												svg: {
-													width: '18px',
-													height: '18px',
-												},
-											}}
-											timezone="system"
-											showDaysOutsideCurrentMonth
-										/>
-									</LocalizationProvider>
+									<MiniCalendar
+										value={endDataS2}
+										onChange={(newDate) => setEndDataS2(newDate)}
+									/>
 								</div>
 							</div>
 							<div className={s.DataBlock}>

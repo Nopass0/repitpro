@@ -49,7 +49,6 @@ import FileNLinks from '../FileNLinks'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
 import {useNavigate} from 'react-router-dom'
-import TextAreaInputBlock from '../TextAreaInputBlock'
 
 interface IAddGroup {
 	className?: string
@@ -1360,63 +1359,24 @@ const AddGroup = ({className}: IAddGroup) => {
 
 									<div className={s.StudentCard}>
 										<p>Начало занятий:</p>
-										<LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={item.startLesson}
-												onChange={(newValue) => {
-													changeItemValue(
-														currentItemIndex,
-														'startLesson',
-														String(newValue!),
-													)
-													console.log(newValue!)
-												}}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider>
+										<MiniCalendar
+											value={item.startLesson}
+											onChange={(newDate) =>
+												changeItemValue(index, 'startLesson', newDate)
+											}
+										/>
 
 										<p style={{color: 'red'}}>*</p>
 									</div>
 									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>
 										<p>Окончание занятий:</p>
-										<LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={item.endLesson}
-												onChange={(newValue) =>
-													changeItemValue(
-														currentItemIndex,
-														'endLesson',
-														String(newValue!),
-													)
-												}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider>
+										<MiniCalendar
+											value={item.endLesson}
+											onChange={(newDate) =>
+												changeItemValue(index, 'endLesson', newDate)
+											}
+										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>
 
@@ -1841,27 +1801,12 @@ const AddGroup = ({className}: IAddGroup) => {
 
 									<div className={s.StudentCard}>
 										<p>Предоплата:</p>
-										<LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={student.prePayDate}
-												onChange={(newValue) => {
-													changeStudentValue(index, 'prePayDate', newValue)
-												}}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider>
+										<MiniCalendar
+											value={student.prePayDate}
+											onChange={(newDate) =>
+												changeStudentValue(index, 'prePayDate', newDate)
+											}
+										/>
 
 										<Input
 											num
@@ -1935,62 +1880,24 @@ const AddGroup = ({className}: IAddGroup) => {
 									{/* NO DATA */}
 									<div className={s.StudentCard}>
 										<p>Начало занятий:</p>
-										<LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={student.startLesson}
-												onChange={(newValue) => {
-													changeStudentValue(
-														currentItemIndex,
-														'startLesson',
-														String(newValue!),
-													)
-												}}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider>
+										<MiniCalendar
+											value={student.startLesson}
+											onChange={(newDate) =>
+												changeStudentValue(index, 'startLesson', newDate)
+											}
+										/>
 
 										<p style={{color: 'red'}}>*</p>
 									</div>
 									<Line width="100%" className={s.Line} />
 									<div style={{marginBottom: '10px'}} className={s.StudentCard}>
 										<p>Окончание занятий:</p>
-										<LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={student.endLesson}
-												onChange={(newValue) =>
-													changeStudentValue(
-														currentItemIndex,
-														'endLesson',
-														String(newValue!),
-													)
-												}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider>
+										<MiniCalendar
+											value={student.endLesson}
+											onChange={(newDate) =>
+												changeStudentValue(index, 'endLesson', newDate)
+											}
+										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>
 
