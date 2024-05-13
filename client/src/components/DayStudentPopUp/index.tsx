@@ -165,6 +165,74 @@ const DayStudentPopUp = ({
 			console.log('Этот файл уже был добавлен.')
 		}
 	}
+	const [studentsData, setStudentsData] = useState<any>([])
+	const [studentsList, setStudentsList] = useState<any>([])
+
+	// Функции для обновления данных студентов
+	const handleHomeWorkChange = (studentId, value) => {
+		setStudentsData((prevData) => ({
+			...prevData,
+			[studentId]: {
+				...prevData[studentId],
+				homeWork: value,
+			},
+		}))
+	}
+
+	const handleClassWorkChange = (studentId, value) => {
+		setStudentsData((prevData) => ({
+			...prevData,
+			[studentId]: {
+				...prevData[studentId],
+				classWork: value,
+			},
+		}))
+	}
+
+	const handleHomeStudentsPointsChange = (studentId, value) => {
+		// Update the homeStudentsPoints for the student with the given studentId
+		const updatedStudentsList = studentsList.map((student) => {
+			if (student.studentId === studentId) {
+				// Update the homeStudentsPoints object
+				return {
+					...student,
+					homeStudentsPoints: value,
+				}
+			}
+			return student // Return the unchanged student object if it's not the one we're looking for
+		})
+
+		setStudentsList(updatedStudentsList)
+	}
+
+	const handleClassStudentsPointsChange = (studentId, value) => {
+		// Update the classStudentsPoints for the student with the given studentId
+		const updatedStudentsList = studentsList.map((student) => {
+			if (student.studentId === studentId) {
+				// Update the classStudentsPoints object
+				return {
+					...student,
+					classStudentsPoints: value,
+				}
+			}
+			return student // Return the unchanged student object if it's not the one we're looking for
+		})
+
+		setStudentsList(updatedStudentsList)
+	}
+
+	useEffect(() => {
+		const initialStudentsData = studentsList.reduce((obj, student) => {
+			obj[student.id] = {
+				homeStudentsPoints: student.homeStudentsPoints?.points || 1,
+				classStudentsPoints: student.classStudentsPoints?.points || 1,
+				homeWork: student.homeWork || '',
+				classWork: student.classWork || '',
+			}
+			return obj
+		}, {})
+		setStudentsData(initialStudentsData)
+	}, [studentsList])
 
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
@@ -181,6 +249,7 @@ const DayStudentPopUp = ({
 				(student: any) => student.id === currentScheduleDay,
 			)
 			setStudent(student || {})
+			setStudentsList(data || [])
 			console.log(
 				'studentstudentstudentstudentstudentstudentstudentstudentstudent',
 				student,
@@ -220,7 +289,6 @@ const DayStudentPopUp = ({
 	}, [])
 
 	console.log('groupgroupgroupgroupgroup', group)
-
 	useEffect(() => {
 		if (currentScheduleDay && isOpened) {
 			console.log(
@@ -234,27 +302,60 @@ const DayStudentPopUp = ({
 				classroomStudentsPoints,
 			)
 
-			socket.emit('updateStudentSchedule', {
-				id: currentScheduleDay,
-				day: calendarNowPopupDay,
-				month: calendarNowPopupMonth,
-				year: calendarNowPopupYear,
-				token: token,
-				classFiles: classroomFiles,
-				classWork: classroomComment,
-				classStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: classroomStudentsPoints,
-				},
-				homeFiles: homeFiles,
-				homeWork: homeWorkComment,
-				// audios: audios,
-				// classAudio: classAudio,
-				homeStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: homeStudentsPoints,
-				},
-			})
+			// Если выбран режим группы, то отправляем запрос для каждого студента в группе
+			if (isGroup && studentsList !== undefined) {
+				// Для каждого студента в группе
+				studentsList.forEach((student, index) => {
+					// Отправляем запрос на обновление расписания
+					console.log('student', student, 'studentsData', studentsList[index])
+					socket.emit('updateStudentSchedule', {
+						id: student.id, // ID текущего студента в группе
+						day: calendarNowPopupDay,
+						month: calendarNowPopupMonth,
+						year: calendarNowPopupYear,
+						token: token,
+						classFiles: classroomFiles,
+						classWork: classroomComment,
+						classStudentsPoints: {
+							studentId: student.id,
+							points:
+								studentsList[index].classStudentsPoints !== undefined
+									? studentsList[index].classStudentsPoints
+									: 1,
+						},
+						homeFiles: homeFiles,
+						homeWork: homeWorkComment,
+						homeStudentsPoints: {
+							studentId: student.id,
+							points:
+								studentsList[index].homeStudentsPoints !== undefined
+									? studentsList[index].homeStudentsPoints
+									: 1,
+						},
+					})
+				})
+			} else {
+				// Если не используется режим группы, то отправляем запрос для текущего студента
+				socket.emit('updateStudentSchedule', {
+					id: currentScheduleDay,
+					day: calendarNowPopupDay,
+					month: calendarNowPopupMonth,
+					year: calendarNowPopupYear,
+					token: token,
+					classFiles: classroomFiles,
+					classWork: classroomComment,
+					classStudentsPoints: {
+						studentId: currentOpenedStudent,
+						points: classroomStudentsPoints,
+					},
+					homeFiles: homeFiles,
+					homeWork: homeWorkComment,
+					homeStudentsPoints: {
+						studentId: currentOpenedStudent,
+						points: homeStudentsPoints,
+					},
+				})
+			}
 		}
 	}, [
 		homeWorkComment,
@@ -263,6 +364,11 @@ const DayStudentPopUp = ({
 		classroomFiles,
 		homeStudentsPoints,
 		classroomStudentsPoints,
+		currentScheduleDay,
+		isOpened,
+		currentOpenedStudent, // Добавляем текущего открытого студента в зависимости
+		isGroup, // Добавляем режим группы в зависимости
+		studentsList, // Добавляем список студентов в группе в зависимости
 	])
 
 	const [students, setStudents] = useState([])
@@ -415,42 +521,21 @@ const DayStudentPopUp = ({
 							) : (
 								<>
 									<div className={s.HomeWorkGroups}>
-										<div className={s.HomeWorkStud}>
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={homeStudentsPoints}
-												onChange={(e) => setHomeStudentsPoints(e)}
-											/>
-										</div>
-										<Line width="371px" className={s.Line} />
-										<div className={s.HomeWorkStud}>
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={homeStudentsPoints}
-												onChange={(e) => setHomeStudentsPoints(e)}
-											/>
-										</div>
-										<Line width="371px" className={s.Line} />
-										<div className={s.HomeWorkStud}>
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={homeStudentsPoints}
-												onChange={(e) => setHomeStudentsPoints(e)}
-											/>
-										</div>
-										<Line width="371px" className={s.Line} />
-										<div className={s.HomeWorkStud}>
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={homeStudentsPoints}
-												onChange={(e) => setHomeStudentsPoints(e)}
-											/>
-										</div>
-										<Line width="371px" className={s.Line} />
+										{studentsList.map((student: any, index: number) => (
+											<>
+												<div className={s.HomeWorkStud}>
+													<p>{student.nameStudent}</p>
+													<NowLevel
+														className={s.NowLevel}
+														value={homeStudentsPoints}
+														onChange={(e) =>
+															handleHomeStudentsPointsChange(student.id, e)
+														}
+													/>
+												</div>
+												<Line width="371px" className={s.Line} />
+											</>
+										))}
 									</div>
 								</>
 							)}
@@ -557,57 +642,30 @@ const DayStudentPopUp = ({
 								<>
 									<div className={s.WorkClassGroup}>
 										<div className={s.WorkClassStud}>
-											<CheckBox borderRadius={10} size="16px" />
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={classroomStudentsPoints}
-												onChange={(e) => setClassroomStudentsPoints(e)}
-											/>
+											{studentsList.map((student: any, index: number) => (
+												<>
+													<div className={s.HomeWorkStud}>
+														<CheckBox borderRadius={10} size="16px" />
 
-											<CheckBox className={s.CheckboxComment} size="16px" />
-											<p>Предоплата</p>
-										</div>
-										<Line width="100%" className={s.Line} />
-										<div className={s.WorkClassStud}>
-											<CheckBox borderRadius={10} size="16px" />
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={classroomStudentsPoints}
-												onChange={(e) => setClassroomStudentsPoints(e)}
-											/>
+														<p>{student.nameStudent}</p>
+														<NowLevel
+															className={s.NowLevel}
+															value={homeStudentsPoints}
+															onChange={(e) =>
+																handleClassStudentsPointsChange(student.id, e)
+															}
+														/>
+														<CheckBox
+															className={s.CheckboxComment}
+															size="16px"
+														/>
 
-											<CheckBox className={s.CheckboxComment} size="16px" />
-											<p>Предоплата</p>
+														<p>Предоплата</p>
+													</div>
+													<Line width="371px" className={s.Line} />
+												</>
+											))}
 										</div>
-										<Line width="100%" className={s.Line} />
-										<div className={s.WorkClassStud}>
-											<CheckBox borderRadius={10} size="16px" />
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={classroomStudentsPoints}
-												onChange={(e) => setClassroomStudentsPoints(e)}
-											/>
-
-											<CheckBox className={s.CheckboxComment} size="16px" />
-											<p>Предоплата</p>
-										</div>
-										<Line width="100%" className={s.Line} />
-										<div className={s.WorkClassStud}>
-											<CheckBox borderRadius={10} size="16px" />
-											<p>Петров</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={classroomStudentsPoints}
-												onChange={(e) => setClassroomStudentsPoints(e)}
-											/>
-
-											<CheckBox className={s.CheckboxComment} size="16px" />
-											<p>Предоплата</p>
-										</div>
-										<Line width="100%" className={s.Line} />
 									</div>
 									<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
 								</>
@@ -635,7 +693,15 @@ const DayStudentPopUp = ({
 			</div>
 			{ReactDOM.createPortal(
 				pagePopUp === EPagePopUp.PrePay && (
-					<div className={s.PopUp__wrapper} style={{maxWidth: '190px', position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)'}}>
+					<div
+						className={s.PopUp__wrapper}
+						style={{
+							maxWidth: '190px',
+							position: 'absolute',
+							left: '50%',
+							top: '50%',
+							transform: 'translate(-50%, -50%)',
+						}}>
 						<ExitPopUp
 							className={s.PopUp}
 							title="Подтвердите действие"

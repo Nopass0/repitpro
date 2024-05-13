@@ -373,138 +373,138 @@ export async function getStudentWithItems(studentId: string) {
   }
 }
 
-export async function getStudentsByDate(data: {
-  day: string;
-  month: string;
-  year: string;
-  token: string;
-}) {
-  const { day, month, year, token } = data;
-  const token_ = await db.token.findFirst({ where: { token } });
-  const userId = token_?.userId;
+// export async function getStudentsByDate(data: {
+//   day: string;
+//   month: string;
+//   year: string;
+//   token: string;
+// }) {
+//   const { day, month, year, token } = data;
+//   const token_ = await db.token.findFirst({ where: { token } });
+//   const userId = token_?.userId;
 
-  if (!userId) {
-    io.emit("getStudentsByDate", { error: "Invalid token" });
-    return;
-  }
+//   if (!userId) {
+//     io.emit("getStudentsByDate", { error: "Invalid token" });
+//     return;
+//   }
 
-  const dayOfWeekIndex = getDay(
-    new Date(Number(year), Number(month) - 1, Number(day))
-  );
+//   const dayOfWeekIndex = getDay(
+//     new Date(Number(year), Number(month) - 1, Number(day))
+//   );
 
-  const studentSchedules = await db.studentSchedule.findMany({
-    where: { day, month, year, userId, clientId: null },
-    select: {
-      id: true,
-      studentName: true,
-      lessonsPrice: true,
-      itemName: true,
-      timeLinesArray: true,
-      typeLesson: true,
-      isChecked: true,
-      homeFiles: true,
-      classFiles: true,
-      homeWork: true,
-      classWork: true,
-      homeStudentsPoints: true,
-      classStudentsPoints: true,
-      groupId: true,
-      clientId: true,
-      item: {
-        select: {
-          tryLessonCheck: true,
-          todayProgramStudent: true,
-          targetLesson: true,
-          programLesson: true,
-          placeLesson: true,
-          timeLesson: true,
-          group: {
-            include: {
-              students: {
-                select: {
-                  nameStudent: true,
-                  costOneLesson: true,
-                  id: true,
-                  targetLessonStudent: true,
-                  todayProgramStudent: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+//   const studentSchedules = await db.studentSchedule.findMany({
+//     where: { day, month, year, userId, clientId: null },
+//     select: {
+//       id: true,
+//       studentName: true,
+//       lessonsPrice: true,
+//       itemName: true,
+//       timeLinesArray: true,
+//       typeLesson: true,
+//       isChecked: true,
+//       homeFiles: true,
+//       classFiles: true,
+//       homeWork: true,
+//       classWork: true,
+//       homeStudentsPoints: true,
+//       classStudentsPoints: true,
+//       groupId: true,
+//       clientId: true,
+//       item: {
+//         select: {
+//           tryLessonCheck: true,
+//           todayProgramStudent: true,
+//           targetLesson: true,
+//           programLesson: true,
+//           placeLesson: true,
+//           timeLesson: true,
+//           group: {
+//             include: {
+//               students: {
+//                 select: {
+//                   nameStudent: true,
+//                   costOneLesson: true,
+//                   id: true,
+//                   targetLessonStudent: true,
+//                   todayProgramStudent: true,
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       },
+//     },
+//   });
 
-  const groupsData = [];
-  const dataToEmit = [];
+//   const groupsData = [];
+//   const dataToEmit = [];
 
-  for (const schedule of studentSchedules) {
-    const { item } = schedule;
-    const student = item.group.students[0] || null;
-    const timeLinesArray = schedule.timeLinesArray;
-    const daySchedule = timeLinesArray[dayOfWeekIndex];
-    const homeFiles = await db.file.findMany({
-      where: { id: { in: schedule.homeFiles }, extraType: "home" },
-    });
-    // ? schedule.homeFiles.map((file) => Buffer.from(file))
-    // : [];
-    const classFiles = await db.file.findMany({
-      where: { id: { in: schedule.classFiles }, extraType: "class" },
-    });
-    // ? schedule.classFiles.map((file) => Buffer.from(file))
-    // : [];
-    const groupStudentSchedule = schedule.item.group.groupName;
+//   for (const schedule of studentSchedules) {
+//     const { item } = schedule;
+//     const student = item.group.students[0] || null;
+//     const timeLinesArray = schedule.timeLinesArray;
+//     const daySchedule = timeLinesArray[dayOfWeekIndex];
+//     const homeFiles = await db.file.findMany({
+//       where: { id: { in: schedule.homeFiles }, extraType: "home" },
+//     });
+//     // ? schedule.homeFiles.map((file) => Buffer.from(file))
+//     // : [];
+//     const classFiles = await db.file.findMany({
+//       where: { id: { in: schedule.classFiles }, extraType: "class" },
+//     });
+//     // ? schedule.classFiles.map((file) => Buffer.from(file))
+//     // : [];
+//     const groupStudentSchedule = schedule.item.group.groupName;
 
-    const scheduleData = {
-      id: schedule.id,
-      nameStudent: schedule.studentName,
-      costOneLesson: schedule.lessonsPrice,
-      studentId: student ? student.id : "",
-      itemName: schedule.itemName,
-      typeLesson: schedule.typeLesson,
-      homeFiles,
-      // homeFilesPath: homeFiles.map((file) => file.toString("base64")),
-      // classFilesPath: classFiles.map((file) => file.toString("base64")),
-      classFiles,
-      homeWork: schedule.homeWork,
-      place: item.placeLesson,
-      classWork: schedule.classWork,
-      homeStudentsPoints: schedule.homeStudentsPoints,
-      classStudentsPoints: schedule.classStudentsPoints,
-      isCheck: schedule.isChecked,
-      tryLessonCheck: item.tryLessonCheck,
-      startTime: daySchedule?.startTime,
-      endTime: daySchedule?.endTime,
-      groupName: groupStudentSchedule ? groupStudentSchedule : "",
-      groupId: schedule.groupId,
-      type: groupStudentSchedule ? "group" : "student",
-    };
+//     const scheduleData = {
+//       id: schedule.id,
+//       nameStudent: schedule.studentName,
+//       costOneLesson: schedule.lessonsPrice,
+//       studentId: student ? student.id : "",
+//       itemName: schedule.itemName,
+//       typeLesson: schedule.typeLesson,
+//       homeFiles,
+//       // homeFilesPath: homeFiles.map((file) => file.toString("base64")),
+//       // classFilesPath: classFiles.map((file) => file.toString("base64")),
+//       classFiles,
+//       homeWork: schedule.homeWork,
+//       place: item.placeLesson,
+//       classWork: schedule.classWork,
+//       homeStudentsPoints: schedule.homeStudentsPoints,
+//       classStudentsPoints: schedule.classStudentsPoints,
+//       isCheck: schedule.isChecked,
+//       tryLessonCheck: item.tryLessonCheck,
+//       startTime: daySchedule?.startTime,
+//       endTime: daySchedule?.endTime,
+//       groupName: groupStudentSchedule ? groupStudentSchedule : "",
+//       groupId: schedule.groupId,
+//       type: groupStudentSchedule ? "group" : "student",
+//     };
 
-    if (groupStudentSchedule) {
-      const groupIndex = groupsData.findIndex(
-        (group) => group.groupName === groupStudentSchedule
-      );
-      if (groupIndex === -1) {
-        groupsData.push({
-          groupName: groupStudentSchedule,
-          schedules: [scheduleData],
-        });
-      } else {
-        groupsData[groupIndex].schedules.push(scheduleData);
-      }
-    } else {
-      dataToEmit.push(scheduleData);
-    }
-  }
+//     if (groupStudentSchedule) {
+//       const groupIndex = groupsData.findIndex(
+//         (group) => group.groupName === groupStudentSchedule
+//       );
+//       if (groupIndex === -1) {
+//         groupsData.push({
+//           groupName: groupStudentSchedule,
+//           schedules: [scheduleData],
+//         });
+//       } else {
+//         groupsData[groupIndex].schedules.push(scheduleData);
+//       }
+//     } else {
+//       dataToEmit.push(scheduleData);
+//     }
+//   }
 
-  const mergedData = [
-    ...dataToEmit,
-    ...groupsData.flatMap((group) => group.schedules),
-  ];
-  console.log("\n--------------MERGED DATA----------\n", mergedData);
-  io.emit("getStudentsByDate", mergedData);
-}
+//   const mergedData = [
+//     ...dataToEmit,
+//     ...groupsData.flatMap((group) => group.schedules),
+//   ];
+//   console.log("\n--------------MERGED DATA----------\n", mergedData);
+//   io.emit("getStudentsByDate", mergedData);
+// }
 
 // export async function getStudentsByDate(
 //   day,
@@ -584,6 +584,166 @@ export async function getStudentsByDate(data: {
 //     };
 //   });
 // }
+
+export async function getStudentsByDate(data: {
+  day: string;
+  month: string;
+  year: string;
+  token: string;
+  isGroup: boolean;
+}) {
+  const { day, month, year, token, isGroup } = data;
+  const token_ = await db.token.findFirst({ where: { token } });
+  const userId = token_?.userId;
+
+  if (!userId) {
+    io.emit("getStudentsByDate", { error: "Invalid token" });
+    return;
+  }
+
+  const dayOfWeekIndex = getDay(
+    new Date(Number(year), Number(month) - 1, Number(day))
+  );
+
+  const studentSchedules = await db.studentSchedule.findMany({
+    where: { day, month, year, userId, clientId: null },
+    select: {
+      id: true,
+      studentName: true,
+      lessonsPrice: true,
+      itemName: true,
+      timeLinesArray: true,
+      typeLesson: true,
+      isChecked: true,
+      homeFiles: true,
+      classFiles: true,
+      homeWork: true,
+      classWork: true,
+      homeStudentsPoints: true,
+      classStudentsPoints: true,
+      groupId: true,
+      clientId: true,
+      item: {
+        select: {
+          tryLessonCheck: true,
+          todayProgramStudent: true,
+          targetLesson: true,
+          programLesson: true,
+          placeLesson: true,
+          timeLesson: true,
+          group: {
+            include: {
+              students: {
+                select: {
+                  nameStudent: true,
+                  costOneLesson: true,
+                  id: true,
+                  targetLessonStudent: true,
+                  todayProgramStudent: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (isGroup) {
+    const groupsData = [];
+
+    for (const schedule of studentSchedules) {
+      const { item } = schedule;
+      const students = item.group.students;
+      const timeLinesArray = schedule.timeLinesArray;
+      const daySchedule = timeLinesArray[dayOfWeekIndex];
+      const homeFiles = await db.file.findMany({
+        where: { id: { in: schedule.homeFiles }, extraType: "home" },
+      });
+      const classFiles = await db.file.findMany({
+        where: { id: { in: schedule.classFiles }, extraType: "class" },
+      });
+      const groupStudentSchedule = schedule.item.group.groupName;
+
+      const groupData = {
+        id: schedule.id,
+        itemName: schedule.itemName,
+        typeLesson: schedule.typeLesson,
+        homeFiles,
+        classFiles,
+        homeWork: schedule.homeWork,
+        place: item.placeLesson,
+        classWork: schedule.classWork,
+        isCheck: schedule.isChecked,
+        tryLessonCheck: item.tryLessonCheck,
+        startTime: daySchedule?.startTime,
+        endTime: daySchedule?.endTime,
+        homeStudentsPoints: JSON.parse(JSON.stringify(schedule))
+          .homeStudentsPoints.points,
+        classStudentsPoints: JSON.parse(JSON.stringify(schedule))
+          .classStudentsPoints.points,
+        groupName: groupStudentSchedule,
+        groupId: schedule.groupId,
+        students: students.map((student) => ({
+          id: student.id,
+          nameStudent: student.nameStudent,
+          costOneLesson: student.costOneLesson,
+          targetLessonStudent: student.targetLessonStudent,
+          todayProgramStudent: student.todayProgramStudent,
+          homeStudentsPoints: schedule.homeStudentsPoints,
+          classStudentsPoints: schedule.classStudentsPoints,
+        })),
+      };
+
+      groupsData.push(groupData);
+    }
+
+    io.emit("getStudentsByDate", groupsData);
+  } else {
+    const dataToEmit = [];
+
+    for (const schedule of studentSchedules) {
+      const { item } = schedule;
+      const student = item.group.students[0] || null;
+      const timeLinesArray = schedule.timeLinesArray;
+      const daySchedule = timeLinesArray[dayOfWeekIndex];
+      const homeFiles = await db.file.findMany({
+        where: { id: { in: schedule.homeFiles }, extraType: "home" },
+      });
+      const classFiles = await db.file.findMany({
+        where: { id: { in: schedule.classFiles }, extraType: "class" },
+      });
+      const groupStudentSchedule = schedule.item.group.groupName;
+
+      const scheduleData = {
+        id: schedule.id,
+        nameStudent: schedule.studentName,
+        costOneLesson: schedule.lessonsPrice,
+        studentId: student ? student.id : "",
+        itemName: schedule.itemName,
+        typeLesson: schedule.typeLesson,
+        homeFiles,
+        classFiles,
+        homeWork: schedule.homeWork,
+        place: item.placeLesson,
+        classWork: schedule.classWork,
+        homeStudentsPoints: schedule.homeStudentsPoints,
+        classStudentsPoints: schedule.classStudentsPoints,
+        isCheck: schedule.isChecked,
+        tryLessonCheck: item.tryLessonCheck,
+        startTime: daySchedule?.startTime,
+        endTime: daySchedule?.endTime,
+        groupName: groupStudentSchedule ? groupStudentSchedule : "",
+        groupId: schedule.groupId,
+        type: groupStudentSchedule ? "group" : "student",
+      };
+
+      dataToEmit.push(scheduleData);
+    }
+
+    io.emit("getStudentsByDate", dataToEmit);
+  }
+}
 
 export async function updateStudentSchedule(data: {
   id: string;

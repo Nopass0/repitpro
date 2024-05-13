@@ -27,6 +27,7 @@ import {
   getGroupList,
   getGroupsByDate,
   groupToArchive,
+  updateGroup,
 } from "./cards/group";
 import {
   addClient,
@@ -100,7 +101,7 @@ io.on("connection", (socket) => {
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
   // socket.on("updateStudents", (data) => updateStudents(data));
   socket.on("updateStudentAndItems", (data) => updateStudentAndItems(data));
-
+  socket.on("updateGroup", (data) => updateGroup(data));
   socket.on("uploadUsersFiles", (data) => uploadUsersFiles(data));
 
   socket.on("setUserData", (data) => setUserData(data));

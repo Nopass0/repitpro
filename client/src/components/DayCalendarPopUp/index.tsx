@@ -109,8 +109,12 @@ const DayCalendarPopUp = ({
 		setStudents(data)
 	})
 
-	socket.once('getClientsByDate', (data: any) => {
-		console.log('getClientsByDate', data)
+	socket.on('getClientsByDate', (data: any) => {
+		console.log(
+			'\n------------getClientsByDate-------------\n',
+			data,
+			'\n------------\n',
+		)
 		setClients(data)
 	})
 

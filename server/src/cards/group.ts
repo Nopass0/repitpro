@@ -577,6 +577,296 @@ export async function getGroupById(data: any) {
 }
 
 //update group (if data exist)
-export async function updateGroup(data: any) {
-  const { token, groupId, groupName, isArchived } = data;
+export async function updateGroup(data) {
+  try {
+    const {
+      id,
+      groupName,
+      items,
+      students,
+      token,
+      files,
+      filesItems,
+      audiosItems,
+      audiosStudents,
+    } = data;
+
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const userId = await token_.userId;
+
+    if (!userId) {
+      throw new Error("Invalid token");
+    }
+
+    const existingGroup = await db.group.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        items: true,
+        students: true,
+      },
+    });
+
+    if (!existingGroup) {
+      throw new Error("Group not found");
+    }
+
+    // Update group name
+    await db.group.update({
+      where: {
+        id,
+      },
+      data: {
+        groupName,
+      },
+    });
+
+    // Update group items
+    for (const newItem of items) {
+      const existingItem = existingGroup.items.find(
+        (item) => item.id === newItem.id
+      );
+      if (existingItem) {
+        // Update existing item
+        await db.item.update({
+          where: {
+            id: newItem.id,
+          },
+          data: {
+            itemName: newItem.itemName,
+            tryLessonCheck: newItem.tryLessonCheck || false,
+            tryLessonCost: newItem.tryLessonCost || "",
+            todayProgramStudent: newItem.todayProgramStudent || "",
+            targetLesson: newItem.targetLesson || "",
+            programLesson: newItem.programLesson || "",
+            typeLesson: Number(newItem.typeLesson) || 1,
+            placeLesson: newItem.placeLesson || "",
+            timeLesson: newItem.timeLesson || "",
+            valueMuiSelectArchive: newItem.valueMuiSelectArchive || 1,
+            startLesson: newItem.startLesson
+              ? new Date(newItem.startLesson)
+              : null,
+            endLesson: newItem.endLesson ? new Date(newItem.endLesson) : null,
+            nowLevel: newItem.nowLevel || 0,
+            lessonDuration: Number(newItem.lessonDuration) || null,
+            timeLinesArray: newItem.timeLinesArray || {},
+            userId,
+          },
+        });
+      } else {
+        // Create new item
+        await db.item.create({
+          data: {
+            itemName: newItem.itemName,
+            tryLessonCheck: newItem.tryLessonCheck || false,
+            tryLessonCost: newItem.tryLessonCost || "",
+            todayProgramStudent: newItem.todayProgramStudent || "",
+            targetLesson: newItem.targetLesson || "",
+            programLesson: newItem.programLesson || "",
+            typeLesson: Number(newItem.typeLesson) || 1,
+            placeLesson: newItem.placeLesson || "",
+            timeLesson: newItem.timeLesson || "",
+            valueMuiSelectArchive: newItem.valueMuiSelectArchive || 1,
+            startLesson: newItem.startLesson
+              ? new Date(newItem.startLesson)
+              : null,
+            endLesson: newItem.endLesson ? new Date(newItem.endLesson) : null,
+            nowLevel: newItem.nowLevel || 0,
+            lessonDuration: Number(newItem.lessonDuration) || null,
+            timeLinesArray: newItem.timeLinesArray || {},
+            userId,
+            groupId: id,
+          },
+        });
+      }
+    }
+
+    // Update group students
+    for (const newStudent of students) {
+      const existingStudent = existingGroup.students.find(
+        (student) => student.id === newStudent.id
+      );
+      if (existingStudent) {
+        // Update existing student
+        await db.student.update({
+          where: {
+            id: newStudent.id,
+          },
+          data: {
+            nameStudent: newStudent.nameStudent,
+            contactFace: newStudent.contactFace,
+            phoneNumber: newStudent.phoneNumber,
+            email: newStudent.email,
+            address: newStudent.address || "",
+            linkStudent: newStudent.linkStudent || "",
+            costStudent: newStudent.costStudent || "",
+            commentStudent: newStudent.commentStudent || "",
+            prePayCost: newStudent.prePayCost || "",
+            prePayDate: newStudent.prePayDate
+              ? new Date(newStudent.prePayDate)
+              : null,
+            todayProgramStudent: newStudent.todayProgramStudent || "",
+            userId,
+          },
+        });
+      } else {
+        // Create new student
+        await db.student.create({
+          data: {
+            nameStudent: newStudent.nameStudent,
+            contactFace: newStudent.contactFace,
+            phoneNumber: newStudent.phoneNumber,
+            email: newStudent.email,
+            address: newStudent.address || "",
+            linkStudent: newStudent.linkStudent || "",
+            costStudent: newStudent.costStudent || "",
+            commentStudent: newStudent.commentStudent || "",
+            prePayCost: newStudent.prePayCost || "",
+            prePayDate: newStudent.prePayDate
+              ? new Date(newStudent.prePayDate)
+              : null,
+            todayProgramStudent: newStudent.todayProgramStudent || "",
+            userId,
+            groupId: id,
+          },
+        });
+      }
+    }
+
+    // Upload and update files
+    let uploadedFiles = [];
+    if (files.length > 0) {
+      uploadedFiles = await upload(
+        files,
+        userId,
+        "group/files",
+        (ids) => (uploadedFiles = ids)
+      );
+    }
+
+    // Upload and update filesItems
+    let uploadedFilesItems = [];
+    if (filesItems.length > 0) {
+      uploadedFilesItems = await upload(
+        filesItems,
+        userId,
+        "group/filesItems",
+        (ids) => (uploadedFilesItems = ids)
+      );
+    }
+
+    // Upload and update audiosItems
+    let uploadedAudiosItems = [];
+    if (audiosItems.length > 0) {
+      uploadedAudiosItems = await upload(
+        audiosItems,
+        userId,
+        "group/audioItems",
+        (ids) => (uploadedAudiosItems = ids)
+      );
+    }
+
+    // Upload and update audiosStudents
+    let uploadedAudiosStudents = [];
+    if (audiosStudents.length > 0) {
+      uploadedAudiosStudents = await upload(
+        audiosStudents,
+        userId,
+        "group/audioStudents",
+        (ids) => (uploadedAudiosStudents = ids)
+      );
+    }
+
+    // Combine all uploaded files and update group
+    const allUploadedFiles = [
+      ...uploadedFiles,
+      ...uploadedFilesItems,
+      ...uploadedAudiosItems,
+      ...uploadedAudiosStudents,
+    ];
+
+    await db.group.update({
+      where: {
+        id,
+      },
+      data: {
+        files: allUploadedFiles,
+      },
+    });
+
+    // Emit success event
+    io.emit("updateGroup", { ok: true });
+  } catch (error) {
+    console.error("Error updating group:", error);
+    io.emit("updateGroup", { error: error.message, ok: false });
+  }
+}
+
+export async function deleteGroupFiles(data: any) {
+  const { token, groupId, fileIds } = data;
+  try {
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      console.error("Invalid token");
+    }
+
+    const userId = token_.userId;
+    // Проверить, имеет ли пользователь права на удаление файлов
+    const group = await db.group.findUnique({
+      where: {
+        id: groupId,
+        userId: userId,
+      },
+      select: {
+        files: true,
+      },
+    });
+
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    // Проверить, есть ли удаляемые файлы в группе
+    const existingFiles = group.files;
+    const filesToDelete = existingFiles.filter((file) =>
+      fileIds.includes(file)
+    );
+
+    if (filesToDelete.length === 0) {
+      throw new Error("Files not found in the group");
+    }
+
+    // Обновить запись группы, удалив удаленные файлы
+    await db.group.update({
+      where: {
+        id: groupId,
+      },
+      data: {
+        files: {
+          set: existingFiles.filter((file) => !filesToDelete.includes(file)),
+        },
+      },
+    });
+
+    // Вернуть успешный результат
+    return { ok: true };
+  } catch (error) {
+    console.error("Error deleting group files:", error);
+    return { error: error.message, ok: false };
+  }
 }

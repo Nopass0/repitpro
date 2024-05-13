@@ -30,6 +30,8 @@ export async function addClient(data: any) {
 
   const userId = tokenData.userId;
 
+  console.log("\n---------itemName---------\n", jobs, "\n---------\n");
+
   try {
     // Create a new client
     const newClient = await db.client.create({
@@ -426,6 +428,8 @@ export async function getClientsByDate(data: any) {
       workPrice: true,
     },
   });
+
+  console.log("\n--------clients--------\n", clients, "\n--------\n");
 
   io.emit("getClientsByDate", clients);
 

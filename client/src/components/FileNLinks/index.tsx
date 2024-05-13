@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import s from './index.module.scss'
 import {Collapse, List, ListItemButton, ListItemText} from '@mui/material'
 import Line from '../Line'
@@ -6,10 +6,9 @@ import uploadFile from '../../assets/UploadFile.svg'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+
 interface IFileNLinks {
 	className?: string
-	stateName?: string
-	stateSet?: string
 	alreadyUploaded?: {file: any; name: string; size: number; type: string}[]
 	callback?: (file: any, name: string, size: number, type: string) => void
 }
@@ -21,9 +20,17 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 }: IFileNLinks) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const [files, setFiles] = useState<any>([])
-	const [filesToUpload, setFilesToUpload] = useState<
-		{name: string; type: string; size: number; file: any}[]
-	>([])
+	const [links, setLinks] = useState<string[]>([])
+	const [contextMenu, setContextMenu] = useState<{
+		mouseX: number
+		mouseY: number
+	}>({mouseX: 0, mouseY: 0})
+	const [pasteLinkModalOpen, setPasteLinkModalOpen] = useState<boolean>(false)
+	const [linkValue, setLinkValue] = useState<string>('')
+
+	const modalRef = useRef(null)
+	const inputRef = useRef<HTMLInputElement>(null)
+
 	const handleClick = () => {
 		setOpen(!open)
 	}
@@ -37,13 +44,25 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		setFiles(alreadyUploaded)
 		console.log(files)
 	}, [alreadyUploaded])
+
+	const handleClickOutside = (event) => {
+		if (modalRef.current && !modalRef.current.contains(event.target)) {
+			setContextMenu({mouseX: 0, mouseY: 0})
+		}
+	}
+
+	useEffect(() => {
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [])
+
 	const getFileLinkById = (id: string) => {
-		// !TODO: Remake after deploy on server with domain
 		const baseLinkToThisSite = window.location.origin.replace(
 			`:${window.location.port}`,
 			':3000',
 		)
-
 		window.open(`${baseLinkToThisSite}/files/${id}`, '_blank')
 	}
 
@@ -51,28 +70,39 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		const url = URL.createObjectURL(file)
 		window.open(url, '')
 	}
-	const idRdn = Math.random().toString()
+
+	const handlePaste = (event: ClipboardEvent) => {
+		const pastedText = event.clipboardData?.getData('Text')
+		if (pastedText) {
+			setLinkValue(pastedText)
+		}
+	}
+
+	const handleSubmit = () => {
+		setLinks((prevLinks) => [...prevLinks, linkValue])
+		setLinkValue('')
+		setPasteLinkModalOpen(false)
+	}
 
 	return (
 		<>
 			<ListItemButton
 				className={className}
 				style={{marginTop: '10px'}}
-				onClick={handleClick}>
+				onClick={handleClick}
+				onContextMenu={(event) => {
+					event.preventDefault()
+					setContextMenu({mouseX: event.clientX, mouseY: event.clientY})
+				}}>
 				<input
 					type="file"
-					//random id
-					id={idRdn}
+					id="fileInput"
 					multiple
 					style={{display: 'none'}}
 					onChange={(e) => {
 						const DefFiles = Array.from(e.target.files)
 
 						DefFiles.forEach((file) => {
-							// setFilesToUpload((prevFiles) => [
-							// 	...prevFiles,
-							// 	{name: file.name, type: file.type, size: file.size, file: file},
-							// ])
 							callback && callback(file, file.name, file.type, file.size)
 							setFiles((prevFiles: any) => [
 								...prevFiles,
@@ -83,22 +113,17 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 									file: file,
 								},
 							])
-							// const fileReader = new FileReader()
-							// fileReader.onload = () => {
-							// 	const arrayBuffer = fileReader.result as ArrayBuffer
-							// 	const byteArray = new Uint8Array(arrayBuffer)
-							// 	const blob = new Blob([byteArray])
-							// 	const url = URL.createObjectURL(blob)
-							// 	setFiles((prevFiles) => [...prevFiles, {name: file.name, url}])
-							// }
-							// fileReader.readAsArrayBuffer(file)
 						})
 					}}
 				/>
 				<label
-					htmlFor={idRdn}
+					htmlFor="fileInput"
 					style={{cursor: 'pointer'}}
-					className={s.LabelForFile}>
+					className={s.LabelForFile}
+					onContextMenu={(event) => {
+						event.preventDefault()
+						setContextMenu({mouseX: event.clientX, mouseY: event.clientY})
+					}}>
 					<img src={uploadFile} className={s.ImgForFile} alt={uploadFile} />
 				</label>
 				<ListItemText primary="Файлы/ссылки" />
@@ -109,7 +134,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 				<List
 					style={{
 						display: 'flex',
-						// alignItems: 'center',
 						justifyContent: 'center',
 						flexDirection: 'column',
 					}}
@@ -124,7 +148,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 										key={index}
 										className={s.FileItem}
 										onClick={() => {
-											// !TODO : If file.id is not null getFileLinkById
 											if (file.id) {
 												getFileLinkById(file.id)
 											} else {
@@ -153,14 +176,71 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 						) : (
 							<>
 								<p style={{textAlign: 'center', width: '100%'}}>
-									Список пока пуст
+									Список файлов пока пуст
+								</p>
+							</>
+						)}
+					</div>
+					<Line width="100%" className={s.Line} />
+					<div className={s.LinkList}>
+						{links.length ? (
+							links.map((link, index) => (
+								<>
+									<div key={index} className={s.LinkItem}>
+										<a href={link} target="_blank" rel="noopener noreferrer">
+											{link}
+										</a>
+										<button
+											onClick={() =>
+												setLinks((prevLinks) =>
+													prevLinks.filter((_, i) => i !== index),
+												)
+											}>
+											<DeleteOutlineIcon />
+										</button>
+									</div>
+									{index === links.length - 1 && (
+										<Line width="100%" className={s.FileLine} />
+									)}
+								</>
+							))
+						) : (
+							<>
+								<p style={{textAlign: 'center', width: '100%'}}>
+									Список ссылок пока пуст
 								</p>
 							</>
 						)}
 					</div>
 				</List>
 			</Collapse>
-			{/* Hide input file after upload */}
+			<button onClick={() => setPasteLinkModalOpen(true)}>
+				Вставить ссылку из буфера
+			</button>
+			{contextMenu.mouseX !== 0 && contextMenu.mouseY !== 0 && (
+				<div
+					ref={modalRef}
+					style={{
+						position: 'absolute',
+						left: contextMenu.mouseX,
+						top: contextMenu.mouseY,
+						backgroundColor: 'white',
+						padding: '10px',
+						border: '1px solid gray',
+						boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+					}}>
+					<input
+						ref={inputRef}
+						type="text"
+						value={linkValue}
+						onChange={(e) => setLinkValue(e.target.value)}
+						onPaste={handlePaste}
+						placeholder="Paste link here..."
+					/>
+					<button onClick={handleSubmit}>Submit</button>
+					<button onClick={() => setPasteLinkModalOpen(false)}>Cancel</button>
+				</div>
+			)}
 			<input type="file" style={{display: 'none'}} />
 		</>
 	)

@@ -635,7 +635,14 @@ const AddStudent = ({}: IAddStudent) => {
 				return lesson
 			})
 
-			setHistoryLesson(updatedHistoryLesson)
+			// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
+			let hls = updatedHistoryLesson.sort((a, b) => {
+				const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+				const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+				return dateA - dateB
+			})
+
+			setHistoryLesson(hls)
 		}
 	}
 
@@ -749,19 +756,19 @@ const AddStudent = ({}: IAddStudent) => {
 		let countLessons = 0
 		let countLessonsPrice = 0
 		let historyLessons_ = []
+
 		for (let i = 0; i < items.length; i++) {
 			let differenceDays = differenceInDays(
 				items[i].endLesson,
 				items[i].startLesson,
 			)
-			// console.log(endLessonsDate)
 			const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
 				addDays(items[i].startLesson, j),
 			)
 
 			for (const date of dateRange) {
 				const dayOfWeek = getDay(date)
-				const scheduleForDay = items[i].timeLinesArray[dayOfWeek] // Здесь укажите переменную, содержащую ваше недельное расписание
+				const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
 
 				const cond =
 					scheduleForDay.startTime.hour === 0 &&
@@ -769,16 +776,7 @@ const AddStudent = ({}: IAddStudent) => {
 					scheduleForDay.endTime.hour === 0 &&
 					scheduleForDay.endTime.minute === 0
 
-				const dayOfMonth = date.getDate()
-
 				if (!cond) {
-					// setHistoryLesson((prevHistoryLesson) => [
-					// 	...prevHistoryLesson,
-					// 	{
-					// 		date: date,
-					// 		itemName: items[i].itemName,
-					// 	},
-					// ])
 					let hl = {
 						date: date,
 						itemName: items[i].itemName,
@@ -794,10 +792,41 @@ const AddStudent = ({}: IAddStudent) => {
 				}
 			}
 		}
+
+		let hlTemp = historyLessons_
+		// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
+		hlTemp.sort((a, b) => {
+			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+			return dateA - dateB
+		})
+
+		let hlsNow = hlTemp.sort((a, b) => {
+			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+			return dateA - dateB
+		})[hlTemp.length - 1]
+
+		//delete hlsNow from hls
+		let hls = hlTemp.filter((item) => item.date !== hlsNow.date)
+
+		//remake hls with hlsNow at start
+		hls.unshift(hlsNow)
+
+		// console.log(
+		// 	'\n-----------------hls-----------\n',
+		// 	hls,
+		// 	'\n-----------------hls-----------\n',
+		// 	'\n-------------today-------------\n',
+		// 	today,
+		// 	'\n-----------------hls-----------\n',
+		// )
+
+		// Обновляем состояние
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-	}, [items])
+	}, [items, today])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
 		setHistoryLesson((prevHistoryLesson: any) => [
@@ -1573,7 +1602,6 @@ const AddStudent = ({}: IAddStudent) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'endLesson', newDate)
 											}
-											
 											calendarId="endLesson"
 										/>
 									</div>

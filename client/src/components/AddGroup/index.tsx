@@ -161,6 +161,17 @@ const AddGroup = ({className}: IAddGroup) => {
 	const sendInfo = () => {
 		if (currentOpenedGroup !== '') {
 			// !TODO
+			socket.emit('updateGroup', {
+				id: currentOpenedGroup,
+				groupName: groupName,
+				items: items,
+				students: students,
+				token: token,
+				files: files,
+				filesItems: filesItems,
+				audiosItems: audioItems,
+				audiosStudents: audioStudents,
+			})
 		} else {
 			console.log(
 				'\n----------------------------sendInfo----------------\n',
@@ -1366,7 +1377,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'startLesson', newDate)
 											}
-											calendarId='startLesson'
+											calendarId="startLesson"
 										/>
 
 										<p style={{color: 'red'}}>*</p>
@@ -1379,7 +1390,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeItemValue(index, 'endLesson', newDate)
 											}
-											calendarId='endLesson'
+											calendarId="endLesson"
 										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>
@@ -1810,8 +1821,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'prePayDate', newDate)
 											}
-											
-											calendarId='prePay'
+											calendarId="prePay"
 										/>
 
 										<Input
@@ -1891,8 +1901,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'startLesson', newDate)
 											}
-											
-											calendarId='startLessonStudent'
+											calendarId="startLessonStudent"
 										/>
 
 										<p style={{color: 'red'}}>*</p>
@@ -1905,7 +1914,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'endLesson', newDate)
 											}
-											calendarId='endLessonStudent'
+											calendarId="endLessonStudent"
 										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>
