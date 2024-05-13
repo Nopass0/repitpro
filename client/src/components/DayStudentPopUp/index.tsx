@@ -40,7 +40,9 @@ enum EPagePopUp {
 	PrePay,
 	None,
 }
-
+interface IPayCheckedState {
+	[studentId: string]: boolean
+}
 const DayStudentPopUp = ({
 	icon,
 	name,
@@ -75,6 +77,8 @@ const DayStudentPopUp = ({
 
 	const [pagePopUp, setPagePopUp] = useState<EPagePopUp>(EPagePopUp.None)
 	const [payChecked, setPayChecked] = useState<boolean>(false)
+	// const [payChecked, setPayChecked] = useState<IPayCheckedState>({})
+
 	const [student, setStudent] = useState<any>({})
 	const [isOpened, setIsOpened] = useState(false)
 	const [openSelect1, setOpenSelect1] = useState(false)
@@ -411,6 +415,8 @@ const DayStudentPopUp = ({
 		)
 	}
 
+	const changeCheckBox = (student: any) => {}
+
 	return (
 		<>
 			<div style={style} className={s.wrapper}>
@@ -520,23 +526,21 @@ const DayStudentPopUp = ({
 								/>
 							) : (
 								<>
-									<div className={s.HomeWorkGroups}>
-										{studentsList.map((student: any, index: number) => (
-											<>
-												<div className={s.HomeWorkStud}>
-													<p>{student.nameStudent}</p>
-													<NowLevel
-														className={s.NowLevel}
-														value={homeStudentsPoints}
-														onChange={(e) =>
-															handleHomeStudentsPointsChange(student.id, e)
-														}
-													/>
-												</div>
-												<Line width="371px" className={s.Line} />
-											</>
-										))}
-									</div>
+									{studentsList.map((student: any, index: number) => (
+										<div className={s.HomeWorkGroups}>
+											<div className={s.HomeWorkStud}>
+												<p style={{minWidth: '100px'}}>{student.nameStudent}</p>
+												<NowLevel
+													className={s.NowLevel}
+													value={homeStudentsPoints}
+													onChange={(e) =>
+														handleHomeStudentsPointsChange(student.id, e)
+													}
+												/>
+											</div>
+											<Line width="371px" className={s.Line} />
+										</div>
+									))}
 								</>
 							)}
 						</div>
@@ -640,33 +644,30 @@ const DayStudentPopUp = ({
 								</>
 							) : (
 								<>
-									<div className={s.WorkClassGroup}>
-										<div className={s.WorkClassStud}>
-											{studentsList.map((student: any, index: number) => (
-												<>
-													<div className={s.HomeWorkStud}>
-														<CheckBox borderRadius={10} size="16px" />
+									{studentsList.map((student: any, index: number) => (
+										<div key={index} className={s.WorkClassGroup}>
+											<div className={s.WorkClassStud}>
+												<CheckBox borderRadius={10} size="16px" />
 
-														<p>{student.nameStudent}</p>
-														<NowLevel
-															className={s.NowLevel}
-															value={homeStudentsPoints}
-															onChange={(e) =>
-																handleClassStudentsPointsChange(student.id, e)
-															}
-														/>
-														<CheckBox
-															className={s.CheckboxComment}
-															size="16px"
-														/>
+												<p style={{minWidth: '100px'}}>{student.nameStudent}</p>
+												<NowLevel
+													className={s.NowLevel}
+													value={homeStudentsPoints}
+													onChange={(e) =>
+														handleClassStudentsPointsChange(student.id, e)
+													}
+												/>
+												<CheckBox
+													
+													className={s.CheckboxComment}
+													size="16px"
+												/>
 
-														<p>Предоплата</p>
-													</div>
-													<Line width="371px" className={s.Line} />
-												</>
-											))}
+												<p>Предоплата</p>
+											</div>
+											<Line width="100%" className={s.Line} />
 										</div>
-									</div>
+									))}
 									<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
 								</>
 							)}

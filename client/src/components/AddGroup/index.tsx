@@ -66,7 +66,9 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
-
+	// const [isEditMode, setIsEditMode] = useState(
+	// 	currentOpenedStudent ? true : false,
+	// )
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const editedCards = useSelector((state: any) => state.editedCards)
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)

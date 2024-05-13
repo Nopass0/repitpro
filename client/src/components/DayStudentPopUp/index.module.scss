@@ -115,7 +115,8 @@ input {
 
 					border: 1px solid #25991c;
 					border-radius: 8px;
-					height: 45px;
+					height: 44px;
+					margin-left: 5px;
 				}
 
 				.Select {
@@ -166,6 +167,7 @@ input {
 						margin-right: 30px;
 					}
 					.CheckboxComment {
+						
 						margin: 0 0 0 40px;
 					}
 				}
@@ -236,7 +238,7 @@ input {
 		justify-content: center;
 		position: relative;
 
-		top: 130px;
+		top: 200px;
 		&:hover {
 			background: #eee;
 			transition: all 0.3s ease;
@@ -244,7 +246,7 @@ input {
 	}
 
 	.btnLeft {
-		top: 96px;
+		top: 166px;
 		right: 1166px;
 	}
 
@@ -280,7 +282,7 @@ input {
 		margin-right: 10px;
 		}
 		.TextArea {
-			width: 100%;
+			width: 98%;
 		}
 		.MainBlock {
 			width: 100%;

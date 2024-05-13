@@ -1841,7 +1841,7 @@ const AddStudent = ({}: IAddStudent) => {
 					<div className={s.FooterButton}>
 						<div className={s.EditNSave}>
 							<button
-								className={`${s.Edit} ${!isEditMode ? s.Save : ''}`}
+								className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 								onClick={() => setIsEditMode(!isEditMode)}>
 								<p>Редактировать</p>
 							</button>
