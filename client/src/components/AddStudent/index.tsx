@@ -45,7 +45,6 @@ import IconsPhone from '../IconsPhone/index'
 import {PickersCalendarHeader} from '@mui/x-date-pickers'
 import {sl} from 'date-fns/locale'
 import MiniCalendar from '../MiniCalendar'
-import TextArea from '../TextAreaInputBlock'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 
 interface IAddStudent {}
