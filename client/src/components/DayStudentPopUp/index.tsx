@@ -39,8 +39,10 @@ enum EPagePopUp {
 	PrePay,
 	None,
 }
-
-const DayStudentPopUp: React.FC<IDayStudentPopUp> = ({
+interface IPayCheckedState {
+	[studentId: string]: boolean
+}
+const DayStudentPopUp = ({
 	icon,
 	name,
 	address,
@@ -71,7 +73,9 @@ const DayStudentPopUp: React.FC<IDayStudentPopUp> = ({
 
 	const [pagePopUp, setPagePopUp] = useState<EPagePopUp>(EPagePopUp.None)
 	const [payChecked, setPayChecked] = useState<boolean>(false)
-	const [student, setStudent] = useState<IStudent | null>(null)
+	// const [payChecked, setPayChecked] = useState<IPayCheckedState>({})
+
+	const [student, setStudent] = useState<any>({})
 	const [isOpened, setIsOpened] = useState(false)
 	const [openSelect1, setOpenSelect1] = useState(false)
 	const [openSelect2, setOpenSelect2] = useState(false)
@@ -303,6 +307,48 @@ const DayStudentPopUp: React.FC<IDayStudentPopUp> = ({
 		studentsList,
 	])
 
+	const [students, setStudents] = useState([])
+	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
+	const currentStudent = students[currentIndex] // Get the current student
+
+	useEffect(() => {
+		socket.emit('getStudentsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+		socket.once('getStudentsByDate', (data) => {
+			setStudents(data)
+		})
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
+
+	useEffect(() => {
+		// Find the index of the current student based on the currentScheduleDay
+		const currentStudentIndex = students.findIndex(
+			(student) => student.id === currentScheduleDay,
+		)
+
+		// If the current student is found in the array, set the currentIndex
+		if (currentStudentIndex !== -1) {
+			setCurrentIndex(currentStudentIndex)
+		}
+	}, [students, currentScheduleDay])
+
+	const handlePrevStudent = () => {
+		setCurrentIndex((prevIndex) =>
+			prevIndex === 0 ? students.length - 1 : prevIndex - 1,
+		)
+	}
+
+	const handleNextStudent = () => {
+		setCurrentIndex((prevIndex) =>
+			prevIndex === students.length - 1 ? 0 : prevIndex + 1,
+		)
+	}
+
+	const changeCheckBox = (student: any) => {}
+
 	return (
 		<>
 			<div style={style} className={s.wrapper}>
@@ -390,21 +436,23 @@ const DayStudentPopUp: React.FC<IDayStudentPopUp> = ({
 									onChange={(e) => setHomeStudentsPoints(e)}
 								/>
 							) : (
-								<div className={s.HomeWorkGroups}>
-									{studentsList.map((student, index) => (
-										<div className={s.HomeWorkStud} key={index}>
-											<p>{student.nameStudent}</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={homeStudentsPoints}
-												onChange={(e) =>
-													handleHomeStudentsPointsChange(student.id, e)
-												}
-											/>
+								<>
+									{studentsList.map((student: any, index: number) => (
+										<div className={s.HomeWorkGroups}>
+											<div className={s.HomeWorkStud}>
+												<p style={{minWidth: '100px'}}>{student.nameStudent}</p>
+												<NowLevel
+													className={s.NowLevel}
+													value={homeStudentsPoints}
+													onChange={(e) =>
+														handleHomeStudentsPointsChange(student.id, e)
+													}
+												/>
+											</div>
 											<Line width="371px" className={s.Line} />
 										</div>
 									))}
-								</div>
+								</>
 							)}
 						</div>
 						<div className={s.Devider}></div>
@@ -484,26 +532,29 @@ const DayStudentPopUp: React.FC<IDayStudentPopUp> = ({
 									</div>
 								</>
 							) : (
-								<div className={s.WorkClassGroup}>
-									<div className={s.WorkClassStud}>
-										{studentsList.map((student, index) => (
-											<div className={s.HomeWorkStud} key={index}>
+								<>
+									{studentsList.map((student: any, index: number) => (
+										<div key={index} className={s.WorkClassGroup}>
+											<div className={s.WorkClassStud}>
 												<CheckBox borderRadius={10} size="16px" />
-												<p>{student.nameStudent}</p>
+
+												<p style={{minWidth: '100px'}}>{student.nameStudent}</p>
 												<NowLevel
 													className={s.NowLevel}
-													value={classroomStudentsPoints}
+													value={homeStudentsPoints}
 													onChange={(e) =>
 														handleClassStudentsPointsChange(student.id, e)
 													}
 												/>
 												<CheckBox className={s.CheckboxComment} size="16px" />
+
 												<p>Предоплата</p>
-												<Line width="371px" className={s.Line} />
 											</div>
-										))}
-									</div>
-								</div>
+											<Line width="100%" className={s.Line} />
+										</div>
+									))}
+									<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
+								</>
 							)}
 						</div>
 					</div>

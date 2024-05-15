@@ -117,6 +117,7 @@ const Header = ({}: IHeader) => {
 									type: 'SET_PAGE_POPUP_EXIT',
 									payload: EPagePopUpExit.None,
 								})
+								window.location.reload()
 							}
 						}}>
 						<img src={logo} alt="logo" className={s.logo} />

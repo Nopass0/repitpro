@@ -52,7 +52,9 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
-
+	// const [isEditMode, setIsEditMode] = useState(
+	// 	currentOpenedStudent ? true : false,
+	// )
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const editedCards = useSelector((state: any) => state.editedCards)
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
@@ -911,25 +913,11 @@ const AddGroup = ({className}: IAddGroup) => {
 			// 		studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
 			// 		student.costOneLesson
 		})
+		console.log(students, 'students')
+
 		setAllCostForGroup(sumCost)
 		setAllPriceGroup(totalCostGroup)
 	}, [students, historyLesson, studentsHistoryLessons])
-
-	const handleDuty = (student: any, index: number) => {
-		const duty =
-			(studentsHistoryLessons[index] &&
-				(studentsHistoryLessons[index].filter((i) => i.isDone).length -
-					studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
-					Number(student.costOneLesson)) ||
-			0
-
-		DutyStudents[index] = duty
-		if (duty < 0 || allDuty < 0) {
-			return 0
-		}
-		allDuty += duty
-		return duty
-	}
 
 	const handleDutyStudent = (student: any, index: number) => {
 		const duty =
@@ -950,12 +938,19 @@ const AddGroup = ({className}: IAddGroup) => {
 			'FАА',
 		)
 
-		const filteredLessons = studentsHistoryLessons[currentStudentIndex]
+		let currentStudentIndexHistoryLessons = index ? index : currentStudentIndex
+		const filteredLessons = studentsHistoryLessons[
+			currentStudentIndexHistoryLessons
+		]
 			.sort(compareDates)
 			.filter((lesson) => {
 				const lessonDate = new Date(lesson.date)
-				const startLesson = new Date(students[currentStudentIndex].startLesson)
-				const endLesson = new Date(students[currentStudentIndex].endLesson)
+				const startLesson = new Date(
+					students[currentStudentIndexHistoryLessons].startLesson,
+				)
+				const endLesson = new Date(
+					students[currentStudentIndexHistoryLessons].endLesson,
+				)
 				return lessonDate >= startLesson && lessonDate <= endLesson
 			})
 			.map((lesson, lessonIndex) => (
@@ -1024,7 +1019,21 @@ const AddGroup = ({className}: IAddGroup) => {
 			))
 		return filteredLessons
 	}
+	const handleDuty = (student: any, index: number) => {
+		const duty =
+			(studentsHistoryLessons[index] &&
+				(studentsHistoryLessons[index].filter((i) => i.isDone).length -
+					studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
+					Number(student.costOneLesson)) ||
+			0
 
+		DutyStudents[index] = duty
+		if (duty < 0 || allDuty < 0) {
+			return 0
+		}
+		allDuty += duty
+		return duty
+	}
 	useEffect(() => {
 		studentsHistoryLessons[currentStudentIndex] &&
 			students.map((student: IStudent) => {
@@ -1887,7 +1896,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'startLesson', newDate)
 											}
-											calendarId="startLessonStudent"
+											calendarId={`${index}startLessonStudent`}
 										/>
 
 										<p style={{color: 'red'}}>*</p>
@@ -1900,7 +1909,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											onChange={(newDate) =>
 												changeStudentValue(index, 'endLesson', newDate)
 											}
-											calendarId="endLessonStudent"
+											calendarId={`${index}endLessonStudent`}
 										/>
 										<p style={{color: 'red'}}>*</p>
 									</div>
@@ -1929,15 +1938,20 @@ const AddGroup = ({className}: IAddGroup) => {
 											<div className={s.MathObject}>
 												<p>
 													Всего занятий:{' '}
-													{studentsHistoryLessons[index]
-														? studentsHistoryLessons[index].length
+													{studentsHistoryLessons[currentStudentIndex] &&
+													studentsHistoryLessons[currentStudentIndex].length !==
+														0
+														? handleStudentsHistoryLessons(student, index)
+																.length
 														: '0'}
 												</p>
 												<p>
 													Сумма:{' '}
-													{studentsHistoryLessons[index]
-														? studentsHistoryLessons[index].length *
-																Number(student.costOneLesson) || 0
+													{studentsHistoryLessons[currentStudentIndex] &&
+													studentsHistoryLessons[currentStudentIndex].length !==
+														0
+														? handleStudentsHistoryLessons(student, index)
+																.length * Number(student.costOneLesson) || 0
 														: '0'}
 													₽
 												</p>
@@ -1947,20 +1961,30 @@ const AddGroup = ({className}: IAddGroup) => {
 												{/* count isDone */}
 												<p>
 													Прошло:{' '}
-													{studentsHistoryLessons[index] &&
-														studentsHistoryLessons[index].filter(
-															(i) => i.isDone,
+													{studentsHistoryLessons[currentStudentIndex] &&
+														studentsHistoryLessons[currentStudentIndex].filter(
+															(i) =>
+																new Date(i.date) >=
+																	new Date(student.startLesson) &&
+																new Date(i.date) <=
+																	new Date(student.endLesson) &&
+																i.isDone,
 														).length}
 												</p>
 												<p>
 													Оплачено:{' '}
-													{studentsHistoryLessons[index] &&
-														studentsHistoryLessons[index].filter(
-															(i) => i.isPaid,
+													{studentsHistoryLessons[currentStudentIndex] &&
+														studentsHistoryLessons[currentStudentIndex].filter(
+															(i) =>
+																new Date(i.date) >=
+																	new Date(student.startLesson) &&
+																new Date(i.date) <=
+																	new Date(student.endLesson) &&
+																i.isPaid,
 														).length}{' '}
 													(
-													{(studentsHistoryLessons[index] &&
-														studentsHistoryLessons[index].filter(
+													{(studentsHistoryLessons[currentStudentIndex] &&
+														studentsHistoryLessons[currentStudentIndex].filter(
 															(i) => i.isPaid,
 														).length * Number(student.costOneLesson)) ||
 														0}
@@ -1971,12 +1995,16 @@ const AddGroup = ({className}: IAddGroup) => {
 											<div className={s.MathObject}>
 												<p>
 													Не оплачено:{' '}
-													{studentsHistoryLessons[index] &&
-														(studentsHistoryLessons[index].filter(
-															(i) => i.isDone,
-														).length > 0
-															? NotPayedStudent(index)
-															: '0')}
+													{studentsHistoryLessons[currentStudentIndex] &&
+													studentsHistoryLessons[currentStudentIndex].filter(
+														(i) =>
+															new Date(i.date) >=
+																new Date(student.startLesson) &&
+															new Date(i.date) <= new Date(student.endLesson) &&
+															i.isDone,
+													).length > 0
+														? NotPayedStudent(index)
+														: '0'}
 												</p>
 												<p style={{display: 'flex', flexDirection: 'row'}}>
 													<p style={{marginRight: '5px'}}>Долг:</p>

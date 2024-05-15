@@ -311,10 +311,12 @@ const Statistics = ({}: IStatistics) => {
 		if (sortColumn === column) {
 			if (sortDirection === 'asc') {
 				setSortDirection('desc')
-			} else if (sortDirection === 'desc') {
-				setSortColumn(null)
-				setSortDirection(null)
-			} else {
+			}
+			// else if (sortDirection === 'desc') {
+			// 	setSortColumn(null)
+			// 	setSortDirection(null)
+			// }
+			else {
 				setSortDirection('asc')
 			}
 		} else {
@@ -744,109 +746,72 @@ const Statistics = ({}: IStatistics) => {
 							<table className={s.Table}>
 								<thead className={s.Thead}>
 									<tr className={s.Tr}>
-										<th
-											onClick={() => handleSort('name')}
-											style={{
-												borderBottom:
-													sortColumn === 'name'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Учеников: <Arrow direction="up" />
+										<th onClick={() => handleSort('name')} className={s.Th}>
+											Учеников:{' '}
+											{sortColumn === 'name' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('lessons')}
-											style={{
-												borderBottom:
-													sortColumn === 'lessons'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Занятия:
+										<th onClick={() => handleSort('lessons')} className={s.Th}>
+											Занятия:{' '}
+											{sortColumn === 'lessons' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('avg_cost')}
-											style={{
-												borderBottom:
-													sortColumn === 'avg_cost'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Средняя стоимость занятия:
+										<th onClick={() => handleSort('avg_cost')} className={s.Th}>
+											Средняя стоимость занятия:{' '}
+											{sortColumn === 'avg_cost' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('cancel')}
-											style={{
-												borderBottom:
-													sortColumn === 'cancel'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Отмененные:
+										<th onClick={() => handleSort('cancel')} className={s.Th}>
+											Отмененные:{' '}
+											{sortColumn === 'cancel' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('income')}
-											style={{
-												borderBottom:
-													sortColumn === 'income'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Доход:
+										<th onClick={() => handleSort('income')} className={s.Th}>
+											Доход:{' '}
+											{sortColumn === 'income' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
 										<th
 											onClick={() => handleSort('consumption')}
-											style={{
-												borderBottom:
-													sortColumn === 'consumption'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
 											className={s.Th}>
-											Расход:
+											Расход:{' '}
+											{sortColumn === 'consumption' &&
+											sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('duty')}
-											style={{
-												borderBottom:
-													sortColumn === 'duty'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Долг:
+										<th onClick={() => handleSort('duty')} className={s.Th}>
+											Долг:{' '}
+											{sortColumn === 'duty' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('total')}
-											style={{
-												borderBottom:
-													sortColumn === 'total'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Итог:
+										<th onClick={() => handleSort('total')} className={s.Th}>
+											Итог:{' '}
+											{sortColumn === 'total' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
 									</tr>
 								</thead>
@@ -1052,109 +1017,72 @@ const Statistics = ({}: IStatistics) => {
 							<table className={s.Table}>
 								<thead className={s.Thead}>
 									<tr className={s.Tr}>
-										<th
-											onClick={() => handleSort('name')}
-											style={{
-												borderBottom:
-													sortColumn === 'name'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Учеников:
+										<th onClick={() => handleSort('name')} className={s.Th}>
+											Учеников:{' '}
+											{sortColumn === 'name' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('lessons')}
-											style={{
-												borderBottom:
-													sortColumn === 'lessons'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Занятия:
+										<th onClick={() => handleSort('lessons')} className={s.Th}>
+											Занятия:{' '}
+											{sortColumn === 'lessons' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('avg_cost')}
-											style={{
-												borderBottom:
-													sortColumn === 'avg_cost'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Средняя стоимость занятия:
+										<th onClick={() => handleSort('avg_cost')} className={s.Th}>
+											Средняя стоимость занятия:{' '}
+											{sortColumn === 'avg_cost' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('cancel')}
-											style={{
-												borderBottom:
-													sortColumn === 'cancel'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Отмененные:
+										<th onClick={() => handleSort('cancel')} className={s.Th}>
+											Отмененные:{' '}
+											{sortColumn === 'cancel' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('income')}
-											style={{
-												borderBottom:
-													sortColumn === 'income'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Доход:
+										<th onClick={() => handleSort('income')} className={s.Th}>
+											Доход:{' '}
+											{sortColumn === 'income' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
 										<th
 											onClick={() => handleSort('consumption')}
-											style={{
-												borderBottom:
-													sortColumn === 'consumption'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
 											className={s.Th}>
-											Расход:
+											Расход:{' '}
+											{sortColumn === 'consumption' &&
+											sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('duty')}
-											style={{
-												borderBottom:
-													sortColumn === 'duty'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Долг:
+										<th onClick={() => handleSort('duty')} className={s.Th}>
+											Долг:{' '}
+											{sortColumn === 'duty' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
-										<th
-											onClick={() => handleSort('total')}
-											style={{
-												borderBottom:
-													sortColumn === 'total'
-														? `10px solid  ${
-																sortDirection === 'asc' ? 'green' : 'red'
-														  }`
-														: 'none',
-											}}
-											className={s.Th}>
-											Итог:
+										<th onClick={() => handleSort('total')} className={s.Th}>
+											Итог:{' '}
+											{sortColumn === 'total' && sortDirection === 'asc' ? (
+												<Arrow direction="up" />
+											) : (
+												<Arrow direction="down" />
+											)}
 										</th>
 									</tr>
 								</thead>
