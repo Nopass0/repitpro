@@ -10,7 +10,6 @@ import Login from './pages/Login'
 import Main from './pages/Main'
 import socket from './socket'
 import Register from './pages/Register/index.tsx'
-import {elements} from 'chart.js'
 import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
 import Statistics from './pages/Statistics/index.tsx'
@@ -20,7 +19,7 @@ socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
 })
 
-let defaultState = {
+const defaultState = {
 	user: {
 		token: localStorage.getItem('token') || '',
 	} as IUser,
@@ -137,7 +136,7 @@ const reducer = (state = defaultState, action: any) => {
 	}
 }
 
-let store = createStore(reducer)
+const store = createStore(reducer)
 
 function getWHeader(router_element: any, isPrivate: boolean) {
 	console.log(defaultState, 'user')
@@ -172,7 +171,7 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 	)
 }
 
-let publicLinks = [
+const publicLinks = [
 	{
 		element: <Login />,
 		path: '/login',
@@ -184,7 +183,7 @@ let publicLinks = [
 	},
 ]
 
-let privateLinks = [
+const privateLinks = [
 	{
 		element: getWHeader(<Main />, true),
 		path: '/',

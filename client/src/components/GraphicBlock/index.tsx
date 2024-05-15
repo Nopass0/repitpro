@@ -1,30 +1,11 @@
-import {
-	Chart as ChartJS,
-	ArcElement,
-	Tooltip,
-	Legend,
-	LineElement,
-	CategoryScale,
-	LinearScale,
-	PointElement,
-	scales,
-	BarElement,
-} from 'chart.js'
+
+
 import {Bar, Line as LineGraph} from 'react-chartjs-2'
 import s from './index.module.scss'
-import ShowChartIcon from '@mui/icons-material/ShowChart'
-import BarChartIcon from '@mui/icons-material/BarChart'
-import CloseIcon from '@mui/icons-material/Close'
 import {useEffect, useState} from 'react'
-import {Checkbox, ListItemText, MenuItem, Select, styled} from '@mui/material'
+import {Checkbox, ListItemText, MenuItem, Select} from '@mui/material'
 import Line from '../../components/Line'
-import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
-import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
-import {ru} from 'date-fns/locale/ru'
-import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 
-import {useNavigate} from 'react-router-dom'
-import {useSelector} from 'react-redux'
 import CheckBox from '../CheckBox'
 import MiniCalendar from '../MiniCalendar'
 

@@ -4,30 +4,16 @@ import {styled} from '@mui/material/styles'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
-import Search from '../../assets/search'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import { useEffect, useRef, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
-import {debounce} from 'lodash'
-import microSVG from '../../assets/Microphone1.svg'
-import Listen from '../../assets/Listen.svg'
 import Plus from '../../assets/ItemPlus.svg'
-import InActive from '../../assets/InActiveCheckboxIcon.svg'
 import CheckBox from '../CheckBox'
-import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
-import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
-import {DatePicker} from '@mui/x-date-pickers/DatePicker'
 import CreateIcon from '@mui/icons-material/Create'
 import './index.css'
-import {ru} from 'date-fns/locale/ru'
-import CalendarCloseButton from '../CalendarCloseButton'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 import ScheduleDate from '../ScheduleDate/index'
 import InputMask from 'react-input-mask'
 import ScheduleIcon from '@mui/icons-material/Schedule'
-import FileDownloadIcon from '@mui/icons-material/FileDownload'
-import TimeSelector from '../Timer/index'
-import uploadFile from '../../assets/UploadFile.svg'
 import TimePicker from '../Timer/index'
 import NowLevel from '../NowLevel'
 import Input from '../Input'
@@ -37,15 +23,12 @@ import {useDispatch, useSelector} from 'react-redux'
 
 import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
-import {Link, useNavigate} from 'react-router-dom'
-import {addDays, differenceInDays, differenceInCalendarDays} from 'date-fns'
+import { useNavigate} from 'react-router-dom'
+import {addDays, differenceInDays} from 'date-fns'
 import FileNLinks from '../FileNLinks/index'
 import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
-import {PickersCalendarHeader} from '@mui/x-date-pickers'
-import {sl} from 'date-fns/locale'
 import MiniCalendar from '../MiniCalendar'
-import TextArea from '../TextAreaInputBlock'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 
 interface IAddStudent {}
@@ -366,7 +349,7 @@ const AddStudent = ({}: IAddStudent) => {
 	socket.once('addStudent', (data) => {
 		console.log('\n---------ADD DATA---------\n', data)
 
-		let ok: boolean = data.ok
+		const ok: boolean = data.ok
 
 		if (ok === true) {
 			window.location.reload()
@@ -595,17 +578,17 @@ const AddStudent = ({}: IAddStudent) => {
 		const m = brightness - c
 		let r, g, b
 		if (h >= 0 && h < 1) {
-			;[r, g, b] = [c, x, 0]
+			[r, g, b] = [c, x, 0]
 		} else if (h >= 1 && h < 2) {
-			;[r, g, b] = [x, c, 0]
+			[r, g, b] = [x, c, 0]
 		} else if (h >= 2 && h < 3) {
-			;[r, g, b] = [0, c, x]
+			[r, g, b] = [0, c, x]
 		} else if (h >= 3 && h < 4) {
-			;[r, g, b] = [0, x, c]
+			[r, g, b] = [0, x, c]
 		} else if (h >= 4 && h < 5) {
-			;[r, g, b] = [x, 0, c]
+			[r, g, b] = [x, 0, c]
 		} else {
-			;[r, g, b] = [c, 0, x]
+			[r, g, b] = [c, 0, x]
 		}
 
 		// Convert RGB to hexadecimal color code
@@ -636,7 +619,7 @@ const AddStudent = ({}: IAddStudent) => {
 			})
 
 			// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
-			let hls = updatedHistoryLesson.sort((a, b) => {
+			const hls = updatedHistoryLesson.sort((a, b) => {
 				const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
 				const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
 				return dateA - dateB
@@ -755,10 +738,10 @@ const AddStudent = ({}: IAddStudent) => {
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
-		let historyLessons_ = []
+		const historyLessons_ = []
 
 		for (let i = 0; i < items.length; i++) {
-			let differenceDays = differenceInDays(
+			const differenceDays = differenceInDays(
 				items[i].endLesson,
 				items[i].startLesson,
 			)
@@ -777,7 +760,7 @@ const AddStudent = ({}: IAddStudent) => {
 					scheduleForDay.endTime.minute === 0
 
 				if (!cond) {
-					let hl = {
+					const hl = {
 						date: date,
 						itemName: items[i].itemName,
 						isDone: date <= new Date(Date.now()) ? true : false,
@@ -793,7 +776,7 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 		}
 
-		let hlTemp = historyLessons_
+		const hlTemp = historyLessons_
 		// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
 		hlTemp.sort((a, b) => {
 			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
@@ -801,14 +784,14 @@ const AddStudent = ({}: IAddStudent) => {
 			return dateA - dateB
 		})
 
-		let hlsNow = hlTemp.sort((a, b) => {
+		const hlsNow = hlTemp.sort((a, b) => {
 			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
 			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
 			return dateA - dateB
 		})[hlTemp.length - 1]
 
 		//delete hlsNow from hls
-		let hls = hlTemp.filter((item) => item.date !== hlsNow.date)
+		const hls = hlTemp.filter((item) => item.date !== hlsNow.date)
 
 		//remake hls with hlsNow at start
 		hls.unshift(hlsNow)

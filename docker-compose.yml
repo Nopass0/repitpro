@@ -1,85 +1,76 @@
 version: "3.8"
 
 services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  redis:
+    image: redis:alpine
+    networks:
+      - backend
+    ports:
+      - "6379:6379"
+
   backend:
     build:
       context: ./server
       dockerfile: Dockerfile
-    ports:
-      - "3001:3000"
-    volumes:
-      - ./server:/app
-      - ./docker:/docker
-      - status:/out
-    env_file:
-      - .env
+      args:
+        DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DOCKER_POSTGRES_HOST}:${DOCKER_INTERNAL_PORT}/${POSTGRES_DB}?schema=public
-      - SHADOW_DB_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DOCKER_POSTGRES_HOST}:${DOCKER_INTERNAL_PORT}/${SHADOW_DB}?schema=public
-    entrypoint: /docker/db-init.sh
-
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
     depends_on:
       - postgres
-    links:
-      - postgres
+      - redis
     networks:
-      new:
-        aliases:
-          - database
-    restart: always
-    command: "sh -c 'until [[ -f /in/db-init-done && -d /target/node_modules ]]; do sleep 1; done; yarn migrate; yarn prisma db seed'"
+      - backend
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "
+      bunx prisma db push &&
+      bun run --watch src/server.ts
+      "
 
   frontend:
     build:
       context: ./client
       dockerfile: Dockerfile
-    ports:
-      - "80:5173"
-    volumes:
-      - ./client:/app
-    depends_on:
-      - backend
-
-  # nginx:
-  #   image: nginx:1.21.3
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d
-  #     - ./client/build:/usr/share/nginx/html
-  #   depends_on:
-  #     - backend
-
-  postgres:
-    image: postgres:14.3-alpine
-    restart: always
-    ports:
-      - "5434:5432"
-    # entrypoint: db_create.sh
-    env_file:
-      - .env
-    healthcheck:
-      test: ["CMD", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 4G
-    container_name: postgres
+    environment:
+      SERVER_NAME: ${SERVER_NAME}
+      CHOKIDAR_USEPOLLING: true
     networks:
-      new:
-        aliases:
-          - database
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    command: >
+      sh -c "
+      bun run dev:server
+      "
 
-volumes:
-  pgdata:
-  status:
+  fileserver:
+    image: nginx:alpine
+    volumes:
+      - ./files:/usr/share/nginx/html
+    networks:
+      - backend
+    ports:
+      - "8080:80"
 
 networks:
-  new:
+  backend:
+  frontend:
+
+volumes:
+  postgres-data:

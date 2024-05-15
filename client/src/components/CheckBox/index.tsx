@@ -1,8 +1,6 @@
 import React from 'react'
-import s from './index.module.scss'
 import * as mui from '@mui/material'
 import {styled} from '@mui/material/styles'
-import InActive from '../../assets/InActiveCheckboxIcon.svg'
 
 interface ILine {
 	size: string

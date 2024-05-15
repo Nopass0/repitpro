@@ -1,6 +1,6 @@
 import {ICell} from '../types'
 
-let Cells: ICell[] = [
+const Cells: ICell[] = [
 	{
 		workCount: 2,
 		id: 1,

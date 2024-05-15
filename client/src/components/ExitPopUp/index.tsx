@@ -1,21 +1,4 @@
 import s from './index.module.scss'
-import Line from '../Line'
-import DataSlidePicker from '../DataSlidePicker'
-import CloseIcon from '@mui/icons-material/Close'
-import DayCalendarLine from '../DayCalendarLine/index'
-import GroupOnline from '../../assets/1.svg'
-import Online from '../../assets/2.svg'
-import HomeStudent from '../../assets/3.svg'
-import Group from '../../assets/4.svg'
-import Home from '../../assets/5.svg'
-import Client from '../../assets/6.svg'
-import Plus from '../../assets/ItemPlus.svg'
-import RecordNListen from '../RecordNListen'
-import {MenuItem, Select} from '@mui/material'
-import uploadFile from '../../assets/UploadFile.svg'
-import NowLevel from '../NowLevel'
-import CheckBox from '../CheckBox'
-import Arrow, {ArrowType} from '../../assets/arrow'
 interface IExitPopUp {
 	title?: string
 	yes?: () => void

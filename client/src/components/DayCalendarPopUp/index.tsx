@@ -1,19 +1,12 @@
 import s from './index.module.scss'
 import Line from '../Line'
-import DataSlidePicker from '../DataSlidePicker'
 import CloseIcon from '@mui/icons-material/Close'
 import DayCalendarLine from '../DayCalendarLine/index'
-import GroupOnline from '../../assets/1.svg'
 import * as mui from '@mui/base'
 
-import Online from '../../assets/2.svg'
-import HomeStudent from '../../assets/3.svg'
-import Group from '../../assets/4.svg'
-import Home from '../../assets/5.svg'
-import Client from '../../assets/6.svg'
 import Plus from '../../assets/ItemPlus.svg'
 import {useDispatch, useSelector} from 'react-redux'
-import {useEffect, useState} from 'react'
+import {useEffect} from 'react'
 import socket from '../../socket'
 import React from 'react'
 import {debounce} from 'lodash'
@@ -51,7 +44,7 @@ const DayCalendarPopUp = ({
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const dispath = useDispatch()
 	//for date mode
-	let months = [
+	const months = [
 		'Январь',
 		'Февраль',
 		'Март',

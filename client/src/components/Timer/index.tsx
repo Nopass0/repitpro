@@ -1,6 +1,5 @@
 import React, {useState} from 'react'
 import s from './index.module.scss'
-import * as mui from '@mui/material'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import CloseIcon from '@mui/icons-material/Close'
 interface TimePickerProps {

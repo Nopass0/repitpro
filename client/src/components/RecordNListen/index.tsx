@@ -3,9 +3,7 @@ import s from './index.module.scss'
 import microSVG from '../../assets/Microphone1.svg'
 import Listen from '../../assets/Listen.svg'
 import {Option, Select, SelectOption} from '@mui/base'
-import ExpandLess from '@mui/icons-material/ExpandLess'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import {ExpandMore} from '@mui/icons-material'
 import Line from '../Line'
 
 interface IRecordNListen {

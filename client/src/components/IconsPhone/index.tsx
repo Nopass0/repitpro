@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import s from './index.module.scss'
 
 import phoneIcon from '../../assets/PhoneSVG.svg'

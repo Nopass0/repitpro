@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {ICell, ECurrentDayPopUp, ELeftMenuPage} from '../../types'
 import s from './index.module.scss'
-import Arrow from '../../assets/arrow'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
 import GroupOnline from '../../assets/1.svg'
@@ -16,10 +15,9 @@ import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
 import DayClientPopUp from '../DayClientPopUp/index'
 import {format} from 'date-fns'
-import {log} from 'console'
 
 const daysInMonth = (date: Date) => {
-	let res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
+	const res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
 	console.log('Date', res)
 	console.log('Days in month', res)
 	return res
@@ -54,11 +52,11 @@ const months = [
 
 export const Calendar = ({className, cells}: ICalendar) => {
 	const [currentCells, setCurrentCells] = useState<ICell[]>()
-	let currentMonth = useSelector((state: any) => state.currentMonth)
-	let cacheMonth = currentMonth
+	const currentMonth = useSelector((state: any) => state.currentMonth)
+	const cacheMonth = currentMonth
 	const currentYear = useSelector((state: any) => state.currentYear)
 
-	let token = useSelector((state: any) => state.user.token)
+	const token = useSelector((state: any) => state.user.token)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const details = useSelector((state: any) => state.details)
 	const currentScheduleDayClientId = useSelector(
@@ -77,7 +75,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	let currentPartOfMonth = 1 // 0 - previous month, 1 - current month, 2 - next month
 	const [pagePopup, setPagePopup] = useState<PagePopup | null>(null)
-	let sumParamsOfWeeks = [
+	const sumParamsOfWeeks = [
 		{
 			lessonsCount: 0,
 			lessonsPrice: 0,
@@ -238,7 +236,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										currentPartOfMonth = 0
 
 										//get previous month cells
-										let prevMonthCell = currentCells?.find(
+										const prevMonthCell = currentCells?.find(
 											(item) => item.month == currentMonth,
 										)
 
@@ -266,7 +264,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 									) {
 										currentPartOfMonth = 1
 									}
-									let cell = currentCells?.find(
+									const cell = currentCells?.find(
 										(item) =>
 											item.day == day &&
 											item.month ==
@@ -280,7 +278,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 									)
 
 									//get current day of week
-									let dayOfWeek = new Date(
+									const dayOfWeek = new Date(
 										currentYear,
 										currentPartOfMonth == 1
 											? currentMonth + 1

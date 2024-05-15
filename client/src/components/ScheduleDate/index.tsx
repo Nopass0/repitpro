@@ -1,5 +1,4 @@
 import React from 'react'
-import s from './index.module.scss'
 
 interface ILine {
 	className?: string

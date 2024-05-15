@@ -676,6 +676,7 @@ export async function updateGroup(data) {
             typeLesson: Number(newItem.typeLesson) || 1,
             placeLesson: newItem.placeLesson || "",
             timeLesson: newItem.timeLesson || "",
+            costOneLesson: newItem.costOneLesson || "",
             valueMuiSelectArchive: newItem.valueMuiSelectArchive || 1,
             startLesson: newItem.startLesson
               ? new Date(newItem.startLesson)
@@ -728,6 +729,9 @@ export async function updateGroup(data) {
             phoneNumber: newStudent.phoneNumber,
             email: newStudent.email,
             address: newStudent.address || "",
+            storyLesson: newStudent.storyLesson || "",
+            costOneLesson: newStudent.costOneLesson || "",
+            targetLessonStudent: newStudent.targetLessonStudent || "",
             linkStudent: newStudent.linkStudent || "",
             costStudent: newStudent.costStudent || "",
             commentStudent: newStudent.commentStudent || "",

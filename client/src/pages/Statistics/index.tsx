@@ -6,26 +6,19 @@ import {
 	LineElement,
 	CategoryScale,
 	LinearScale,
-	PointElement,
-	scales,
-	BarElement,
+	PointElement, BarElement
 } from 'chart.js'
-import {Bar, Line as LineGraph} from 'react-chartjs-2'
 import s from './index.module.scss'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import CloseIcon from '@mui/icons-material/Close'
-import {useEffect, useState} from 'react'
-import {Checkbox, ListItemText, MenuItem, Select, styled} from '@mui/material'
+import { useEffect, useState } from 'react'
+import { MenuItem, Select, styled } from '@mui/material'
 import Line from '../../components/Line'
-import {DatePicker, LocalizationProvider} from '@mui/x-date-pickers'
-import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs'
-import {ru} from 'date-fns/locale/ru'
-import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFnsV3'
 
 import CheckBox from '../../components/CheckBox'
-import {useNavigate} from 'react-router-dom'
-import {useSelector} from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import socket from '../../socket'
 import GraphicBlock from '../../components/GraphicBlock/index'
 import MiniCalendar from '../../components/MiniCalendar'
@@ -45,7 +38,7 @@ ChartJS.register(
 interface IStatistics {}
 
 const getLabels = () => {
-	let labels = []
+	const labels = []
 	for (let i = 0; i < 200; i++) {
 		labels.push(i)
 	}
@@ -53,7 +46,7 @@ const getLabels = () => {
 }
 
 const getDatasets = () => {
-	let datasets = []
+	const datasets = []
 	for (let i = 0; i < 200; i++) {
 		//сделай плавный график волнистый (каждая точка должна отличаться от предыдущей максимальной разницей в 10)
 		let a = Math.abs(Math.random() * Math.abs(Math.cos(i)))
@@ -137,7 +130,7 @@ const optionsBar = {
 }
 const labels = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль']
 
-let data = {
+const data = {
 	labels: labels,
 	datasets: [
 		{

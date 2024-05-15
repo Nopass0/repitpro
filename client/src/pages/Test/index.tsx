@@ -1,14 +1,3 @@
-import DayCalendarPopUp from '../../components/DayCalendarPopUp'
-import DayStudentPopUp from '../../components/DayStudentPopUp/index'
-import GroupOnline from '../../assets/1.svg'
-import Online from '../../assets/2.svg'
-import HomeStudent from '../../assets/3.svg'
-import Group from '../../assets/4.svg'
-import Home from '../../assets/5.svg'
-import Client from '../../assets/6.svg'
-import DayCalendarLine from '../../components/DayCalendarLine'
-import DayCalendarLineClient from '../../components/DayCalendarLineClient/index'
-import DayClientPopUp from '../../components/DayClientPopUp/index'
 import MiniCalendar from '../../components/MiniCalendar/index';
 const Test = () => {
 	return (

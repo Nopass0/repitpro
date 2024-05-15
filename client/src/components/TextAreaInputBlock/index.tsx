@@ -1,6 +1,5 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, { useRef, useState} from 'react'
 import s from './index.module.scss'
-import {debounce} from 'lodash'
 
 interface ITextArea {
 	className?: string

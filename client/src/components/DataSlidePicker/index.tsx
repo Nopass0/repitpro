@@ -29,7 +29,7 @@ const DataSlidePicker = ({
 	const [selectOpen, setSelectOpen] = React.useState<false>(false)
 
 	//for date mode
-	let months = [
+	const months = [
 		'Январь',
 		'Февраль',
 		'Март',

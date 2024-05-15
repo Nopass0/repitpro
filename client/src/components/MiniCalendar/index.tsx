@@ -1,7 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react'
 import ReactDOM from 'react-dom'
 import s from './index.module.scss'
-import Ardiv, {ArdivType} from '../../assets/ardiv'
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
@@ -24,13 +23,13 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	const [sDate, setSDate] = useState('')
 	const [eDate, setEDate] = useState('')
 
-	var dateInputMask = function dateInputMask(elm) {
+	const dateInputMask = function dateInputMask(elm) {
 		elm.addEventListener('keypress', function (e) {
 			if (e.keyCode < 47 || e.keyCode > 57) {
 				e.preventDefault()
 			}
 
-			var len = elm.value.length
+			const len = elm.value.length
 
 			// If we're at a particular place, let the user type the slash
 			// i.e., 12/12/1212
@@ -156,7 +155,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 			const calendarHeight = calendarRef.current.getBoundingClientRect().height
 			let top = inputRect.bottom
 			let left = inputRect.left
-			let width = inputRect.width
+			const width = inputRect.width
 
 			if (top + calendarHeight > windowHeight) {
 				top = Math.max(0, inputRect.top - calendarHeight)
@@ -213,7 +212,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 								currentMonth,
 								isSameDate,
 							}) => {
-								let props = {}
+								const props = {}
 
 								props.style = {
 									borderRadius: '18px',
