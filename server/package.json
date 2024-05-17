@@ -8,6 +8,9 @@
     "start:prod": "npm run build && node ./dist/src/server.js",
     "build": "npx tsc",
     "dev": "DATABASE_URL=postgres://postgres:root@localhost:5432/repitpro bun run --watch ./src/server.ts",
+    "db:push": "DATABASE_URL=postgres://postgres:root@localhost:5432/repitpro bunx prisma db push",
+    "db:generate": "DATABASE_URL=postgres://postgres:root@localhost:5432/repitpro bunx prisma generate",
+    "db:studio": "DATABASE_URL=postgres://postgres:root@localhost:5432/repitpro bunx prisma studio",
     "test": "jest",
     "docker:build": "docker build -t server .",
     "docker:run": "docker-compose up --build"

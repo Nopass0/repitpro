@@ -110,7 +110,7 @@ export const calendar = async (data) => {
     const userId = await token_.userId;
 
     if (!userId) {
-      throw new Error("Invalid token");
+      io.emit("calendar", { message: "Invalid token" });
     }
 
     // Определение начальной и конечной даты месяца
@@ -178,7 +178,7 @@ export const calendar = async (data) => {
       return a.date.getTime() - b.date.getTime();
     });
 
-    console.log(result);
+    // console.log(result);
 
     // Отправка данных через сокеты
     io.emit("getMonth", result);

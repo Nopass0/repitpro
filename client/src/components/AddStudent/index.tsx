@@ -4,7 +4,7 @@ import {styled} from '@mui/material/styles'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
-import { useEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import Plus from '../../assets/ItemPlus.svg'
 import CheckBox from '../CheckBox'
@@ -23,7 +23,7 @@ import {useDispatch, useSelector} from 'react-redux'
 
 import CloseIcon from '@mui/icons-material/Close'
 import ExitPopUp from '../ExitPopUp'
-import { useNavigate} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 import {addDays, differenceInDays} from 'date-fns'
 import FileNLinks from '../FileNLinks/index'
 import RecordNListen from '../RecordNListen/index'
@@ -171,6 +171,15 @@ const AddStudent = ({}: IAddStudent) => {
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const dispatch = useDispatch()
+
+	const sortHistoryByClosestDate = (history) => {
+		const today = new Date()
+		return history.sort((a, b) => {
+			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+			return dateA - dateB
+		})
+	}
 
 	//get week
 	const getVoidWeek = (): ITimeLine[] => {
@@ -407,10 +416,10 @@ const AddStudent = ({}: IAddStudent) => {
 											...timeline,
 											startTime: {hour: 0, minute: 0},
 											endTime: {hour: 0, minute: 0},
-									  }
+										}
 									: timeline,
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -430,15 +439,15 @@ const AddStudent = ({}: IAddStudent) => {
 											active: !timeline.active,
 											editingStart: !timeline.active,
 											editingEnd: false,
-									  }
+										}
 									: {
 											...timeline,
 											active: false,
 											editingStart: false,
 											editingEnd: false,
-									  },
+										},
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -468,10 +477,10 @@ const AddStudent = ({}: IAddStudent) => {
 												editingEnd: item.lessonDuration! > 0 ? false : true,
 												editingStart: false,
 												active: false, // Закрываем окно выбора начала занятий
-										  }
+											}
 										: {...timeline, active: false}, // Закрываем окно выбора начала занятий для других строк
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -490,10 +499,10 @@ const AddStudent = ({}: IAddStudent) => {
 												...timeline,
 												endTime: {hour: endHour, minute: endMinute},
 												editingEnd: false,
-										  }
+											}
 										: timeline,
 								),
-						  }
+							}
 						: item,
 				),
 			)
@@ -540,10 +549,10 @@ const AddStudent = ({}: IAddStudent) => {
 													? timelineToUpdate?.endTime.minute
 													: 0,
 											}, // Reset endTime when closing without saving
-									  }
+										}
 									: timeline,
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -578,17 +587,17 @@ const AddStudent = ({}: IAddStudent) => {
 		const m = brightness - c
 		let r, g, b
 		if (h >= 0 && h < 1) {
-			[r, g, b] = [c, x, 0]
+			;[r, g, b] = [c, x, 0]
 		} else if (h >= 1 && h < 2) {
-			[r, g, b] = [x, c, 0]
+			;[r, g, b] = [x, c, 0]
 		} else if (h >= 2 && h < 3) {
-			[r, g, b] = [0, c, x]
+			;[r, g, b] = [0, c, x]
 		} else if (h >= 3 && h < 4) {
-			[r, g, b] = [0, x, c]
+			;[r, g, b] = [0, x, c]
 		} else if (h >= 4 && h < 5) {
-			[r, g, b] = [x, 0, c]
+			;[r, g, b] = [x, 0, c]
 		} else {
-			[r, g, b] = [c, 0, x]
+			;[r, g, b] = [c, 0, x]
 		}
 
 		// Convert RGB to hexadecimal color code
@@ -663,7 +672,7 @@ const AddStudent = ({}: IAddStudent) => {
 										? {...timeline, endTime: {hour, minute}, editingEnd: false}
 										: timeline,
 								),
-						  }
+							}
 						: item,
 				),
 			)
@@ -1696,7 +1705,7 @@ const AddStudent = ({}: IAddStudent) => {
 																					transform: `translateY(${
 																						index * 40
 																					}px) translateX(-50%)`,
-																			  }
+																				}
 																			: {}),
 																	}}>
 																	{timeline.active && !timeline.editingEnd && (
@@ -1815,7 +1824,7 @@ const AddStudent = ({}: IAddStudent) => {
 						{errorList.length > 0 && (
 							<div className={s.ErrorList}>
 								{errorList.map((i) => (
-									<p key={i}>{i}</p>
+									<p key={i}>{JSON.stringify(i)}</p>
 								))}
 							</div>
 						)}

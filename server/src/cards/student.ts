@@ -53,22 +53,105 @@ export async function addStudent(data) {
       token,
     } = data;
 
-    // console.log(data, "Schedule", data.items[0].timeLinesArray[0].startTime);
-
     const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
+      where: { token },
     });
 
     if (!token_) {
       throw new Error("Invalid token");
     }
 
-    const userId = await token_.userId;
+    const userId = token_.userId;
 
     if (!userId) {
       throw new Error("Invalid token");
+    }
+
+    const conflicts = [];
+
+    for (const item of items) {
+      const startDate = new Date(item.startLesson);
+      const endDate = new Date(item.endLesson);
+      const daysToAdd = differenceInDays(endDate, startDate);
+      const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+        addDays(startDate, i)
+      );
+
+      for (const date of dateRange) {
+        const dayOfWeek = getDay(date);
+        const scheduleForDay = item.timeLinesArray[dayOfWeek];
+        const dayOfMonth = date.getDate();
+
+        const cacheKey = `${userId}-${dayOfMonth}-${
+          date.getMonth() + 1
+        }-${date.getFullYear()}`;
+        let existingSchedules = cache.get(cacheKey);
+
+        if (!existingSchedules) {
+          existingSchedules = await db.studentSchedule.findMany({
+            where: {
+              day: dayOfMonth.toString(),
+              month: (date.getMonth() + 1).toString(),
+              year: date.getFullYear().toString(),
+              userId,
+            },
+          });
+          cache.set(cacheKey, existingSchedules, 3600000); // 1 час TTL
+        }
+
+        const conflictingSchedules = existingSchedules.filter((schedule) => {
+          const scheduleStartTime =
+            schedule.timeLinesArray[dayOfWeek].startTime;
+          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+
+          const newStartTime = scheduleForDay.startTime;
+          const newEndTime = scheduleForDay.endTime;
+
+          return (
+            (newStartTime.hour < scheduleEndTime.hour ||
+              (newStartTime.hour === scheduleEndTime.hour &&
+                newStartTime.minute <= scheduleEndTime.minute)) &&
+            (newEndTime.hour > scheduleStartTime.hour ||
+              (newEndTime.hour === scheduleStartTime.hour &&
+                newEndTime.minute >= scheduleStartTime.minute))
+          );
+        });
+
+        if (conflictingSchedules.length > 0) {
+          const daysOfWeek = [
+            "Понедельник",
+            "Вторник",
+            "Среда",
+            "Четверг",
+            "Пятница",
+            "Суббота",
+            "Воскресенье",
+          ];
+          const dayName = daysOfWeek[dayOfWeek];
+          const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
+          const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
+
+          let conflict = {
+            day: dayName,
+            timeLines: conflictingSchedules.map((schedule) => {
+              const scheduleStartTime =
+                schedule.timeLinesArray[dayOfWeek].startTime;
+              const scheduleEndTime =
+                schedule.timeLinesArray[dayOfWeek].endTime;
+              return {
+                time: `${scheduleStartTime.hour}:${scheduleStartTime.minute}-${scheduleEndTime.hour}:${scheduleEndTime.minute}`,
+              };
+            }),
+          };
+
+          conflicts.push(conflict);
+        }
+      }
+    }
+
+    if (conflicts.length > 0) {
+      io.emit("addStudent", { error: conflicts, ok: false });
+      return;
     }
 
     const createdGroup = await db.group.create({
@@ -83,7 +166,7 @@ export async function addStudent(data) {
             todayProgramStudent: item.todayProgramStudent || "",
             targetLesson: item.targetLesson || "",
             programLesson: item.programLesson || "",
-            typeLesson: Number(item.typeLesson) || 1, // Преобразование в число
+            typeLesson: Number(item.typeLesson) || 1,
             placeLesson: item.placeLesson || "",
             timeLesson: item.timeLesson || "",
             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
@@ -92,8 +175,8 @@ export async function addStudent(data) {
             nowLevel: item.nowLevel || 0,
             costOneLesson: item.costOneLesson || "",
             lessonDuration: item.lessonDuration || null,
-            timeLinesArray: item.timeLinesArray || {}, // Example: [{ startTime: { hour: 10, minute: 0 }, endTime: { hour: 11, minute: 0 } }, ...]
-            userId: userId,
+            timeLinesArray: item.timeLinesArray || {},
+            userId,
           })),
         },
         students: {
@@ -114,7 +197,7 @@ export async function addStudent(data) {
               costOneLesson,
               targetLessonStudent: "",
               todayProgramStudent: "",
-              userId: userId,
+              userId,
             },
           ],
         },
@@ -131,107 +214,18 @@ export async function addStudent(data) {
     });
 
     for (const item of createdGroup.items) {
-      // Определяем диапазон дат
-      const startDate = item.startLesson;
-      const endDate = item.endLesson;
+      const startDate = new Date(item.startLesson);
+      const endDate = new Date(item.endLesson);
       const daysToAdd = differenceInDays(endDate, startDate);
-
-      // Создаем массив дат в заданном диапазоне
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
         addDays(startDate, i)
       );
 
-      // Для каждой даты проверяем наличие активных записей в расписании
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
         const dayOfMonth = date.getDate();
 
-        // Проверяем существующие записи в расписании для этого дня
-        const existingSchedules = await db.studentSchedule.findMany({
-          where: {
-            day: dayOfMonth.toString(),
-            month: (date.getMonth() + 1).toString(),
-            year: date.getFullYear().toString(),
-            userId: userId,
-          },
-        });
-
-        console.log(
-          "\n-------existing-schedules--------\n",
-          existingSchedules,
-          "\n-------\n"
-        );
-
-        const conflictingSchedules = existingSchedules.filter((schedule) => {
-          console.log(schedule, "schedule---");
-          const scheduleStartTime =
-            schedule.timeLinesArray[dayOfWeek].startTime;
-          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-
-          const newStartTime = scheduleForDay.startTime;
-          const newEndTime = scheduleForDay.endTime;
-
-          // Проверяем, если новое время пересекается с существующим расписанием
-          return (
-            (newStartTime.hour < scheduleEndTime.hour ||
-              (newStartTime.hour === scheduleEndTime.hour &&
-                newStartTime.minute <= scheduleEndTime.minute)) &&
-            (newEndTime.hour > scheduleStartTime.hour ||
-              (newEndTime.hour === scheduleStartTime.hour &&
-                newEndTime.minute >= scheduleStartTime.minute))
-          );
-        });
-
-        if (conflictingSchedules.length > 0) {
-          // Формируем сообщение об ошибке
-          const daysOfWeek = [
-            "Понедельник",
-            "Вторник",
-            "Среда",
-            "Четверг",
-            "Пятница",
-            "Суббота",
-            "Воскресенье",
-          ];
-          const dayName = daysOfWeek[dayOfWeek];
-          const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
-          const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
-
-          let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
-
-          // Собираем информацию о свободных промежутках времени
-          const freeTimeSlots = [];
-          for (const schedule of existingSchedules) {
-            const scheduleStartTime =
-              schedule.timeLinesArray[dayOfWeek].startTime;
-            const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-            freeTimeSlots.push(
-              `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
-            );
-          }
-
-          console.log("freeTimeSlots", freeTimeSlots);
-
-          if (freeTimeSlots.length > 0) {
-            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
-              ", "
-            )}`;
-          }
-
-          //delete created group and items and students
-          db.group.delete({ where: { id: createdGroup.id } });
-          db.item.deleteMany({ where: { groupId: createdGroup.id } });
-          db.student.deleteMany({
-            where: { id: createdGroup.students[0].id },
-          });
-
-          // Выводим сообщение об ошибке
-          io.emit("addStudent", { error: errorMessage, ok: false });
-          return;
-        }
-
-        // Если нет конфликтов, создаем запись в базе данных
         const cond =
           scheduleForDay.startTime.hour === 0 &&
           scheduleForDay.startTime.minute === 0 &&
@@ -239,18 +233,11 @@ export async function addStudent(data) {
           scheduleForDay.endTime.minute === 0;
 
         if (!cond) {
-          // Создаем запись в базе данных только для активных дней
-          console.log(
-            "Создаем запись в базе данных только для активных дней",
-            item.costOneLesson,
-            "group",
-            createdGroup
-          );
           await db.studentSchedule.create({
             data: {
               day: dayOfMonth.toString(),
               groupId: createdGroup.id,
-              workCount: 0, // Здесь укажите данные, которые нужно добавить в запись
+              workCount: 0,
               lessonsCount: 1,
               lessonsPrice: Number(item.costOneLesson),
               workPrice: 0,
@@ -261,8 +248,8 @@ export async function addStudent(data) {
               studentName: nameStudent,
               typeLesson: item.typeLesson,
               year: date.getFullYear().toString(),
-              itemId: item.id, // Пример подключения к созданному элементу, замените на нужный вам
-              userId: userId,
+              itemId: item.id,
+              userId,
             },
           });
         }
@@ -290,11 +277,9 @@ export async function addStudent(data) {
       );
     }
 
-    // console.log("audiosIds", audiosIds, "audios", audios);
+    filePaths = [...filePaths, ...audiosIds];
 
-    filePaths = Object.assign(filePaths, audiosIds);
-
-    const sFiles = await db.student.update({
+    await db.student.update({
       where: {
         id: createdGroup.students[0].id,
       },
@@ -302,16 +287,11 @@ export async function addStudent(data) {
         files: filePaths,
       },
     });
-    // console.log(
-    //   "\n-----------files--------------\n",
-    //   filePaths,
-    //   "\n",
-    //   files,
-    //   "\n----------------------------------"
-    // );
+
     io.emit("addStudent", { ok: true });
   } catch (error) {
     console.error("Error creating group:", error);
+    io.emit("addStudent", { error: error.message, ok: false });
   }
 }
 
@@ -587,17 +567,6 @@ export async function updateStudentSchedule(data: {
   });
 
   const userId = token_.userId;
-
-  // isChecked  Boolean?
-  // homeWork  String?
-  // classWork  String?
-  // address  String?
-  // homeFiles      String[]
-  // homeAudios     String[]
-  // classFiles      String[]
-  // classAudios     String[]
-  // homeStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
-  // classStudentsPoints  Json? // [studentId: '', points: 0 (0-5)]
 
   console.log("data", data);
 
@@ -1302,5 +1271,116 @@ export async function createStudentSchedule(data: any) {
     return studentSchedule.id;
   } catch (error) {
     console.error("Error deleting student:", error);
+  }
+}
+
+export async function deleteAudio(data: {
+  token: string;
+  id: string;
+  type: "student" | "client" | "group";
+}) {
+  try {
+    const { token, id, type } = data; // token is the user's token. id is the file's id
+
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    let updatedData;
+
+    switch (type) {
+      case "student":
+        const student = await db.student.findFirst({
+          where: { userId },
+        });
+
+        if (!student) {
+          throw new Error("Student not found");
+        }
+
+        updatedData = await db.student.update({
+          where: {
+            id: student.id,
+          },
+          data: {
+            files: {
+              set:
+                JSON.parse(JSON.stringify(student.files))?.filter(
+                  (fileId) => fileId !== id
+                ) || [],
+            },
+          },
+        });
+
+        console.log(updatedData);
+        break;
+      case "client":
+        const client = await db.client.findFirst({
+          where: { userId },
+        });
+
+        if (!client) {
+          throw new Error("Client not found");
+        }
+
+        updatedData = await db.client.update({
+          where: {
+            id: client.id,
+          },
+          data: {
+            files: {
+              set:
+                JSON.parse(JSON.stringify(client.files))?.filter(
+                  (fileId) => fileId !== id
+                ) || [],
+            },
+          },
+        });
+        break;
+      case "group":
+        const group = await db.group.findFirst({
+          where: { userId },
+        });
+
+        if (!group) {
+          throw new Error("Group not found");
+        }
+
+        updatedData = await db.group.update({
+          where: {
+            id: group.id,
+          },
+          data: {
+            files: {
+              set:
+                JSON.parse(JSON.stringify(client.files))?.filter(
+                  (fileId) => fileId !== id
+                ) || [],
+            },
+          },
+        });
+        break;
+      default:
+        throw new Error("Invalid type");
+    }
+
+    io.emit("deleteAudio", {
+      message: "Audio deleted successfully",
+      data: updatedData,
+    });
+  } catch (error) {
+    io.emit("deleteAudio", {
+      message: "Error deleting audio",
+      error: error.message,
+    });
+    console.error("Error deleting audio:", error);
   }
 }

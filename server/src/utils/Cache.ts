@@ -1,7 +1,8 @@
 import fs from "fs";
+import path from "path";
 
 type CacheData = {
-  [key: string]: any;
+  [key: string]: { value: any; expiresAt: number };
 };
 
 type StrongCacheData = {
@@ -9,20 +10,26 @@ type StrongCacheData = {
 };
 
 class Cache {
-  private cache: Map<string, any>;
+  private cache: Map<string, { value: any; expiresAt: number }>;
+  private cacheFilePath: string;
 
-  constructor() {
+  constructor(cacheFilePath: string) {
     this.cache = new Map();
+    this.cacheFilePath = cacheFilePath;
     this.loadCache();
   }
 
   private loadCache(): void {
     try {
-      const data = fs.readFileSync("CacheMap.json", "utf-8");
+      const data = fs.readFileSync(this.cacheFilePath, "utf-8");
       const parsedData: CacheData = JSON.parse(data);
+      const now = Date.now();
       for (const key in parsedData) {
         if (parsedData.hasOwnProperty(key)) {
-          this.cache.set(key, parsedData[key]);
+          const { value, expiresAt } = parsedData[key];
+          if (expiresAt > now) {
+            this.cache.set(key, { value, expiresAt });
+          }
         }
       }
     } catch (error) {
@@ -32,19 +39,30 @@ class Cache {
 
   saveCache(): void {
     const cacheData: CacheData = {};
-    this.cache.forEach((value, key) => {
-      cacheData[key] = value;
+    const now = Date.now();
+    this.cache.forEach((entry, key) => {
+      if (entry.expiresAt > now) {
+        cacheData[key] = entry;
+      }
     });
-    fs.writeFileSync("./CacheMap.json", JSON.stringify(cacheData));
+    fs.writeFileSync(this.cacheFilePath, JSON.stringify(cacheData));
   }
 
-  set(key: string, value: any): void {
-    this.cache.set(key, value);
+  set(key: string, value: any, ttl: number): void {
+    const expiresAt = Date.now() + ttl;
+    this.cache.set(key, { value, expiresAt });
     this.saveCache();
   }
 
   get(key: string): any | undefined {
-    return this.cache.get(key);
+    const entry = this.cache.get(key);
+    if (entry && entry.expiresAt > Date.now()) {
+      return entry.value;
+    } else {
+      this.cache.delete(key);
+      this.saveCache();
+      return undefined;
+    }
   }
 
   delete(key: string): void {
@@ -111,8 +129,8 @@ class StrongCache {
   }
 }
 
-//instances
-const cache = new Cache();
+// Instances
+const cache = new Cache("CacheMap.json");
 const strongCache = new StrongCache("StrongCacheMap.json");
 
 export { cache, strongCache };

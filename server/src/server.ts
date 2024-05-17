@@ -8,6 +8,7 @@ import { calendar } from "./calendar/calendar";
 import {
   addStudent,
   createStudentSchedule,
+  deleteAudio,
   deleteStudent,
   getAllIdStudents,
   getGroupByStudentId,
@@ -103,6 +104,7 @@ io.on("connection", (socket) => {
   socket.on("updateStudentAndItems", (data) => updateStudentAndItems(data));
   socket.on("updateGroup", (data) => updateGroup(data));
   socket.on("uploadUsersFiles", (data) => uploadUsersFiles(data));
+  socket.on("deleteAudio", (data) => deleteAudio(data));
 
   socket.on("setUserData", (data) => setUserData(data));
 

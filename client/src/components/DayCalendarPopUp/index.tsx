@@ -154,7 +154,7 @@ const DayCalendarPopUp = ({
 							minute: parseInt(startMinute),
 						},
 						endTime: {hour: parseInt(endHour), minute: parseInt(endMinute)},
-				  }
+					}
 				: student,
 		)
 

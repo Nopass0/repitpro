@@ -441,10 +441,10 @@ const AddGroup = ({className}: IAddGroup) => {
 											...timeline,
 											startTime: {hour: 0, minute: 0},
 											endTime: {hour: 0, minute: 0},
-									  }
+										}
 									: timeline,
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -464,15 +464,15 @@ const AddGroup = ({className}: IAddGroup) => {
 											active: !timeline.active,
 											editingStart: !timeline.active,
 											editingEnd: false,
-									  }
+										}
 									: {
 											...timeline,
 											active: false,
 											editingStart: false,
 											editingEnd: false,
-									  },
+										},
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -500,10 +500,10 @@ const AddGroup = ({className}: IAddGroup) => {
 												editingEnd: item.lessonDuration! > 0 ? false : true,
 												editingStart: false,
 												active: false, // Закрываем окно выбора начала занятий
-										  }
+											}
 										: {...timeline, active: false}, // Закрываем окно выбора начала занятий для других строк
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -522,10 +522,10 @@ const AddGroup = ({className}: IAddGroup) => {
 												...timeline,
 												endTime: {hour: endHour, minute: endMinute},
 												editingEnd: false,
-										  }
+											}
 										: timeline,
 								),
-						  }
+							}
 						: item,
 				),
 			)
@@ -560,7 +560,7 @@ const AddGroup = ({className}: IAddGroup) => {
 										? {...timeline, endTime: {hour, minute}, editingEnd: false}
 										: timeline,
 								),
-						  }
+							}
 						: item,
 				),
 			)
@@ -626,17 +626,17 @@ const AddGroup = ({className}: IAddGroup) => {
 		const m = brightness - c
 		let r, g, b
 		if (h >= 0 && h < 1) {
-			[r, g, b] = [c, x, 0]
+			;[r, g, b] = [c, x, 0]
 		} else if (h >= 1 && h < 2) {
-			[r, g, b] = [x, c, 0]
+			;[r, g, b] = [x, c, 0]
 		} else if (h >= 2 && h < 3) {
-			[r, g, b] = [0, c, x]
+			;[r, g, b] = [0, c, x]
 		} else if (h >= 3 && h < 4) {
-			[r, g, b] = [0, x, c]
+			;[r, g, b] = [0, x, c]
 		} else if (h >= 4 && h < 5) {
-			[r, g, b] = [x, 0, c]
+			;[r, g, b] = [x, 0, c]
 		} else {
-			[r, g, b] = [c, 0, x]
+			;[r, g, b] = [c, 0, x]
 		}
 
 		// Convert RGB to hexadecimal color code
@@ -750,10 +750,10 @@ const AddGroup = ({className}: IAddGroup) => {
 													? timelineToUpdate?.endTime.minute
 													: 0,
 											}, // Reset endTime when closing without saving
-									  }
+										}
 									: timeline,
 							),
-					  }
+						}
 					: item,
 			),
 		)
@@ -1491,7 +1491,7 @@ const AddGroup = ({className}: IAddGroup) => {
 																					transform: `translateY(${
 																						index * 40
 																					}px) translateX(-50%)`,
-																			  }
+																				}
 																			: {}),
 																	}}>
 																	{timeline.active && !timeline.editingEnd && (

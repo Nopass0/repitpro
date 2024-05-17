@@ -6,17 +6,21 @@ import uploadFile from '../../assets/UploadFile.svg'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import socket from '../../socket'
+import {useSelector} from 'react-redux'
 
 interface IFileNLinks {
 	className?: string
 	alreadyUploaded?: {file: any; name: string; size: number; type: string}[]
 	callback?: (file: any, name: string, size: number, type: string) => void
+	typeCard?: string
 }
 
 const FileNLinks: React.FC<IFileNLinks> = ({
 	className,
 	alreadyUploaded,
 	callback,
+	typeCard = 'student',
 }: IFileNLinks) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const [files, setFiles] = useState<any>([])
@@ -28,11 +32,22 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	const [pasteLinkModalOpen, setPasteLinkModalOpen] = useState<boolean>(false)
 	const [linkValue, setLinkValue] = useState<string>('')
 
+	const user = useSelector((state: any) => state.user)
+	const token = user.token
+
 	const modalRef = useRef(null)
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	const handleClick = () => {
 		setOpen(!open)
+	}
+
+	const sendDelete = (id: string) => {
+		socket.emit('deleteAudio', {
+			token,
+			id,
+			type: typeCard,
+		})
 	}
 
 	useEffect(() => {
@@ -160,11 +175,12 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 												: file.name}
 										</p>
 										<button
-											onClick={() =>
+											onClick={() => {
 												setFiles((prevFiles) =>
 													prevFiles.filter((_, i) => i !== index),
 												)
-											}>
+												sendDelete(file.id)
+											}}>
 											<DeleteOutlineIcon />
 										</button>
 									</div>
