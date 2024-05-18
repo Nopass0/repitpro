@@ -21,7 +21,7 @@ import {useEffect, useState} from 'react'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-interface IDayStudentPopUp {
+interface IDayGroupPopUp {
 	icon?: any
 	name?: string
 	address?: string
@@ -37,7 +37,7 @@ enum EPagePopUp {
 	None,
 }
 
-const DayStudentPopUp = ({
+const DayGroupPopUp = ({
 	icon,
 	name,
 	address,
@@ -46,7 +46,7 @@ const DayStudentPopUp = ({
 	style,
 	onExit,
 	groupId,
-}: IDayStudentPopUp) => {
+}: IDayGroupPopUp) => {
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
 	)
@@ -400,11 +400,44 @@ const DayStudentPopUp = ({
 						</div>
 						<h1>Выполнение домашней работы</h1>
 						
-							<NowLevel
-								className={s.NowLevel}
-								value={homeStudentsPoints}
-								onChange={(e) => setHomeStudentsPoints(e)}
-							/>
+								<div className={s.HomeWorkGroups}>
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+									<div className={s.HomeWorkStud}>
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={homeStudentsPoints}
+											onChange={(e) => setHomeStudentsPoints(e)}
+										/>
+									</div>
+									<Line width="371px" className={s.Line} />
+								</div>
 						
 					</div>
 					<div className={s.Devider}></div>
@@ -487,15 +520,61 @@ const DayStudentPopUp = ({
 						</div>
 						<h1>Работа на занятии</h1>
 						
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-								<div className={s.PrePay}>
-									<p>{!hiddenNum && <>0</>} ₽</p>
-									<CheckBox size="16px" />
+								<div className={s.WorkClassGroup}>
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
+									<div className={s.WorkClassStud}>
+										<CheckBox borderRadius={10} size="16px" />
+										<p>Петров</p>
+										<NowLevel
+											className={s.NowLevel}
+											value={classroomStudentsPoints}
+											onChange={(e) => setClassroomStudentsPoints(e)}
+										/>
+
+										<CheckBox className={s.CheckboxComment} size="16px" />
+										<p>Предоплата</p>
+									</div>
+									<Line width="100%" className={s.Line} />
 								</div>
+								<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
 							
 					</div>
 				</div>
@@ -521,4 +600,4 @@ const DayStudentPopUp = ({
 	)
 }
 
-export default DayStudentPopUp
+export default DayGroupPopUp

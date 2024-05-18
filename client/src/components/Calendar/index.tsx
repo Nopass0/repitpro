@@ -15,6 +15,7 @@ import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
 import DayClientPopUp from '../DayClientPopUp/index'
 import {format} from 'date-fns'
+import DayGroupPopUp from '../DayGroupPopUp'
 
 const daysInMonth = (date: Date) => {
 	const res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -759,10 +760,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 				currentPopUpType === ECurrentDayPopUp.Group && (
 					<div
 						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
-						<DayStudentPopUp
+						<DayGroupPopUp
 							style={{
 								position: 'relative',
-								top: '150px',
+								top: '50px',
 								margin: 'auto',
 							}}
 							groupId={currentScheduleDay}
@@ -775,7 +776,6 @@ export const Calendar = ({className, cells}: ICalendar) => {
 									firstLetter.toLocaleUpperCase(),
 								)} ${calendarNowPopupYear}`}
 							// time="Пн 10:00 - 12:00"
-							isGroup
 							onExit={() =>
 								dispatch({type: 'SET_CURRENT_OPENED_SCHEDULE_DAY', payload: ''})
 							}

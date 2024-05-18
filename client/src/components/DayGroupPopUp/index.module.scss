@@ -1,0 +1,378 @@
+button,
+input {
+	cursor: pointer;
+	border: none;
+	background: none;
+	outline: none;
+}
+
+.wrapper {
+	height: fit-content;
+
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	border-radius: 20px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+	background-color: #fff;
+	padding: 20px 20px 0 20px;
+
+	.InfoBlock {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		.Header {
+			width: 100%;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-start;
+
+			margin-bottom: 20px;
+
+			.MainHeader {
+				width: 100%;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+
+				padding: 10px 20px;
+				border: 1px solid #25991c;
+				border-radius: 8px;
+				background-color: #f9f9fd;
+
+				.IconHeader {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+
+					img {
+						margin-right: 8px;
+					}
+
+					p {
+						word-break: break-all;
+						max-width: 120px;
+					}
+				}
+				.AddressHeader {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+
+					p:first-child {
+						font-weight: 700;
+						font-size: 16px;
+						color: rgb(0, 0, 0, 0.6);
+					}
+				}
+
+				.Devider {
+					width: 1px;
+					height: 64px;
+					background-color: rgb(0, 0, 0, 0.2);
+				}
+			}
+		}
+
+		.MainBlock {
+			display: flex;
+			flex-direction: row;
+
+			h1 {
+				font-size: 16px;
+				font-weight: 700;
+				color: rgb(0, 0, 0, 0.6);
+				margin-bottom: 20px;
+			}
+
+			.TextArea {
+				min-height: 80px;
+				border-radius: 8px;
+				border-color: #bababa;
+				resize: none;
+				outline: none;
+				margin-bottom: 20px;
+				font-size: 16px;
+				padding: 13px 0 0 13px;
+				&::placeholder {
+					color: rgb(0, 0, 0, 0.6);
+				}
+			}
+
+			.MediaBlock {
+				display: flex;
+				flex-direction: row;
+				align-items: flex-start;
+
+				.InputFile {
+					display: none;
+				}
+
+				.LabelFile {
+					cursor: pointer;
+
+					border: 1px solid #25991c;
+					border-radius: 8px;
+					height: 44px;
+					margin-left: 5px;
+				}
+
+				.Select {
+					.ListWrapper {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+					}
+				}
+			}
+
+			.HomeWorkWrapper {
+				margin-right: 30px;
+				.HomeWorkGroups {
+					display: flex;
+					flex-direction: column;
+					max-height: 150px;
+					overflow-y: auto;
+					overflow-x: hidden;
+					.HomeWorkStud {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+
+						p {
+							margin-right: 20px;
+						}
+					}
+					.Line {
+						background-color: #bababa;
+						min-height: 1px;
+						margin: 10px 0;
+					}
+				}
+			}
+
+			.WorkClassGroup {
+				display: flex;
+				flex-direction: column;
+				max-height: 150px;
+				overflow-y: auto;
+				overflow-x: hidden;
+				.WorkClassStud {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					p {
+						margin-right: 30px;
+					}
+					.CheckboxComment {
+						
+						margin: 0 0 0 40px;
+					}
+				}
+				.Line {
+					background-color: #bababa;
+					min-height: 1px;
+					margin: 7px 0;
+				}
+			}
+			.Total {
+				width: 100%;
+				display: flex;
+				justify-content: flex-end;
+				margin: 20px 0;
+			}
+
+			.Devider {
+				width: 1px;
+				min-height: 100%;
+				background-color: rgb(0, 0, 0, 0.2);
+				margin-right: 30px;
+			}
+
+			.LessonWrapper {
+				.PrePay {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+				}
+			}
+		}
+	}
+
+	.buttons {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+	}
+	.closeIcon {
+		// position: relative;
+		// left: 10px;
+		padding: 5px;
+		color: red;
+		cursor: pointer;
+
+		border-radius: 8px;
+		&:hover {
+			background-color: red;
+			color: #fff;
+			transition: all 0.2s;
+		}
+	}
+
+	.btn {
+		// position: absolute;
+	}
+	.btnRight,
+	.btnLeft {
+		background: #fff;
+		border: 1px solid #179417;
+		border-radius: 180px;
+		cursor: pointer;
+		padding: 8px 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+
+		top: 200px;
+		&:hover {
+			background: #eee;
+			transition: all 0.3s ease;
+		}
+	}
+
+	.btnLeft {
+		top: 166px;
+		right: 1166px;
+	}
+
+	.btnRight {
+		left: 40px;
+	}
+}
+
+.Option {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	background-color: #fff;
+	padding: 20px;
+	min-width: 100px;
+	border-radius: 6px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+	.FileWrapper {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+}
+
+@media screen and (min-width: 1024px) {
+	.wrapper {
+		width: 1158px;
+
+		.InfoBlock {
+			
+		margin-right: 10px;
+		}
+		.TextArea {
+			width: 98%;
+		}
+		.MainBlock {
+			width: 100%;
+		}
+		.HomeWorkWrapper {
+			width: 35%;
+		}
+		.LessonWrapper {
+			width: 65%;
+		}
+
+		.Total {
+		}
+	}
+}
+
+@media screen and (max-width: 1024px) and (min-width:860px) {
+	.wrapper {
+		.TextArea {
+			width: 100%;
+		}
+		.MediaBlock {
+			flex-wrap: wrap;
+			.RecordNListen {
+				min-width: 0px !important;
+				flex-wrap: wrap !important;
+			}
+		}
+
+		.HomeWorkWrapper {
+		}
+
+		.LessonWrapper {
+			// width: calc(clamp(13.125rem, 73.699vw - 18.105rem, 29.063rem));
+			width: calc(clamp(13.125rem, 89.595vw - 24.841rem, 32.5rem));
+			max-width: 65%;
+		}
+
+		.WorkClassGroup {
+			width: 100%;
+			overflow-x: scroll !important;
+
+		}
+		.NowLevel {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+		}
+	}
+}
+
+@media screen and (max-width: 860px) {
+
+	.wrapper {
+		top: 0 !important;
+		margin-top: 20px !important;
+		margin-bottom: 100px !important;
+		box-shadow: none;
+		border: 1px solid #bababa;
+	}
+	.AddressHeader {
+		display: none !important;
+	}
+	.Devider:first-child {
+		display: none !important;
+	}
+
+	.MainBlock {
+		flex-direction: column !important;
+	}
+
+	.HomeWorkWrapper{
+		width: 100%;
+		margin-right: 0 !important;
+		margin-bottom: 20px;
+		padding-bottom: 20px;
+		border-bottom: 1px solid #bababa;
+	}
+
+	.LessonWrapper {
+		margin-bottom: 20px;
+	}
+
+	.MediaBlock {
+		flex-wrap: wrap;
+		margin-bottom: 10px;
+	}
+
+	.TextArea {
+		width: 100%;
+	}
+	
+}
