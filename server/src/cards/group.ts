@@ -4,6 +4,7 @@ import db from "../db";
 import io from "../socket";
 import { addDays, differenceInDays } from "date-fns";
 import { upload } from "files/files";
+import { cache } from "utils/Cache";
 
 function getDay(date) {
   const dayIndex = date.getDay() - 1;
@@ -24,19 +25,105 @@ export async function addGroup(data) {
     } = data;
 
     const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
+      where: { token },
     });
 
     if (!token_) {
       throw new Error("Invalid token");
     }
 
-    const userId = await token_.userId;
+    const userId = token_.userId;
 
     if (!userId) {
       throw new Error("Invalid token");
+    }
+
+    const conflicts = [];
+
+    for (const item of items) {
+      const startDate = new Date(item.startLesson);
+      const endDate = new Date(item.endLesson);
+      const daysToAdd = differenceInDays(endDate, startDate);
+      const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+        addDays(startDate, i)
+      );
+
+      for (const date of dateRange) {
+        const dayOfWeek = getDay(date);
+        const scheduleForDay = item.timeLinesArray[dayOfWeek];
+        const dayOfMonth = date.getDate();
+
+        const cacheKey = `${userId}-${dayOfMonth}-${
+          date.getMonth() + 1
+        }-${date.getFullYear()}`;
+        let existingSchedules = cache.get(cacheKey);
+
+        if (!existingSchedules) {
+          existingSchedules = await db.studentSchedule.findMany({
+            where: {
+              day: dayOfMonth.toString(),
+              month: (date.getMonth() + 1).toString(),
+              year: date.getFullYear().toString(),
+              userId,
+            },
+          });
+          cache.set(cacheKey, existingSchedules, 3600000); // 1 час TTL
+        }
+
+        const conflictingSchedules = existingSchedules.filter((schedule) => {
+          const scheduleStartTime =
+            schedule.timeLinesArray[dayOfWeek].startTime;
+          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+
+          const newStartTime = scheduleForDay.startTime;
+          const newEndTime = scheduleForDay.endTime;
+
+          return (
+            (newStartTime.hour < scheduleEndTime.hour ||
+              (newStartTime.hour === scheduleEndTime.hour &&
+                newStartTime.minute <= scheduleEndTime.minute)) &&
+            (newEndTime.hour > scheduleStartTime.hour ||
+              (newEndTime.hour === scheduleStartTime.hour &&
+                newEndTime.minute >= scheduleStartTime.minute))
+          );
+        });
+
+        if (conflictingSchedules.length > 0) {
+          const daysOfWeek = [
+            "Воскресенье",
+            "Понедельник",
+            "Вторник",
+            "Среда",
+            "Четверг",
+            "Пятница",
+            "Суббота",
+          ];
+          const dayName = daysOfWeek[dayOfWeek];
+          const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
+          const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
+
+          let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
+
+          const freeTimeSlots = [];
+          for (const schedule of existingSchedules) {
+            const scheduleStartTime =
+              schedule.timeLinesArray[dayOfWeek].startTime;
+            const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+            freeTimeSlots.push(
+              `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
+            );
+          }
+
+          if (freeTimeSlots.length > 0) {
+            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
+              ", "
+            )}`;
+          }
+
+          io.emit("addGroup", { error: errorMessage, ok: false });
+          return;
+        }
+      }
     }
 
     const createdGroup = await db.group.create({
@@ -61,7 +148,7 @@ export async function addGroup(data) {
             nowLevel: item.nowLevel || 0,
             lessonDuration: Number(item.lessonDuration) || null,
             timeLinesArray: item.timeLinesArray || {},
-            userId: userId,
+            userId,
           })),
         },
         students: {
@@ -83,7 +170,7 @@ export async function addGroup(data) {
             costOneLesson: String(student.costOneLesson) || "",
             targetLessonStudent: student.targetLessonStudent || "",
             todayProgramStudent: student.todayProgramStudent || "",
-            userId: userId,
+            userId,
           })),
         },
       },
@@ -99,96 +186,17 @@ export async function addGroup(data) {
     });
 
     for (const item of createdGroup.items) {
-      // Определяем диапазон дат
-      const startDate = item.startLesson;
-      const endDate = item.endLesson;
+      const startDate = new Date(item.startLesson);
+      const endDate = new Date(item.endLesson);
       const daysToAdd = differenceInDays(endDate, startDate);
-
-      // Создаем массив дат в заданном диапазоне
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
         addDays(startDate, i)
       );
 
-      // Для каждой даты проверяем наличие активных записей в расписании
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
         const dayOfMonth = date.getDate();
-
-        // Проверяем существующие записи в расписании для этого дня
-        const existingSchedules = await db.studentSchedule.findMany({
-          where: {
-            day: dayOfMonth.toString(),
-            month: (date.getMonth() + 1).toString(),
-            year: date.getFullYear().toString(),
-            userId: userId,
-          },
-        });
-
-        const conflictingSchedules = existingSchedules.filter((schedule) => {
-          const scheduleStartTime =
-            schedule.timeLinesArray[dayOfWeek].startTime;
-          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-
-          const newStartTime = scheduleForDay.startTime;
-          const newEndTime = scheduleForDay.endTime;
-
-          // Проверяем, если новое время пересекается с существующим расписанием
-          return (
-            (newStartTime.hour < scheduleEndTime.hour ||
-              (newStartTime.hour === scheduleEndTime.hour &&
-                newStartTime.minute <= scheduleEndTime.minute)) &&
-            (newEndTime.hour > scheduleStartTime.hour ||
-              (newEndTime.hour === scheduleStartTime.hour &&
-                newEndTime.minute >= scheduleStartTime.minute))
-          );
-        });
-
-        if (conflictingSchedules.length > 0) {
-          // Формируем сообщение об ошибке
-          const daysOfWeek = [
-            "Воскресенье",
-            "Понедельник",
-            "Вторник",
-            "Среда",
-            "Четверг",
-            "Пятница",
-            "Суббота",
-          ];
-          const dayName = daysOfWeek[dayOfWeek];
-          const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
-          const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
-
-          let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
-
-          // Собираем информацию о свободных промежутках времени
-          const freeTimeSlots = [];
-          for (const schedule of existingSchedules) {
-            const scheduleStartTime =
-              schedule.timeLinesArray[dayOfWeek].startTime;
-            const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-            freeTimeSlots.push(
-              `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
-            );
-          }
-
-          if (freeTimeSlots.length > 0) {
-            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
-              ", "
-            )}`;
-          }
-
-          // Удаляем созданную группу и связанные записи
-          db.group.delete({ where: { id: createdGroup.id } });
-          db.item.deleteMany({ where: { groupId: createdGroup.id } });
-          db.student.deleteMany({
-            where: { id: { in: createdGroup.students.map((s) => s.id) } },
-          });
-
-          // Выводим сообщение об ошибке
-          io.emit("addGroup", { error: errorMessage, ok: false });
-          return;
-        }
 
         const cond =
           scheduleForDay.startTime.hour === 0 &&
@@ -196,34 +204,17 @@ export async function addGroup(data) {
           scheduleForDay.endTime.hour === 0 &&
           scheduleForDay.endTime.minute === 0;
 
-        //get lessonPrice
         const costOneLesson = await db.group.findUnique({
-          where: {
-            id: createdGroup.id,
-          },
+          where: { id: createdGroup.id },
           select: {
             students: {
-              where: {
-                userId: userId,
-              },
-              select: {
-                costOneLesson: true,
-              },
+              where: { userId },
+              select: { costOneLesson: true },
             },
           },
         });
 
-        //get day of month (number)
-        // const dayOfMonth = date.getDate();
-
         if (!cond) {
-          // Создаем запись в базе данных только для активных дней
-          console.log(
-            "Создаем запись в базе данных только для активных дней",
-            costOneLesson.students[0].costOneLesson,
-            "group",
-            createdGroup
-          );
           await db.studentSchedule.create({
             data: {
               day: dayOfMonth.toString(),
@@ -239,7 +230,7 @@ export async function addGroup(data) {
               typeLesson: item.typeLesson,
               year: date.getFullYear().toString(),
               itemId: item.id,
-              userId: userId,
+              userId,
             },
           });
         }
@@ -250,7 +241,7 @@ export async function addGroup(data) {
     let filesItemsIds = [];
 
     if (files.length > 0) {
-      filesIds = await upload(files, userId, "group/files", (ids: string[]) => {
+      filesIds = await upload(files, userId, "group/files", (ids) => {
         filesIds = ids;
       });
     }
@@ -260,7 +251,7 @@ export async function addGroup(data) {
         filesItems,
         userId,
         "group/filesItems",
-        (ids: string[]) => {
+        (ids) => {
           filesItemsIds = ids;
         }
       );
@@ -274,7 +265,7 @@ export async function addGroup(data) {
         audiosItems,
         userId,
         "group/audioItems",
-        (ids: string[]) => {
+        (ids) => {
           audiosItemsIds = ids;
         }
       );
@@ -285,28 +276,28 @@ export async function addGroup(data) {
         audiosStudents,
         userId,
         "group/audioStudents",
-        (ids: string[]) => {
+        (ids) => {
           audiosStudentsIds = ids;
         }
       );
     }
 
     await db.group.update({
-      where: {
-        id: createdGroup.id,
-      },
+      where: { id: createdGroup.id },
       data: {
-        files: Object.assign(
-          filesIds,
-          filesItemsIds,
-          audiosItemsIds,
-          audiosStudentsIds
-        ),
+        files: [
+          ...filesIds,
+          ...filesItemsIds,
+          ...audiosItemsIds,
+          ...audiosStudentsIds,
+        ],
       },
     });
+
     io.emit("addGroup", { ok: true });
   } catch (error) {
     console.error("Error creating group:", error);
+    io.emit("addGroup", { error: error.message, ok: false });
   }
 }
 
@@ -363,18 +354,33 @@ export async function getGroupList(token) {
 }
 
 export async function deleteGroup(data: any) {
-  const { token, groupId } = data;
-
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  const userId = token_.userId;
-
+  const { token, id } = data;
+  let groupId = id;
   try {
-    //get group students
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    if (!userId) {
+      throw new Error("Invalid token");
+    }
+
+    const group = await db.group.findUnique({
+      where: {
+        id: groupId,
+        userId,
+      },
+    });
+
+    // Получаем студентов группы
     const groupStudents = await db.student.findMany({
       where: {
         groupId: groupId,
@@ -384,30 +390,37 @@ export async function deleteGroup(data: any) {
       },
     });
 
-    //delete all StudentSchedule with this groupId
+    // Удаляем все расписания студентов, связанные с данной группой
     await db.studentSchedule.deleteMany({
       where: {
-        groupId: groupId,
-      },
-    });
-
-    //delete group items
-    await db.item.deleteMany({
-      where: {
-        groupId: groupId,
-      },
-    });
-
-    //delete group students
-    await db.student.deleteMany({
-      where: {
-        id: {
+        studentId: {
           in: groupStudents.map((student) => student.id),
         },
       },
     });
 
-    const group = await db.group.delete({
+    // Удаляем все записи в расписании, связанные с студентами группы
+    await db.studentSchedule.deleteMany({
+      where: {
+        groupId,
+      },
+    });
+    // Удаляем все элементы группы
+    await db.item.deleteMany({
+      where: {
+        groupId,
+      },
+    });
+
+    // Удаляем всех студентов группы
+    await db.student.deleteMany({
+      where: {
+        groupId,
+      },
+    });
+
+    // Удаляем группу
+    await db.group.delete({
       where: {
         id: groupId,
         userId,
@@ -421,8 +434,8 @@ export async function deleteGroup(data: any) {
 }
 
 export async function groupToArchive(data: any) {
-  const { token, groupId, isArchived } = data;
-
+  const { token, id, isArchived } = data;
+  let groupId = id;
   const token_ = await db.token.findFirst({
     where: {
       token,

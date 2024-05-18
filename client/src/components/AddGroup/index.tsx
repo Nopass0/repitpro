@@ -931,6 +931,23 @@ const AddGroup = ({className}: IAddGroup) => {
 		return DutyStudents[index]
 	}
 
+	const handleDelete = () => {
+		socket.emit('deleteGroup', {
+			token: token,
+			id: currentOpenedGroup,
+		})
+		window.location.reload()
+	}
+
+	const handleToArchive = () => {
+		socket.emit('groupToArchive', {
+			token: token,
+			id: currentOpenedGroup,
+			isArchived: true,
+		})
+		window.location.reload()
+	}
+
 	const handleStudentsHistoryLessons = (student: IStudent, index: number) => {
 		console.log(
 			studentsHistoryLessons[currentStudentIndex],
@@ -2098,10 +2115,10 @@ const AddGroup = ({className}: IAddGroup) => {
 							</button>
 						</div>
 						<div className={s.ArchiveNDelete}>
-							<button className={s.Archive}>
+							<button onClick={handleToArchive} className={s.Archive}>
 								<p>В архив</p>
 							</button>
-							<button className={s.Delete}>
+							<button onClick={handleDelete} className={s.Delete}>
 								<p>Удалить</p>
 							</button>
 						</div>

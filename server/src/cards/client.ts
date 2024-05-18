@@ -542,21 +542,62 @@ export async function clientToArhive(data: any) {
 export async function deleteClient(data: any) {
   const { token, id } = data;
 
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  const userId = token_.userId;
-
   try {
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    if (!userId) {
+      throw new Error("Invalid token");
+    }
+
+    // Получаем все работы, связанные с клиентом
+    const jobs = await db.job.findMany({
+      where: {
+        clientId: id,
+      },
+    });
+
+    // Удаляем все стадии, связанные с каждой работой
+    for (const job of jobs) {
+      await db.stage.deleteMany({
+        where: {
+          jobId: job.id,
+        },
+      });
+    }
+
+    // Удаляем все работы, связанные с клиентом
+    await db.job.deleteMany({
+      where: {
+        clientId: id,
+      },
+    });
+
+    // Удаляем все записи расписания, связанные с клиентом
+    await db.studentSchedule.deleteMany({
+      where: {
+        clientId: id,
+      },
+    });
+
+    // Удаляем клиента
     const client = await db.client.delete({
       where: {
         id,
         userId,
       },
     });
+
+    console.log("Client deleted:", client);
   } catch (error) {
     console.error("Error deleting client:", error);
   }

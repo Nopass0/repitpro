@@ -191,7 +191,7 @@ const AddClient = ({}: IAddClient) => {
 							stages: job.stages.map((stage, j) =>
 								j === stageIndex ? {...stage, [name]: value} : stage,
 							),
-					  }
+						}
 					: job,
 			),
 		)
@@ -244,7 +244,7 @@ const AddClient = ({}: IAddClient) => {
 										paymentDate: new Date(Date.now()),
 									},
 								],
-						  }
+							}
 						: job,
 				),
 			)
@@ -385,6 +385,23 @@ const AddClient = ({}: IAddClient) => {
 				setAudios(data.audios)
 			})
 		}
+	}
+
+	const handleDelete = () => {
+		socket.emit('deleteClient', {
+			token: token,
+			id: currentOpenedClient,
+		})
+		window.location.reload()
+	}
+
+	const handleToArchive = () => {
+		socket.emit('clientToArhive', {
+			token: token,
+			id: currentOpenedClient,
+			isArchived: true,
+		})
+		window.location.reload()
 	}
 
 	useEffect(() => {
@@ -890,7 +907,7 @@ const AddClient = ({}: IAddClient) => {
 																			? Math.round(
 																					(item.fisrtPaymentPrice / item.cost) *
 																						100,
-																			  )
+																				)
 																			: '0'}
 																		%
 																	</p>
@@ -980,7 +997,7 @@ const AddClient = ({}: IAddClient) => {
 																			? Math.round(
 																					(item.endPaymentPrice / item.cost) *
 																						100,
-																			  )
+																				)
 																			: '0'}
 																		%
 																	</p>
@@ -1054,7 +1071,7 @@ const AddClient = ({}: IAddClient) => {
 																			? Math.round(
 																					(item.fisrtPaymentPrice / item.cost) *
 																						100,
-																			  )
+																				)
 																			: '0'}
 																		%
 																	</p>
@@ -1145,7 +1162,7 @@ const AddClient = ({}: IAddClient) => {
 																			? Math.round(
 																					(item.endPaymentPrice / item.cost) *
 																						100,
-																			  )
+																				)
 																			: '0'}
 																		%
 																	</p>
@@ -1320,7 +1337,7 @@ const AddClient = ({}: IAddClient) => {
 																		(job.stages[0].fisrtPaymentPrice /
 																			job.stages[0].totalCost) *
 																			100,
-																  )
+																	)
 																: '0'}
 															%
 														</p>
@@ -1412,7 +1429,7 @@ const AddClient = ({}: IAddClient) => {
 																		(job.stages[0].endPaymentPrice /
 																			job.stages[0].totalCost) *
 																			100,
-																  )
+																	)
 																: '0'}
 															%
 														</p>
@@ -1487,7 +1504,7 @@ const AddClient = ({}: IAddClient) => {
 																		(job.stages[0].fisrtPaymentPrice /
 																			job.stages[0].totalCost) *
 																			100,
-																  )
+																	)
 																: '0'}
 															%
 														</p>
@@ -1574,7 +1591,7 @@ const AddClient = ({}: IAddClient) => {
 																		(job.stages[0].endPaymentPrice /
 																			job.stages[0].totalCost) *
 																			100,
-																  )
+																	)
 																: '0'}
 															%
 														</p>
@@ -1654,10 +1671,10 @@ const AddClient = ({}: IAddClient) => {
 							</button>
 						</div>
 						<div className={s.ArchiveNDelete}>
-							<button className={s.Archive}>
+							<button onClick={handleToArchive} className={s.Archive}>
 								<p>В архив</p>
 							</button>
-							<button className={s.Delete}>
+							<button onClick={handleDelete} className={s.Delete}>
 								<p>Удалить</p>
 							</button>
 						</div>

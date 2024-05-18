@@ -139,6 +139,7 @@ const AddStudent = ({}: IAddStudent) => {
 			token: token,
 			id: currentOpenedStudent,
 		})
+		window.location.reload()
 	}
 
 	const handleToArchive = () => {
