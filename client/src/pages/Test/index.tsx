@@ -1,4 +1,6 @@
 import MiniCalendar from '../../components/MiniCalendar/index';
+import DayGroupPopUp from '../../components/DayGroupPopUp/index';
+import DayStudentPopUp from '../../components/DayStudentPopUp/index';
 const Test = () => {
 	return (
 		<>
@@ -26,7 +28,9 @@ const Test = () => {
 				name="Петров"
 				totalPrice="100"
 			/> */}
-			<MiniCalendar />
+			{/* <MiniCalendar /> */}
+			<DayGroupPopUp/>
+			{/* <DayStudentPopUp/> */}
 		</>
 	)
 }

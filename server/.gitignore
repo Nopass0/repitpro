@@ -3,3 +3,7 @@ node_modules
 db.sqlite
 ../files
 files
+./CacheMap.json
+./StrongCacheMap.json
+CacheMap.json
+StrongCacheMap.json
