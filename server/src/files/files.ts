@@ -1,11 +1,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { randomBytes } from "crypto";
-import { strongCache } from "../utils/Cache";
 import * as crypto from "crypto";
 import { IUploadFiles } from "../types";
 import db from "../db";
-const mimetics = require("mimetics");
 
 function calculateBufferHash(buffer: Buffer): string {
   const hash = crypto.createHash("sha256");
@@ -28,31 +26,31 @@ export const upload = async (
 
     for (const item of data) {
       const { file, name, size, type } = item;
-      //calculate hash-sum
+      // Calculate hash-sum
       const hashSum = calculateBufferHash(file);
-      let mimeType: any;
+      let mimeType = type; // Use type as mime type
       let ext: string = "";
-      let last = item.name.split(".").length - 1;
+      const fileExtension = name.split(".").pop(); // Properly get the file extension
+
       console.log(
         "\n-----------------name----------------\n",
-        item.name,
+        name,
         "\n-----------ext----------\n",
-        item.name.split(".")[-1]
+        fileExtension
       );
-      if (item.name.split(".")[last] == "ogg") {
-        mimeType = "audio/ogg";
+
+      if (fileExtension === "ogg") {
         ext = "ogg";
-      } else if (item.name.split(".")[last] == "mkv") {
-        mimeType = "video/x-matroska";
+      } else if (fileExtension === "mkv") {
         ext = "mkv";
       } else {
-        mimeType = await mimetics(file); // returns "image/png"
-        ext = mimeType.ext; // returns "png"
+        ext = fileExtension ? fileExtension : "unknown"; // Default to "unknown" if no extension is found
       }
-      const fileName = `${randomBytes(6).toString("hex")}.${ext}`;
-      const filePath = join(FilesDir, name);
 
-      //check if file already exists in db (By path)
+      const fileName = `${randomBytes(6).toString("hex")}.${ext}`;
+      const filePath = join(FilesDir, fileName); // Use the new file name with the correct extension
+
+      // Check if file already exists in db (By path)
       const existingFile = await db.file.findFirst({
         where: { path: filePath },
       });
@@ -61,15 +59,16 @@ export const upload = async (
         ids.push(existingFile.id);
         continue;
       }
+
       // Write file to disk (replace with appropriate function)
-      await writeFileSync(filePath, file);
+      writeFileSync(filePath, file);
 
       const newFile = await db.file.create({
         data: {
           hashSum,
           name: fileName,
           size,
-          type,
+          type: mimeType,
           extraType: extraType || "",
           path: filePath,
           userId: userID,
@@ -100,12 +99,9 @@ export const getBufferByFilePath = async (filePath: string) => {
     return null;
   }
 
-  const filePathAbsolute = join(
-    `${__dirname.replace("src", "").replace("src", "").replace("\\files", "")}`,
-    file.path
-  );
+  const filePathAbsolute = join(__dirname, "..", "..", file.path);
 
-  const file_ = await readFileSync(filePathAbsolute);
+  const file_ = readFileSync(filePathAbsolute);
 
   console.log("File path", filePathAbsolute, file_);
 
