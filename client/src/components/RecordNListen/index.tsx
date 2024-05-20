@@ -5,6 +5,7 @@ import Listen from '../../assets/Listen.svg'
 import {Option, Select, SelectOption} from '@mui/base'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import Line from '../Line'
+import socket from '@/socket'
 
 interface IRecordNListen {
 	className?: string
@@ -145,7 +146,13 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 	const handleListenButtonClick = () => {
 		setShowAudioList(!showAudioList)
 	}
-
+	// const sendDelete = (id: string) => {
+	// 	socket.emit('deleteAudio', {
+	// 		token,
+	// 		id,
+	// 		type: typeCard,
+	// 	})
+	// }
 	useEffect(() => {
 		return () => {
 			if (mediaRecorder) {
