@@ -446,7 +446,10 @@ const MainPage = () => {
 														<p>{item.groupName}</p>
 														{item.isArchived && (
 															<>
-																<button className={s.Icons}>
+															{/* THIS onClick={() =>
+																					handleToArchive(item.id, index)
+																				} */}
+																<button  className={s.Icons}>
 																	<KeyboardReturnIcon />
 																</button>
 															</>
