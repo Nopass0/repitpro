@@ -9,12 +9,14 @@ interface CalendarProps {
 	value?: string
 	onChange: (value: Date) => void
 	calendarId?: string
+	disabled?: boolean
 }
 
 const MiniCalendar: React.FC<CalendarProps> = ({
 	value = formatDate(new Date(Date.now())),
 	onChange,
 	calendarId,
+	disabled,
 }) => {
 	const [date, setDate] = useState()
 	const inputStart = useRef()
@@ -176,6 +178,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		<div className={s.container}>
 			<div className={s.input__init}>
 				<input
+				disabled={disabled}
 					type="text"
 					value={formatDate(selectedDate ? selectedDate : new Date())}
 					onClick={() => setIsOpen(!isOpen)}
@@ -194,6 +197,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 							<CloseIcon className={s.closeIcon} />
 						</button>
 						<pr.Calendar
+						disabled={disabled}
 							value={value}
 							onChange={onChange}
 							numberOfMonths={1}

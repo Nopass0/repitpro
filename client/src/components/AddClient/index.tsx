@@ -47,6 +47,8 @@ const AddClient = ({}: IAddClient) => {
 
 	const [audios, setAudios] = useState<any>([])
 
+	const [loading, setLoading] = useState<boolean>(false)
+
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -253,6 +255,7 @@ const AddClient = ({}: IAddClient) => {
 	}
 
 	const sendInfo = () => {
+		setLoading(true)
 		socket.emit('addClient', {
 			nameStudent: nameStudent,
 			phoneNumber: phoneNumber,
@@ -266,6 +269,7 @@ const AddClient = ({}: IAddClient) => {
 		})
 
 		window.location.reload()
+		setLoading(false)
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -305,7 +309,9 @@ const AddClient = ({}: IAddClient) => {
 		(state: any) => state.currentOpenedClient,
 	)
 	const [currentClientPosition, setCurrentClientPosition] = useState<number>(0)
-
+	const [isEditMode, setIsEditMode] = useState(
+		currentOpenedClient ? true : false,
+	)
 	useEffect(() => {
 		socket.emit('getClientList', token)
 		socket.once('getClientList', (data) => {
@@ -466,230 +472,245 @@ const AddClient = ({}: IAddClient) => {
 				<CloseIcon className={s.CloseIcon} />
 			</button>
 			<div className={s.wrapper}>
-				<div className={s.Header}>
-					<div className={s.HeaderAddClient}>
-						<div className={s.dataSlidePicker}>
-							<button className={s.btn} onClick={prevClient}>
-								<span>
-									<Arrow direction={ArrowType.left} />
-								</span>
-							</button>
-							<p className={s.btnText}>
-								Карточка заказчика{' '}
-								{currentOpenedClient
-									? `${currentClientPosition + 1}/
+				{!loading ? (
+					<>
+						<div className={s.Header}>
+							<div className={s.HeaderAddClient}>
+								<div className={s.dataSlidePicker}>
+									<button className={s.btn} onClick={prevClient}>
+										<span>
+											<Arrow direction={ArrowType.left} />
+										</span>
+									</button>
+									<p className={s.btnText}>
+										Карточка заказчика{' '}
+										{currentOpenedClient
+											? `${currentClientPosition + 1}/
 								${allIdsClient.length}`
-									: `${allIdsClient.length + 1} / ${allIdsClient.length + 1}`}
-							</p>
-							<button className={s.btn} onClick={nextClient}>
-								<span>
-									<Arrow direction={ArrowType.right} />
-								</span>
-							</button>
+											: `${allIdsClient.length + 1} / ${allIdsClient.length + 1}`}
+									</p>
+									<button className={s.btn} onClick={nextClient}>
+										<span>
+											<Arrow direction={ArrowType.right} />
+										</span>
+									</button>
+								</div>
+							</div>
+							<div className={s.StudNameHead}>
+								<div className={s.StudentCardName}>
+									<div className={s.StudentCardName_Left}>
+										<p>Имя:</p>
+										<input
+											disabled={isEditMode}
+											type="text"
+											value={nameStudent}
+											onChange={(e) =>
+												setNameStudent(
+													e.target.value.charAt(0).toUpperCase() +
+														e.target.value.slice(1).toLowerCase(),
+												)
+											}
+										/>
+									</div>
+									<p>*</p>
+								</div>
+
+								{/* <Line width="100%" className={s.Line} /> */}
+							</div>
 						</div>
-					</div>
-					<div className={s.StudNameHead}>
-						<div className={s.StudentCardName}>
-							<div className={s.StudentCardName_Left}>
-								<p>Имя:</p>
-								<input
-									type="text"
-									value={nameStudent}
-									onChange={(e) =>
-										setNameStudent(
-											e.target.value.charAt(0).toUpperCase() +
-												e.target.value.slice(1).toLowerCase(),
-										)
-									}
+						<div className={s.wrapperMenu}>
+							<div className={s.StudentInput}>
+								<div className={s.StudentCard}>
+									<p>Тел:</p>
+									<InputMask
+										disabled={isEditMode}
+										type="text"
+										mask="+7 (999) 999-99-99"
+										maskChar="_"
+										value={phoneNumber}
+										onChange={(e: any) => setPhoneNumber(e.target.value)}
+									/>
+									<IconsPhone phoneNumber={phoneNumber} email={email} />
+								</div>
+								<Line width="100%" className={s.Line} />
+								<div className={s.StudentCard}>
+									<p>Эл. почта:</p>
+									<input
+										disabled={isEditMode}
+										type="email"
+										value={email}
+										onChange={(e: any) => setEmail(e.target.value)}
+									/>
+								</div>
+								<Line width="100%" className={s.Line} />
+
+								<div className={s.StudentCard}>
+									<p>Расходы по заказчику:</p>
+									<input
+										disabled={isEditMode}
+										width={`${costStudent.length}ch`}
+										type="text"
+										value={costStudent}
+										onChange={(e) => setCostStudent(e.target.value)}
+										style={{borderBottom: '1px solid #e2e2e9'}}
+									/>
+									<p>₽</p>
+								</div>
+
+								<Line width="100%" className={s.Line} />
+								<TextAreaInputBlock
+									disabled={isEditMode}
+									title="Комментарий:"
+									value={commentClient}
+									// disabled={isEditMode}
+									onChange={(e) => {
+										setcommentClient(e.target.value)
+									}}
+									textIndent="120px"
 								/>
 							</div>
-							<p>*</p>
-						</div>
+							<Line width="100%" className={s.Line} />
 
-						{/* <Line width="100%" className={s.Line} /> */}
-					</div>
-				</div>
-				<div className={s.wrapperMenu}>
-					<div className={s.StudentInput}>
-						<div className={s.StudentCard}>
-							<p>Тел:</p>
-							<InputMask
-								type="text"
-								mask="+7 (999) 999-99-99"
-								maskChar="_"
-								value={phoneNumber}
-								onChange={(e: any) => setPhoneNumber(e.target.value)}
+							<RecordNListen
+								alreadyRecorded={audios}
+								callback={handleAddAudio}
 							/>
-							<IconsPhone phoneNumber={phoneNumber} email={email} />
-						</div>
-						<Line width="100%" className={s.Line} />
-						<div className={s.StudentCard}>
-							<p>Эл. почта:</p>
-							<input
-								type="email"
-								value={email}
-								onChange={(e: any) => setEmail(e.target.value)}
-							/>
-						</div>
-						<Line width="100%" className={s.Line} />
 
-						<div className={s.StudentCard}>
-							<p>Расходы по заказчику:</p>
-							<Input
-								width={`${costStudent.length}ch`}
-								type="text"
-								value={costStudent}
-								onChange={(e) => setCostStudent(e.target.value)}
-								style={{borderBottom: '1px solid #e2e2e9'}}
-							/>
-							<p>₽</p>
-						</div>
-
-						<Line width="100%" className={s.Line} />
-						<TextAreaInputBlock
-							title="Комментарий:"
-							value={commentClient}
-							// disabled={isEditMode}
-							onChange={(e) => {
-								setcommentClient(e.target.value)
-							}}
-							textIndent="120px"
-						/>
-					</div>
-					<Line width="100%" className={s.Line} />
-
-					<RecordNListen alreadyRecorded={audios} callback={handleAddAudio} />
-
-					<div className={s.ItemWrapper}>
-						<div className={s.ItemHeader}>
-							<div className={s.dataSlidePicker}>
-								<button
-									className={s.btn}
-									onClick={() =>
-										currentJobIndex > 0 &&
-										setCurrentJobIndex(currentJobIndex - 1)
-									}>
-									<span>
-										<Arrow direction={ArrowType.left} />
-									</span>
-								</button>
-								{/* NO DATA */}
-								<p className={s.btnText}>
-									Работа {currentJobIndex + 1} / {jobs.length}
-								</p>
-								<button
-									className={s.btn}
-									onClick={() =>
-										currentJobIndex < jobs.length - 1 &&
-										setCurrentJobIndex(currentJobIndex + 1)
-									}>
-									<span>
-										<Arrow direction={ArrowType.right} />
-									</span>
-								</button>
-							</div>
-							<button className={s.ItemPlus} onClick={addJob}>
-								<img src={Plus} alt={Plus} />
-							</button>
-						</div>
-
-						{/* <Line width="100%" className={s.Line} /> */}
-
-						{jobs.map((job, index) => (
-							<div
-								className={
-									currentJobIndex === index ? s.ItemActive_ : s.ItemMain_
-								}>
-								<div className={s.StudentCard}>
-									<p>Предмет:</p>
-									<input
-										type="text"
-										value={job.itemName}
-										onChange={(e) => {
-											changeJob(
-												index,
-												'itemName',
-												e.target.value.charAt(0).toUpperCase() +
-													e.target.value.slice(1).toLowerCase(),
-											)
-										}}
-									/>
+							<div className={s.ItemWrapper}>
+								<div className={s.ItemHeader}>
+									<div className={s.dataSlidePicker}>
+										<button
+											className={s.btn}
+											onClick={() =>
+												currentJobIndex > 0 &&
+												setCurrentJobIndex(currentJobIndex - 1)
+											}>
+											<span>
+												<Arrow direction={ArrowType.left} />
+											</span>
+										</button>
+										{/* NO DATA */}
+										<p className={s.btnText}>
+											Работа {currentJobIndex + 1} / {jobs.length}
+										</p>
+										<button
+											className={s.btn}
+											onClick={() =>
+												currentJobIndex < jobs.length - 1 &&
+												setCurrentJobIndex(currentJobIndex + 1)
+											}>
+											<span>
+												<Arrow direction={ArrowType.right} />
+											</span>
+										</button>
+									</div>
+									<button className={s.ItemPlus} onClick={addJob}>
+										<img src={Plus} alt={Plus} />
+									</button>
 								</div>
 
-								<Line width="100%" className={s.Line} />
+								{/* <Line width="100%" className={s.Line} /> */}
 
-								<div className={s.StudentCard}>
-									<p>Название работы:</p>
-									<input
-										type="text"
-										value={job.jobName}
-										onChange={(e) => {
-											changeJob(
-												index,
-												'jobName',
-												e.target.value.charAt(0).toUpperCase() +
-													e.target.value.slice(1).toLowerCase(),
-											)
-										}}
-									/>
-								</div>
-
-								<Line width="100%" className={s.Line} />
-								<div className={s.StudentCard}>
-									<mui.Select
-										variant={'standard'}
-										// defaultValue={1}
-										value={stages}
-										onChange={(e) => {
-											setStages(e.target.value)
-										}}>
-										<mui.MenuItem value={1}>
-											<p>Стандартная работа</p>
-										</mui.MenuItem>
-										<mui.MenuItem value={2}>
-											<p>Многоэтапная работа</p>
-										</mui.MenuItem>
-									</mui.Select>
-								</div>
-
-								<Line width="100%" className={s.Line} />
-
-								{stages === 1 && (
-									<>
+								{jobs.map((job, index) => (
+									<div
+										className={
+											currentJobIndex === index ? s.ItemActive_ : s.ItemMain_
+										}>
 										<div className={s.StudentCard}>
-											<p>Общая стоимость работы:</p>
-											<Input
-												width={`${String(job.stages[0].totalCost).length}ch`}
-												num
+											<p>Предмет:</p>
+											<input
+												disabled={isEditMode}
 												type="text"
-												value={job.stages[0].totalCost || ''}
+												value={job.itemName}
 												onChange={(e) => {
-													changeStage(index, 0, 'totalCost', e.target.value)
+													changeJob(
+														index,
+														'itemName',
+														e.target.value.charAt(0).toUpperCase() +
+															e.target.value.slice(1).toLowerCase(),
+													)
 												}}
-												style={{borderBottom: '1px solid #e2e2e9'}}
 											/>
-											<p>₽</p>
 										</div>
 
 										<Line width="100%" className={s.Line} />
-									</>
-								)}
-								{stages === 2 && (
-									<>
+
 										<div className={s.StudentCard}>
-											<p>Общая стоимость работы:</p>
-											<Input
-												width={`${String(job.stages[0].totalCost).length}ch`}
-												num
+											<p>Название работы:</p>
+											<input
+												disabled={isEditMode}
 												type="text"
-												value={job.stages[0].totalCost || ''}
+												value={job.jobName}
 												onChange={(e) => {
-													changeStage(index, 0, 'totalCost', e.target.value)
+													changeJob(
+														index,
+														'jobName',
+														e.target.value.charAt(0).toUpperCase() +
+															e.target.value.slice(1).toLowerCase(),
+													)
 												}}
 											/>
-											<p>₽</p>
 										</div>
-										{/* <div className={s.StudentCard}>
+
+										<Line width="100%" className={s.Line} />
+										<div className={s.StudentCard}>
+											<mui.Select
+												disabled={isEditMode}
+												variant={'standard'}
+												// defaultValue={1}
+												value={stages}
+												onChange={(e) => {
+													setStages(e.target.value)
+												}}>
+												<mui.MenuItem value={1}>
+													<p>Стандартная работа</p>
+												</mui.MenuItem>
+												<mui.MenuItem value={2}>
+													<p>Многоэтапная работа</p>
+												</mui.MenuItem>
+											</mui.Select>
+										</div>
+
+										<Line width="100%" className={s.Line} />
+
+										{stages === 1 && (
+											<>
+												<div className={s.StudentCard}>
+													<p>Общая стоимость работы:</p>
+													<input
+														disabled={isEditMode}
+														width={`${String(job.stages[0].totalCost).length}ch`}
+														num
+														type="text"
+														value={job.stages[0].totalCost || ''}
+														onChange={(e) => {
+															changeStage(index, 0, 'totalCost', e.target.value)
+														}}
+														style={{borderBottom: '1px solid #e2e2e9'}}
+													/>
+													<p>₽</p>
+												</div>
+
+												<Line width="100%" className={s.Line} />
+											</>
+										)}
+										{stages === 2 && (
+											<>
+												<div className={s.StudentCard}>
+													<p>Общая стоимость работы:</p>
+													<input
+														disabled={isEditMode}
+														width={`${String(job.stages[0].totalCost).length}ch`}
+														num
+														type="text"
+														value={job.stages[0].totalCost || ''}
+														onChange={(e) => {
+															changeStage(index, 0, 'totalCost', e.target.value)
+														}}
+													/>
+													<p>₽</p>
+												</div>
+												{/* <div className={s.StudentCard}>
 										<p>Комментарий:</p>
 										<textarea
 											value={job.stage.commentStageTwo}
@@ -698,988 +719,1104 @@ const AddClient = ({}: IAddClient) => {
 											}
 										/>
 									</div> */}
-										<Line width="100%" className={s.Line} />
+												<Line width="100%" className={s.Line} />
 
-										<RecordNListen />
-										<div className={s.ItemHeader}>
-											<div className={s.dataSlidePicker}>
-												<button
-													className={s.btn}
-													onClick={() =>
-														currentStageIndex > 0 &&
-														setCurrentStageIndex(currentStageIndex - 1)
-													}>
-													<span>
-														<Arrow direction={ArrowType.left} />
-													</span>
-												</button>
-												{/* NO DATA */}
-												<p className={s.btnText}>
-													Этапы {currentStageIndex + 1} / {job.stages.length}
-												</p>
-												<button
-													className={s.btn}
-													onClick={() =>
-														currentStageIndex < job.stages.length - 1 &&
-														setCurrentStageIndex(currentStageIndex + 1)
-													}>
-													<span>
-														<Arrow direction={ArrowType.right} />
-													</span>
-												</button>
-											</div>
-											<button
-												className={s.ItemPlus}
-												onClick={() => addStage(index)}>
-												<img src={Plus} alt={Plus} />
-											</button>
-										</div>
-										{job.stages.map((item, indexStage) => (
+												<RecordNListen />
+												<div className={s.ItemHeader}>
+													<div className={s.dataSlidePicker}>
+														<button
+															className={s.btn}
+															onClick={() =>
+																currentStageIndex > 0 &&
+																setCurrentStageIndex(currentStageIndex - 1)
+															}>
+															<span>
+																<Arrow direction={ArrowType.left} />
+															</span>
+														</button>
+														{/* NO DATA */}
+														<p className={s.btnText}>
+															Этапы {currentStageIndex + 1} /{' '}
+															{job.stages.length}
+														</p>
+														<button
+															className={s.btn}
+															onClick={() =>
+																currentStageIndex < job.stages.length - 1 &&
+																setCurrentStageIndex(currentStageIndex + 1)
+															}>
+															<span>
+																<Arrow direction={ArrowType.right} />
+															</span>
+														</button>
+													</div>
+													<button
+														className={s.ItemPlus}
+														onClick={() => addStage(index)}>
+														<img src={Plus} alt={Plus} />
+													</button>
+												</div>
+												{job.stages.map((item, indexStage) => (
+													<>
+														<div
+															key={indexStage}
+															className={
+																currentStageIndex === indexStage
+																	? s.ItemActive_
+																	: s.ItemMain_
+															}>
+															<div className={s.StudentCard}>
+																<p>Название:</p>
+																<input
+																	disabled={isEditMode}
+																	type="text"
+																	value={item.name}
+																	onChange={(e) => {
+																		changeStage(
+																			index,
+																			indexStage,
+																			'name',
+																			e.target.value.charAt(0).toUpperCase() +
+																				e.target.value.slice(1).toLowerCase(),
+																		)
+																	}}
+																/>
+															</div>
+															<Line width="100%" className={s.Line} />
+															<div className={s.StudentCard}>
+																<p>Стоимость этапа:</p>
+																<input
+																	disabled={isEditMode}
+																	style={{borderBottom: '1px solid #e2e2e9'}}
+																	num
+																	type="text"
+																	value={item.cost || ''}
+																	width={`${String(item.cost).length}ch`}
+																	onChange={(e) => {
+																		changeStage(
+																			index,
+																			indexStage,
+																			'cost',
+																			e.target.value,
+																		)
+																	}}
+																/>
+																<p>₽</p>
+															</div>
+															<Line width="100%" className={s.Line} />
+															<div className={s.TypePaymentWrapper}>
+																<div
+																	onClick={() => {
+																		setTypePayment(false)
+																		changeStage(
+																			index,
+																			indexStage,
+																			'typePayment',
+																			typePayment,
+																		)
+																	}}
+																	className={s.PrevPay}>
+																	<p>Предоплата</p>
+																	<CheckBox
+																		disabled={isEditMode}
+																		checked={
+																			item.typePayment === false ? true : false
+																		}
+																		size="18px"
+																	/>
+																</div>
+																<div
+																	onClick={() => {
+																		setTypePayment(true)
+																		changeStage(
+																			index,
+																			indexStage,
+																			'typePayment',
+																			typePayment,
+																		)
+																	}}
+																	className={s.NextPay}>
+																	<p>Постоплата</p>
+																	<CheckBox
+																		disabled={isEditMode}
+																		checked={
+																			item.typePayment === true ? true : false
+																		}
+																		size="18px"
+																	/>
+																</div>
+															</div>
+															<div className={s.PaymentTable}>
+																{item.typePayment === true ? (
+																	<>
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.startWorkDate}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'startWorkDate',
+																						newDate,
+																					)
+																				}
+																				calendarId="startWorkDate"
+																			/>
+																			<div className={s.PayText}>
+																				<p>Начало работы</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.isStartWork}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'isStartWork',
+																						!item.isStartWork,
+																					)
+																				}
+																			/>
+																			<p style={{width: '33px'}}></p>
+																		</div>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.firstPaymentDate}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'firstPaymentDate',
+																						newDate,
+																					)
+																				}
+																			/>
+																			<div className={s.PayInput}>
+																				<p>Оплата</p>
+																				<input
+																					disabled={isEditMode}
+																					num
+																					type="text"
+																					value={String(
+																						item.fisrtPaymentPrice!,
+																					)}
+																					onChange={(e) =>
+																						changeStage(
+																							index,
+																							indexStage,
+																							'fisrtPaymentPrice',
+																							Number(e.target.value),
+																						)
+																					}
+																				/>
+																				<p>₽</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.firstPaymentPayed}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'firstPaymentPayed',
+																						!item.firstPaymentPayed,
+																					)
+																				}
+																			/>
+																			<p
+																				style={{
+																					width: '33px',
+																					overflow: 'hidden',
+																					whiteSpace: 'nowrap',
+																				}}>
+																				{item.fisrtPaymentPrice &&
+																				item.cost &&
+																				String(item.cost) !== '0'
+																					? Math.round(
+																							(item.fisrtPaymentPrice /
+																								item.cost) *
+																								100,
+																						)
+																					: '0'}
+																				%
+																			</p>
+																		</div>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.endWorkDate}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'endWorkDate',
+																						newDate,
+																					)
+																				}
+																			/>
+																			<div className={s.PayText}>
+																				<p>Сдача работы</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.isEndWork}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'isEndWork',
+																						!item.isEndWork,
+																					)
+																				}
+																			/>
+																			<p style={{width: '33px'}}></p>
+																		</div>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.endPaymentDate}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'endPaymentDate',
+																						newDate,
+																					)
+																				}
+																				calendarId="endPaymentDate"
+																			/>
+																			<div className={s.PayInput}>
+																				<p>Оплата</p>
+																				<input
+																					disabled={isEditMode}
+																					num
+																					type="text"
+																					value={String(item.endPaymentPrice)}
+																					onChange={(e) =>
+																						changeStage(
+																							index,
+																							indexStage,
+																							'endPaymentPrice',
+																							Number(e.target.value),
+																						)
+																					}
+																				/>
+																				<p>₽</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.endPaymentPayed}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'endPaymentPayed',
+																						!item.endPaymentPayed,
+																					)
+																				}
+																			/>
+																			<p
+																				style={{
+																					width: '33px',
+																					overflow: 'hidden',
+																					whiteSpace: 'nowrap',
+																				}}>
+																				{item.endPaymentPrice &&
+																				item.cost &&
+																				String(item.cost) !== '0'
+																					? Math.round(
+																							(item.endPaymentPrice /
+																								item.cost) *
+																								100,
+																						)
+																					: '0'}
+																				%
+																			</p>
+																		</div>
+																		{item.fisrtPaymentPrice +
+																			item.endPaymentPrice >=
+																			item.cost && (
+																			<>
+																				<Line
+																					width="317px"
+																					className={s.Line}
+																				/>
+																				<div className={s.PaymentRow}>
+																					<p style={{color: '#25c25c'}}>
+																						Этап оплачен полностью
+																					</p>
+																				</div>
+																			</>
+																		)}
+																	</>
+																) : (
+																	<>
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.firstPaymentDate}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'firstPaymentDate',
+																						newDate,
+																					)
+																				}
+																				calendarId="firstPaymentDate"
+																			/>
+																			<div className={s.PayInput}>
+																				<p>Оплата</p>
+																				<input
+																					disabled={isEditMode}
+																					num
+																					type="text"
+																					value={String(
+																						item.fisrtPaymentPrice!,
+																					)}
+																					onChange={(e) =>
+																						changeStage(
+																							index,
+																							indexStage,
+																							'fisrtPaymentPrice',
+																							Number(e.target.value),
+																						)
+																					}
+																				/>
+																				<p>₽</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.firstPaymentPayed}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'firstPaymentPayed',
+																						!item.firstPaymentPayed,
+																					)
+																				}
+																			/>
+																			<p
+																				style={{
+																					width: '33px',
+																					overflow: 'hidden',
+																					whiteSpace: 'nowrap',
+																				}}>
+																				{item.fisrtPaymentPrice &&
+																				item.cost &&
+																				String(item.cost) !== '0'
+																					? Math.round(
+																							(item.fisrtPaymentPrice /
+																								item.cost) *
+																								100,
+																						)
+																					: '0'}
+																				%
+																			</p>
+																		</div>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.startWorkDate!}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'startWorkDate',
+																						newDate,
+																					)
+																				}
+																				calendarId="startWorkDate"
+																			/>
+																			<div className={s.PayText}>
+																				<p>Начало работы</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.isStartWork}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'isStartWork',
+																						!item.isStartWork,
+																					)
+																				}
+																			/>
+																			<p style={{width: '33px'}}></p>
+																		</div>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={item.endPaymentDate!}
+																				onChange={(newDate) =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'endPaymentDate',
+																						newDate,
+																					)
+																				}
+																				calendarId="endPaymentDate"
+																			/>
+																			<div className={s.PayInput}>
+																				<p>Оплата</p>
+																				<input
+																					disabled={isEditMode}
+																					num
+																					type="text"
+																					value={String(item.endPaymentPrice)}
+																					onChange={(e) =>
+																						changeStage(
+																							index,
+																							indexStage,
+																							'endPaymentPrice',
+																							Number(e.target.value),
+																						)
+																					}
+																				/>
+																				<p>₽</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.endPaymentPayed}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'endPaymentPayed',
+																						!item.endPaymentPayed,
+																					)
+																				}
+																			/>
+																			<p
+																				style={{
+																					width: '33px',
+																					overflow: 'hidden',
+																					whiteSpace: 'nowrap',
+																				}}>
+																				{item.endPaymentPrice &&
+																				item.cost &&
+																				String(item.cost) !== '0'
+																					? Math.round(
+																							(item.endPaymentPrice /
+																								item.cost) *
+																								100,
+																						)
+																					: '0'}
+																				%
+																			</p>
+																		</div>
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<MiniCalendar
+																				disabled={isEditMode}
+																				value={job.stages[0].endWorkDate}
+																				onChange={(newValue) => {
+																					changeStage(
+																						index,
+																						indexStage,
+																						'endWorkDate',
+																						newValue,
+																					)
+																				}}
+																				calendarId="endWorkDate"
+																			/>
+																			<div className={s.PayText}>
+																				<p>Сдача работы</p>
+																			</div>
+																			<CheckBox
+																				disabled={isEditMode}
+																				size="18px"
+																				checked={item.isEndWork}
+																				onChange={() =>
+																					changeStage(
+																						index,
+																						indexStage,
+																						'isEndWork',
+																						!item.isEndWork,
+																					)
+																				}
+																			/>
+																			<p style={{width: '33px'}}></p>
+																		</div>
+																		{item.fisrtPaymentPrice +
+																			item.endPaymentPrice >=
+																			item.cost && (
+																			<>
+																				<Line
+																					width="317px"
+																					className={s.Line}
+																				/>
+																				<div className={s.PaymentRow}>
+																					<p style={{color: '#25c25c'}}>
+																						Этап оплачен полностью
+																					</p>
+																				</div>
+																			</>
+																		)}
+																	</>
+																)}
+															</div>
+														</div>
+													</>
+												))}
+											</>
+										)}
+										{stages == 1 && (
 											<>
-												<div
-													key={indexStage}
-													className={
-														currentStageIndex === indexStage
-															? s.ItemActive_
-															: s.ItemMain_
-													}>
-													<div className={s.StudentCard}>
-														<p>Название:</p>
-														<input
-															type="text"
-															value={item.name}
-															onChange={(e) => {
-																changeStage(
-																	index,
-																	indexStage,
-																	'name',
-																	e.target.value.charAt(0).toUpperCase() +
-																		e.target.value.slice(1).toLowerCase(),
-																)
-															}}
+												<div className={s.TypePaymentWrapper}>
+													<div
+														onClick={() => {
+															setTypePayment(false)
+															changeStage(index, 0, 'typePayment', typePayment)
+														}}
+														className={s.PrevPay}>
+														<p>Предоплата</p>
+														<CheckBox
+															disabled={isEditMode}
+															checked={
+																job.stages[0].typePayment === false
+																	? true
+																	: false
+															}
+															size="18px"
 														/>
 													</div>
-													<Line width="100%" className={s.Line} />
-													<div className={s.StudentCard}>
-														<p>Стоимость этапа:</p>
-														<Input
-															style={{borderBottom: '1px solid #e2e2e9'}}
-															num
-															type="text"
-															value={item.cost || ''}
-															width={`${String(item.cost).length}ch`}
-															onChange={(e) => {
-																changeStage(
-																	index,
-																	indexStage,
-																	'cost',
-																	e.target.value,
-																)
-															}}
+													<div
+														onClick={() => {
+															setTypePayment(true)
+															changeStage(index, 0, 'typePayment', typePayment)
+														}}
+														className={s.NextPay}>
+														<p>Постоплата</p>
+														<CheckBox
+															disabled={isEditMode}
+															checked={
+																job.stages[0].typePayment === true
+																	? true
+																	: false
+															}
+															size="18px"
 														/>
-														<p>₽</p>
-													</div>
-													<Line width="100%" className={s.Line} />
-													<div className={s.TypePaymentWrapper}>
-														<div
-															onClick={() => {
-																setTypePayment(false)
-																changeStage(
-																	index,
-																	indexStage,
-																	'typePayment',
-																	typePayment,
-																)
-															}}
-															className={s.PrevPay}>
-															<p>Предоплата</p>
-															<CheckBox
-																checked={
-																	item.typePayment === false ? true : false
-																}
-																size="18px"
-															/>
-														</div>
-														<div
-															onClick={() => {
-																setTypePayment(true)
-																changeStage(
-																	index,
-																	indexStage,
-																	'typePayment',
-																	typePayment,
-																)
-															}}
-															className={s.NextPay}>
-															<p>Постоплата</p>
-															<CheckBox
-																checked={
-																	item.typePayment === true ? true : false
-																}
-																size="18px"
-															/>
-														</div>
-													</div>
-													<div className={s.PaymentTable}>
-														{item.typePayment === true ? (
-															<>
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.startWorkDate}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'startWorkDate',
-																				newDate,
-																			)
-																		}
-																		calendarId="startWorkDate"
-																	/>
-																	<div className={s.PayText}>
-																		<p>Начало работы</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.isStartWork}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'isStartWork',
-																				!item.isStartWork,
-																			)
-																		}
-																	/>
-																	<p style={{width: '33px'}}></p>
-																</div>
-																<Line width="317px" className={s.Line} />
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.firstPaymentDate}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'firstPaymentDate',
-																				newDate,
-																			)
-																		}
-																	/>
-																	<div className={s.PayInput}>
-																		<p>Оплата</p>
-																		<Input
-																			num
-																			type="text"
-																			value={String(item.fisrtPaymentPrice!)}
-																			onChange={(e) =>
-																				changeStage(
-																					index,
-																					indexStage,
-																					'fisrtPaymentPrice',
-																					Number(e.target.value),
-																				)
-																			}
-																		/>
-																		<p>₽</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.firstPaymentPayed}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'firstPaymentPayed',
-																				!item.firstPaymentPayed,
-																			)
-																		}
-																	/>
-																	<p
-																		style={{
-																			width: '33px',
-																			overflow: 'hidden',
-																			whiteSpace: 'nowrap',
-																		}}>
-																		{item.fisrtPaymentPrice &&
-																		item.cost &&
-																		String(item.cost) !== '0'
-																			? Math.round(
-																					(item.fisrtPaymentPrice / item.cost) *
-																						100,
-																				)
-																			: '0'}
-																		%
-																	</p>
-																</div>
-																<Line width="317px" className={s.Line} />
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.endWorkDate}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'endWorkDate',
-																				newDate,
-																			)
-																		}
-																	/>
-																	<div className={s.PayText}>
-																		<p>Сдача работы</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.isEndWork}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'isEndWork',
-																				!item.isEndWork,
-																			)
-																		}
-																	/>
-																	<p style={{width: '33px'}}></p>
-																</div>
-																<Line width="317px" className={s.Line} />
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.endPaymentDate}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'endPaymentDate',
-																				newDate,
-																			)
-																		}
-																		calendarId="endPaymentDate"
-																	/>
-																	<div className={s.PayInput}>
-																		<p>Оплата</p>
-																		<Input
-																			num
-																			type="text"
-																			value={String(item.endPaymentPrice)}
-																			onChange={(e) =>
-																				changeStage(
-																					index,
-																					indexStage,
-																					'endPaymentPrice',
-																					Number(e.target.value),
-																				)
-																			}
-																		/>
-																		<p>₽</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.endPaymentPayed}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'endPaymentPayed',
-																				!item.endPaymentPayed,
-																			)
-																		}
-																	/>
-																	<p
-																		style={{
-																			width: '33px',
-																			overflow: 'hidden',
-																			whiteSpace: 'nowrap',
-																		}}>
-																		{item.endPaymentPrice &&
-																		item.cost &&
-																		String(item.cost) !== '0'
-																			? Math.round(
-																					(item.endPaymentPrice / item.cost) *
-																						100,
-																				)
-																			: '0'}
-																		%
-																	</p>
-																</div>
-																{item.fisrtPaymentPrice +
-																	item.endPaymentPrice >=
-																	item.cost && (
-																	<>
-																		<Line width="317px" className={s.Line} />
-																		<div className={s.PaymentRow}>
-																			<p style={{color: '#25c25c'}}>
-																				Этап оплачен полностью
-																			</p>
-																		</div>
-																	</>
-																)}
-															</>
-														) : (
-															<>
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.firstPaymentDate}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'firstPaymentDate',
-																				newDate,
-																			)
-																		}
-																		calendarId="firstPaymentDate"
-																	/>
-																	<div className={s.PayInput}>
-																		<p>Оплата</p>
-																		<Input
-																			num
-																			type="text"
-																			value={String(item.fisrtPaymentPrice!)}
-																			onChange={(e) =>
-																				changeStage(
-																					index,
-																					indexStage,
-																					'fisrtPaymentPrice',
-																					Number(e.target.value),
-																				)
-																			}
-																		/>
-																		<p>₽</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.firstPaymentPayed}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'firstPaymentPayed',
-																				!item.firstPaymentPayed,
-																			)
-																		}
-																	/>
-																	<p
-																		style={{
-																			width: '33px',
-																			overflow: 'hidden',
-																			whiteSpace: 'nowrap',
-																		}}>
-																		{item.fisrtPaymentPrice &&
-																		item.cost &&
-																		String(item.cost) !== '0'
-																			? Math.round(
-																					(item.fisrtPaymentPrice / item.cost) *
-																						100,
-																				)
-																			: '0'}
-																		%
-																	</p>
-																</div>
-																<Line width="317px" className={s.Line} />
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.startWorkDate!}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'startWorkDate',
-																				newDate,
-																			)
-																		}
-																		calendarId="startWorkDate"
-																	/>
-																	<div className={s.PayText}>
-																		<p>Начало работы</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.isStartWork}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'isStartWork',
-																				!item.isStartWork,
-																			)
-																		}
-																	/>
-																	<p style={{width: '33px'}}></p>
-																</div>
-																<Line width="317px" className={s.Line} />
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={item.endPaymentDate!}
-																		onChange={(newDate) =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'endPaymentDate',
-																				newDate,
-																			)
-																		}
-																		calendarId="endPaymentDate"
-																	/>
-																	<div className={s.PayInput}>
-																		<p>Оплата</p>
-																		<Input
-																			num
-																			type="text"
-																			value={String(item.endPaymentPrice)}
-																			onChange={(e) =>
-																				changeStage(
-																					index,
-																					indexStage,
-																					'endPaymentPrice',
-																					Number(e.target.value),
-																				)
-																			}
-																		/>
-																		<p>₽</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.endPaymentPayed}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'endPaymentPayed',
-																				!item.endPaymentPayed,
-																			)
-																		}
-																	/>
-																	<p
-																		style={{
-																			width: '33px',
-																			overflow: 'hidden',
-																			whiteSpace: 'nowrap',
-																		}}>
-																		{item.endPaymentPrice &&
-																		item.cost &&
-																		String(item.cost) !== '0'
-																			? Math.round(
-																					(item.endPaymentPrice / item.cost) *
-																						100,
-																				)
-																			: '0'}
-																		%
-																	</p>
-																</div>
-																<Line width="317px" className={s.Line} />
-																<div className={s.PaymentRow}>
-																	<MiniCalendar
-																		value={job.stages[0].endWorkDate}
-																		onChange={(newValue) => {
-																			changeStage(
-																				index,
-																				indexStage,
-																				'endWorkDate',
-																				newValue,
-																			)
-																		}}
-																		calendarId="endWorkDate"
-																	/>
-																	<div className={s.PayText}>
-																		<p>Сдача работы</p>
-																	</div>
-																	<CheckBox
-																		size="18px"
-																		checked={item.isEndWork}
-																		onChange={() =>
-																			changeStage(
-																				index,
-																				indexStage,
-																				'isEndWork',
-																				!item.isEndWork,
-																			)
-																		}
-																	/>
-																	<p style={{width: '33px'}}></p>
-																</div>
-																{item.fisrtPaymentPrice +
-																	item.endPaymentPrice >=
-																	item.cost && (
-																	<>
-																		<Line width="317px" className={s.Line} />
-																		<div className={s.PaymentRow}>
-																			<p style={{color: '#25c25c'}}>
-																				Этап оплачен полностью
-																			</p>
-																		</div>
-																	</>
-																)}
-															</>
-														)}
 													</div>
 												</div>
+												<div className={s.PaymentTable}>
+													{job.stages[0].typePayment === true ? (
+														<>
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].startWorkDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'startWorkDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="startWorkDate"
+																/>
+																<div className={s.PayText}>
+																	<p>Начало работы</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].isStartWork}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'isStartWork',
+																			!job.stages[0].isStartWork,
+																		)
+																	}
+																/>
+																<p style={{width: '33px'}}></p>
+															</div>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].firstPaymentDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'firstPaymentDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="firstPaymentDate"
+																/>
+																<div className={s.PayInput}>
+																	<p>Оплата</p>
+																	<input
+																		disabled={isEditMode}
+																		width={`${
+																			String(job.stages[0].fisrtPaymentPrice)
+																				.length
+																		}ch`}
+																		num
+																		type="text"
+																		value={String(
+																			job.stages[0].fisrtPaymentPrice,
+																		)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'fisrtPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
+																	/>
+																	<p>₽</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].firstPaymentPayed}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'firstPaymentPayed',
+																			!job.stages[0].firstPaymentPayed,
+																		)
+																	}
+																/>
+																<p
+																	style={{
+																		width: '33px',
+																		overflow: 'hidden',
+																		whiteSpace: 'nowrap',
+																	}}>
+																	{job.stages[0].fisrtPaymentPrice &&
+																	job.stages[0].totalCost &&
+																	String(job.stages[0].totalCost) !== '0'
+																		? Math.round(
+																				(job.stages[0].fisrtPaymentPrice /
+																					job.stages[0].totalCost) *
+																					100,
+																			)
+																		: '0'}
+																	%
+																</p>
+															</div>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].endWorkDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'endWorkDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="endWorkDate"
+																/>
+																<div className={s.PayText}>
+																	<p>Сдача работы</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].isEndWork}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'isEndWork',
+																			!job.stages[0].isEndWork,
+																		)
+																	}
+																/>
+																<p style={{width: '33px'}}></p>
+															</div>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].endPaymentDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'endPaymentDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="endPaymentDate"
+																/>
+																<div className={s.PayInput}>
+																	<p>Оплата</p>
+																	<input
+																		disabled={isEditMode}
+																		width={`${
+																			String(job.stages[0].endPaymentPrice)
+																				.length
+																		}ch`}
+																		num
+																		type="text"
+																		value={`${String(
+																			job.stages[0].endPaymentPrice,
+																		)}`}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'endPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
+																	/>
+																	<p>₽</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].endPaymentPayed}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'endPaymentPayed',
+																			!job.stages[0].endPaymentPayed,
+																		)
+																	}
+																/>
+																<p
+																	style={{
+																		width: '33px',
+																		overflow: 'hidden',
+																		whiteSpace: 'nowrap',
+																	}}>
+																	{job.stages[0].endPaymentPrice &&
+																	job.stages[0].totalCost &&
+																	String(job.stages[0].totalCost) !== '0'
+																		? Math.round(
+																				(job.stages[0].endPaymentPrice /
+																					job.stages[0].totalCost) *
+																					100,
+																			)
+																		: '0'}
+																	%
+																</p>
+															</div>
+															{job.stages[0].fisrtPaymentPrice +
+																job.stages[0].endPaymentPrice >=
+																job.stages[0].totalCost && (
+																<>
+																	<Line width="317px" className={s.Line} />
+																	<div className={s.PaymentRow}>
+																		<p style={{color: '#25c25c'}}>
+																			Работа оплачена полностью
+																		</p>
+																	</div>
+																</>
+															)}
+														</>
+													) : (
+														<>
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].firstPaymentDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'firstPaymentDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="firstPaymentDate"
+																/>
+																<div className={s.PayInput}>
+																	<p>Оплата</p>
+																	<input
+																		disabled={isEditMode}
+																		num
+																		type="text"
+																		value={String(
+																			job.stages[0].fisrtPaymentPrice,
+																		)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'fisrtPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
+																	/>
+																	<p>₽</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].firstPaymentPayed}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'firstPaymentPayed',
+																			!job.stages[0].firstPaymentPayed,
+																		)
+																	}
+																/>
+																<p
+																	style={{
+																		width: '33px',
+																		overflow: 'hidden',
+																		whiteSpace: 'nowrap',
+																	}}>
+																	{job.stages[0].fisrtPaymentPrice &&
+																	job.stages[0].totalCost &&
+																	String(job.stages[0].totalCost) !== '0'
+																		? Math.round(
+																				(job.stages[0].fisrtPaymentPrice /
+																					job.stages[0].totalCost) *
+																					100,
+																			)
+																		: '0'}
+																	%
+																</p>
+															</div>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].startWorkDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'startWorkDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="startWorkDate"
+																/>
+																<div className={s.PayText}>
+																	<p>Начало работы</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].isStartWork}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'isStartWork',
+																			!job.stages[0].isStartWork,
+																		)
+																	}
+																/>
+																<p style={{width: '33px'}}></p>
+															</div>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].endPaymentDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'endPaymentDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="endPaymentDate"
+																/>
+																<div className={s.PayInput}>
+																	<p>Оплата</p>
+																	<input
+																		disabled={isEditMode}
+																		num
+																		type="text"
+																		value={String(
+																			job.stages[0].endPaymentPrice,
+																		)}
+																		onChange={(e) =>
+																			changeStage(
+																				index,
+																				0,
+																				'endPaymentPrice',
+																				Number(e.target.value),
+																			)
+																		}
+																	/>
+																	<p>₽</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].endPaymentPayed}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'endPaymentPayed',
+																			!job.stages[0].endPaymentPayed,
+																		)
+																	}
+																/>
+																<p
+																	style={{
+																		width: '33px',
+																		overflow: 'hidden',
+																		whiteSpace: 'nowrap',
+																	}}>
+																	{job.stages[0].endPaymentPrice &&
+																	job.stages[0].totalCost &&
+																	String(job.stages[0].totalCost) !== '0'
+																		? Math.round(
+																				(job.stages[0].endPaymentPrice /
+																					job.stages[0].totalCost) *
+																					100,
+																			)
+																		: '0'}
+																	%
+																</p>
+															</div>
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={job.stages[0].endWorkDate}
+																	onChange={(newValue) => {
+																		changeStage(
+																			index,
+																			0,
+																			'endWorkDate',
+																			newValue,
+																		)
+																	}}
+																	calendarId="endWorkDate"
+																/>
+																<div className={s.PayText}>
+																	<p>Сдача работы</p>
+																</div>
+																<CheckBox
+																	disabled={isEditMode}
+																	size="18px"
+																	checked={job.stages[0].isEndWork}
+																	onChange={() =>
+																		changeStage(
+																			index,
+																			0,
+																			'isEndWork',
+																			!job.stages[0].isEndWork,
+																		)
+																	}
+																/>
+																<p style={{width: '33px'}}></p>
+															</div>
+															{job.stages[0].fisrtPaymentPrice +
+																job.stages[0].endPaymentPrice >=
+																job.stages[0].totalCost && (
+																<>
+																	<Line width="317px" className={s.Line} />
+																	<div className={s.PaymentRow}>
+																		<p style={{color: '#25c25c'}}>
+																			Работа оплачена полностью
+																		</p>
+																	</div>
+																</>
+															)}
+														</>
+													)}
+												</div>
 											</>
-										))}
-									</>
-								)}
-								{stages == 1 && (
-									<>
-										<div className={s.TypePaymentWrapper}>
-											<div
-												onClick={() => {
-													setTypePayment(false)
-													changeStage(index, 0, 'typePayment', typePayment)
-												}}
-												className={s.PrevPay}>
-												<p>Предоплата</p>
-												<CheckBox
-													checked={
-														job.stages[0].typePayment === false ? true : false
-													}
-													size="18px"
-												/>
-											</div>
-											<div
-												onClick={() => {
-													setTypePayment(true)
-													changeStage(index, 0, 'typePayment', typePayment)
-												}}
-												className={s.NextPay}>
-												<p>Постоплата</p>
-												<CheckBox
-													checked={
-														job.stages[0].typePayment === true ? true : false
-													}
-													size="18px"
-												/>
-											</div>
-										</div>
-										<div className={s.PaymentTable}>
-											{job.stages[0].typePayment === true ? (
-												<>
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].startWorkDate}
-															onChange={(newValue) => {
-																changeStage(index, 0, 'startWorkDate', newValue)
-															}}
-															calendarId="startWorkDate"
-														/>
-														<div className={s.PayText}>
-															<p>Начало работы</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].isStartWork}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'isStartWork',
-																	!job.stages[0].isStartWork,
-																)
-															}
-														/>
-														<p style={{width: '33px'}}></p>
-													</div>
-													<Line width="317px" className={s.Line} />
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].firstPaymentDate}
-															onChange={(newValue) => {
-																changeStage(
-																	index,
-																	0,
-																	'firstPaymentDate',
-																	newValue,
-																)
-															}}
-															calendarId="firstPaymentDate"
-														/>
-														<div className={s.PayInput}>
-															<p>Оплата</p>
-															<Input
-																width={`${
-																	String(job.stages[0].fisrtPaymentPrice).length
-																}ch`}
-																num
-																type="text"
-																value={String(job.stages[0].fisrtPaymentPrice)}
-																onChange={(e) =>
-																	changeStage(
-																		index,
-																		0,
-																		'fisrtPaymentPrice',
-																		Number(e.target.value),
-																	)
-																}
-															/>
-															<p>₽</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].firstPaymentPayed}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'firstPaymentPayed',
-																	!job.stages[0].firstPaymentPayed,
-																)
-															}
-														/>
-														<p
-															style={{
-																width: '33px',
-																overflow: 'hidden',
-																whiteSpace: 'nowrap',
-															}}>
-															{job.stages[0].fisrtPaymentPrice &&
-															job.stages[0].totalCost &&
-															String(job.stages[0].totalCost) !== '0'
-																? Math.round(
-																		(job.stages[0].fisrtPaymentPrice /
-																			job.stages[0].totalCost) *
-																			100,
-																	)
-																: '0'}
-															%
-														</p>
-													</div>
-													<Line width="317px" className={s.Line} />
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].endWorkDate}
-															onChange={(newValue) => {
-																changeStage(index, 0, 'endWorkDate', newValue)
-															}}
-															calendarId="endWorkDate"
-														/>
-														<div className={s.PayText}>
-															<p>Сдача работы</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].isEndWork}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'isEndWork',
-																	!job.stages[0].isEndWork,
-																)
-															}
-														/>
-														<p style={{width: '33px'}}></p>
-													</div>
-													<Line width="317px" className={s.Line} />
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].endPaymentDate}
-															onChange={(newValue) => {
-																changeStage(
-																	index,
-																	0,
-																	'endPaymentDate',
-																	newValue,
-																)
-															}}
-															calendarId="endPaymentDate"
-														/>
-														<div className={s.PayInput}>
-															<p>Оплата</p>
-															<Input
-																width={`${
-																	String(job.stages[0].endPaymentPrice).length
-																}ch`}
-																num
-																type="text"
-																value={`${String(
-																	job.stages[0].endPaymentPrice,
-																)}`}
-																onChange={(e) =>
-																	changeStage(
-																		index,
-																		0,
-																		'endPaymentPrice',
-																		Number(e.target.value),
-																	)
-																}
-															/>
-															<p>₽</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].endPaymentPayed}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'endPaymentPayed',
-																	!job.stages[0].endPaymentPayed,
-																)
-															}
-														/>
-														<p
-															style={{
-																width: '33px',
-																overflow: 'hidden',
-																whiteSpace: 'nowrap',
-															}}>
-															{job.stages[0].endPaymentPrice &&
-															job.stages[0].totalCost &&
-															String(job.stages[0].totalCost) !== '0'
-																? Math.round(
-																		(job.stages[0].endPaymentPrice /
-																			job.stages[0].totalCost) *
-																			100,
-																	)
-																: '0'}
-															%
-														</p>
-													</div>
-													{job.stages[0].fisrtPaymentPrice +
-														job.stages[0].endPaymentPrice >=
-														job.stages[0].totalCost && (
-														<>
-															<Line width="317px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<p style={{color: '#25c25c'}}>
-																	Работа оплачена полностью
-																</p>
-															</div>
-														</>
-													)}
-												</>
-											) : (
-												<>
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].firstPaymentDate}
-															onChange={(newValue) => {
-																changeStage(
-																	index,
-																	0,
-																	'firstPaymentDate',
-																	newValue,
-																)
-															}}
-															calendarId="firstPaymentDate"
-														/>
-														<div className={s.PayInput}>
-															<p>Оплата</p>
-															<Input
-																num
-																type="text"
-																value={String(job.stages[0].fisrtPaymentPrice)}
-																onChange={(e) =>
-																	changeStage(
-																		index,
-																		0,
-																		'fisrtPaymentPrice',
-																		Number(e.target.value),
-																	)
-																}
-															/>
-															<p>₽</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].firstPaymentPayed}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'endPaymentPayed',
-																	!job.stages[0].firstPaymentPayed,
-																)
-															}
-														/>
-														<p
-															style={{
-																width: '33px',
-																overflow: 'hidden',
-																whiteSpace: 'nowrap',
-															}}>
-															{job.stages[0].fisrtPaymentPrice &&
-															job.stages[0].totalCost &&
-															String(job.stages[0].totalCost) !== '0'
-																? Math.round(
-																		(job.stages[0].fisrtPaymentPrice /
-																			job.stages[0].totalCost) *
-																			100,
-																	)
-																: '0'}
-															%
-														</p>
-													</div>
-													<Line width="317px" className={s.Line} />
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].startWorkDate}
-															onChange={(newValue) => {
-																changeStage(index, 0, 'startWorkDate', newValue)
-															}}
-															calendarId="startWorkDate"
-														/>
-														<div className={s.PayText}>
-															<p>Начало работы</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].isStartWork}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'isStartWork',
-																	!job.stages[0].isStartWork,
-																)
-															}
-														/>
-														<p style={{width: '33px'}}></p>
-													</div>
-													<Line width="317px" className={s.Line} />
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].endPaymentDate}
-															onChange={(newValue) => {
-																changeStage(
-																	index,
-																	0,
-																	'endPaymentDate',
-																	newValue,
-																)
-															}}
-															calendarId="endPaymentDate"
-														/>
-														<div className={s.PayInput}>
-															<p>Оплата</p>
-															<Input
-																num
-																type="text"
-																value={String(job.stages[0].endPaymentPrice)}
-																onChange={(e) =>
-																	changeStage(
-																		index,
-																		0,
-																		'endPaymentPrice',
-																		Number(e.target.value),
-																	)
-																}
-															/>
-															<p>₽</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].endPaymentPayed}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'firstPaymentPayed',
-																	!job.stages[0].endPaymentPayed,
-																)
-															}
-														/>
-														<p
-															style={{
-																width: '33px',
-																overflow: 'hidden',
-																whiteSpace: 'nowrap',
-															}}>
-															{job.stages[0].endPaymentPrice &&
-															job.stages[0].totalCost &&
-															String(job.stages[0].totalCost) !== '0'
-																? Math.round(
-																		(job.stages[0].endPaymentPrice /
-																			job.stages[0].totalCost) *
-																			100,
-																	)
-																: '0'}
-															%
-														</p>
-													</div>
-													<Line width="317px" className={s.Line} />
-													<div className={s.PaymentRow}>
-														<MiniCalendar
-															value={job.stages[0].endWorkDate}
-															onChange={(newValue) => {
-																changeStage(index, 0, 'endWorkDate', newValue)
-															}}
-															calendarId="endWorkDate"
-														/>
-														<div className={s.PayText}>
-															<p>Сдача работы</p>
-														</div>
-														<CheckBox
-															size="18px"
-															checked={job.stages[0].isEndWork}
-															onChange={() =>
-																changeStage(
-																	index,
-																	0,
-																	'isEndWork',
-																	!job.stages[0].isEndWork,
-																)
-															}
-														/>
-														<p style={{width: '33px'}}></p>
-													</div>
-													{job.stages[0].fisrtPaymentPrice +
-														job.stages[0].endPaymentPrice >=
-														job.stages[0].totalCost && (
-														<>
-															<Line width="317px" className={s.Line} />
-															<div className={s.PaymentRow}>
-																<p style={{color: '#25c25c'}}>
-																	Работа оплачена полностью
-																</p>
-															</div>
-														</>
-													)}
-												</>
-											)}
-										</div>
-									</>
-								)}
-								{/* NO DATA */}
+										)}
+										{/* NO DATA */}
 
-								<FileNLinks alreadyUploaded={files} callback={handleAddFile} />
-								<Line width="100%" className={s.Line} />
-								<TextAreaInputBlock
-									title="Комментарий:"
-									value={generalComment}
-									// disabled={isEditMode}
-									onChange={(e) => {
-										setGeneralComment(e.target.value)
-									}}
-									textIndent="120px"
-								/>
+										<FileNLinks
+											alreadyUploaded={files}
+											callback={handleAddFile}
+										/>
+										<Line width="100%" className={s.Line} />
+										<TextAreaInputBlock
+											disabled={isEditMode}
+											title="Комментарий:"
+											value={generalComment}
+											// disabled={isEditMode}
+											onChange={(e) => {
+												setGeneralComment(e.target.value)
+											}}
+											textIndent="120px"
+										/>
 
-								<Line width="100%" className={s.Line} />
+										<Line width="100%" className={s.Line} />
 
-								{/* <RecordNListen /> */}
+										{/* <RecordNListen /> */}
+									</div>
+								))}
 							</div>
-						))}
-					</div>
-				</div>
-				<div className={s.FooterWrapper}>
-					<div className={s.FooterButton}>
-						<div className={s.EditNSave}>
-							<button className={s.Edit}>
-								<p>Редактировать</p>
-							</button>
-							<button className={s.Save} onClick={sendInfo}>
-								<p>Сохранить</p>
-							</button>
 						</div>
-						<div className={s.ArchiveNDelete}>
-							<button onClick={handleToArchive} className={s.Archive}>
-								<p>В архив</p>
-							</button>
-							<button onClick={handleDelete} className={s.Delete}>
-								<p>Удалить</p>
-							</button>
+						<div className={s.FooterWrapper}>
+							<div className={s.FooterButton}>
+								<div className={s.EditNSave}>
+									<button
+										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
+										onClick={() => setIsEditMode(!isEditMode)}>
+										<p>Редактировать</p>
+									</button>
+									<button className={s.Save} onClick={sendInfo}>
+										<p>Сохранить</p>
+									</button>
+								</div>
+								<div className={s.ArchiveNDelete}>
+									<button onClick={handleToArchive} className={s.Archive}>
+										<p>В архив</p>
+									</button>
+									<button onClick={handleDelete} className={s.Delete}>
+										<p>Удалить</p>
+									</button>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
+					</>
+				) : (
+					<>
+						<div className={s.Spin}>
+							<TailSpin
+								visible={true}
+								height="80"
+								width="80"
+								color="#4fa94d"
+								ariaLabel="tail-spin-loading"
+								radius="1"
+								wrapperStyle={{}}
+								wrapperClass=""
+							/>
+						</div>
+					</>
+				)}
 			</div>
 			{PagePopUpExit === EPagePopUpExit.Exit && (
 				<div className={s.ExitPopUpWrap}>
