@@ -574,6 +574,7 @@ const AddClient = ({}: IAddClient) => {
 							<RecordNListen
 								alreadyRecorded={audios}
 								callback={handleAddAudio}
+								typeCard="client"
 							/>
 
 							<div className={s.ItemWrapper}>
@@ -721,7 +722,11 @@ const AddClient = ({}: IAddClient) => {
 									</div> */}
 												<Line width="100%" className={s.Line} />
 
-												<RecordNListen />
+												<RecordNListen
+													typeCard="client"
+													alreadyRecorded={audios}
+													callback={handleAddAudio}
+												/>
 												<div className={s.ItemHeader}>
 													<div className={s.dataSlidePicker}>
 														<button

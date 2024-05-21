@@ -86,24 +86,76 @@ const MainPage = () => {
 		})
 	}, [])
 
-	const handleToArchive = (studentId: string, index: number) => {
-		// Change student.isArchived to false by index in filterStudents
-		const newStudents = students.map((student, i) => {
+	const handleToArchive = (studentId: string, index: number, type: string) => {
+		switch (type) {
+			case 'student':
+				// Change student.isArchived to false by index in filterStudents
+				const newStudents = students.map((student, i) => {
+					if (i === index) {
+						return {
+							...student,
+							isArchived: false,
+						}
+					}
+					return student
+				})
+				setStudents(newStudents)
+
+				socket.emit('studentToArhive', {
+					token: token,
+					id: studentId,
+					isArchived: false,
+				})
+				break
+
+			case 'group':
+				const newGroups = groups.map((group, i) => {
+					if (i === index) {
+						return {
+							...group,
+							isArchived: false,
+						}
+					}
+					return group
+				})
+				setGroups(newGroups)
+				socket.emit('groupToArchive', {
+					token: token,
+					id: studentId,
+					isArchived: false,
+				})
+				break
+			case 'client':
+				const newClients = clients.map((client, i) => {
+					if (i === index) {
+						return {
+							...client,
+							isArchived: false,
+						}
+					}
+					return client
+				})
+				setClients(newClients)
+				socket.emit('clientToArhive', {
+					token: token,
+					id: studentId,
+					isArchived: false,
+				})
+				break
+			default:
+				break
+		}
+
+		const newClients = clients.map((client, i) => {
 			if (i === index) {
 				return {
-					...student,
+					...client,
 					isArchived: false,
 				}
 			}
-			return student
+			return client
 		})
-		setStudents(newStudents)
-
-		socket.emit('studentToArhive', {
-			token: token,
-			id: studentId,
-			isArchived: false,
-		})
+		setClients(newClients)
 	}
 
 	const data_muiSelectType = [
@@ -446,10 +498,14 @@ const MainPage = () => {
 														<p>{item.groupName}</p>
 														{item.isArchived && (
 															<>
-															{/* THIS onClick={() =>
+																{/* THIS onClick={() =>
 																					handleToArchive(item.id, index)
 																				} */}
-																<button  className={s.Icons}>
+																<button
+																	onClick={() =>
+																		handleToArchive(item.id, index, 'group')
+																	}
+																	className={s.Icons}>
 																	<KeyboardReturnIcon />
 																</button>
 															</>
@@ -594,7 +650,11 @@ const MainPage = () => {
 																			<button
 																				className={s.Icons}
 																				onClick={() =>
-																					handleToArchive(item.id, index)
+																					handleToArchive(
+																						item.id,
+																						index,
+																						'student',
+																					)
 																				}>
 																				<KeyboardReturnIcon />
 																			</button>
@@ -627,7 +687,11 @@ const MainPage = () => {
 																	<>
 																		<button
 																			onClick={() =>
-																				handleToArchive(item.id, index)
+																				handleToArchive(
+																					item.id,
+																					index,
+																					'student',
+																				)
 																			}
 																			className={s.Icons}>
 																			<KeyboardReturnIcon />
@@ -696,7 +760,11 @@ const MainPage = () => {
 																				<button
 																					className={s.Icons}
 																					onClick={() =>
-																						handleToArchive(item.id, index)
+																						handleToArchive(
+																							item.id,
+																							index,
+																							'client',
+																						)
 																					}>
 																					<KeyboardReturnIcon />
 																				</button>
@@ -729,7 +797,11 @@ const MainPage = () => {
 																		<>
 																			<button
 																				onClick={() =>
-																					handleToArchive(item.id, index)
+																					handleToArchive(
+																						item.id,
+																						index,
+																						'client',
+																					)
 																				}
 																				className={s.Icons}>
 																				<KeyboardReturnIcon />
@@ -796,7 +868,11 @@ const MainPage = () => {
 													<p>{item.groupName}</p>
 													{item.isArchived && (
 														<>
-															<button className={s.Icons}>
+															<button
+																onClick={() =>
+																	handleToArchive(item.id, index, 'group')
+																}
+																className={s.Icons}>
 																<KeyboardReturnIcon />
 															</button>
 														</>
@@ -933,7 +1009,11 @@ const MainPage = () => {
 																			<button
 																				className={s.Icons}
 																				onClick={() =>
-																					handleToArchive(item.id, index)
+																					handleToArchive(
+																						item.id,
+																						index,
+																						'student',
+																					)
 																				}>
 																				<KeyboardReturnIcon />
 																			</button>
@@ -966,7 +1046,11 @@ const MainPage = () => {
 																	<>
 																		<button
 																			onClick={() =>
-																				handleToArchive(item.id, index)
+																				handleToArchive(
+																					item.id,
+																					index,
+																					'student',
+																				)
 																			}
 																			className={s.Icons}>
 																			<KeyboardReturnIcon />
@@ -1035,7 +1119,11 @@ const MainPage = () => {
 																				<button
 																					className={s.Icons}
 																					onClick={() =>
-																						handleToArchive(item.id, index)
+																						handleToArchive(
+																							item.id,
+																							index,
+																							'client',
+																						)
 																					}>
 																					<KeyboardReturnIcon />
 																				</button>
@@ -1068,7 +1156,11 @@ const MainPage = () => {
 																		<>
 																			<button
 																				onClick={() =>
-																					handleToArchive(item.id, index)
+																					handleToArchive(
+																						item.id,
+																						index,
+																						'client',
+																					)
 																				}
 																				className={s.Icons}>
 																				<KeyboardReturnIcon />
@@ -1137,7 +1229,11 @@ const MainPage = () => {
 														<p>{item.groupName}</p>
 														{item.isArchived && (
 															<>
-																<button className={s.Icons}>
+																<button
+																	onClick={() =>
+																		handleToArchive(item.id, index, 'group')
+																	}
+																	className={s.Icons}>
 																	<KeyboardReturnIcon />
 																</button>
 															</>
@@ -1281,7 +1377,11 @@ const MainPage = () => {
 																				<button
 																					className={s.Icons}
 																					onClick={() =>
-																						handleToArchive(item.id, index)
+																						handleToArchive(
+																							item.id,
+																							index,
+																							'student',
+																						)
 																					}>
 																					<KeyboardReturnIcon />
 																				</button>
@@ -1314,7 +1414,11 @@ const MainPage = () => {
 																		<>
 																			<button
 																				onClick={() =>
-																					handleToArchive(item.id, index)
+																					handleToArchive(
+																						item.id,
+																						index,
+																						'student',
+																					)
 																				}
 																				className={s.Icons}>
 																				<KeyboardReturnIcon />
@@ -1386,7 +1490,11 @@ const MainPage = () => {
 																					<button
 																						className={s.Icons}
 																						onClick={() =>
-																							handleToArchive(item.id, index)
+																							handleToArchive(
+																								item.id,
+																								index,
+																								'client',
+																							)
 																						}>
 																						<KeyboardReturnIcon />
 																					</button>
@@ -1419,7 +1527,11 @@ const MainPage = () => {
 																			<>
 																				<button
 																					onClick={() =>
-																						handleToArchive(item.id, index)
+																						handleToArchive(
+																							item.id,
+																							index,
+																							'client',
+																						)
 																					}
 																					className={s.Icons}>
 																					<KeyboardReturnIcon />

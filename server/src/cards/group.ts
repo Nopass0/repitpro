@@ -804,12 +804,28 @@ export async function updateGroup(data) {
       );
     }
 
+    const groupExt = await db.group.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        files: true,
+      },
+    });
+
+    const extistFiles = JSON.parse(JSON.stringify(groupExt)).files;
+    console.log(
+      "\n-----------------ext-files--------------------\n",
+      groupExt,
+      "\n--------------------------\n"
+    );
     // Combine all uploaded files and update group
     const allUploadedFiles = [
       ...uploadedFiles,
       ...uploadedFilesItems,
       ...uploadedAudiosItems,
       ...uploadedAudiosStudents,
+      ...extistFiles,
     ];
 
     await db.group.update({

@@ -27,6 +27,8 @@ export const upload = async (
     for (const item of data) {
       const { file, name, size, type } = item;
       // Calculate hash-sum
+
+      if (file === undefined) continue;
       const hashSum = calculateBufferHash(file);
       let mimeType = type; // Use type as mime type
       let ext: string = "";

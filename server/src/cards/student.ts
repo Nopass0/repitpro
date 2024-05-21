@@ -13,8 +13,9 @@ import { join } from "path";
 import { mkdir, mkdirSync, writeFileSync } from "fs";
 import { promises as fsPromises } from "fs";
 import mime from "mime-types";
-import { getBufferByFilePath, upload } from "../files/files";
+import { getBufferByFilePath, upload, uploadFiles } from "../files/files";
 import { cache, strongCache } from "utils/Cache";
+import { deleteFileById } from "utils/filesystem";
 
 // Получение дня недели, начиная с понедельника
 function getDay(date) {
@@ -879,9 +880,54 @@ export async function getGroupByStudentId(data: any) {
 }
 
 export async function updateStudentAndItems(data: any) {
-  const { id, items } = data;
+  const { id, items, audios, files, token } = data;
 
   try {
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+
+    const userId = token_.userId;
+
+    const existFiles = await db.student.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        files: true,
+      },
+    });
+
+    const existFilesIds = JSON.parse(JSON.stringify(existFiles)).files;
+
+    // const isDeleted = await deleteFileById(, existFilesIds);
+
+    let justFilesIds = [];
+
+    justFilesIds = await upload(
+      files,
+      userId,
+      "student/file",
+      (paths: string[]) => {
+        justFilesIds = paths;
+      }
+    );
+
+    let justAudiosIds = [];
+
+    justAudiosIds = await upload(
+      audios,
+      userId,
+      "student/audio",
+      (paths: string[]) => {
+        justAudiosIds = paths;
+      }
+    );
+
+    const AllFiles = Object.assign(justFilesIds, justAudiosIds, existFilesIds);
+
     const updatedStudent = await db.student.update({
       where: {
         id: id,
@@ -892,6 +938,7 @@ export async function updateStudentAndItems(data: any) {
         prePayDate: data.prePayDate,
         costOneLesson: data.costOneLesson,
         linkStudent: data.link,
+        files: AllFiles,
         costStudent: data.costStudent,
         phoneNumber: data.phoneNumber,
         contactFace: data.contactFace,
@@ -923,6 +970,7 @@ export async function updateStudentAndItems(data: any) {
     console.log(error);
   }
 }
+
 export async function getAllIdStudents(data: any) {
   const { token } = data;
   const token_ = await db.token.findFirst({
@@ -1281,7 +1329,11 @@ export async function deleteAudio(data: {
 }) {
   try {
     const { token, id, type } = data; // token is the user's token. id is the file's id
-
+    console.log(
+      `\n-----------------------delete-Audio-----------------\n${JSON.stringify(
+        data
+      )}\n------------------------------------\n`
+    );
     const token_ = await db.token.findFirst({
       where: {
         token,
@@ -1294,88 +1346,38 @@ export async function deleteAudio(data: {
 
     const userId = token_.userId;
 
-    let updatedData;
+    // Models to update
+    const models = [
+      { name: "Group", field: "files" },
+      { name: "Student", field: "files" },
+      { name: "Client", field: "files" },
+    ];
 
-    switch (type) {
-      case "student":
-        const student = await db.student.findFirst({
-          where: { userId },
-        });
-
-        if (!student) {
-          throw new Error("Student not found");
-        }
-
-        updatedData = await db.student.update({
-          where: {
-            id: student.id,
+    for (const model of models) {
+      const items = await db[model.name.toLowerCase()].findMany({
+        where: {
+          userId,
+          [model.field]: {
+            has: id,
           },
-          data: {
-            files: {
-              set:
-                JSON.parse(JSON.stringify(student.files))?.filter(
-                  (fileId) => fileId !== id
-                ) || [],
-            },
-          },
-        });
+        },
+      });
 
-        console.log(updatedData);
-        break;
-      case "client":
-        const client = await db.client.findFirst({
-          where: { userId },
+      for (const item of items) {
+        const updatedFiles = item[model.field].filter(
+          (fileId) => fileId !== id
+        );
+        await db[model.name.toLowerCase()].update({
+          where: { id: item.id },
+          data: { [model.field]: updatedFiles },
         });
-
-        if (!client) {
-          throw new Error("Client not found");
-        }
-
-        updatedData = await db.client.update({
-          where: {
-            id: client.id,
-          },
-          data: {
-            files: {
-              set:
-                JSON.parse(JSON.stringify(client.files))?.filter(
-                  (fileId) => fileId !== id
-                ) || [],
-            },
-          },
-        });
-        break;
-      case "group":
-        const group = await db.group.findFirst({
-          where: { userId },
-        });
-
-        if (!group) {
-          throw new Error("Group not found");
-        }
-
-        updatedData = await db.group.update({
-          where: {
-            id: group.id,
-          },
-          data: {
-            files: {
-              set:
-                JSON.parse(JSON.stringify(client.files))?.filter(
-                  (fileId) => fileId !== id
-                ) || [],
-            },
-          },
-        });
-        break;
-      default:
-        throw new Error("Invalid type");
+      }
     }
 
     io.emit("deleteAudio", {
       message: "Audio deleted successfully",
-      data: updatedData,
     });
+    console.log("Audio deleted successfully");
   } catch (error) {
     io.emit("deleteAudio", {
       message: "Error deleting audio",

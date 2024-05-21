@@ -142,3 +142,14 @@ export interface TimeLine {
   editingEnd: boolean;
   editingStart: boolean;
 }
+
+export interface ICardFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  path: string;
+  hashSum: string;
+  extraType: string;
+  userId: string;
+}

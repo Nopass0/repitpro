@@ -334,6 +334,7 @@ const DayStudentPopUp = ({
 								alreadyRecorded={audios}
 								callback={handleAddHomeAudio}
 								className={s.RecordNListen}
+								typeCard="student"
 							/>
 							<input
 								type="file"
@@ -399,13 +400,12 @@ const DayStudentPopUp = ({
 							</Select>
 						</div>
 						<h1>Выполнение домашней работы</h1>
-						
-							<NowLevel
-								className={s.NowLevel}
-								value={homeStudentsPoints}
-								onChange={(e) => setHomeStudentsPoints(e)}
-							/>
-						
+
+						<NowLevel
+							className={s.NowLevel}
+							value={homeStudentsPoints}
+							onChange={(e) => setHomeStudentsPoints(e)}
+						/>
 					</div>
 					<div className={s.Devider}></div>
 					<div className={s.LessonWrapper}>
@@ -421,6 +421,7 @@ const DayStudentPopUp = ({
 								alreadyRecorded={classAudio}
 								callback={handleAddClassroomAudio}
 								className={s.RecordNListen}
+								typeCard="student"
 							/>
 							<input
 								type="file"
@@ -486,17 +487,16 @@ const DayStudentPopUp = ({
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>
-						
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-								<div className={s.PrePay}>
-									<p>{!hiddenNum && <>0</>} ₽</p>
-									<CheckBox size="16px" />
-								</div>
-							
+
+						<NowLevel
+							className={s.NowLevel}
+							value={classroomStudentsPoints}
+							onChange={(e) => setClassroomStudentsPoints(e)}
+						/>
+						<div className={s.PrePay}>
+							<p>{!hiddenNum && <>0</>} ₽</p>
+							<CheckBox size="16px" />
+						</div>
 					</div>
 				</div>
 			</div>

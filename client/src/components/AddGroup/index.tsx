@@ -37,7 +37,7 @@ import IconsPhone from '../IconsPhone/index'
 import {useNavigate} from 'react-router-dom'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import MiniCalendar from '../MiniCalendar'
-import { TailSpin } from 'react-loader-spinner'
+import {TailSpin} from 'react-loader-spinner'
 
 interface IAddGroup {
 	className?: string
@@ -161,6 +161,8 @@ const AddGroup = ({className}: IAddGroup) => {
 				audiosItems: audioItems,
 				audiosStudents: audioStudents,
 			})
+			setLoading(false)
+			window.location.reload()
 		} else {
 			console.log(
 				'\n----------------------------sendInfo----------------\n',
@@ -1750,6 +1752,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											<RecordNListen
 												alreadyRecorded={audioItems}
 												callback={handleAddAudioItems}
+												typeCard="group"
 											/>
 										</div>
 									</>
@@ -2186,6 +2189,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											<RecordNListen
 												alreadyRecorded={audioStudents}
 												callback={handleAddAudioStudents}
+												typeCard="group"
 											/>
 										</div>
 										{errorList.length > 0 && (

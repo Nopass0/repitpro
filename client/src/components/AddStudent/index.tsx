@@ -332,10 +332,14 @@ const AddStudent = ({}: IAddStudent) => {
 				prePayDate,
 				costOneLesson,
 				files,
+				audios,
+
 				items,
 				token,
 				phoneNumber,
 			})
+			setLoading(false)
+			window.location.reload()
 		} else {
 			socket.emit('addStudent', {
 				nameStudent,
@@ -1253,6 +1257,7 @@ const AddStudent = ({}: IAddStudent) => {
 								alreadyRecorded={audios}
 								callback={handleAddAudio}
 								className={s.RecordNListen}
+								typeCard="student"
 							/>
 
 							<div className={s.ItemWrapper}>
@@ -1905,19 +1910,18 @@ const AddStudent = ({}: IAddStudent) => {
 					</>
 				) : (
 					<>
-					<div className={s.Spin}>
-
-						<TailSpin
-							visible={true}
-							height="80"
-							width="80"
-							color="#4fa94d"
-							ariaLabel="tail-spin-loading"
-							radius="1"
-							wrapperStyle={{}}
-							wrapperClass=""
-						/>
-					</div>
+						<div className={s.Spin}>
+							<TailSpin
+								visible={true}
+								height="80"
+								width="80"
+								color="#4fa94d"
+								ariaLabel="tail-spin-loading"
+								radius="1"
+								wrapperStyle={{}}
+								wrapperClass=""
+							/>
+						</div>
 					</>
 				)}
 			</div>

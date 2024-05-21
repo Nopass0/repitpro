@@ -96,7 +96,7 @@ const DayCalendarPopUp = ({
 			year: calendarNowPopupYear,
 			token: token,
 		})
-	}, [])
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 	socket.once('getStudentsByDate', (data: any) => {
 		console.log('getStudentsByDate', data)
 		setStudents(data)

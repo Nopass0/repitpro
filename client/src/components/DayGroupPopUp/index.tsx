@@ -334,6 +334,7 @@ const DayGroupPopUp = ({
 								alreadyRecorded={audios}
 								callback={handleAddHomeAudio}
 								className={s.RecordNListen}
+								typeCard="day/group/audio/homework"
 							/>
 							<input
 								type="file"
@@ -399,46 +400,45 @@ const DayGroupPopUp = ({
 							</Select>
 						</div>
 						<h1>Выполнение домашней работы</h1>
-						
-								<div className={s.HomeWorkGroups}>
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-									<div className={s.HomeWorkStud}>
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={homeStudentsPoints}
-											onChange={(e) => setHomeStudentsPoints(e)}
-										/>
-									</div>
-									<Line width="371px" className={s.Line} />
-								</div>
-						
+
+						<div className={s.HomeWorkGroups}>
+							<div className={s.HomeWorkStud}>
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={homeStudentsPoints}
+									onChange={(e) => setHomeStudentsPoints(e)}
+								/>
+							</div>
+							<Line width="371px" className={s.Line} />
+							<div className={s.HomeWorkStud}>
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={homeStudentsPoints}
+									onChange={(e) => setHomeStudentsPoints(e)}
+								/>
+							</div>
+							<Line width="371px" className={s.Line} />
+							<div className={s.HomeWorkStud}>
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={homeStudentsPoints}
+									onChange={(e) => setHomeStudentsPoints(e)}
+								/>
+							</div>
+							<Line width="371px" className={s.Line} />
+							<div className={s.HomeWorkStud}>
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={homeStudentsPoints}
+									onChange={(e) => setHomeStudentsPoints(e)}
+								/>
+							</div>
+							<Line width="371px" className={s.Line} />
+						</div>
 					</div>
 					<div className={s.Devider}></div>
 					<div className={s.LessonWrapper}>
@@ -454,6 +454,7 @@ const DayGroupPopUp = ({
 								alreadyRecorded={classAudio}
 								callback={handleAddClassroomAudio}
 								className={s.RecordNListen}
+								typeCard="day/group/audio/classwork"
 							/>
 							<input
 								type="file"
@@ -519,63 +520,62 @@ const DayGroupPopUp = ({
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>
-						
-								<div className={s.WorkClassGroup}>
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
 
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
+						<div className={s.WorkClassGroup}>
+							<div className={s.WorkClassStud}>
+								<CheckBox borderRadius={10} size="16px" />
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={classroomStudentsPoints}
+									onChange={(e) => setClassroomStudentsPoints(e)}
+								/>
 
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
+								<CheckBox className={s.CheckboxComment} size="16px" />
+								<p>Предоплата</p>
+							</div>
+							<Line width="100%" className={s.Line} />
+							<div className={s.WorkClassStud}>
+								<CheckBox borderRadius={10} size="16px" />
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={classroomStudentsPoints}
+									onChange={(e) => setClassroomStudentsPoints(e)}
+								/>
 
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-									<div className={s.WorkClassStud}>
-										<CheckBox borderRadius={10} size="16px" />
-										<p>Петров</p>
-										<NowLevel
-											className={s.NowLevel}
-											value={classroomStudentsPoints}
-											onChange={(e) => setClassroomStudentsPoints(e)}
-										/>
+								<CheckBox className={s.CheckboxComment} size="16px" />
+								<p>Предоплата</p>
+							</div>
+							<Line width="100%" className={s.Line} />
+							<div className={s.WorkClassStud}>
+								<CheckBox borderRadius={10} size="16px" />
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={classroomStudentsPoints}
+									onChange={(e) => setClassroomStudentsPoints(e)}
+								/>
 
-										<CheckBox className={s.CheckboxComment} size="16px" />
-										<p>Предоплата</p>
-									</div>
-									<Line width="100%" className={s.Line} />
-								</div>
-								<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
-							
+								<CheckBox className={s.CheckboxComment} size="16px" />
+								<p>Предоплата</p>
+							</div>
+							<Line width="100%" className={s.Line} />
+							<div className={s.WorkClassStud}>
+								<CheckBox borderRadius={10} size="16px" />
+								<p>Петров</p>
+								<NowLevel
+									className={s.NowLevel}
+									value={classroomStudentsPoints}
+									onChange={(e) => setClassroomStudentsPoints(e)}
+								/>
+
+								<CheckBox className={s.CheckboxComment} size="16px" />
+								<p>Предоплата</p>
+							</div>
+							<Line width="100%" className={s.Line} />
+						</div>
+						<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
 					</div>
 				</div>
 			</div>

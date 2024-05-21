@@ -5,10 +5,12 @@ import Listen from '../../assets/Listen.svg'
 import {Option, Select, SelectOption} from '@mui/base'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import Line from '../Line'
-import socket from '@/socket'
+import socket from '../../socket'
+import {useSelector} from 'react-redux'
 
 interface IRecordNListen {
 	className?: string
+	typeCard: string
 	alreadyRecorded?: {
 		file: File
 		name: string
@@ -22,6 +24,7 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 	className,
 	alreadyRecorded = [],
 	callback,
+	typeCard,
 }) => {
 	const [isRecording, setIsRecording] = useState<boolean>(false)
 	const [audioChunks, setAudioChunks] = useState([])
@@ -34,12 +37,12 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 		setRecordedAudios(alreadyRecorded)
 	}, [alreadyRecorded])
 
+	const user = useSelector((state: any) => state.user)
+	const token = user.token
+
 	const getFileLinkById = (id: string) => {
 		// !TODO: Remake after deploy on server with domain
-		const baseLinkToThisSite = window.location.origin.replace(
-			`:${window.location.port}`,
-			':3000',
-		)
+		const baseLinkToThisSite = window.location.origin + ':3000'
 
 		return `${baseLinkToThisSite}/files/${id}`
 	}
@@ -75,6 +78,14 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 		} catch (error) {
 			console.error('Ошибка доступа к микрофону:', error)
 		}
+	}
+
+	const sendDelete = (id: string) => {
+		socket.emit('deleteAudio', {
+			token,
+			id,
+			type: typeCard,
+		})
 	}
 
 	const stopRecording = () => {
@@ -220,7 +231,7 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 											{audio.name}
 										</span>
 									)}
-									<DeleteOutlineIcon />
+									<DeleteOutlineIcon onClick={() => sendDelete(audio.id)} />
 								</li>
 								{index !== recordedAudios.length - 1 && (
 									<Line width="100%" className={s.Line} />
