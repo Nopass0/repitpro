@@ -8,6 +8,7 @@ interface INowLevel {
 	amountInputs?: number
 	value?: number // Added value prop
 	onChange?: (value: number) => void
+	disabled?: boolean
 }
 
 const NowLevel: React.FC<INowLevel> = ({
@@ -17,6 +18,7 @@ const NowLevel: React.FC<INowLevel> = ({
 	amountInputs = 5,
 	value, // Destructuring value prop
 	onChange,
+	disabled,
 }: INowLevel) => {
 	const [activeButton, setActiveButton] = useState<number | null>(
 		value !== undefined ? value - 1 : null,
@@ -40,6 +42,7 @@ const NowLevel: React.FC<INowLevel> = ({
 		<div className={`${s.wrapper} ${className}`}>
 			{Array.from({length: amountInputs}, (_, i) => (
 				<button
+				disabled={disabled}
 					key={i}
 					className={`${s.button} ${activeButton === i ? s.active : ''}`}
 					value={i + 1}

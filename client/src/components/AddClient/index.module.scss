@@ -502,8 +502,12 @@
 			display: flex;
 			flex-direction: row;
 			align-items: center;
+			width: 100px;
 
 			font-size: 12px;
+			input {
+				width: 40px;
+			}
 			p {
 				margin-right: 2px;
 			}
@@ -511,7 +515,6 @@
 				margin-right: 10px;
 			}
 
-			width: 100px;
 		}
 		.PayText {
 			width: 100px;
@@ -628,4 +631,11 @@
 		min-height: 872px;
 		max-height: 872px;
 	}
+}
+.Spin {
+	width: 100%;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
