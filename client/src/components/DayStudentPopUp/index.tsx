@@ -16,7 +16,7 @@ import uploadFile from '../../assets/UploadFile.svg'
 import NowLevel from '../NowLevel'
 import CheckBox from '../CheckBox'
 import Arrow, {ArrowType} from '../../assets/arrow'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {useEffect, useState} from 'react'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
@@ -47,6 +47,7 @@ const DayStudentPopUp = ({
 	onExit,
 	groupId,
 }: IDayStudentPopUp) => {
+	const dispatch = useDispatch()
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
 	)
@@ -62,7 +63,9 @@ const DayStudentPopUp = ({
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
-
+	const [studentSchedules, setStudentSchedules] = useState<any>()
+	const [currentIndexStudentSchedules, setCurrentIndexStudentSchedules] =
+		useState<number>()
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
@@ -83,7 +86,6 @@ const DayStudentPopUp = ({
 	const [homeFiles, setHomeFiles] = useState<any>(student?.homeFiles || [])
 	const [homeFilesPaths, setHomeFilesPaths] = useState<string[]>([])
 	const [classroomFilesPaths, setClassroomFilesPaths] = useState<string[]>([])
-
 	const [audios, setAudios] = useState<any>(student?.audios || [])
 
 	const [classAudio, setClassAudio] = useState<any>(student?.classAudio || [])
@@ -160,6 +162,92 @@ const DayStudentPopUp = ({
 		}
 	}
 
+	const [students, setStudents] = useState([])
+	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
+	const currentStudent = students[currentIndex] // Get the current student
+
+	const handlePrevStudent = () => {
+		setCurrentIndex((prevIndex) =>
+			prevIndex === 0 ? students.length - 1 : prevIndex - 1,
+		)
+	}
+
+	const handleNextStudent = () => {
+		setCurrentIndex((prevIndex) =>
+			prevIndex === students.length - 1 ? 0 : prevIndex + 1,
+		)
+	}
+
+	const [groups, setGroups] = useState<any>([])
+	const [group, setGroup] = useState<any>({})
+
+	useEffect(() => {
+		if (student.groupId) {
+			socket.emit('getByGroupId', {
+				groupId: student.groupId,
+				token: token,
+			})
+		}
+
+		socket.once('getByGroupId', (data: any) => {
+			console.log('getByGroupId', data)
+			setStudentSchedules(data)
+			let indexOfStudent = data.findIndex(
+				(student: any) => student.id === currentScheduleDay,
+			)
+			setCurrentIndexStudentSchedules(indexOfStudent)
+			console.log(
+				indexOfStudent,
+				currentScheduleDay,
+				'currentIndexStudentSchedules',
+			)
+		})
+	}, [student, currentScheduleDay])
+
+	function nextStudentSchedule() {
+		if (currentIndexStudentSchedules! < studentSchedules.length - 1) {
+			dispatch({
+				type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+				payload: studentSchedules[currentIndexStudentSchedules! + 1].id,
+			})
+			dispatch({
+				type: 'SET_CALENDAR_NOW_POPUP',
+				payload: {
+					day: studentSchedules[currentIndexStudentSchedules! + 1].day,
+					month: studentSchedules[currentIndexStudentSchedules! + 1].month,
+					year: studentSchedules[currentIndexStudentSchedules! + 1].year,
+				},
+			})
+			console.log(
+				studentSchedules[currentIndexStudentSchedules! + 1],
+				currentScheduleDay,
+				'next',
+			)
+		}
+	}
+
+	function prevStudentSchedule() {
+		if (currentIndexStudentSchedules! > 0) {
+			dispatch({
+				type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+				payload: studentSchedules[currentIndexStudentSchedules! - 1].id,
+			})
+			dispatch({
+				type: 'SET_CALENDAR_NOW_POPUP',
+				payload: {
+					day: studentSchedules[currentIndexStudentSchedules! - 1].day,
+					month: studentSchedules[currentIndexStudentSchedules! - 1].month,
+					year: studentSchedules[currentIndexStudentSchedules! - 1].year,
+				},
+			})
+			console.log(
+				studentSchedules[currentIndexStudentSchedules! - 1],
+				currentScheduleDay,
+				'prev',
+			)
+		}
+	}
+
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
@@ -191,27 +279,7 @@ const DayStudentPopUp = ({
 			setClassroomStudentsPoints(student?.classStudentsPoints?.points || 1)
 		})
 		setIsOpened(true)
-	}, [])
-
-	const [groups, setGroups] = useState<any>([])
-	const [group, setGroup] = useState<any>({})
-
-	useEffect(() => {
-		socket.emit('getGroupsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			userId: token,
-		})
-		socket.once('getGroupsByDate', (data: any) => {
-			console.log('getGroupsByDate', data)
-			setGroups(data)
-
-			//get group where groupId = groupId
-			const group = data.find((group: any) => group.groupId === groupId)
-			setGroup(group)
-		})
-	}, [])
+	}, [currentScheduleDay])
 
 	console.log('groupgroupgroupgroupgroup', group)
 
@@ -259,10 +327,6 @@ const DayStudentPopUp = ({
 		classroomStudentsPoints,
 	])
 
-	const [students, setStudents] = useState([])
-	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
-	const currentStudent = students[currentIndex] // Get the current student
-
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
@@ -286,19 +350,6 @@ const DayStudentPopUp = ({
 			setCurrentIndex(currentStudentIndex)
 		}
 	}, [students, currentScheduleDay])
-
-	const handlePrevStudent = () => {
-		setCurrentIndex((prevIndex) =>
-			prevIndex === 0 ? students.length - 1 : prevIndex - 1,
-		)
-	}
-
-	const handleNextStudent = () => {
-		setCurrentIndex((prevIndex) =>
-			prevIndex === students.length - 1 ? 0 : prevIndex + 1,
-		)
-	}
-
 	return (
 		<div style={style} className={s.wrapper}>
 			<div className={s.InfoBlock}>
@@ -505,12 +556,12 @@ const DayStudentPopUp = ({
 					<CloseIcon className={s.closeIcon} />
 				</button>
 				<div className={s.btn}>
-					<button className={s.btnRight} onClick={handleNextStudent}>
+					<button className={s.btnRight} onClick={nextStudentSchedule}>
 						<span>
 							<Arrow direction={ArrowType.right} />
 						</span>
 					</button>
-					<button className={s.btnLeft} onClick={handlePrevStudent}>
+					<button className={s.btnLeft} onClick={prevStudentSchedule}>
 						<span>
 							<Arrow direction={ArrowType.left} />
 						</span>

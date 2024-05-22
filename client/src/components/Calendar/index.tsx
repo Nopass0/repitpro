@@ -732,7 +732,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Student && (
 					<div
-						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobileDay}`}>
 						<DayStudentPopUp
 							style={{
 								position: 'relative',
@@ -759,7 +759,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Group && (
 					<div
-						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobileDay}`}>
 						<DayGroupPopUp
 							style={{
 								position: 'relative',
@@ -785,7 +785,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			{currentScheduleDay !== '' &&
 				currentPopUpType === ECurrentDayPopUp.Client && (
 					<div
-						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobile}`}>
+						className={`${details ? s.PagePopUpWrap : s.PagePopUpWrapMobileDay}`}>
 						<DayClientPopUp
 							clientId={currentScheduleDayClientId}
 							style={{
