@@ -1,26 +1,16 @@
+import React, {useEffect, useState} from 'react'
 import s from './index.module.scss'
-import Line from '../Line'
-import DataSlidePicker from '../DataSlidePicker'
 import CloseIcon from '@mui/icons-material/Close'
-import DayCalendarLine from '../DayCalendarLine/index'
-import GroupOnline from '../../assets/1.svg'
-import Online from '../../assets/2.svg'
-import HomeStudent from '../../assets/3.svg'
-import Group from '../../assets/4.svg'
-import Home from '../../assets/5.svg'
-import Client from '../../assets/6.svg'
-import Plus from '../../assets/ItemPlus.svg'
 import RecordNListen from '../RecordNListen'
 import {Option, Select, SelectOption} from '@mui/base'
 import uploadFile from '../../assets/UploadFile.svg'
 import NowLevel from '../NowLevel'
-import CheckBox from '../CheckBox'
-import Arrow, {ArrowType} from '../../assets/arrow'
 import {useSelector} from 'react-redux'
-import {useEffect, useState} from 'react'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import Arrow, {ArrowType} from '../../assets/arrow'
+
 interface IDayGroupPopUp {
 	icon?: any
 	name?: string
@@ -56,236 +46,51 @@ const DayGroupPopUp = ({
 	const calendarNowPopupYear = useSelector(
 		(state: any) => state.calendarNowPopupYear,
 	)
-	const currentOpenedStudent = useSelector(
-		(state: any) => state.currentOpenedStudent,
-	)
-	const currentScheduleDay = useSelector(
-		(state: any) => state.currentScheduleDay,
-	)
-
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
 
-	const [pagePopUp, setPagePopUp] = useState<EPagePopUp>(EPagePopUp.None)
-
-	const [student, setStudent] = useState<any>({})
-	const [isOpened, setIsOpened] = useState(false)
-	const [openSelect1, setOpenSelect1] = useState(false)
-	const [openSelect2, setOpenSelect2] = useState(false)
-
-	const [homeWorkComment, setHomeWorkComment] = useState(
-		student?.homeWork || '',
-	)
-	const [classroomComment, setClassroomComment] = useState(
-		student?.classWork || '',
-	)
-	const [homeFiles, setHomeFiles] = useState<any>(student?.homeFiles || [])
-	const [homeFilesPaths, setHomeFilesPaths] = useState<string[]>([])
-	const [classroomFilesPaths, setClassroomFilesPaths] = useState<string[]>([])
-
-	const [audios, setAudios] = useState<any>(student?.audios || [])
-
-	const [classAudio, setClassAudio] = useState<any>(student?.classAudio || [])
-
-	const handleAddHomeAudio = (
-		file: any,
-		name: string,
-		type: string,
-		size: number,
-	) => {
-		console.log(file, name, type, size)
-		setAudios([...homeFiles, {name: name, type: type, size: size, file: file}])
-
-		console.log('\n--------home-audio--------\n', audios, '\n--------\n')
-	}
-
-	const handleAddClassroomAudio = (
-		file: any,
-		name: string,
-		type: string,
-		size: number,
-	) => {
-		console.log(file, name, type, size)
-		setClassAudio([
-			...classAudio,
-			{name: name, type: type, size: size, file: file},
-		])
-		console.log('\n--------class-audio--------\n', classAudio, '\n--------\n')
-	}
-
-	const [classroomFiles, setClassroomFiles] = useState<any>(
-		student?.classFiles || [],
-	)
-	const [homeStudentsPoints, setHomeStudentsPoints] = useState<number>(
-		student?.homeStudentsPoints?.points || 1,
-	)
-	const [classroomStudentsPoints, setClassroomStudentsPoints] =
-		useState<number>(student?.classStudentsPoints?.points || 1)
-
-	const handleAddHomeFile = (e: any) => {
-		const fileToAdd = e.target.files[0]
-		console.log('FiletoAdd', fileToAdd)
-		// // Проверяем, есть ли уже такой файл в массиве homeFiles
-		if (!homeFiles.some((file) => file.name === fileToAdd.name)) {
-			setHomeFiles([
-				...homeFiles,
-				{
-					name: fileToAdd.name,
-					size: fileToAdd.size,
-					type: fileToAdd.type,
-					file: fileToAdd,
-				},
-			])
-		} else {
-			console.log('Этот файл уже был добавлен.')
-		}
-	}
-
-	const handleAddClassroomFile = (e: any) => {
-		const fileToAdd = e.target.files[0]
-		// Проверяем, есть ли уже такой файл в массиве classroomFiles
-		if (!classroomFiles.some((file) => file.name === fileToAdd.name)) {
-			setClassroomFiles([
-				...classroomFiles,
-				{
-					name: fileToAdd.name,
-					size: fileToAdd.size,
-					type: fileToAdd.type,
-					file: fileToAdd,
-				},
-			])
-		} else {
-			console.log('Этот файл уже был добавлен.')
-		}
-	}
-
-	useEffect(() => {
-		socket.emit('getStudentsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			token: token,
-		})
-		socket.once('getStudentsByDate', (data: any) => {
-			console.log('getStudentsByDate', data)
-			//get students array and get by id
-			console.log('data', data, 'currentScheduleDay', currentScheduleDay)
-			const student = data?.find(
-				(student: any) => student.id === currentScheduleDay,
-			)
-			setStudent(student || {})
-			console.log(
-				'studentstudentstudentstudentstudentstudentstudentstudentstudent',
-				student,
-			)
-			setHomeWorkComment(student?.homeWork || '')
-			setClassroomComment(student?.classWork || '')
-			setHomeFiles(student?.homeFiles || [])
-			setClassroomFiles(student?.classFiles || [])
-			// setAudios(student?.audios || [])
-			// setClassAudio(student?.classAudio || [])
-			setHomeFilesPaths(student?.homeFilesPath || [])
-			setClassroomFilesPaths(student?.classFilesPath || [])
-			setHomeStudentsPoints(student?.homeStudentsPoints?.points || 1)
-			setClassroomStudentsPoints(student?.classStudentsPoints?.points || 1)
-		})
-		setIsOpened(true)
-	}, [])
-
-	const [groups, setGroups] = useState<any>([])
 	const [group, setGroup] = useState<any>({})
-
-	useEffect(() => {
-		socket.emit('getGroupsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			userId: token,
-		})
-		socket.once('getGroupsByDate', (data: any) => {
-			console.log('getGroupsByDate', data)
-			setGroups(data)
-
-			//get group where groupId = groupId
-			const group = data.find((group: any) => group.groupId === groupId)
-			setGroup(group)
-		})
-	}, [])
-
-	console.log('groupgroupgroupgroupgroup', group)
-
-	useEffect(() => {
-		if (currentScheduleDay && isOpened) {
-			console.log(
-				'New info: ',
-				currentScheduleDay,
-				homeWorkComment,
-				classroomComment,
-				homeFiles,
-				classroomFiles,
-				homeStudentsPoints,
-				classroomStudentsPoints,
-			)
-
-			socket.emit('updateStudentSchedule', {
-				id: currentScheduleDay,
-				day: calendarNowPopupDay,
-				month: calendarNowPopupMonth,
-				year: calendarNowPopupYear,
-				token: token,
-				classFiles: classroomFiles,
-				classWork: classroomComment,
-				classStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: classroomStudentsPoints,
-				},
-				homeFiles: homeFiles,
-				homeWork: homeWorkComment,
-				// audios: audios,
-				// classAudio: classAudio,
-				homeStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: homeStudentsPoints,
-				},
-			})
-		}
-	}, [
-		homeWorkComment,
-		classroomComment,
-		homeFiles,
-		classroomFiles,
-		homeStudentsPoints,
-		classroomStudentsPoints,
-	])
-
-	const [students, setStudents] = useState([])
+	const [students, setStudents] = useState<any[]>([])
+	const [items, setItems] = useState<any[]>([])
 	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
 	const currentStudent = students[currentIndex] // Get the current student
 
 	useEffect(() => {
-		socket.emit('getStudentsByDate', {
+		socket.emit('fetchGroupsByDate', {
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
 		})
-		socket.once('getStudentsByDate', (data) => {
-			setStudents(data)
+		socket.once('fetchGroupsByDate', (data: any) => {
+			const groupData = data.find((group: any) => group.id === groupId)
+			if (groupData) {
+				setGroup(groupData)
+				setStudents(groupData.students)
+				setItems(groupData.items)
+			}
 		})
-	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
+	}, [
+		calendarNowPopupDay,
+		calendarNowPopupMonth,
+		calendarNowPopupYear,
+		groupId,
+		token,
+	])
+
+	const handleSave = () => {
+		socket.emit('modifyGroupSchedule', {
+			groupId: groupId,
+			items: items,
+			students: students,
+			token: token,
+		})
+	}
 
 	useEffect(() => {
-		// Find the index of the current student based on the currentScheduleDay
-		const currentStudentIndex = students.findIndex(
-			(student) => student.id === currentScheduleDay,
-		)
-
-		// If the current student is found in the array, set the currentIndex
-		if (currentStudentIndex !== -1) {
-			setCurrentIndex(currentStudentIndex)
-		}
-	}, [students, currentScheduleDay])
+		handleSave()
+	}, [students, items]) // Save data whenever students or items change
 
 	const handlePrevStudent = () => {
 		setCurrentIndex((prevIndex) =>
@@ -299,6 +104,84 @@ const DayGroupPopUp = ({
 		)
 	}
 
+	const handleAddHomeFile = (e: any) => {
+		const fileToAdd = e.target.files[0]
+		if (
+			!currentStudent.homeFiles?.some(
+				(file: any) => file.name === fileToAdd.name,
+			)
+		) {
+			setStudents(
+				students.map((student, index) =>
+					index === currentIndex
+						? {
+								...student,
+								homeFiles: [
+									...(student.homeFiles || []),
+									{
+										name: fileToAdd.name,
+										size: fileToAdd.size,
+										type: fileToAdd.type,
+										file: fileToAdd,
+									},
+								],
+							}
+						: student,
+				),
+			)
+		} else {
+			console.log('Этот файл уже был добавлен.')
+		}
+	}
+
+	const handleAddClassroomFile = (e: any) => {
+		const fileToAdd = e.target.files[0]
+		if (
+			!currentStudent.classFiles?.some(
+				(file: any) => file.name === fileToAdd.name,
+			)
+		) {
+			setStudents(
+				students.map((student, index) =>
+					index === currentIndex
+						? {
+								...student,
+								classFiles: [
+									...(student.classFiles || []),
+									{
+										name: fileToAdd.name,
+										size: fileToAdd.size,
+										type: fileToAdd.type,
+										file: fileToAdd,
+									},
+								],
+							}
+						: student,
+				),
+			)
+		} else {
+			console.log('Этот файл уже был добавлен.')
+		}
+	}
+
+	const handleHomeWorkChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const value = e.target.value
+		setStudents(
+			students.map((student, index) =>
+				index === currentIndex ? {...student, homeWork: value} : student,
+			),
+		)
+	}
+
+	const handleClassWorkChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const value = e.target.value
+		setStudents(
+			students.map((student, index) =>
+				index === currentIndex ? {...student, classWork: value} : student,
+			),
+		)
+	}
+
 	return (
 		<div style={style} className={s.wrapper}>
 			<div className={s.InfoBlock}>
@@ -306,12 +189,12 @@ const DayGroupPopUp = ({
 					<div className={s.MainHeader}>
 						<div className={s.IconHeader}>
 							<img src={icon} alt="icon" />
-							<p>{student?.nameStudent}</p>
+							<p>{group.groupName}</p>
 						</div>
 						<div className={s.Devider}></div>
 						<div className={s.AddressHeader}>
 							<p>Адрес:</p>
-							<p>{student?.place}</p>
+							<p>{address}</p>
 						</div>
 						<div className={s.Devider}></div>
 						<div className={s.DateHeader}>
@@ -326,13 +209,32 @@ const DayGroupPopUp = ({
 						<textarea
 							className={s.TextArea}
 							placeholder="Задания, комментарий"
-							value={homeWorkComment}
-							onChange={(e) => setHomeWorkComment(e.target.value)}
+							value={currentStudent?.homeWork || ''}
+							onChange={handleHomeWorkChange}
 						/>
 						<div className={s.MediaBlock}>
 							<RecordNListen
-								alreadyRecorded={audios}
-								callback={handleAddHomeAudio}
+								alreadyRecorded={currentStudent?.audios || []}
+								callback={(
+									file: any,
+									name: string,
+									type: string,
+									size: number,
+								) => {
+									setStudents(
+										students.map((student, index) =>
+											index === currentIndex
+												? {
+														...student,
+														audios: [
+															...(student.audios || []),
+															{name: name, type: type, size: size, file: file},
+														],
+													}
+												: student,
+										),
+									)
+								}}
 								className={s.RecordNListen}
 								typeCard="day/group/audio/homework"
 							/>
@@ -342,102 +244,70 @@ const DayGroupPopUp = ({
 								className={s.InputFile}
 								onChange={handleAddHomeFile}
 							/>
-							{/* <label htmlFor="inputFile1" className={s.LabelFile}>
-								<img src={uploadFile} alt="uploadFile" />
-							</label> */}
 							<Select
 								className={s.Select}
 								multiple
-								onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
+								onListboxOpenChange={() => {}}
 								renderValue={(option: SelectOption<number> | null) => {
-									if (option == null || option.value === null) {
-										return (
-											<>
-												<div className={s.ListWrapper}>
-													<label htmlFor="inputFile1" className={s.LabelFile}>
-														<img src={uploadFile} alt="uploadFile" />
-													</label>
-													<div className={s.Icons}>
-														{openSelect1 ? <ExpandLess /> : <ExpandMore />}
-													</div>
-												</div>
-											</>
-										)
-									}
 									return (
-										<>
-											<div className={s.ListWrapper}>
-												<label htmlFor="inputFile1" className={s.LabelFile}>
-													<img src={uploadFile} alt="uploadFile" />
-												</label>
-												<div className={s.Icons}>
-													{openSelect1 ? <ExpandLess /> : <ExpandMore />}
-												</div>
-											</div>
-										</>
+										<div className={s.ListWrapper}>
+											<label htmlFor="inputFile1" className={s.LabelFile}>
+												<img src={uploadFile} alt="uploadFile" />
+											</label>
+										</div>
 									)
 								}}>
 								<Option className={s.Option} value={0}>
-									{homeFiles.length === 0
+									{currentStudent?.homeFiles?.length === 0
 										? 'Список пока пуст'
-										: homeFiles.map((file: any, index: number) => (
-												<div className={s.FileWrapper}>
-													<p>{file.name.slice(0, 25) + '...'}</p>
-													<button
-														className={s.DeleteBtn}
-														onClick={() =>
-															setHomeFiles(
-																homeFiles.filter(
-																	(f: any) => f.name !== file.name,
-																),
-															)
-														}>
-														<DeleteOutlineIcon />
-													</button>
-												</div>
-											))}
+										: currentStudent?.homeFiles?.map(
+												(file: any, index: number) => (
+													<div className={s.FileWrapper} key={index}>
+														<p>{file.name.slice(0, 25) + '...'}</p>
+														<button
+															className={s.DeleteBtn}
+															onClick={() =>
+																setStudents(
+																	students.map((student, i) =>
+																		i === currentIndex
+																			? {
+																					...student,
+																					homeFiles: student.homeFiles.filter(
+																						(f: any) => f.name !== file.name,
+																					),
+																				}
+																			: student,
+																	),
+																)
+															}>
+															<DeleteOutlineIcon />
+														</button>
+													</div>
+												),
+											)}
 								</Option>
 							</Select>
 						</div>
 						<h1>Выполнение домашней работы</h1>
-
 						<div className={s.HomeWorkGroups}>
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
+							{students.map((student: any, index: number) => (
+								<div className={s.HomeWorkStud} key={index}>
+									<p>{student.nameStudent}</p>
+									<NowLevel
+										className={s.NowLevel}
+										value={student.homeStudentsPoints?.points || 0}
+										onChange={(e) =>
+											setStudents(
+												students.map((s, i) =>
+													i === index
+														? {...s, homeStudentsPoints: {points: e}}
+														: s,
+												),
+											)
+										}
+									/>
+								</div>
+							))}
 						</div>
 					</div>
 					<div className={s.Devider}></div>
@@ -446,13 +316,32 @@ const DayGroupPopUp = ({
 						<textarea
 							className={s.TextArea}
 							placeholder="Комментарий"
-							value={classroomComment}
-							onChange={(e) => setClassroomComment(e.target.value)}
+							value={currentStudent?.classWork || ''}
+							onChange={handleClassWorkChange}
 						/>
 						<div className={s.MediaBlock}>
 							<RecordNListen
-								alreadyRecorded={classAudio}
-								callback={handleAddClassroomAudio}
+								alreadyRecorded={currentStudent?.classAudio || []}
+								callback={(
+									file: any,
+									name: string,
+									type: string,
+									size: number,
+								) => {
+									setStudents(
+										students.map((student, index) =>
+											index === currentIndex
+												? {
+														...student,
+														classAudio: [
+															...(student.classAudio || []),
+															{name: name, type: type, size: size, file: file},
+														],
+													}
+												: student,
+										),
+									)
+								}}
 								className={s.RecordNListen}
 								typeCard="day/group/audio/classwork"
 							/>
@@ -462,118 +351,70 @@ const DayGroupPopUp = ({
 								className={s.InputFile}
 								onChange={handleAddClassroomFile}
 							/>
-							{/* <label htmlFor="inputFile2" className={s.LabelFile}>
-								<img src={uploadFile} alt="uploadFile" />
-							</label> */}
 							<Select
 								className={s.Select}
 								multiple
-								onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
+								onListboxOpenChange={() => {}}
 								renderValue={(option: SelectOption<number> | null) => {
-									if (option == null || option.value === null) {
-										return (
-											<>
-												<div className={s.ListWrapper}>
-													<label htmlFor="inputFile2" className={s.LabelFile}>
-														<img src={uploadFile} alt="uploadFile" />
-													</label>
-													<div className={s.Icons}>
-														{openSelect2 ? <ExpandLess /> : <ExpandMore />}
-													</div>
-												</div>
-											</>
-										)
-									}
 									return (
-										<>
-											<div className={s.ListWrapper}>
-												<label htmlFor="inputFile2" className={s.LabelFile}>
-													<img src={uploadFile} alt="uploadFile" />
-												</label>
-												<div className={s.Icons}>
-													{openSelect2 ? <ExpandLess /> : <ExpandMore />}
-												</div>
-											</div>
-										</>
+										<div className={s.ListWrapper}>
+											<label htmlFor="inputFile2" className={s.LabelFile}>
+												<img src={uploadFile} alt="uploadFile" />
+											</label>
+										</div>
 									)
 								}}>
 								<Option className={s.Option} value={0}>
-									{classroomFiles.length === 0
+									{currentStudent?.classFiles?.length === 0
 										? 'Список пока пуст'
-										: classroomFiles.map((file: any) => (
-												<div className={s.FileWrapper}>
-													<p>{file.name.slice(0, 25) + '...'}</p>
-													<button
-														className={s.DeleteBtn}
-														onClick={() =>
-															setClassroomFiles(
-																classroomFiles.filter(
-																	(f: any) => f.name !== file.name,
-																),
-															)
-														}>
-														<DeleteOutlineIcon />
-													</button>
-												</div>
-											))}
+										: currentStudent?.classFiles?.map(
+												(file: any, index: number) => (
+													<div className={s.FileWrapper} key={index}>
+														<p>{file.name.slice(0, 25) + '...'}</p>
+														<button
+															className={s.DeleteBtn}
+															onClick={() =>
+																setStudents(
+																	students.map((student, i) =>
+																		i === currentIndex
+																			? {
+																					...student,
+																					classFiles: student.classFiles.filter(
+																						(f: any) => f.name !== file.name,
+																					),
+																				}
+																			: student,
+																	),
+																)
+															}>
+															<DeleteOutlineIcon />
+														</button>
+													</div>
+												),
+											)}
 								</Option>
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>
-
 						<div className={s.WorkClassGroup}>
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
+							{students.map((student: any, index: number) => (
+								<div className={s.HomeWorkStud} key={index}>
+									<p>{student.nameStudent}</p>
+									<NowLevel
+										className={s.NowLevel}
+										value={student.classStudentsPoints?.points || 0}
+										onChange={(e) =>
+											setStudents(
+												students.map((s, i) =>
+													i === index
+														? {...s, classStudentsPoints: {points: e}}
+														: s,
+												),
+											)
+										}
+									/>
+								</div>
+							))}
 						</div>
 						<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
 					</div>
@@ -595,6 +436,7 @@ const DayGroupPopUp = ({
 						</span>
 					</button>
 				</div>
+				<button onClick={handleSave}>Сохранить</button>
 			</div>
 		</div>
 	)

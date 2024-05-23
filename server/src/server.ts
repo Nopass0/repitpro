@@ -24,10 +24,12 @@ import { getUserData, setUserData, uploadUsersFiles } from "./auth/user";
 import {
   addGroup,
   deleteGroup,
+  fetchGroupsByDate,
   getGroupById,
   getGroupList,
   getGroupsByDate,
   groupToArchive,
+  modifyGroupSchedule,
   updateGroup,
 } from "./cards/group";
 import {
@@ -94,6 +96,9 @@ io.on("connection", (socket) => {
   socket.on("getStudentClientComparisonData", (data) =>
     getStudentClientComparisonData(data)
   );
+  socket.on("fetchGroupsByDate", (data) => fetchGroupsByDate(data));
+  //modifyGroupSchedule
+  socket.on("modifyGroupSchedule", (data) => modifyGroupSchedule(data));
 
   socket.on("createStudentSchedule", (data) => createStudentSchedule(data));
 
