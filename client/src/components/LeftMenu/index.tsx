@@ -498,9 +498,6 @@ const MainPage = () => {
 														<p>{item.groupName}</p>
 														{item.isArchived && (
 															<>
-																{/* THIS onClick={() =>
-																					handleToArchive(item.id, index)
-																				} */}
 																<button
 																	onClick={() =>
 																		handleToArchive(item.id, index, 'group')
@@ -683,7 +680,7 @@ const MainPage = () => {
 																	<img src={Home} alt="Home" />
 																</button>
 																<p>{item.nameStudent}</p>
-																{item.isArchived === true && (
+																{item.isArchived && (
 																	<>
 																		<button
 																			onClick={() =>
