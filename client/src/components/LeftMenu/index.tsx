@@ -476,7 +476,11 @@ const MainPage = () => {
 									{item.type === 'group' &&
 									(valueMuiSelectType === 0 || valueMuiSelectType === 2) ? (
 										<>
-											<div className={s.GroupWrapper}>
+											<div
+												className={s.GroupWrapper}
+												onClick={() => {
+													console.log(item, 'group')
+												}}>
 												<mui.ListItemButton
 													className={s.ListGroup}
 													key={index}
@@ -633,6 +637,9 @@ const MainPage = () => {
 														return (
 															<>
 																<div
+																	onClick={() => {
+																		console.log(item, 'student')
+																	}}
 																	className={`${s.ListWrapper} ${
 																		item.isArchived === true && s.Archive
 																	}`}>
@@ -671,6 +678,9 @@ const MainPage = () => {
 													return (
 														<>
 															<div
+																onClick={() => {
+																	console.log(item, 'Itemstudent')
+																}}
 																className={`${s.ListWrapper} ${
 																	item.isArchived === true && s.Archive
 																}`}>
