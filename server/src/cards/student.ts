@@ -36,7 +36,8 @@ const days = [
 
 export async function addStudent(data) {
   try {
-    console.log(data, "Schedule", data.items[0].timeLinesArray[0].startTime);
+    console.log(data, "Schedule", data.items[0].timeLinesArray[0]?.startTime); // Safe access with ?
+
     const {
       nameStudent,
       phoneNumber,
@@ -54,9 +55,7 @@ export async function addStudent(data) {
       token,
     } = data;
 
-    const token_ = await db.token.findFirst({
-      where: { token },
-    });
+    const token_ = await db.token.findFirst({ where: { token } });
 
     if (!token_) {
       throw new Error("Invalid token");
@@ -81,8 +80,15 @@ export async function addStudent(data) {
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
-        const dayOfMonth = date.getDate();
 
+        if (!scheduleForDay) {
+          console.warn(
+            `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+          );
+          continue; // Skip this iteration if no schedule is defined for the day
+        }
+
+        const dayOfMonth = date.getDate();
         const cacheKey = `${userId}-${dayOfMonth}-${
           date.getMonth() + 1
         }-${date.getFullYear()}`;
@@ -97,13 +103,20 @@ export async function addStudent(data) {
               userId,
             },
           });
-          cache.set(cacheKey, existingSchedules, 3600000); // 1 час TTL
+          cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
         }
 
         const conflictingSchedules = existingSchedules.filter((schedule) => {
           const scheduleStartTime =
-            schedule.timeLinesArray[dayOfWeek].startTime;
-          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+            schedule.timeLinesArray[dayOfWeek]?.startTime;
+          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek]?.endTime;
+
+          if (!scheduleStartTime || !scheduleEndTime) {
+            console.warn(
+              `Incomplete schedule found for day of week: ${dayOfWeek} in existing schedules`
+            );
+            return false;
+          }
 
           const newStartTime = scheduleForDay.startTime;
           const newEndTime = scheduleForDay.endTime;
@@ -136,9 +149,9 @@ export async function addStudent(data) {
             day: dayName,
             timeLines: conflictingSchedules.map((schedule) => {
               const scheduleStartTime =
-                schedule.timeLinesArray[dayOfWeek].startTime;
+                schedule.timeLinesArray[dayOfWeek]?.startTime;
               const scheduleEndTime =
-                schedule.timeLinesArray[dayOfWeek].endTime;
+                schedule.timeLinesArray[dayOfWeek]?.endTime;
               return {
                 time: `${scheduleStartTime.hour}:${scheduleStartTime.minute}-${scheduleEndTime.hour}:${scheduleEndTime.minute}`,
               };
@@ -225,7 +238,13 @@ export async function addStudent(data) {
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
-        const dayOfMonth = date.getDate();
+
+        if (!scheduleForDay) {
+          console.warn(
+            `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+          );
+          continue;
+        }
 
         const cond =
           scheduleForDay.startTime.hour === 0 &&
@@ -236,7 +255,7 @@ export async function addStudent(data) {
         if (!cond) {
           await db.studentSchedule.create({
             data: {
-              day: dayOfMonth.toString(),
+              day: date.getDate().toString(),
               groupId: createdGroup.id,
               workCount: 0,
               lessonsCount: 1,
@@ -257,25 +276,20 @@ export async function addStudent(data) {
       }
     }
 
-    let filePaths: string[] = [];
+    let filePaths = [];
 
     if (files.length > 0) {
-      filePaths = await upload(files, userId, "", (ids: string[]) => {
+      filePaths = await upload(files, userId, "", (ids) => {
         filePaths = ids;
       });
     }
 
-    let audiosIds: string[] = [];
+    let audiosIds = [];
 
     if (audios.length > 0) {
-      audiosIds = await upload(
-        audios,
-        userId,
-        "student/audio",
-        (ids: string[]) => {
-          audiosIds = ids;
-        }
-      );
+      audiosIds = await upload(audios, userId, "student/audio", (ids) => {
+        audiosIds = ids;
+      });
     }
 
     filePaths = [...filePaths, ...audiosIds];

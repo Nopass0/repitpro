@@ -18,10 +18,10 @@ export async function addGroup(data) {
       items,
       students,
       token,
-      files,
-      filesItems,
-      audiosItems,
-      audiosStudents,
+      files = [],
+      filesItems = [],
+      audiosItems = [],
+      audiosStudents = [],
     } = data;
 
     const token_ = await db.token.findFirst({
@@ -71,6 +71,9 @@ export async function addGroup(data) {
         }
 
         const conflictingSchedules = existingSchedules.filter((schedule) => {
+          if (!schedule.timeLinesArray || !schedule.timeLinesArray[dayOfWeek]) {
+            return false;
+          }
           const scheduleStartTime =
             schedule.timeLinesArray[dayOfWeek].startTime;
           const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
@@ -106,12 +109,15 @@ export async function addGroup(data) {
 
           const freeTimeSlots = [];
           for (const schedule of existingSchedules) {
-            const scheduleStartTime =
-              schedule.timeLinesArray[dayOfWeek].startTime;
-            const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-            freeTimeSlots.push(
-              `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
-            );
+            if (schedule.timeLinesArray && schedule.timeLinesArray[dayOfWeek]) {
+              const scheduleStartTime =
+                schedule.timeLinesArray[dayOfWeek].startTime;
+              const scheduleEndTime =
+                schedule.timeLinesArray[dayOfWeek].endTime;
+              freeTimeSlots.push(
+                `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
+              );
+            }
           }
 
           if (freeTimeSlots.length > 0) {
@@ -901,5 +907,186 @@ export async function deleteGroupFiles(data: any) {
   } catch (error) {
     console.error("Error deleting group files:", error);
     return { error: error.message, ok: false };
+  }
+}
+
+export async function fetchGroupsByDate(data: {
+  day: string;
+  month: string;
+  year: string;
+  token: string;
+}) {
+  const { day, month, year, token } = data;
+  const token_ = await db.token.findFirst({ where: { token } });
+  const userId = token_?.userId;
+
+  if (!userId) {
+    io.emit("fetchGroupsByDate", { error: "Invalid token" });
+    return;
+  }
+
+  const dayOfWeekIndex = getDay(
+    new Date(Number(year), Number(month) - 1, Number(day))
+  );
+
+  const groupSchedules = await db.group.findMany({
+    where: {
+      userId: userId,
+      isArchived: false,
+      items: {
+        some: {
+          studentSchedules: {
+            some: {
+              day: day,
+              month: month,
+              year: year,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      items: {
+        include: {
+          studentSchedules: true,
+        },
+      },
+      students: true,
+    },
+  });
+
+  const groupsData = [];
+
+  for (const group of groupSchedules) {
+    const groupData = {
+      id: group.id,
+      groupName: group.groupName,
+      items: group.items.map((item) => ({
+        id: item.id,
+        itemName: item.itemName,
+        tryLessonCheck: item.tryLessonCheck,
+        tryLessonCost: item.tryLessonCost,
+        todayProgramStudent: item.todayProgramStudent,
+        targetLesson: item.targetLesson,
+        programLesson: item.programLesson,
+        typeLesson: item.typeLesson,
+        placeLesson: item.placeLesson,
+        timeLesson: item.timeLesson,
+        costOneLesson: item.costOneLesson,
+        valueMuiSelectArchive: item.valueMuiSelectArchive,
+        startLesson: item.startLesson,
+        endLesson: item.endLesson,
+        nowLevel: item.nowLevel,
+        lessonDuration: item.lessonDuration,
+        timeLinesArray: item.timeLinesArray,
+        studentSchedules: item.studentSchedules.map((schedule) => ({
+          id: schedule.id,
+          studentId: schedule.studentId,
+          homeStudentsPoints: schedule.homeStudentsPoints,
+          classStudentsPoints: schedule.classStudentsPoints,
+        })),
+      })),
+      students: group.students.map((student) => ({
+        id: student.id,
+        nameStudent: student.nameStudent,
+        contactFace: student.contactFace,
+        phoneNumber: student.phoneNumber,
+        email: student.email,
+        address: student.address,
+        linkStudent: student.linkStudent,
+        costStudent: student.costStudent,
+        commentStudent: student.commentStudent,
+        prePayCost: student.prePayCost,
+        prePayDate: student.prePayDate,
+        selectedDate: student.selectedDate,
+        storyLesson: student.storyLesson,
+        costOneLesson: student.costOneLesson,
+        targetLessonStudent: student.targetLessonStudent,
+        todayProgramStudent: student.todayProgramStudent,
+      })),
+    };
+
+    groupsData.push(groupData);
+  }
+
+  io.emit("fetchGroupsByDate", groupsData);
+}
+
+export async function modifyGroupSchedule(data: {
+  groupId: string;
+  items: any[];
+  students: any[];
+  token: string;
+}) {
+  const { groupId, items, students, token } = data;
+  const token_ = await db.token.findFirst({ where: { token } });
+  const userId = token_?.userId;
+
+  if (!userId) {
+    io.emit("modifyGroupSchedule", { error: "Invalid token" });
+    return;
+  }
+
+  try {
+    for (const item of items) {
+      await db.item.update({
+        where: { id: item.id },
+        data: {
+          tryLessonCheck: item.tryLessonCheck,
+          tryLessonCost: item.tryLessonCost,
+          todayProgramStudent: item.todayProgramStudent,
+          targetLesson: item.targetLesson,
+          programLesson: item.programLesson,
+          typeLesson: item.typeLesson,
+          placeLesson: item.placeLesson,
+          timeLesson: item.timeLesson,
+          costOneLesson: item.costOneLesson,
+          valueMuiSelectArchive: item.valueMuiSelectArchive,
+          startLesson: item.startLesson,
+          endLesson: item.endLesson,
+          nowLevel: item.nowLevel,
+          lessonDuration: item.lessonDuration,
+          timeLinesArray: item.timeLinesArray,
+        },
+      });
+
+      for (const schedule of item.studentSchedules) {
+        await db.studentSchedule.update({
+          where: { id: schedule.id },
+          data: {
+            homeStudentsPoints: schedule.homeStudentsPoints,
+            classStudentsPoints: schedule.classStudentsPoints,
+          },
+        });
+      }
+    }
+
+    for (const student of students) {
+      await db.student.update({
+        where: { id: student.id },
+        data: {
+          nameStudent: student.nameStudent,
+          contactFace: student.contactFace,
+          phoneNumber: student.phoneNumber,
+          email: student.email,
+          address: student.address,
+          linkStudent: student.linkStudent,
+          costStudent: student.costStudent,
+          commentStudent: student.commentStudent,
+          prePayCost: student.prePayCost,
+          prePayDate: student.prePayDate,
+          selectedDate: student.selectedDate,
+          storyLesson: student.storyLesson,
+          costOneLesson: student.costOneLesson,
+          targetLessonStudent: student.targetLessonStudent,
+          todayProgramStudent: student.todayProgramStudent,
+        },
+      });
+    }
+
+    io.emit("modifyGroupSchedule", { ok: true });
+  } catch (error) {
+    console.error("Error updating group schedule:", error);
+    io.emit("modifyGroupSchedule", { error: error.message, ok: false });
   }
 }
