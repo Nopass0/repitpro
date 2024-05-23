@@ -43,6 +43,7 @@ model User {
   isDeleted  Boolean?
   filesIds   String[]
   linksIds   String?
+
 }
 
 
@@ -74,6 +75,9 @@ model Group {
   files           String[]
   userId          String
   isArchived       Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model TimeLine {
@@ -110,6 +114,8 @@ model Item {
   groupId           String?
   studentSchedules  StudentSchedule[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId String
 }
 
@@ -135,6 +141,8 @@ model Student {
   group           Group    @relation(fields: [groupId], references: [id])
   groupId         String
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId String
 }
 
@@ -172,6 +180,7 @@ model StudentSchedule {
   item         Item     @relation(fields: [itemId], references: [id])
   itemId       String
 
+
   workStages  Json?
 }
 
@@ -203,6 +212,8 @@ model Job {
   client    Client   @relation(fields: [clientId], references: [id])
   clientId  String
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId    String
 }
 
@@ -237,6 +248,8 @@ model Stage {
   clientId           String?
   
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId            String
 }
 
