@@ -164,19 +164,6 @@ const DayStudentPopUp = ({
 
 	const [students, setStudents] = useState([])
 	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
-	const currentStudent = students[currentIndex] // Get the current student
-
-	const handlePrevStudent = () => {
-		setCurrentIndex((prevIndex) =>
-			prevIndex === 0 ? students.length - 1 : prevIndex - 1,
-		)
-	}
-
-	const handleNextStudent = () => {
-		setCurrentIndex((prevIndex) =>
-			prevIndex === students.length - 1 ? 0 : prevIndex + 1,
-		)
-	}
 
 	const [groups, setGroups] = useState<any>([])
 	const [group, setGroup] = useState<any>({})

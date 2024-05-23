@@ -4,7 +4,7 @@ import { register } from "./auth/register";
 import db from "./db";
 import { strongCache, cache } from "utils/Cache";
 
-import { calendar, getByGroupId } from "./calendar/calendar";
+import { calendar, getByClientScheduleId, getByGroupId } from "./calendar/calendar";
 import {
   addStudent,
   createStudentSchedule,
@@ -109,6 +109,7 @@ io.on("connection", (socket) => {
   socket.on("setUserData", (data) => setUserData(data));
 
   socket.on("getByGroupId", (data) => getByGroupId(data));
+  socket.on("getByClientScheduleId", (data) => getByClientScheduleId(data));
   //check account
   socket.on("checkAccount", async (data) => {
     let token = await db.token.findFirst({

@@ -139,3 +139,43 @@ export const getByGroupId = async (data) => {
     return io.emit("getByGroupId", { error: error.message });
   }
 };
+
+export const getByClientScheduleId = async (data) => {
+  try {
+    const token = data?.token;
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+    const userId = await token_.userId;
+    if (!userId) {
+      io.emit("calendar", { message: "Invalid token" });
+    }
+
+    let {clientId} = data
+    console.log(data,'DATATATATAT')
+    const clientSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId,
+        clientId,
+      },
+    });
+    const clientScheduleJSON = JSON.parse(JSON.stringify(clientSchedules));
+    clientScheduleJSON.map((schedule) => {
+      schedule.date = new Date(
+        parseInt(schedule.year),
+        parseInt(schedule.month) - 1,
+        parseInt(schedule.day)
+      );
+    });
+    clientScheduleJSON.sort((a, b) => {
+      return a.date.getTime() - b.date.getTime();
+    });
+    console.log(clientScheduleJSON, "clientScheduleJSON");
+    io.emit("getByClientScheduleId", clientScheduleJSON);
+  } catch (error) {
+    console.log("ERROR");
+    return io.emit("getByClientScheduleId", { error: error.message });
+  }
+};

@@ -89,6 +89,13 @@ input {
 	align-items: center;
 	justify-content: center;
 	height: 100%;
+
+	position: absolute;
+
+	.btn {
+		// position: relative;
+		// top: 100px;
+	}
 }
 .closeIcon {
 	// position: relative;
@@ -105,9 +112,6 @@ input {
 	}
 }
 
-.btn {
-	// position: absolute;
-}
 .btnRight,
 .btnLeft {
 	background: #fff;
@@ -120,7 +124,7 @@ input {
 	justify-content: center;
 	position: relative;
 
-	top: 130px;
+	// top: 130px;
 	&:hover {
 		background: #eee;
 		transition: all 0.3s ease;
@@ -128,12 +132,13 @@ input {
 }
 
 .btnLeft {
-	top: 96px;
-	right: 1166px;
+	// top: 96px;
+	right: 35px;
 }
 
 .btnRight {
-	left: 40px;
+	top: 34px;
+	left: 655px;
 }
 
 @media screen and (max-width: 678px) {
