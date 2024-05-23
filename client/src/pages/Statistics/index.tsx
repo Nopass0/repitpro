@@ -127,11 +127,9 @@ const Statistics = ({}: IStatistics) => {
 	const [chooseGraphic, setChooseGraphic] = useState<number>(0)
 	const [studFinItem, setStudFinItem] = useState<string[]>(['Все предметы'])
 	const [studFinDate, setStudFinDate] = useState<number>(0)
-	const [studFinDateStart, setStudFinDateStart] = useState<Date>(
-		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-	)
+	const [studFinDateStart, setStudFinDateStart] = useState<Date>(new Date())
 	const [studFinDateEnd, setStudFinDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 	)
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
@@ -139,42 +137,73 @@ const Statistics = ({}: IStatistics) => {
 	const [startDataS2, setStartDataS2] = useState<Date>()
 	const [endDataS1, setEndDataS1] = useState<Date>()
 	const [endDataS2, setEndDataS2] = useState<Date>()
+
 	const [studAmItem, setStudAmItem] = useState<string[]>(['Все предметы'])
 	const [studAmDate, setStudAmDate] = useState<number>(0)
-	const [studAmDateStart, setStudAmDateStart] = useState<Date>()
-	const [studAmDateEnd, setStudAmDateEnd] = useState<Date>()
+	const [studAmDateStart, setStudAmDateStart] = useState<Date>(new Date())
+	const [studAmDateEnd, setStudAmDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
 	const [studAmCheck2, setStudAmCheck2] = useState<boolean>(true)
 	const [studAmCheck1, setStudAmCheck1] = useState<boolean>(true)
+
 	const [studLesItem, setStudLesItem] = useState<string[]>(['Все предметы'])
 	const [studLesDate, setStudLesDate] = useState<number>(0)
-	const [studLesDateStart, setStudLesDateStart] = useState<Date>()
-	const [studLesDateEnd, setStudLesDateEnd] = useState<Date>()
+	const [studLesDateStart, setStudLesDateStart] = useState<Date>(new Date())
+	const [studLesDateEnd, setStudLesDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
 	const [studLesCheck2, setStudLesCheck2] = useState<boolean>(true)
 	const [studLesCheck1, setStudLesCheck1] = useState<boolean>(true)
+
 	const [cliFinItem, setCliFinItem] = useState<string[]>(['Все предметы'])
 	const [cliFinDate, setCliFinDate] = useState<number>(0)
-	const [cliFinDateStart, setCliFinDateStart] = useState<Date>()
-	const [cliFinDateEnd, setCliFinDateEnd] = useState<Date>()
+	const [cliFinDateStart, setCliFinDateStart] = useState<Date>(new Date())
+	const [cliFinDateEnd, setCliFinDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
 	const [cliFinCheck2, setCliFinCheck2] = useState<boolean>(true)
 	const [cliFinCheck1, setCliFinCheck1] = useState<boolean>(true)
+
 	const [cliAmItem, setCliAmItem] = useState<string[]>(['Все предметы'])
 	const [cliAmDate, setCliAmDate] = useState<number>(0)
-	const [cliAmDateStart, setCliAmDateStart] = useState<Date>()
-	const [cliAmDateEnd, setCliAmDateEnd] = useState<Date>()
+	const [cliAmDateStart, setCliAmDateStart] = useState<Date>(new Date())
+	const [cliAmDateEnd, setCliAmDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
 	const [cliAmCheck2, setCliAmCheck2] = useState<boolean>(true)
 	const [cliAmCheck1, setCliAmCheck1] = useState<boolean>(true)
+
 	const [cliWorkItem, setCliWorkItem] = useState<string[]>(['Все предметы'])
 	const [cliWorkDate, setCliWorkDate] = useState<number>(0)
-	const [cliWorkDateStart, setCliWorkDateStart] = useState<Date>()
-	const [cliWorkDateEnd, setCliWorkDateEnd] = useState<Date>()
+	const [cliWorkDateStart, setCliWorkDateStart] = useState<Date>(new Date())
+	const [cliWorkDateEnd, setCliWorkDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
 	const [cliWorkCheck2, setCliWorkCheck2] = useState<boolean>(true)
 	const [cliWorkCheck1, setCliWorkCheck1] = useState<boolean>(true)
+
 	const [studRelatItem, setStudRelatItem] = useState<string[]>(['Все предметы'])
 	const [studRelatDate, setStudRelatDate] = useState<number>(0)
-	const [studRelatDateStart, setStudRelatDateStart] = useState<Date>()
-	const [studRelatDateEnd, setStudRelatDateEnd] = useState<Date>()
+	const [studRelatDateStart, setStudRelatDateStart] = useState<Date>(new Date())
+	const [studRelatDateEnd, setStudRelatDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
 	const [studRelatCheck2, setStudRelatCheck2] = useState<boolean>(true)
 	const [studRelatCheck1, setStudRelatCheck1] = useState<boolean>(true)
+
+	const [studTableDate, setStudTableDate] = useState<number>(0)
+	const [studTableDateStart, setStudTableDateStart] = useState<Date>(new Date())
+	const [studTableDateEnd, setStudTableDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
+
+	const [cliTableDate, setCliTableDate] = useState<number>(0)
+	const [cliTableDateStart, setCliTableDateStart] = useState<Date>(new Date())
+	const [cliTableDateEnd, setCliTableDateEnd] = useState<Date>(
+		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+	)
+
 	const [sortColumn, setSortColumn] = useState<string | null>(null)
 	const [sortDirection, setSortDirection] = useState<string | null>(null)
 
@@ -351,6 +380,257 @@ const Statistics = ({}: IStatistics) => {
 	const sortedClientsData = sortData(clientData, sortColumn, sortDirection)
 
 	useEffect(() => {
+		switch (studFinDate) {
+			case 0:
+				setStudFinDateStart(new Date())
+				setStudFinDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setStudFinDateStart(startDate)
+				setStudFinDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setStudFinDateStart(startDate2)
+				setStudFinDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setStudFinDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setStudFinDateEnd(endDate)
+				break
+		}
+	}, [studFinDate])
+
+	useEffect(() => {
+		switch (studAmDate) {
+			case 0:
+				setStudAmDateStart(new Date())
+				setStudAmDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setStudAmDateStart(startDate)
+				setStudAmDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setStudAmDateStart(startDate2)
+				setStudAmDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setStudAmDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setStudAmDateEnd(endDate)
+				break
+		}
+	}, [studAmDate])
+
+	useEffect(() => {
+		switch (studLesDate) {
+			case 0:
+				setStudLesDateStart(new Date())
+				setStudLesDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setStudLesDateStart(startDate)
+				setStudLesDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setStudLesDateStart(startDate2)
+				setStudLesDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setStudLesDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setStudLesDateEnd(endDate)
+				break
+		}
+	}, [studLesDate])
+
+	useEffect(() => {
+		switch (studTableDate) {
+			case 0:
+				setStudTableDateStart(new Date())
+				setStudTableDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setStudTableDateStart(startDate)
+				setStudTableDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setStudTableDateStart(startDate2)
+				setStudTableDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setStudTableDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setStudTableDateEnd(endDate)
+				break
+		}
+	}, [studTableDate])
+
+	useEffect(() => {
+		switch (cliFinDate) {
+			case 0:
+				setCliFinDateStart(new Date())
+				setCliFinDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setCliFinDateStart(startDate)
+				setCliFinDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setCliFinDateStart(startDate2)
+				setCliFinDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setCliFinDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setCliFinDateEnd(endDate)
+				break
+		}
+	}, [cliFinDate])
+
+	useEffect(() => {
+		switch (cliAmDate) {
+			case 0:
+				setCliAmDateStart(new Date())
+				setCliAmDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setCliAmDateStart(startDate)
+				setCliAmDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setCliAmDateStart(startDate2)
+				setCliAmDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setCliAmDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setCliAmDateEnd(endDate)
+				break
+		}
+	}, [cliAmDate])
+	useEffect(() => {
+		switch (cliWorkDate) {
+			case 0:
+				setCliWorkDateStart(new Date())
+				setCliWorkDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setCliWorkDateStart(startDate)
+				setCliWorkDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setCliWorkDateStart(startDate2)
+				setCliWorkDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setCliWorkDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setCliWorkDateEnd(endDate)
+				break
+		}
+	}, [cliWorkDate])
+
+	useEffect(() => {
+		switch (cliTableDate) {
+			case 0:
+				setCliTableDateStart(new Date())
+				setCliTableDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setCliTableDateStart(startDate)
+				setCliTableDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setCliTableDateStart(startDate2)
+				setCliTableDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setCliTableDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setCliTableDateEnd(endDate)
+				break
+		}
+	}, [cliTableDate])
+
+	useEffect(() => {
+		switch (studRelatDate) {
+			case 0:
+				setStudRelatDateStart(new Date())
+				setStudRelatDateEnd(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+				break
+			case 1:
+				const startDate = new Date()
+				startDate.setDate(1)
+				setStudRelatDateStart(startDate)
+				setStudRelatDateEnd(new Date())
+				break
+			case 2:
+				const startDate2 = new Date()
+				startDate2.setMonth(0)
+				startDate2.setDate(1)
+				setStudRelatDateStart(startDate2)
+				setStudRelatDateEnd(new Date())
+				break
+			case 3:
+				const currentYear = new Date().getFullYear()
+				setStudRelatDateStart(new Date(currentYear, 0, 1))
+				const endDate = new Date(currentYear, 11, 31)
+				setStudRelatDateEnd(endDate)
+				break
+		}
+	}, [studRelatDate])
+
+	useEffect(() => {
 		socket.emit('getTableData', {
 			token: token,
 			dateRange: {start: startData, end: endData},
@@ -360,7 +640,6 @@ const Statistics = ({}: IStatistics) => {
 			dateRange: {start: cliAmDateStart, end: cliAmDateEnd},
 		})
 	}, [chooseGraphic, startData, endData, token, cliAmDateStart, cliAmDateEnd])
-
 	return (
 		<div className={s.wrapper}>
 			<div className={s.Header}>
@@ -379,61 +658,106 @@ const Statistics = ({}: IStatistics) => {
 				</button>
 			</div>
 			<div className={s.MainBlock}>
-				{financeData && (
+				{!!financeData.datasets.length && !!financeData.labels.length ? (
 					<GraphicBlock
 						StyledPickersLayout={StyledPickersLayout}
 						names={names}
 						ItemState={studFinItem}
 						OnChangeItem={(e: any) => setStudFinItem(e.target.value)}
-						DateState={financeData}
-						OnChangeDate={(e: any) => setStudFinDate(e.target.value)}
+						DateState={studFinDate}
+						OnChangeDate={(e: any) => {
+							setStudFinDate(e.target.value)
+						}}
 						DateStartState={studFinDateStart}
-						OnChangeDateStart={(e: any) => setStudFinDateStart(e.target.value)}
+						OnChangeDateStart={(e: any) => setStudFinDateStart(e)}
 						DateEndState={studFinDateEnd}
-						OnChangeDateEnd={(e: any) => setStudFinDateEnd(e.target.value)}
+						OnChangeDateEnd={(e: any) => setStudFinDateEnd(e)}
 						chooseGraphic={chooseGraphic}
 						data={financeData}
 						options={options}
 						optionsBar={optionsBar}
 						title="Ученики-Финансы"
 					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Ученики-финансы
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
 				)}
 				<Line width="100%" className={s.Line} />
-				<GraphicBlock
-					StyledPickersLayout={StyledPickersLayout}
-					names={names}
-					ItemState={studAmItem}
-					OnChangeItem={(e: any) => setStudAmItem(e.target.value)}
-					DateState={studAmDate}
-					OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
-					DateStartState={studAmDateStart}
-					OnChangeDateStart={(e: any) => setStudAmDateStart(e.target.value)}
-					DateEndState={studAmDateEnd}
-					OnChangeDateEnd={(e: any) => setStudAmDateEnd(e.target.value)}
-					chooseGraphic={chooseGraphic}
-					data={studentCountData}
-					options={options}
-					optionsBar={optionsBar}
-					title="Ученики-Количество"
-				/>
+				{!!studentCountData.datasets.length &&
+				!!studentCountData.labels.length ? (
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studAmItem}
+						OnChangeItem={(e: any) => setStudAmItem(e.target.value)}
+						DateState={studAmDate}
+						OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
+						DateStartState={studAmDateStart}
+						OnChangeDateStart={(e: any) => setStudAmDateStart(e)}
+						DateEndState={studAmDateEnd}
+						OnChangeDateEnd={(e: any) => setStudAmDateEnd(e)}
+						chooseGraphic={chooseGraphic}
+						data={studentCountData}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики-Количество"
+					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Ученики-Количество
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
+				)}
 				<Line width="100%" className={s.Line} />
-				<GraphicBlock
-					StyledPickersLayout={StyledPickersLayout}
-					names={names}
-					ItemState={studLesItem}
-					OnChangeItem={(e: any) => setStudLesItem(e.target.value)}
-					DateState={studLesDate}
-					OnChangeDate={(e: any) => setStudLesDate(e.target.value)}
-					DateStartState={studLesDateStart}
-					OnChangeDateStart={(e: any) => setStudLesDateStart(e.target.value)}
-					DateEndState={studLesDateEnd}
-					OnChangeDateEnd={(e: any) => setStudLesDateEnd(e.target.value)}
-					chooseGraphic={chooseGraphic}
-					data={studentCountItemsData}
-					options={options}
-					optionsBar={optionsBar}
-					title="Ученики-Занятия"
-				/>
+				{!!studentCountItemsData.datasets.length &&
+				!!studentCountItemsData.labels.length ? (
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studLesItem}
+						OnChangeItem={(e: any) => setStudLesItem(e.target.value)}
+						DateState={studLesDate}
+						OnChangeDate={(e: any) => setStudLesDate(e.target.value)}
+						DateStartState={studLesDateStart}
+						OnChangeDateStart={(e: any) => setStudLesDateStart(e)}
+						DateEndState={studLesDateEnd}
+						OnChangeDateEnd={(e: any) => setStudLesDateEnd(e)}
+						chooseGraphic={chooseGraphic}
+						data={studentCountItemsData}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики-Занятия"
+					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Ученики-Количество
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
+				)}
+
 				<Line width="100%" className={s.Line} />
 				{/* Students Table */}
 				<div className={s.GraphicBlock}>
@@ -441,8 +765,10 @@ const Statistics = ({}: IStatistics) => {
 						<p className={s.TitleTable}>Ученики сводная таблица</p>
 						<Select
 							className={s.muiSelect}
-							value={studFinDate}
-							onChange={(e: any) => setStudFinDate(e.target.value)}
+							value={studTableDate}
+							onChange={(e: any) => {
+								setStudTableDate(e.target.value)
+							}}
 							variant={'standard'}>
 							<MenuItem value={0}>
 								<p>За последние 30 дней</p>
@@ -456,23 +782,20 @@ const Statistics = ({}: IStatistics) => {
 							<MenuItem value={3}>
 								<p>За всё время</p>
 							</MenuItem>
-							<MenuItem value={4}>
-								<p>Задать период</p>
-							</MenuItem>
 						</Select>
 						<Line width="260px" />
 						<div className={s.Dates}>
 							<div className={s.DatePicker}>
 								<MiniCalendar
-									value={startData}
-									onChange={(newDate) => setStartData(newDate)}
+									value={studTableDateStart}
+									onChange={(newDate) => setStudTableDateStart(newDate)}
 								/>
 							</div>
 							<Line width="20px" className={s.LineDate} />
 							<div className={s.DatePicker}>
 								<MiniCalendar
-									value={endData}
-									onChange={(newDate) => setEndData(newDate)}
+									value={studTableDateEnd}
+									onChange={(newDate) => setStudTableDateEnd(newDate)}
 								/>
 							</div>
 						</div>
@@ -656,62 +979,107 @@ const Statistics = ({}: IStatistics) => {
 					</div>
 				</div>
 				<Line width="100%" className={s.Line} />
-				<GraphicBlock
-					StyledPickersLayout={StyledPickersLayout}
-					names={names}
-					ItemState={cliFinItem}
-					OnChangeItem={(e: any) => setCliFinItem(e.target.value)}
-					DateState={cliFinDate}
-					OnChangeDate={(e: any) => setCliFinDate(e.target.value)}
-					DateStartState={cliFinDateStart}
-					OnChangeDateStart={(e: any) => setCliFinDateStart(e.target.value)}
-					DateEndState={cliFinDateEnd}
-					OnChangeDateEnd={(e: any) => setCliFinDateEnd(e.target.value)}
-					chooseGraphic={chooseGraphic}
-					data={clientsFinanceData}
-					options={options}
-					optionsBar={optionsBar}
-					title="Заказчики-Финансы"
-					isClient
-				/>
+				{!!clientsFinanceData.datasets.length &&
+				!!clientsFinanceData.labels.length ? (
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={cliFinItem}
+						OnChangeItem={(e: any) => setCliFinItem(e.target.value)}
+						DateState={cliFinDate}
+						OnChangeDate={(e: any) => setCliFinDate(e.target.value)}
+						DateStartState={cliFinDateStart}
+						OnChangeDateStart={(e: any) => setCliFinDateStart(e)}
+						DateEndState={cliFinDateEnd}
+						OnChangeDateEnd={(e: any) => setCliFinDateEnd(e)}
+						chooseGraphic={chooseGraphic}
+						data={clientsFinanceData}
+						options={options}
+						optionsBar={optionsBar}
+						title="Заказчики-Финансы"
+						isClient
+					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Заказчики-Финансы
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
+				)}
 				<Line width="100%" className={s.Line} />
-				<GraphicBlock
-					StyledPickersLayout={StyledPickersLayout}
-					names={names}
-					ItemState={cliAmItem}
-					OnChangeItem={(e: any) => setCliAmItem(e.target.value)}
-					DateState={cliAmDate}
-					OnChangeDate={(e: any) => setCliAmDate(e.target.value)}
-					DateStartState={cliAmDateStart}
-					OnChangeDateStart={(e: any) => setCliAmDateStart(e.target.value)}
-					DateEndState={cliAmDateEnd}
-					OnChangeDateEnd={(e: any) => setCliAmDateEnd(e.target.value)}
-					chooseGraphic={chooseGraphic}
-					data={clientsCountData}
-					options={options}
-					optionsBar={optionsBar}
-					title="Заказчики-Количество"
-					isClient
-				/>
+				{!!clientsCountData.datasets.length &&
+				!!clientsCountData.labels.length ? (
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={cliAmItem}
+						OnChangeItem={(e: any) => setCliAmItem(e.target.value)}
+						DateState={cliAmDate}
+						OnChangeDate={(e: any) => setCliAmDate(e.target.value)}
+						DateStartState={cliAmDateStart}
+						OnChangeDateStart={(e: any) => setCliAmDateStart(e)}
+						DateEndState={cliAmDateEnd}
+						OnChangeDateEnd={(e: any) => setCliAmDateEnd(e)}
+						chooseGraphic={chooseGraphic}
+						data={clientsCountData}
+						options={options}
+						optionsBar={optionsBar}
+						title="Заказчики-Количество"
+						isClient
+					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Заказчики-Количество
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
+				)}
 				<Line width="100%" className={s.Line} />
-				<GraphicBlock
-					StyledPickersLayout={StyledPickersLayout}
-					names={names}
-					ItemState={cliWorkItem}
-					OnChangeItem={(e: any) => setCliWorkItem(e.target.value)}
-					DateState={cliWorkDate}
-					OnChangeDate={(e: any) => setCliWorkDate(e.target.value)}
-					DateStartState={cliWorkDateStart}
-					OnChangeDateStart={(e: any) => setCliWorkDateStart(e.target.value)}
-					DateEndState={cliWorkDateEnd}
-					OnChangeDateEnd={(e: any) => setCliAmDateEnd(e.target.value)}
-					chooseGraphic={chooseGraphic}
-					data={clientsWorksData}
-					options={options}
-					optionsBar={optionsBar}
-					title="Заказчики-Работы"
-					isClient
-				/>
+				{!!clientsWorksData.datasets.length &&
+				!!clientsWorksData.labels.length ? (
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={cliWorkItem}
+						OnChangeItem={(e: any) => setCliWorkItem(e.target.value)}
+						DateState={cliWorkDate}
+						OnChangeDate={(e: any) => setCliWorkDate(e.target.value)}
+						DateStartState={cliWorkDateStart}
+						OnChangeDateStart={(e: any) => setCliWorkDateStart(e)}
+						DateEndState={cliWorkDateEnd}
+						OnChangeDateEnd={(e: any) => setCliWorkDateEnd(e)}
+						chooseGraphic={chooseGraphic}
+						data={clientsWorksData}
+						options={options}
+						optionsBar={optionsBar}
+						title="Заказчики-Работы"
+						isClient
+					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Заказчики-Работы
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
+				)}
 				<Line width="100%" className={s.Line} />
 				{/* Clients Table */}
 				<div className={s.GraphicBlock}>
@@ -719,8 +1087,8 @@ const Statistics = ({}: IStatistics) => {
 						<p className={s.TitleTable}>Заказчики сводная таблица</p>
 						<Select
 							className={s.muiSelect}
-							value={studFinDate}
-							onChange={(e: any) => setStudFinDate(e.target.value)}
+							value={cliTableDate}
+							onChange={(e: any) => setCliTableDate(e.target.value)}
 							variant={'standard'}>
 							<MenuItem value={0}>
 								<p>За последние 30 дней</p>
@@ -734,23 +1102,20 @@ const Statistics = ({}: IStatistics) => {
 							<MenuItem value={3}>
 								<p>За всё время</p>
 							</MenuItem>
-							<MenuItem value={4}>
-								<p>Задать период</p>
-							</MenuItem>
 						</Select>
 						<Line width="260px" />
 						<div className={s.Dates}>
 							<div className={s.DatePicker}>
 								<MiniCalendar
-									value={startDataS1}
-									onChange={(newDate) => setStartDataS1(newDate)}
+									value={cliTableDateStart}
+									onChange={(newDate) => setCliTableDateStart(newDate)}
 								/>
 							</div>
 							<Line width="20px" className={s.LineDate} />
 							<div className={s.DatePicker}>
 								<MiniCalendar
-									value={endDataS2}
-									onChange={(newDate) => setEndDataS2(newDate)}
+									value={cliTableDateEnd}
+									onChange={(newDate) => setCliTableDateEnd(newDate)}
 								/>
 							</div>
 						</div>
@@ -934,24 +1299,41 @@ const Statistics = ({}: IStatistics) => {
 					</div>
 				</div>
 				<Line width="100%" className={s.Line} />
-				<GraphicBlock
-					StyledPickersLayout={StyledPickersLayout}
-					names={names}
-					ItemState={studRelatItem}
-					OnChangeItem={(e: any) => setStudRelatItem(e.target.value)}
-					DateState={studRelatDate}
-					OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
-					DateStartState={studRelatDateStart}
-					OnChangeDateStart={(e: any) => setStudRelatDateStart(e.target.value)}
-					DateEndState={studRelatDateEnd}
-					OnChangeDateEnd={(e: any) => setStudAmDateEnd(e.target.value)}
-					chooseGraphic={chooseGraphic}
-					data={clientsNstudentsCompareData}
-					options={options}
-					optionsBar={optionsBar}
-					title="Ученики - Заказчики сравнительный график"
-					isClient
-				/>
+				{!!clientsNstudentsCompareData.datasets.length &&
+				!!clientsNstudentsCompareData.labels.length ? (
+					<GraphicBlock
+						StyledPickersLayout={StyledPickersLayout}
+						names={names}
+						ItemState={studRelatItem}
+						OnChangeItem={(e: any) => setStudRelatItem(e.target.value)}
+						DateState={studRelatDate}
+						OnChangeDate={(e: any) => setStudRelatDate(e.target.value)}
+						DateStartState={studRelatDateStart}
+						OnChangeDateStart={(e: any) =>
+							setStudRelatDateStart(e)
+						}
+						DateEndState={studRelatDateEnd}
+						OnChangeDateEnd={(e: any) => setStudRelatDateEnd(e)}
+						chooseGraphic={chooseGraphic}
+						data={clientsNstudentsCompareData}
+						options={options}
+						optionsBar={optionsBar}
+						title="Ученики - Заказчики сравнительный график"
+						isClient
+					/>
+				) : (
+					<>
+						<p
+							style={{
+								textAlign: 'center',
+								fontWeight: 'bold',
+								marginBottom: '20px',
+							}}>
+							Ученики-Заказчики сравнительный график
+						</p>
+						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
+					</>
+				)}
 			</div>
 		</div>
 	)

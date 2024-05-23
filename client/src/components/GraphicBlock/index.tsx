@@ -1,5 +1,3 @@
-
-
 import {Bar, Line as LineGraph} from 'react-chartjs-2'
 import s from './index.module.scss'
 import {useEffect, useState} from 'react'
@@ -97,6 +95,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						className={s.muiSelect}
 						value={DateState}
 						onChange={OnChangeDate}
+						defaultValue={0}
 						variant={'standard'}>
 						<MenuItem value={0}>
 							<p>За последние 30 дней</p>
@@ -110,9 +109,6 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						<MenuItem value={3}>
 							<p>За всё время</p>
 						</MenuItem>
-						<MenuItem value={4}>
-							<p>Задать период</p>
-						</MenuItem>
 					</Select>
 					<Line width="260px" />
 
@@ -120,7 +116,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						<div className={s.DatePicker}>
 							<MiniCalendar
 								value={DateStartState}
-								onChange={(newData) => OnChangeDateStart(newData)}
+								onChange={(e: any) => OnChangeDateStart(e)}
 								calendarId={title}
 							/>
 						</div>
@@ -128,7 +124,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						<div className={s.DatePicker}>
 							<MiniCalendar
 								value={DateEndState}
-								onChange={(newData) => OnChangeDateEnd(newData)}
+								onChange={(e: any) => OnChangeDateEnd(e)}
 								calendarId={`${title}-right`}
 							/>
 						</div>
