@@ -256,17 +256,31 @@ const AddClient = ({}: IAddClient) => {
 
 	const sendInfo = () => {
 		setLoading(true)
-		socket.emit('addClient', {
-			nameStudent: nameStudent,
-			phoneNumber: phoneNumber,
-			email: email,
-			costStudent: costStudent,
-			commentClient: commentClient,
-			jobs: jobs,
-			files: files,
-			token: token,
-			audios: audios,
-		})
+		if (currentOpenedClient === '') {
+			socket.emit('updateClient', {
+				nameStudent: nameStudent,
+				phoneNumber: phoneNumber,
+				email: email,
+				costStudent: costStudent,
+				commentClient: commentClient,
+				jobs: jobs,
+				files: files,
+				token: token,
+				audios: audios,
+			})
+		} else {
+			socket.emit('addClient', {
+				nameStudent: nameStudent,
+				phoneNumber: phoneNumber,
+				email: email,
+				costStudent: costStudent,
+				commentClient: commentClient,
+				jobs: jobs,
+				files: files,
+				token: token,
+				audios: audios,
+			})
+		}
 
 		window.location.reload()
 		setLoading(false)
