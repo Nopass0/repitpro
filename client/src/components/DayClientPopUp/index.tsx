@@ -129,9 +129,7 @@ const DayClientPopUp = ({
 			setClients(data)
 
 			//get client where clientId = clientId
-			const client = data.find(
-				(client: any) => client.clientId === clientId,
-			)
+			const client = data.find((client: any) => client.clientId === clientId)
 			setClient(client)
 			console.log(
 				client.workStages.map((client: any) => client.firstPaymentDate),
@@ -188,11 +186,13 @@ const DayClientPopUp = ({
 									checked={client.workStages[0].firstPaymentPayed}
 								/>
 								<p>
-									{Math.round(
-										(client.workStages[0].firstPaymentPayed /
-											client.totalWorkPrice) *
-											100,
-									)}{' '}
+									{client.totalWorkPrice !== 0
+										? Math.round(
+												(client.workStages[0].firstPaymentPayed /
+													client.totalWorkPrice) *
+													100,
+											)
+										: 0}{' '}
 									%
 								</p>
 							</div>
@@ -219,11 +219,13 @@ const DayClientPopUp = ({
 									checked={client.workStages[0].endPaymentPayed}
 								/>
 								<p>
-									{Math.round(
-										(client.workStages[0].endPaymentPayed /
-											client.totalWorkPrice) *
-											100,
-									)}{' '}
+									{client.totalWorkPrice !== 0
+										? Math.round(
+												(client.workStages[0].endPaymentPayed /
+													client.totalWorkPrice) *
+													100,
+											)
+										: 0}{' '}
 									%
 								</p>
 							</div>
@@ -231,25 +233,12 @@ const DayClientPopUp = ({
 							<div className={s.LineInfo}>
 								<p>{formatDate(client.workStages[0].endWorkDate)}</p>
 								<p>Сдача работы</p>
-								<p>₽</p>
+								<p></p>
 								<CheckBox
 									className={s.Checkbox}
 									size={'20px'}
 									checked={client.workStages[0].isEndWork}
 								/>
-								<p>
-									{Math.round(
-										(client.workStages[0].endPaymentPayed /
-											client.totalWorkPrice) *
-											100,
-									) +
-										Math.round(
-											(client.workStages[0].firstPaymentPayed /
-												client.totalWorkPrice) *
-												100,
-										)}{' '}
-									%
-								</p>
 							</div>
 							<Line width="100%" className={s.Line} />
 						</>

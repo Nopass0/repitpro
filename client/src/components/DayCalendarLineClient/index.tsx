@@ -162,9 +162,11 @@ const DayCalendarLineClient = ({
 					}}
 					className={s.ClickWrapper}>
 					<div className={s.ClickUp}>
-						<div className={s.Item}>
-							<p>{item}</p>
-						</div>
+						{item && (
+							<div className={s.Item}>
+								<p>{item}</p>
+							</div>
+						)}
 						<div className={s.Name}>
 							<p>{name}</p>
 						</div>
@@ -197,7 +199,7 @@ const DayCalendarLineClient = ({
 							/>
 						</div>
 						<div className={s.Procent}>
-							<p>{procent}%</p>
+							<p>{procent ? procent : 0}%</p>
 						</div>
 					</div>
 				</div>
