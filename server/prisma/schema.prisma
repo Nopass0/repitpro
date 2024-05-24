@@ -265,4 +265,12 @@ model File {
 
   userId    String
 }
-// ... (остальные модели)
+
+model Link {
+  id String @id @default(cuid())
+  link String
+  tag String
+  linkedId String // id of student, group, etc
+  userId String
+}
+
