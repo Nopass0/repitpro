@@ -4,7 +4,11 @@ import { register } from "./auth/register";
 import db from "./db";
 import { strongCache, cache } from "utils/Cache";
 
-import { calendar, getByClientScheduleId, getByGroupId } from "./calendar/calendar";
+import {
+  calendar,
+  getByClientScheduleId,
+  getByGroupId,
+} from "./calendar/calendar";
 import {
   addStudent,
   createStudentSchedule,
@@ -52,6 +56,13 @@ import {
   getStudentFinanceData,
   getStudentLessonsData,
 } from "./cards/statistics";
+import {
+  createLink,
+  getLinkById,
+  getLinksByLinkedId,
+  getLinksByTag,
+  getLinksByUser,
+} from "cards/links";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -105,6 +116,13 @@ io.on("connection", (socket) => {
   socket.on("getAllItemsIdsAndNames", (token) => getAllItemsIdsAndNames(token));
 
   socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
+
+  socket.on("createLink", (data) => createLink(data));
+  socket.on("getLinksByTag", (data) => getLinksByTag(data));
+  socket.on("getLinkById", (data) => getLinkById(data));
+  socket.on("getLinksByUser", (token) => getLinksByUser(token));
+  socket.on("getLinksByLinkedId", (data) => getLinksByLinkedId(data));
+
   // socket.on("updateStudents", (data) => updateStudents(data));
   socket.on("updateStudentAndItems", (data) => updateStudentAndItems(data));
   socket.on("updateGroup", (data) => updateGroup(data));

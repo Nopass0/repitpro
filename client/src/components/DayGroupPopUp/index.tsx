@@ -1,15 +1,5 @@
 import s from './index.module.scss'
 import Line from '../Line'
-import DataSlidePicker from '../DataSlidePicker'
-import CloseIcon from '@mui/icons-material/Close'
-import DayCalendarLine from '../DayCalendarLine/index'
-import GroupOnline from '../../assets/1.svg'
-import Online from '../../assets/2.svg'
-import HomeStudent from '../../assets/3.svg'
-import Group from '../../assets/4.svg'
-import Home from '../../assets/5.svg'
-import Client from '../../assets/6.svg'
-import Plus from '../../assets/ItemPlus.svg'
 import RecordNListen from '../RecordNListen'
 import {Option, Select, SelectOption} from '@mui/base'
 import uploadFile from '../../assets/UploadFile.svg'
@@ -18,9 +8,11 @@ import CheckBox from '../CheckBox'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import {useSelector} from 'react-redux'
 import {useEffect, useState} from 'react'
+import CloseIcon from '@mui/icons-material/Close'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+
 interface IDayGroupPopUp {
 	icon?: any
 	name?: string
@@ -62,8 +54,6 @@ const DayGroupPopUp = ({
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
-
-	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
 
@@ -74,19 +64,18 @@ const DayGroupPopUp = ({
 	const [openSelect1, setOpenSelect1] = useState(false)
 	const [openSelect2, setOpenSelect2] = useState(false)
 
-	const [homeWorkComment, setHomeWorkComment] = useState(
-		student?.homeWork || '',
-	)
-	const [classroomComment, setClassroomComment] = useState(
-		student?.classWork || '',
-	)
-	const [homeFiles, setHomeFiles] = useState<any>(student?.homeFiles || [])
+	const [homeWorkComment, setHomeWorkComment] = useState('')
+	const [classroomComment, setClassroomComment] = useState('')
+	const [homeFiles, setHomeFiles] = useState<any[]>([])
 	const [homeFilesPaths, setHomeFilesPaths] = useState<string[]>([])
+	const [classroomFiles, setClassroomFiles] = useState<any[]>([])
 	const [classroomFilesPaths, setClassroomFilesPaths] = useState<string[]>([])
-
-	const [audios, setAudios] = useState<any>(student?.audios || [])
-
-	const [classAudio, setClassAudio] = useState<any>(student?.classAudio || [])
+	const [homeAudios, setHomeAudios] = useState<any[]>([])
+	const [classAudios, setClassAudios] = useState<any[]>([])
+	const [homeStudentsPoints, setHomeStudentsPoints] = useState<any[]>([])
+	const [classroomStudentsPoints, setClassroomStudentsPoints] = useState<any[]>(
+		[],
+	)
 
 	const handleAddHomeAudio = (
 		file: any,
@@ -94,10 +83,7 @@ const DayGroupPopUp = ({
 		type: string,
 		size: number,
 	) => {
-		console.log(file, name, type, size)
-		setAudios([...homeFiles, {name: name, type: type, size: size, file: file}])
-
-		console.log('\n--------home-audio--------\n', audios, '\n--------\n')
+		setHomeAudios([...homeAudios, {name, type, size, file}])
 	}
 
 	const handleAddClassroomAudio = (
@@ -106,27 +92,11 @@ const DayGroupPopUp = ({
 		type: string,
 		size: number,
 	) => {
-		console.log(file, name, type, size)
-		setClassAudio([
-			...classAudio,
-			{name: name, type: type, size: size, file: file},
-		])
-		console.log('\n--------class-audio--------\n', classAudio, '\n--------\n')
+		setClassAudios([...classAudios, {name, type, size, file}])
 	}
-
-	const [classroomFiles, setClassroomFiles] = useState<any>(
-		student?.classFiles || [],
-	)
-	const [homeStudentsPoints, setHomeStudentsPoints] = useState<number>(
-		student?.homeStudentsPoints?.points || 1,
-	)
-	const [classroomStudentsPoints, setClassroomStudentsPoints] =
-		useState<number>(student?.classStudentsPoints?.points || 1)
 
 	const handleAddHomeFile = (e: any) => {
 		const fileToAdd = e.target.files[0]
-		console.log('FiletoAdd', fileToAdd)
-		// // Проверяем, есть ли уже такой файл в массиве homeFiles
 		if (!homeFiles.some((file) => file.name === fileToAdd.name)) {
 			setHomeFiles([
 				...homeFiles,
@@ -144,7 +114,6 @@ const DayGroupPopUp = ({
 
 	const handleAddClassroomFile = (e: any) => {
 		const fileToAdd = e.target.files[0]
-		// Проверяем, есть ли уже такой файл в массиве classroomFiles
 		if (!classroomFiles.some((file) => file.name === fileToAdd.name)) {
 			setClassroomFiles([
 				...classroomFiles,
@@ -165,89 +134,75 @@ const DayGroupPopUp = ({
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
+			isGroup: true,
 			token: token,
 		})
+
 		socket.once('getStudentsByDate', (data: any) => {
-			console.log('getStudentsByDate', data)
-			//get students array and get by id
-			console.log('data', data, 'currentScheduleDay', currentScheduleDay)
 			const student = data?.find(
 				(student: any) => student.id === currentScheduleDay,
 			)
 			setStudent(student || {})
 			console.log(
-				'studentstudentstudentstudentstudentstudentstudentstudentstudent',
+				'\n-------------------------students(group----------------------------)\n',
 				student,
+				'\n-------------------------students(group----------------------------)\n',
 			)
 			setHomeWorkComment(student?.homeWork || '')
 			setClassroomComment(student?.classWork || '')
-			setHomeFiles(student?.homeFiles || [])
-			setClassroomFiles(student?.classFiles || [])
-			// setAudios(student?.audios || [])
-			// setClassAudio(student?.classAudio || [])
-			setHomeFilesPaths(student?.homeFilesPath || [])
-			setClassroomFilesPaths(student?.classFilesPath || [])
-			setHomeStudentsPoints(student?.homeStudentsPoints?.points || 1)
-			setClassroomStudentsPoints(student?.classStudentsPoints?.points || 1)
+			setHomeFiles(Array.isArray(student?.homeFiles) ? student.homeFiles : [])
+			setClassroomFiles(
+				Array.isArray(student?.classFiles) ? student.classFiles : [],
+			)
+			setHomeAudios(
+				Array.isArray(student?.homeAudios) ? student.homeAudios : [],
+			)
+			setClassAudios(
+				Array.isArray(student?.classAudios) ? student.classAudios : [],
+			)
+			setHomeStudentsPoints(
+				Array.isArray(student?.homeStudentsPoints)
+					? student.homeStudentsPoints
+					: [],
+			)
+			setClassroomStudentsPoints(
+				Array.isArray(student?.classStudentsPoints)
+					? student.classStudentsPoints
+					: [],
+			)
 		})
+
 		setIsOpened(true)
-	}, [])
-
-	const [groups, setGroups] = useState<any>([])
-	const [group, setGroup] = useState<any>({})
-
-	useEffect(() => {
-		socket.emit('getGroupsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			userId: token,
-		})
-		socket.once('getGroupsByDate', (data: any) => {
-			console.log('getGroupsByDate', data)
-			setGroups(data)
-
-			//get group where groupId = groupId
-			const group = data.find((group: any) => group.groupId === groupId)
-			setGroup(group)
-		})
-	}, [])
-
-	console.log('groupgroupgroupgroupgroup', group)
+	}, [
+		calendarNowPopupDay,
+		calendarNowPopupMonth,
+		calendarNowPopupYear,
+		token,
+		currentScheduleDay,
+	])
 
 	useEffect(() => {
 		if (currentScheduleDay && isOpened) {
-			console.log(
-				'New info: ',
-				currentScheduleDay,
-				homeWorkComment,
-				classroomComment,
-				homeFiles,
-				classroomFiles,
-				homeStudentsPoints,
-				classroomStudentsPoints,
-			)
-
 			socket.emit('updateStudentSchedule', {
 				id: currentScheduleDay,
 				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
 				token: token,
-				classFiles: classroomFiles,
+				classFiles: classroomFiles.map((file) => file.file),
 				classWork: classroomComment,
-				classStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: classroomStudentsPoints,
-				},
-				homeFiles: homeFiles,
+				classStudentsPoints: classroomStudentsPoints.map((student) => ({
+					studentId: student.studentId,
+					points: student.points,
+				})),
+				homeFiles: homeFiles.map((file) => file.file),
 				homeWork: homeWorkComment,
-				// audios: audios,
-				// classAudio: classAudio,
-				homeStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: homeStudentsPoints,
-				},
+				homeAudios: homeAudios.map((audio) => audio.file),
+				classAudios: classAudios.map((audio) => audio.file),
+				homeStudentsPoints: homeStudentsPoints.map((student) => ({
+					studentId: student.studentId,
+					points: student.points,
+				})),
 			})
 		}
 	}, [
@@ -255,13 +210,14 @@ const DayGroupPopUp = ({
 		classroomComment,
 		homeFiles,
 		classroomFiles,
+		homeAudios,
+		classAudios,
 		homeStudentsPoints,
 		classroomStudentsPoints,
 	])
 
-	const [students, setStudents] = useState([])
+	const [students, setStudents] = useState<any[]>([])
 	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
-	const currentStudent = students[currentIndex] // Get the current student
 
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
@@ -271,7 +227,7 @@ const DayGroupPopUp = ({
 			token: token,
 		})
 		socket.once('getStudentsByDate', (data) => {
-			setStudents(data)
+			setStudents(Array.isArray(data) ? data : [])
 		})
 	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 
@@ -331,7 +287,7 @@ const DayGroupPopUp = ({
 						/>
 						<div className={s.MediaBlock}>
 							<RecordNListen
-								alreadyRecorded={audios}
+								alreadyRecorded={homeAudios}
 								callback={handleAddHomeAudio}
 								className={s.RecordNListen}
 							/>
@@ -341,28 +297,11 @@ const DayGroupPopUp = ({
 								className={s.InputFile}
 								onChange={handleAddHomeFile}
 							/>
-							{/* <label htmlFor="inputFile1" className={s.LabelFile}>
-								<img src={uploadFile} alt="uploadFile" />
-							</label> */}
 							<Select
 								className={s.Select}
 								multiple
 								onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
 								renderValue={(option: SelectOption<number> | null) => {
-									if (option == null || option.value === null) {
-										return (
-											<>
-												<div className={s.ListWrapper}>
-													<label htmlFor="inputFile1" className={s.LabelFile}>
-														<img src={uploadFile} alt="uploadFile" />
-													</label>
-													<div className={s.Icons}>
-														{openSelect1 ? <ExpandLess /> : <ExpandMore />}
-													</div>
-												</div>
-											</>
-										)
-									}
 									return (
 										<>
 											<div className={s.ListWrapper}>
@@ -376,67 +315,53 @@ const DayGroupPopUp = ({
 										</>
 									)
 								}}>
-								<Option className={s.Option} value={0}>
-									{homeFiles.length === 0
-										? 'Список пока пуст'
-										: homeFiles.map((file: any, index: number) => (
-												<div className={s.FileWrapper}>
-													<p>{file.name.slice(0, 25) + '...'}</p>
-													<button
-														className={s.DeleteBtn}
-														onClick={() =>
-															setHomeFiles(
-																homeFiles.filter(
-																	(f: any) => f.name !== file.name,
-																),
-															)
-														}>
-														<DeleteOutlineIcon />
-													</button>
-												</div>
-											))}
-								</Option>
+								{homeFiles.length === 0 ? (
+									<Option className={s.Option} value={0}>
+										Список пока пуст
+									</Option>
+								) : (
+									homeFiles.map((file: any, index: number) => (
+										<Option className={s.Option} key={index} value={index}>
+											<div className={s.FileWrapper}>
+												<p>{file.name.slice(0, 25) + '...'}</p>
+												<button
+													className={s.DeleteBtn}
+													onClick={() =>
+														setHomeFiles(
+															homeFiles.filter(
+																(f: any) => f.name !== file.name,
+															),
+														)
+													}>
+													<DeleteOutlineIcon />
+												</button>
+											</div>
+										</Option>
+									))
+								)}
 							</Select>
 						</div>
 						<h1>Выполнение домашней работы</h1>
 
 						<div className={s.HomeWorkGroups}>
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
-							<div className={s.HomeWorkStud}>
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={homeStudentsPoints}
-									onChange={(e) => setHomeStudentsPoints(e)}
-								/>
-							</div>
-							<Line width="371px" className={s.Line} />
+							{homeStudentsPoints.map((student: any, index: number) => (
+								<div key={index} className={s.HomeWorkStud}>
+									<p>{student.studentName}</p>
+									<NowLevel
+										className={s.NowLevel}
+										value={student.points}
+										onChange={(newPoints) => {
+											const updatedPoints = homeStudentsPoints.map((s, i) =>
+												i === index ? {...s, points: newPoints} : s,
+											)
+											setHomeStudentsPoints(updatedPoints)
+										}}
+									/>
+									{index < homeStudentsPoints.length - 1 && (
+										<Line width="371px" className={s.Line} />
+									)}
+								</div>
+							))}
 						</div>
 					</div>
 					<div className={s.Devider}></div>
@@ -450,7 +375,7 @@ const DayGroupPopUp = ({
 						/>
 						<div className={s.MediaBlock}>
 							<RecordNListen
-								alreadyRecorded={classAudio}
+								alreadyRecorded={classAudios}
 								callback={handleAddClassroomAudio}
 								className={s.RecordNListen}
 							/>
@@ -460,28 +385,11 @@ const DayGroupPopUp = ({
 								className={s.InputFile}
 								onChange={handleAddClassroomFile}
 							/>
-							{/* <label htmlFor="inputFile2" className={s.LabelFile}>
-								<img src={uploadFile} alt="uploadFile" />
-							</label> */}
 							<Select
 								className={s.Select}
 								multiple
 								onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
 								renderValue={(option: SelectOption<number> | null) => {
-									if (option == null || option.value === null) {
-										return (
-											<>
-												<div className={s.ListWrapper}>
-													<label htmlFor="inputFile2" className={s.LabelFile}>
-														<img src={uploadFile} alt="uploadFile" />
-													</label>
-													<div className={s.Icons}>
-														{openSelect2 ? <ExpandLess /> : <ExpandMore />}
-													</div>
-												</div>
-											</>
-										)
-									}
 									return (
 										<>
 											<div className={s.ListWrapper}>
@@ -495,85 +403,57 @@ const DayGroupPopUp = ({
 										</>
 									)
 								}}>
-								<Option className={s.Option} value={0}>
-									{classroomFiles.length === 0
-										? 'Список пока пуст'
-										: classroomFiles.map((file: any) => (
-												<div className={s.FileWrapper}>
-													<p>{file.name.slice(0, 25) + '...'}</p>
-													<button
-														className={s.DeleteBtn}
-														onClick={() =>
-															setClassroomFiles(
-																classroomFiles.filter(
-																	(f: any) => f.name !== file.name,
-																),
-															)
-														}>
-														<DeleteOutlineIcon />
-													</button>
-												</div>
-											))}
-								</Option>
+								{classroomFiles.length === 0 ? (
+									<Option className={s.Option} value={0}>
+										Список пока пуст
+									</Option>
+								) : (
+									classroomFiles.map((file: any, index: number) => (
+										<Option className={s.Option} key={index} value={index}>
+											<div className={s.FileWrapper}>
+												<p>{file.name.slice(0, 25) + '...'}</p>
+												<button
+													className={s.DeleteBtn}
+													onClick={() =>
+														setClassroomFiles(
+															classroomFiles.filter(
+																(f: any) => f.name !== file.name,
+															),
+														)
+													}>
+													<DeleteOutlineIcon />
+												</button>
+											</div>
+										</Option>
+									))
+								)}
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>
 
 						<div className={s.WorkClassGroup}>
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
-							<div className={s.WorkClassStud}>
-								<CheckBox borderRadius={10} size="16px" />
-								<p>Петров</p>
-								<NowLevel
-									className={s.NowLevel}
-									value={classroomStudentsPoints}
-									onChange={(e) => setClassroomStudentsPoints(e)}
-								/>
-
-								<CheckBox className={s.CheckboxComment} size="16px" />
-								<p>Предоплата</p>
-							</div>
-							<Line width="100%" className={s.Line} />
+							{classroomStudentsPoints.map((student: any, index: number) => (
+								<div key={index} className={s.WorkClassStud}>
+									<p>{student.studentName}</p>
+									<NowLevel
+										className={s.NowLevel}
+										value={student.points}
+										onChange={(newPoints) => {
+											const updatedPoints = classroomStudentsPoints.map(
+												(s, i) => (i === index ? {...s, points: newPoints} : s),
+											)
+											setClassroomStudentsPoints(updatedPoints)
+										}}
+									/>
+									{index < classroomStudentsPoints.length - 1 && (
+										<Line width="100%" className={s.Line} />
+									)}
+								</div>
+							))}
 						</div>
-						<div className={s.Total}>{!hiddenNum && <p>Итог: </p>}</div>
+						<div className={s.Total}>
+							<p>Итог: </p>
+						</div>
 					</div>
 				</div>
 			</div>
