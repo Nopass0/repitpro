@@ -6,7 +6,7 @@ import uploadFile from '../../assets/UploadFile.svg'
 import NowLevel from '../NowLevel'
 import CheckBox from '../CheckBox'
 import Arrow, {ArrowType} from '../../assets/arrow'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import {useEffect, useState} from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import socket from '../../socket'
@@ -39,6 +39,7 @@ const DayGroupPopUp = ({
 	onExit,
 	groupId,
 }: IDayGroupPopUp) => {
+	const dispatch = useDispatch()
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
 	)
@@ -76,6 +77,10 @@ const DayGroupPopUp = ({
 	const [classroomStudentsPoints, setClassroomStudentsPoints] = useState<any[]>(
 		[],
 	)
+
+	const [groupSchedules, setGroupSchedules] = useState<any>()
+	const [groupCurrentIndexSchedule, setGroupCurrentIndexSchedule] =
+		useState<number>()
 
 	const handleAddHomeAudio = (
 		file: any,
@@ -129,6 +134,61 @@ const DayGroupPopUp = ({
 		}
 	}
 
+	const handleNextStudent = () => {
+		if (groupCurrentIndexSchedule! < groupSchedules.length - 1) {
+			dispatch({
+				type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+				payload: groupSchedules[groupCurrentIndexSchedule! + 1].id,
+			})
+			dispatch({
+				type: 'SET_CALENDAR_NOW_POPUP',
+				payload: {
+					day: groupSchedules[groupCurrentIndexSchedule! + 1].day,
+					month: groupSchedules[groupCurrentIndexSchedule! + 1].month,
+					year: groupSchedules[groupCurrentIndexSchedule! + 1].year,
+				},
+			})
+		}
+	}
+	const handlePrevStudent = () => {
+		if (groupCurrentIndexSchedule! > 0) {
+			dispatch({
+				type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
+				payload: groupSchedules[groupCurrentIndexSchedule! - 1].id,
+			})
+			dispatch({
+				type: 'SET_CALENDAR_NOW_POPUP',
+				payload: {
+					day: groupSchedules[groupCurrentIndexSchedule! - 1].day,
+					month: groupSchedules[groupCurrentIndexSchedule! - 1].month,
+					year: groupSchedules[groupCurrentIndexSchedule! - 1].year,
+				},
+			})
+		}
+	}
+
+	useEffect(() => {
+		if (student.groupId) {
+			socket.emit('getByGroupScheduleId', {
+				groupId: student.groupId,
+				token: token,
+			})
+		}
+
+		socket.once('getByGroupScheduleId', (data: any) => {
+			setGroupSchedules(data)
+			let indexOfStudent = data.findIndex(
+				(student: any) => student.id === currentScheduleDay,
+			)
+			setGroupCurrentIndexSchedule(indexOfStudent)
+			console.log(
+				data,
+				indexOfStudent,
+				currentScheduleDay,
+				'currentIndexStudentSchedules',
+			)
+		})
+	}, [student, currentScheduleDay])
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
@@ -243,18 +303,6 @@ const DayGroupPopUp = ({
 		}
 	}, [students, currentScheduleDay])
 
-	const handlePrevStudent = () => {
-		setCurrentIndex((prevIndex) =>
-			prevIndex === 0 ? students.length - 1 : prevIndex - 1,
-		)
-	}
-
-	const handleNextStudent = () => {
-		setCurrentIndex((prevIndex) =>
-			prevIndex === students.length - 1 ? 0 : prevIndex + 1,
-		)
-	}
-
 	return (
 		<div style={style} className={s.wrapper}>
 			<div className={s.InfoBlock}>
@@ -343,9 +391,9 @@ const DayGroupPopUp = ({
 						</div>
 						<h1>Выполнение домашней работы</h1>
 
-						<div className={s.HomeWorkGroups}>
-							{homeStudentsPoints.map((student: any, index: number) => (
-								<div key={index} className={s.HomeWorkStud}>
+						{homeStudentsPoints.map((student: any, index: number) => (
+							<div key={index} className={s.HomeWorkGroups}>
+								<div className={s.HomeWorkStud}>
 									<p>{student.studentName}</p>
 									<NowLevel
 										className={s.NowLevel}
@@ -357,12 +405,12 @@ const DayGroupPopUp = ({
 											setHomeStudentsPoints(updatedPoints)
 										}}
 									/>
-									{index < homeStudentsPoints.length - 1 && (
-										<Line width="371px" className={s.Line} />
-									)}
 								</div>
-							))}
-						</div>
+								{index < homeStudentsPoints.length - 1 && (
+									<Line width="371px" className={s.Line} />
+								)}
+							</div>
+						))}
 					</div>
 					<div className={s.Devider}></div>
 					<div className={s.LessonWrapper}>
@@ -431,8 +479,8 @@ const DayGroupPopUp = ({
 						</div>
 						<h1>Работа на занятии</h1>
 
-						<div className={s.WorkClassGroup}>
-							{classroomStudentsPoints.map((student: any, index: number) => (
+						{classroomStudentsPoints.map((student: any, index: number) => (
+							<div className={s.WorkClassGroup}>
 								<div key={index} className={s.WorkClassStud}>
 									<p>{student.studentName}</p>
 									<NowLevel
@@ -445,12 +493,12 @@ const DayGroupPopUp = ({
 											setClassroomStudentsPoints(updatedPoints)
 										}}
 									/>
-									{index < classroomStudentsPoints.length - 1 && (
-										<Line width="100%" className={s.Line} />
-									)}
 								</div>
-							))}
-						</div>
+								{index < classroomStudentsPoints.length - 1 && (
+									<Line width="100%" className={s.Line} />
+								)}
+							</div>
+						))}
 						<div className={s.Total}>
 							<p>Итог: </p>
 						</div>

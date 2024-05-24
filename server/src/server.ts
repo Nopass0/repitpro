@@ -8,6 +8,7 @@ import {
   calendar,
   getByClientScheduleId,
   getByGroupId,
+  getByGroupScheduleId,
 } from "./calendar/calendar";
 import {
   addStudent,
@@ -133,6 +134,7 @@ io.on("connection", (socket) => {
 
   socket.on("getByGroupId", (data) => getByGroupId(data));
   socket.on("getByClientScheduleId", (data) => getByClientScheduleId(data));
+  socket.on("getByGroupScheduleId", (data) => getByGroupScheduleId(data));
   //check account
   socket.on("checkAccount", async (data) => {
     let token = await db.token.findFirst({

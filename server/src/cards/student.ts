@@ -461,7 +461,20 @@ export async function getStudentsByDate(data: {
       let homeStudentsPoints = schedule.homeStudentsPoints;
       let classStudentsPoints = schedule.classStudentsPoints;
 
-      if (!Array.isArray(homeStudentsPoints)) {
+      let isHomeStudentsPointStudName =
+        Array(homeStudentsPoints).filter(
+          (student) => student.nameStudent !== undefined
+        ).length === students.length;
+      let isClassStudentsPointStudName =
+        Array(classStudentsPoints).filter(
+          (student) => student.nameStudent !== undefined
+        ).length === students.length;
+
+      if (
+        !Array.isArray(homeStudentsPoints) ||
+        students.length !== homeStudentsPoints.length ||
+        !isHomeStudentsPointStudName
+      ) {
         homeStudentsPoints = students.map((student) => ({
           studentId: student.id,
           studentName: student.nameStudent,
@@ -469,7 +482,11 @@ export async function getStudentsByDate(data: {
         }));
       }
 
-      if (!Array.isArray(classStudentsPoints)) {
+      if (
+        !Array.isArray(classStudentsPoints) ||
+        students.length !== classStudentsPoints.length ||
+        !isClassStudentsPointStudName
+      ) {
         classStudentsPoints = students.map((student) => ({
           studentId: student.id,
           studentName: student.nameStudent,

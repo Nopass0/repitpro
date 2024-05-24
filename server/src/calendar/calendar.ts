@@ -153,8 +153,8 @@ export const getByClientScheduleId = async (data) => {
       io.emit("calendar", { message: "Invalid token" });
     }
 
-    let {clientId} = data
-    console.log(data,'DATATATATAT')
+    let { clientId } = data;
+    console.log(data, "DATATATATAT");
     const clientSchedules = await db.studentSchedule.findMany({
       where: {
         userId,
@@ -177,5 +177,43 @@ export const getByClientScheduleId = async (data) => {
   } catch (error) {
     console.log("ERROR");
     return io.emit("getByClientScheduleId", { error: error.message });
+  }
+};
+
+export const getByGroupScheduleId = async (data) => {
+  try {
+    const token = data?.token;
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
+      },
+    });
+    const userId = await token_.userId;
+    if (!userId) {
+      io.emit("calendar", { message: "Invalid token" });
+    }
+    let { groupId } = data;
+    const groupSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId,
+        groupId,
+      },
+    });
+    const groupScheduleJSON = JSON.parse(JSON.stringify(groupSchedules));
+    groupScheduleJSON.map((schedule) => {
+      schedule.date = new Date(
+        parseInt(schedule.year),
+        parseInt(schedule.month) - 1,
+        parseInt(schedule.day)
+      );
+    });
+    groupScheduleJSON.sort((a, b) => {
+      return a.date.getTime() - b.date.getTime();
+    });
+    console.log(groupScheduleJSON, "groupScheduleJSON");
+    io.emit("getByGroupScheduleId", groupScheduleJSON);
+  } catch (error) {
+    console.log("ERROR");
+    return io.emit("getByGroupScheduleId", { error: error.message });
   }
 };
