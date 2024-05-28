@@ -161,7 +161,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				audiosItems: audioItems,
 				audiosStudents: audioStudents,
 			})
-			setLoading(false)
+			// setLoading(false)
 			window.location.reload()
 		} else {
 			console.log(
@@ -199,7 +199,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 		if (ok === true) {
 			window.location.reload()
-			setLoading(false)
+			// setLoading(false)
 		} else {
 			const meesage = data.error
 			if (errorList.indexOf(meesage) === -1) {
@@ -1413,7 +1413,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={item.startLesson}
 													onChange={(newDate) =>
-														changeItemValue(index, 'startLesson', newDate)
+														changeItemValue(index, 'startLesson', new Date(newDate))
 													}
 													calendarId="startLesson"
 												/>
@@ -1429,7 +1429,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={item.endLesson}
 													onChange={(newDate) =>
-														changeItemValue(index, 'endLesson', newDate)
+														changeItemValue(index, 'endLesson', new Date(newDate))
 													}
 													calendarId="endLesson"
 												/>
@@ -1905,7 +1905,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={student.prePayDate}
 													onChange={(newDate) =>
-														changeStudentValue(index, 'prePayDate', newDate)
+														changeStudentValue(index, 'prePayDate', new Date(newDate))
 													}
 													calendarId="prePay"
 												/>
@@ -1994,7 +1994,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={student.startLesson}
 													onChange={(newDate) =>
-														changeStudentValue(index, 'startLesson', newDate)
+														changeStudentValue(index, 'startLesson', new Date(newDate))
 													}
 													calendarId={`${index}startLessonStudent`}
 												/>
@@ -2010,7 +2010,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={student.endLesson}
 													onChange={(newDate) =>
-														changeStudentValue(index, 'endLesson', newDate)
+														changeStudentValue(index, 'endLesson', new Date(newDate))
 													}
 													calendarId={`${index}endLessonStudent`}
 												/>

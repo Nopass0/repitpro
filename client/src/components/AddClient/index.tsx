@@ -20,6 +20,7 @@ import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import MiniCalendar from '../MiniCalendar'
+import {TailSpin} from 'react-loader-spinner'
 interface IAddClient {}
 
 const AddClient = ({}: IAddClient) => {
@@ -256,7 +257,7 @@ const AddClient = ({}: IAddClient) => {
 
 	const sendInfo = () => {
 		setLoading(true)
-		if (currentOpenedClient === '') {
+		if (currentOpenedClient !== '') {
 			socket.emit('updateClient', {
 				nameStudent: nameStudent,
 				phoneNumber: phoneNumber,
@@ -283,7 +284,7 @@ const AddClient = ({}: IAddClient) => {
 		}
 
 		window.location.reload()
-		setLoading(false)
+		// setLoading(false)
 	}
 
 	const StyledPickersLayout = styled('span')({
@@ -877,7 +878,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'startWorkDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																				calendarId="startWorkDate"
@@ -910,7 +911,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'firstPaymentDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																			/>
@@ -975,7 +976,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'endWorkDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																			/>
@@ -1007,7 +1008,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'endPaymentDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																				calendarId="endPaymentDate"
@@ -1088,7 +1089,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'firstPaymentDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																				calendarId="firstPaymentDate"
@@ -1154,7 +1155,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'startWorkDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																				calendarId="startWorkDate"
@@ -1187,7 +1188,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'endPaymentDate',
-																						newDate,
+																						new Date(newDate),
 																					)
 																				}
 																				calendarId="endPaymentDate"
@@ -1251,7 +1252,7 @@ const AddClient = ({}: IAddClient) => {
 																						index,
 																						indexStage,
 																						'endWorkDate',
-																						newValue,
+																						new Date(newValue),
 																					)
 																				}}
 																				calendarId="endWorkDate"
@@ -1347,7 +1348,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'startWorkDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="startWorkDate"
@@ -1380,7 +1381,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'firstPaymentDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="firstPaymentDate"
@@ -1450,7 +1451,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'endWorkDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="endWorkDate"
@@ -1483,7 +1484,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'endPaymentDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="endPaymentDate"
@@ -1567,7 +1568,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'firstPaymentDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="firstPaymentDate"
@@ -1633,7 +1634,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'startWorkDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="startWorkDate"
@@ -1666,7 +1667,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'endPaymentDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="endPaymentDate"
@@ -1732,7 +1733,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			0,
 																			'endWorkDate',
-																			newValue,
+																			new Date(newValue),
 																		)
 																	}}
 																	calendarId="endWorkDate"

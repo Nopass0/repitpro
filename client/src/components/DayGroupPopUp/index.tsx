@@ -274,6 +274,8 @@ const DayGroupPopUp = ({
 		classAudios,
 		homeStudentsPoints,
 		classroomStudentsPoints,
+		currentScheduleDay,
+		
 	])
 
 	const [students, setStudents] = useState<any[]>([])

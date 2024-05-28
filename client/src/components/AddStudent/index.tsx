@@ -338,7 +338,7 @@ const AddStudent = ({}: IAddStudent) => {
 				token,
 				phoneNumber,
 			})
-			setLoading(false)
+			// setLoading(false)
 			window.location.reload()
 		} else {
 			socket.emit('addStudent', {
@@ -369,7 +369,7 @@ const AddStudent = ({}: IAddStudent) => {
 
 		if (ok === true) {
 			window.location.reload()
-			setLoading(false)
+			// setLoading(false)
 		} else {
 			const meesage = data.error
 			if (errorList.indexOf(meesage) === -1) {
@@ -637,13 +637,13 @@ const AddStudent = ({}: IAddStudent) => {
 			})
 
 			// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
-			const hls = updatedHistoryLesson.sort((a, b) => {
-				const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-				const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-				return dateA - dateB
-			})
+			// const hls = updatedHistoryLesson.sort((a, b) => {
+			// 	const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+			// 	const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+			// 	return dateA - dateB
+			// })
 
-			setHistoryLesson(hls)
+			// setHistoryLesson(hls)
 		}
 	}
 
@@ -753,6 +753,7 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
+
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
@@ -794,25 +795,25 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 		}
 
-		const hlTemp = historyLessons_
-		// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
-		hlTemp.sort((a, b) => {
-			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-			return dateA - dateB
-		})
+		// const hlTemp = historyLessons_
+		// // Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
+		// hlTemp.sort((a, b) => {
+		// 	const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+		// 	const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+		// 	return dateA - dateB
+		// })
 
-		const hlsNow = hlTemp.sort((a, b) => {
-			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-			return dateA - dateB
-		})[hlTemp.length - 1]
+		// const hlsNow = hlTemp.sort((a, b) => {
+		// 	const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
+		// 	const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
+		// 	return dateA - dateB
+		// })[hlTemp.length - 1]
 
-		//delete hlsNow from hls
-		const hls = hlTemp.filter((item) => item.date !== hlsNow.date)
+		// //delete hlsNow from hls
+		// const hls = hlTemp.filter((item) => item.date !== hlsNow.date)
 
-		//remake hls with hlsNow at start
-		hls.unshift(hlsNow)
+		// //remake hls with hlsNow at start
+		// hls.unshift(hlsNow)
 
 		// console.log(
 		// 	'\n-----------------hls-----------\n',
@@ -827,7 +828,7 @@ const AddStudent = ({}: IAddStudent) => {
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-	}, [items, today])
+	}, [items])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
 		setHistoryLesson((prevHistoryLesson: any) => [
@@ -1623,7 +1624,11 @@ const AddStudent = ({}: IAddStudent) => {
 													disabled={isEditMode}
 													value={item.startLesson}
 													onChange={(newDate) =>
-														changeItemValue(index, 'startLesson', newDate)
+														changeItemValue(
+															index,
+															'startLesson',
+															new Date(newDate),
+														)
 													}
 													calendarId="startLesson"
 												/>
@@ -1637,7 +1642,11 @@ const AddStudent = ({}: IAddStudent) => {
 													disabled={isEditMode}
 													value={item.endLesson}
 													onChange={(newDate) =>
-														changeItemValue(index, 'endLesson', newDate)
+														changeItemValue(
+															index,
+															'endLesson',
+															new Date(newDate),
+														)
 													}
 													calendarId="endLesson"
 												/>
