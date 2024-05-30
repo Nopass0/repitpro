@@ -737,6 +737,7 @@ export async function updateGroup(data) {
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
             userId,
+            groupId: id,
           },
         });
       } else {
@@ -819,9 +820,9 @@ export async function updateGroup(data) {
       },
     });
 
-    const extistFiles = JSON.parse(JSON.stringify(groupExt)).files;
+    const existingFiles = JSON.parse(JSON.stringify(groupExt)).files;
     console.log(
-      "\n-----------------ext-files--------------------\n",
+      "\n-----------------existing-files--------------------\n",
       groupExt,
       "\n--------------------------\n"
     );
@@ -831,7 +832,7 @@ export async function updateGroup(data) {
       ...uploadedFilesItems,
       ...uploadedAudiosItems,
       ...uploadedAudiosStudents,
-      ...extistFiles,
+      ...existingFiles,
     ];
 
     await db.group.update({

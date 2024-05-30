@@ -1,7 +1,7 @@
 import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
 import db from "../db";
 import io from "../socket";
-import { differenceInDays, addDays, getDay } from "date-fns";
+import { differenceInDays, isWithinInterval } from "date-fns";
 import { format } from "date-fns/locale/ru";
 
 // Function to hash a string using a custom hash function
@@ -51,23 +51,6 @@ const hashToColor = (hash: number) => {
   return `#${hexColor}`;
 };
 
-// Вспомогательные функции для группировки данных по дням, месяцам и годам
-const groupByDay = (data: any[]) => {
-  const grouped: { [key: string]: any[] } = {};
-  for (const item of data) {
-    const day = new Date(
-      item.year,
-      item.month - 1,
-      item.day
-    ).toLocaleDateString();
-    if (!grouped[day]) {
-      grouped[day] = [];
-    }
-    grouped[day].push(item);
-  }
-  return grouped;
-};
-
 const formatDate = (date: Date, startDate: Date, endDate: Date) => {
   const dayDiff = differenceInDays(endDate, startDate);
   if (dayDiff > 365) {
@@ -77,6 +60,10 @@ const formatDate = (date: Date, startDate: Date, endDate: Date) => {
   } else {
     return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }); // day-month
   }
+};
+
+const parseDateFromSchedule = (day: string, month: string, year: string) => {
+  return new Date(Number(year), Number(month) - 1, Number(day));
 };
 
 // Функция для получения данных для графика "Ученики-Финансы"
@@ -101,10 +88,15 @@ export async function getStudentFinanceData(data: {
 
     const userId = token_.userId;
 
+    const whereClause = {
+      userId: userId,
+      ...(subjectIds.length > 0 && {
+        itemId: { in: subjectIds },
+      }),
+    };
+
     const data_ = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-      },
+      where: whereClause,
       select: {
         createdAt: true,
         lessonsPrice: true,
@@ -126,6 +118,11 @@ export async function getStudentFinanceData(data: {
 
     // Обходим полученные данные
     for (const item of data_) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       // Формируем строку, представляющую комбинацию года, месяца и дня
       const dateKey = `${item.year}-${item.month}-${item.day}`;
 
@@ -209,14 +206,19 @@ export async function getStudentCountData(data: {
 
     const userId = token_.userId;
 
-    const data_ = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
+    const whereClause = {
+      userId: userId,
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
       },
+      ...(subjectIds.length > 0 && {
+        itemId: { in: subjectIds },
+      }),
+    };
+
+    const data_ = await db.studentSchedule.findMany({
+      where: whereClause,
       select: {
         createdAt: true,
         lessonsCount: true,
@@ -236,6 +238,11 @@ export async function getStudentCountData(data: {
 
     // Обходим полученные данные
     for (const item of data_) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       // Формируем строку, представляющую комбинацию года, месяца и дня
       const dateKey = `${item.year}-${item.month}-${item.day}`;
 
@@ -318,13 +325,19 @@ export async function getStudentLessonsData(data: {
 
     const userId = token_.userId;
 
-    const data_ = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        itemId: {
-          in: subjectIds.map((id) => id),
-        },
+    const whereClause = {
+      userId: userId,
+      ...(subjectIds.length > 0 && {
+        itemId: { in: subjectIds },
+      }),
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
       },
+    };
+
+    const data_ = await db.studentSchedule.findMany({
+      where: whereClause,
       select: {
         createdAt: true,
         lessonsCount: true,
@@ -344,6 +357,11 @@ export async function getStudentLessonsData(data: {
 
     // Обходим полученные данные
     for (const item of data_) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       // Формируем строку, представляющую комбинацию года, месяца и дня
       const dateKey = `${item.year}-${item.month}-${item.day}`;
 
@@ -425,14 +443,16 @@ export async function getClientFinanceData(data: {
 
     const userId = token_.userId;
 
-    const data_ = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        clientId: {
-          not: null,
-        },
-        isArchived: false,
+    const whereClause = {
+      userId: userId,
+      clientId: {
+        not: null,
       },
+      isArchived: false,
+    };
+
+    const data_ = await db.studentSchedule.findMany({
+      where: whereClause,
       select: {
         createdAt: true,
         workPrice: true,
@@ -453,6 +473,11 @@ export async function getClientFinanceData(data: {
 
     // Обходим полученные данные
     for (const item of data_) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       // Если clientId еще нет в объекте, добавляем его и инициализируем значение workPrice
       if (!combinedData[item.clientId]) {
         combinedData[item.clientId] = {
@@ -521,18 +546,20 @@ export async function getClientCountData(data: {
 
     const userId = token_.userId;
 
-    const data_ = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        clientId: {
-          not: null,
-        },
-        isArchived: false,
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
+    const whereClause = {
+      userId: userId,
+      clientId: {
+        not: null,
       },
+      isArchived: false,
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    };
+
+    const data_ = await db.studentSchedule.findMany({
+      where: whereClause,
       select: {
         createdAt: true,
         workCount: true,
@@ -552,6 +579,11 @@ export async function getClientCountData(data: {
 
     // Обходим полученные данные
     for (const item of data_) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       // Если clientId еще нет в объекте, добавляем его и инициализируем значение workCount
       if (!combinedData[item.clientId]) {
         combinedData[item.clientId] = {
@@ -620,14 +652,16 @@ export async function getClientWorksData(data: {
 
     const userId = token_.userId;
 
-    const data_ = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        clientId: {
-          not: null,
-        },
-        isArchived: false,
+    const whereClause = {
+      userId: userId,
+      clientId: {
+        not: null,
       },
+      isArchived: false,
+    };
+
+    const data_ = await db.studentSchedule.findMany({
+      where: whereClause,
       select: {
         createdAt: true,
         itemName: true,
@@ -648,6 +682,11 @@ export async function getClientWorksData(data: {
 
     // Обходим полученные данные
     for (const item of data_) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       const key = `${item.clientId}-${item.itemName}`;
 
       // Если такая комбинация еще нет в объекте, добавляем ее и инициализируем массив studentNames
@@ -793,6 +832,11 @@ export async function getStudentClientComparisonData(data: {
 
     // Обходим полученные данные
     for (const item of combinedData) {
+      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
+        continue;
+
       // Формируем строку, представляющую комбинацию года, месяца и дня
       const dateKey = `${item.year}-${item.month}-${item.day}`;
 

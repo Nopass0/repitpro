@@ -1,4 +1,9 @@
-import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
+import {
+  IStudentCardResponse,
+  ITimeLine,
+  IItemCard,
+  IUploadFiles,
+} from "../types";
 import db from "../db";
 import io from "../socket";
 import { Prisma, Job } from "@prisma/client";
@@ -80,8 +85,6 @@ export async function addClient(data: any) {
       },
     });
 
-    // console.log("New client created:", newClient);
-
     // Create StudentSchedule records
     const jobsWithStages = await db.job.findMany({
       where: {
@@ -128,7 +131,6 @@ export async function addClient(data: any) {
                 itemName: "void",
                 userId,
                 lessonDuration: 0,
-
                 endLesson: new Date(Date.now()),
                 placeLesson: "",
                 programLesson: "",
@@ -142,7 +144,6 @@ export async function addClient(data: any) {
                 tryLessonCost: "",
                 valueMuiSelectArchive: 1,
                 timeLinesArray: [],
-                // itemName: "void",
                 nowLevel: 0,
               },
             });
@@ -212,13 +213,14 @@ export async function addClient(data: any) {
         id: newClient.id,
       },
       data: {
-        files: Object.assign(filesIds, audioIds),
+        files: [...filesIds, ...audioIds],
       },
     });
 
     return updateClient;
   } catch (error) {
     console.error("Error creating client:", error);
+    io.emit("addClient", { error: error.message });
   }
 }
 
@@ -312,10 +314,21 @@ export async function updateClient(data: {
   email: string;
   costStudent: number;
   commentClient: string;
+  files: IUploadFiles[];
+  audios: IUploadFiles[];
   token: string;
 }) {
   try {
-    const { id, nameStudent, phoneNumber, email, commentClient, token } = data;
+    const {
+      id,
+      nameStudent,
+      phoneNumber,
+      email,
+      commentClient,
+      token,
+      files,
+      audios,
+    } = data;
 
     const token_ = await db.token.findFirst({
       where: {
@@ -325,11 +338,30 @@ export async function updateClient(data: {
 
     if (!token_) {
       console.log("Invalid token");
+      throw new Error("Invalid token");
     }
 
     const userId = token_.userId;
 
-    const client = await db.client.update({
+    // Получение существующих файлов
+    const existingClient = await db.client.findUnique({
+      where: { id, userId },
+      select: { files: true },
+    });
+
+    let updatedFiles = existingClient.files || [];
+
+    if (files.length > 0) {
+      const fileIds = await upload(files, userId, "client");
+      updatedFiles = [...updatedFiles, ...fileIds];
+    }
+
+    if (audios.length > 0) {
+      const audioIds = await upload(audios, userId, "client/audio");
+      updatedFiles = [...updatedFiles, ...audioIds];
+    }
+
+    const updatedClient = await db.client.update({
       where: {
         id,
         userId,
@@ -339,14 +371,16 @@ export async function updateClient(data: {
         phoneNumber,
         email,
         commentClient,
+        files: updatedFiles,
       },
     });
 
-    io.emit("updateClient", client);
+    io.emit("updateClient", updatedClient);
 
-    return client;
+    return updatedClient;
   } catch (error) {
     console.error("Error updating client:", error);
+    io.emit("updateClient", { error: error.message });
   }
 }
 
