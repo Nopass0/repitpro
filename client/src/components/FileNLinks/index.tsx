@@ -14,6 +14,9 @@ interface IFileNLinks {
 	alreadyUploaded?: {file: any; name: string; size: number; type: string}[]
 	callback?: (file: any, name: string, size: number, type: string) => void
 	typeCard?: string
+	submitLinks?: () => void
+	deleteLink?: (link: string, index: number) => void
+	linksArray?: string[]
 }
 
 const FileNLinks: React.FC<IFileNLinks> = ({
@@ -21,6 +24,9 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	alreadyUploaded,
 	callback,
 	typeCard = 'student',
+	submitLinks,
+	linksArray,
+	deleteLink,
 }: IFileNLinks) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const [files, setFiles] = useState<any>([])
@@ -49,16 +55,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 			type: typeCard,
 		})
 	}
-
-	useEffect(() => {
-		console.log(
-			'\n------------alreadyUploaded----------------\n',
-			alreadyUploaded,
-			'\n------------alreadyUploaded----------------\n',
-		)
-		setFiles(alreadyUploaded)
-		console.log(files)
-	}, [alreadyUploaded])
 
 	const handleClickOutside = (event) => {
 		if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -95,10 +91,24 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 
 	const handleSubmit = () => {
 		setLinks((prevLinks) => [...prevLinks, linkValue])
+		submitLinks && submitLinks([...links, linkValue])
 		setLinkValue('')
 		setPasteLinkModalOpen(false)
 	}
 
+	useEffect(() => {
+		linksArray && setLinks(linksArray)
+	}, [linksArray])
+
+	useEffect(() => {
+		console.log(
+			'\n------------alreadyUploaded----------------\n',
+			alreadyUploaded,
+			'\n------------alreadyUploaded----------------\n',
+		)
+		setFiles(alreadyUploaded)
+		console.log(files)
+	}, [alreadyUploaded])
 	return (
 		<>
 			<ListItemButton
@@ -200,18 +210,19 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					<Line width="100%" className={s.Line} />
 					<div className={s.LinkList}>
 						{links.length ? (
-							links.map((link, index) => (
+							links.map((link: string, index: number) => (
 								<>
 									<div key={index} className={s.LinkItem}>
 										<a href={link} target="_blank" rel="noopener noreferrer">
 											{link}
 										</a>
 										<button
-											onClick={() =>
+											onClick={() => {
 												setLinks((prevLinks) =>
 													prevLinks.filter((_, i) => i !== index),
 												)
-											}>
+												deleteLink && deleteLink(link, index)
+											}}>
 											<DeleteOutlineIcon />
 										</button>
 									</div>
@@ -251,10 +262,12 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 						value={linkValue}
 						onChange={(e) => setLinkValue(e.target.value)}
 						onPaste={handlePaste}
-						placeholder="Paste link here..."
+						placeholder="Вставьте ссылку..."
 					/>
-					<button onClick={handleSubmit}>Submit</button>
-					<button onClick={() => setPasteLinkModalOpen(false)}>Cancel</button>
+					<button onClick={handleSubmit} style={{marginRight: '10px'}}>
+						Отправить
+					</button>
+					<button onClick={() => setPasteLinkModalOpen(false)}>Отменить</button>
 				</div>
 			)}
 			<input type="file" style={{display: 'none'}} />

@@ -1,4 +1,4 @@
-import db from "db";
+import db from "./db";
 import express from "express";
 import { join } from "path";
 

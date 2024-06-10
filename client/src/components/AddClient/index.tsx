@@ -259,6 +259,7 @@ const AddClient = ({}: IAddClient) => {
 		setLoading(true)
 		if (currentOpenedClient !== '') {
 			socket.emit('updateClient', {
+				id: currentOpenedClient,
 				nameStudent: nameStudent,
 				phoneNumber: phoneNumber,
 				email: email,
@@ -271,6 +272,7 @@ const AddClient = ({}: IAddClient) => {
 			})
 		} else {
 			socket.emit('addClient', {
+
 				nameStudent: nameStudent,
 				phoneNumber: phoneNumber,
 				email: email,
@@ -1802,6 +1804,7 @@ const AddClient = ({}: IAddClient) => {
 							<div className={s.FooterButton}>
 								<div className={s.EditNSave}>
 									<button
+										disabled={currentOpenedClient === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => setIsEditMode(!isEditMode)}>
 										<p>Редактировать</p>
@@ -1811,10 +1814,16 @@ const AddClient = ({}: IAddClient) => {
 									</button>
 								</div>
 								<div className={s.ArchiveNDelete}>
-									<button onClick={handleToArchive} className={s.Archive}>
+									<button
+										disabled={currentOpenedClient === ''}
+										onClick={handleToArchive}
+										className={s.Archive}>
 										<p>В архив</p>
 									</button>
-									<button onClick={handleDelete} className={s.Delete}>
+									<button
+										disabled={currentOpenedClient === ''}
+										onClick={handleDelete}
+										className={s.Delete}>
 										<p>Удалить</p>
 									</button>
 								</div>

@@ -113,3 +113,11 @@ export interface ChartData {
 	labels: string[]
 	datasets: Dataset[]
 }
+
+
+export interface IlinksArray {
+	tag?: string
+	linkedId?: string
+	links: string[]
+	token: string
+}

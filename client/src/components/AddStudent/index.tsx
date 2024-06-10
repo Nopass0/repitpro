@@ -17,7 +17,13 @@ import ScheduleIcon from '@mui/icons-material/Schedule'
 import TimePicker from '../Timer/index'
 import NowLevel from '../NowLevel'
 import Input from '../Input'
-import {ELeftMenuPage, EPagePopUpExit, IItemCard, ITimeLine} from '../../types'
+import {
+	ELeftMenuPage,
+	EPagePopUpExit,
+	IItemCard,
+	IlinksArray,
+	ITimeLine,
+} from '../../types'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
 
@@ -230,6 +236,35 @@ const AddStudent = ({}: IAddStudent) => {
 			files: [],
 		},
 	])
+
+	const [linksArray, setLinksArray] = useState<IlinksArray[]>([])
+	const [links, setLinks] = useState<string[]>([])
+	const handleLinksSubmit = (linksCallback: string[]) => {
+		setLinks(linksCallback)
+		console.log(linksCallback, 'LinksArray')
+	}
+
+	useEffect(() => {
+		socket.emit('getLinksByLinkedId', {
+			linkedId: currentOpenedStudent,
+			token: token,
+		})
+		socket.once('getLinksByLinkedId', (data: any) => {
+			setLinks(data.links)
+		})
+	}, [])
+
+	const deleteLink = (link: string, index: number) => {
+		console.log(link, index, 'LINK INDEX')
+		socket.emit('deleteLink', {
+			linkedId: currentOpenedStudent,
+			token: token,
+		})
+		socket.once('deleteLink', (data: any) => {
+			setLinks(links.filter((item) => item !== link))
+		})
+	}
+
 	const [files, setFiles] = useState<{}[]>([])
 
 	const handleFileNLinks = (
@@ -243,7 +278,7 @@ const AddStudent = ({}: IAddStudent) => {
 			...prevData,
 			{name: name, type: type, size: size, file: file},
 		])
-		console.log(files)
+		console.log(files, 'FILESFILES')
 	}
 
 	//add item function
@@ -338,6 +373,13 @@ const AddStudent = ({}: IAddStudent) => {
 				token,
 				phoneNumber,
 			})
+
+			socket.emit('createLink', {
+				tag: 'addStudent',
+				linkedId: currentOpenedStudent,
+				links: links,
+				token: token,
+			})
 			// setLoading(false)
 			window.location.reload()
 		} else {
@@ -356,6 +398,13 @@ const AddStudent = ({}: IAddStudent) => {
 				items,
 				token,
 				phoneNumber,
+			})
+
+			socket.emit('createLink', {
+				tag: 'addStudent',
+				linkedId: currentOpenedStudent,
+				links: links,
+				token: token,
 			})
 		}
 	}
@@ -1883,6 +1932,9 @@ const AddStudent = ({}: IAddStudent) => {
 								<FileNLinks
 									alreadyUploaded={files}
 									callback={handleFileNLinks}
+									linksArray={links}
+									submitLinks={handleLinksSubmit}
+									deleteLink={deleteLink}
 								/>
 
 								{errorList.length > 0 && (
@@ -1898,6 +1950,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<div className={s.FooterButton}>
 								<div className={s.EditNSave}>
 									<button
+										disabled={currentOpenedStudent === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => setIsEditMode(!isEditMode)}>
 										<p>Редактировать</p>
@@ -1907,10 +1960,16 @@ const AddStudent = ({}: IAddStudent) => {
 									</button>
 								</div>
 								<div className={s.ArchiveNDelete}>
-									<button className={s.Archive} onClick={handleToArchive}>
+									<button
+										disabled={currentOpenedStudent === ''}
+										className={s.Archive}
+										onClick={handleToArchive}>
 										<p>В архив</p>
 									</button>
-									<button className={s.Delete} onClick={handleDelete}>
+									<button
+										disabled={currentOpenedStudent === ''}
+										className={s.Delete}
+										onClick={handleDelete}>
 										<p>Удалить</p>
 									</button>
 								</div>

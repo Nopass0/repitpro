@@ -2207,6 +2207,7 @@ const AddGroup = ({className}: IAddGroup) => {
 							<div className={s.FooterButton}>
 								<div className={s.EditNSave}>
 									<button
+									disabled={currentOpenedGroup === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => setIsEditMode(!isEditMode)}>
 										<p>Редактировать</p>
@@ -2216,10 +2217,10 @@ const AddGroup = ({className}: IAddGroup) => {
 									</button>
 								</div>
 								<div className={s.ArchiveNDelete}>
-									<button onClick={handleToArchive} className={s.Archive}>
+									<button disabled={currentOpenedGroup === ''} onClick={handleToArchive} className={s.Archive}>
 										<p>В архив</p>
 									</button>
-									<button onClick={handleDelete} className={s.Delete}>
+									<button disabled={currentOpenedGroup === ''} onClick={handleDelete} className={s.Delete}>
 										<p>Удалить</p>
 									</button>
 								</div>

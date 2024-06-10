@@ -19,25 +19,60 @@ import { deleteFileById } from "utils/filesystem";
 
 export const createLink = async (data: any) => {
   try {
-    const { tag, linkedId, link, token } = data;
+    const { tag, linkedId, links, token } = data;
 
     const token_ = await db.token.findFirst({
       where: {
         token,
       },
     });
-
+    console.log(
+      tag,
+      linkedId,
+      links,
+      token,
+      "------------------- LINKS DATA ------------------"
+    );
     const userId = token_.userId;
-
-    const createdLink = db.link.create({
-      data: {
+    const isTagExist = await db.link.findMany({
+      where: {
         tag,
         linkedId,
-        link,
         userId,
       },
     });
-
+    console.log(
+      isTagExist,
+      "------------------- IS TAG EXIST ------------------"
+    );
+    if (isTagExist.length > 0) {
+      const updateLink = await db.link.update({
+        where: {
+          id: isTagExist[0].id,
+        },
+        data: {
+          links,
+        },
+      });
+      console.log(
+        updateLink,
+        "------------------- UPDATE LINKS DATA ------------------"
+      );
+      return;
+    } else {
+      const createdLink = await db.link.create({
+        data: {
+          tag,
+          linkedId,
+          links,
+          userId,
+        },
+      });
+      console.log(
+        createdLink,
+        "------------------- CREATED LINKS DATA ------------------"
+      );
+    }
     io.emit("createLink", { message: "ok" });
   } catch (err) {
     console.error(err);
@@ -116,11 +151,13 @@ export const getLinksByLinkedId = async (data: {
 
     const userId = token_.userId;
 
-    const links = await db.link.findMany({
+    const links = await db.link.findFirst({
       where: { linkedId, userId },
     });
 
-    io.emit("getLinksByLinkedId", { links });
+    io.emit("getLinksByLinkedId", {
+      links: JSON.parse(JSON.stringify(links)).links,
+    });
   } catch (err) {
     console.error(err);
     io.emit("getLinksByLinkedId", { message: `Error: ${err}` });
@@ -150,3 +187,55 @@ export const getLinksByLinkedIdAndTag = async (data: {
     io.emit("getLinksByLinkedIdAndTag", { message: `Error: ${err}` });
   }
 };
+
+
+export const deleteLinksByLinkedId = async (data: {
+  linkedId: string;
+  token: string;
+}) => {
+  try {
+    const { linkedId, token } = data;
+    const token_ = await db.token.findFirst({
+      where: { token },
+    });
+
+    const userId = token_.userId;
+
+    const links = await db.link.deleteMany({
+      where: { linkedId, userId },
+    });
+
+    io.emit("deleteLinksByLinkedId", { links });
+  } catch (err) {
+    console.error(err);
+    io.emit("deleteLinksByLinkedId", { message: `Error: ${err}` });
+  }
+}
+
+export const deleteLink = async (data: { link: string; token: string; linkedId: string }) => {
+  try {
+    const { link, token, linkedId } = data;
+    const token_ = await db.token.findFirst({
+      where: { token },
+    });
+
+    const userId = token_.userId;
+
+    const links = await db.link.findFirst({
+      where: {linkedId, userId },
+    });
+    const newLinks = JSON.parse(JSON.stringify(links)).links.filter((item: string) => item !== link);
+
+    await db.link.update({
+      where: { id: links?.id },
+      data: {
+        links: newLinks,
+      },
+    });
+
+    io.emit("deleteLink", { links });
+  } catch (err) {
+    console.error(err);
+    io.emit("deleteLink", { message: `Error: ${err}` });
+  }
+}

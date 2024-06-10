@@ -59,6 +59,7 @@ import {
 } from "./cards/statistics";
 import {
   createLink,
+  deleteLink,
   getLinkById,
   getLinksByLinkedId,
   getLinksByTag,
@@ -135,6 +136,8 @@ io.on("connection", (socket) => {
   socket.on("getByGroupId", (data) => getByGroupId(data));
   socket.on("getByClientScheduleId", (data) => getByClientScheduleId(data));
   socket.on("getByGroupScheduleId", (data) => getByGroupScheduleId(data));
+
+  socket.on('deleteLink', (data) => deleteLink(data))
   //check account
   socket.on("checkAccount", async (data) => {
     let token = await db.token.findFirst({

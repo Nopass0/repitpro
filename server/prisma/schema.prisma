@@ -268,7 +268,7 @@ model File {
 
 model Link {
   id String @id @default(cuid())
-  link String
+  links String[]
   tag String
   linkedId String // id of student, group, etc
   userId String

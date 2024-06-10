@@ -312,10 +312,11 @@ export async function updateClient(data: {
   nameStudent: string;
   phoneNumber: string;
   email: string;
-  costStudent: number;
+  costStudent: string;
   commentClient: string;
   files: IUploadFiles[];
   audios: IUploadFiles[];
+  jobs: any;
   token: string;
 }) {
   try {
@@ -328,6 +329,8 @@ export async function updateClient(data: {
       token,
       files,
       audios,
+      jobs,
+      costStudent,
     } = data;
 
     const token_ = await db.token.findFirst({
@@ -371,12 +374,17 @@ export async function updateClient(data: {
         phoneNumber,
         email,
         commentClient,
+        // !REPAIR
+        jobs: {
+          update: jobs,
+        },
+        costStudent,
         files: updatedFiles,
       },
     });
 
     io.emit("updateClient", updatedClient);
-
+    console.log("Updated client:", updatedClient, nameStudent);
     return updatedClient;
   } catch (error) {
     console.error("Error updating client:", error);
