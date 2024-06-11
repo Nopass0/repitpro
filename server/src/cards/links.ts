@@ -157,6 +157,8 @@ export const getLinksByLinkedId = async (data: {
 
     io.emit("getLinksByLinkedId", {
       links: JSON.parse(JSON.stringify(links)).links,
+      linkedId: JSON.parse(JSON.stringify(links)).linkedId,
+      tag: links.tag,
     });
   } catch (err) {
     console.error(err);

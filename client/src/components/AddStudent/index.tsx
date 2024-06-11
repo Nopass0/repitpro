@@ -241,7 +241,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [links, setLinks] = useState<string[]>([])
 	const handleLinksSubmit = (linksCallback: string[]) => {
 		setLinks(linksCallback)
-		console.log(linksCallback, 'LinksArray')
 	}
 
 	useEffect(() => {
@@ -255,7 +254,6 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [])
 
 	const deleteLink = (link: string, index: number) => {
-		console.log(link, index, 'LINK INDEX')
 		socket.emit('deleteLink', {
 			linkedId: currentOpenedStudent,
 			token: token,

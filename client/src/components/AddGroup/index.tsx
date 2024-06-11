@@ -161,6 +161,18 @@ const AddGroup = ({className}: IAddGroup) => {
 				audiosItems: audioItems,
 				audiosStudents: audioStudents,
 			})
+			socket.emit('createLink', {
+				tag: 'addGroup',
+				linkedId: currentOpenedGroup,
+				links: links,
+				token: token,
+			})
+			socket.emit('createLink', {
+				tag: 'addGroupItems',
+				linkedId: `${currentOpenedGroup}_items`,
+				links: linksItems,
+				token: token,
+			})
 			// setLoading(false)
 			window.location.reload()
 		} else {
@@ -184,6 +196,19 @@ const AddGroup = ({className}: IAddGroup) => {
 					filesItems: filesItems,
 					audiosItems: audioItems,
 					audiosStudents: audioStudents,
+				})
+
+				socket.emit('createLink', {
+					tag: 'addGroup',
+					linkedId: currentOpenedGroup,
+					links: links,
+					token: token,
+				})
+				socket.emit('createLink', {
+					tag: 'addGroupItems',
+					linkedId: `${currentOpenedGroup}_items`,
+					links: linksItems,
+					token: token,
 				})
 			}
 		}
@@ -721,6 +746,59 @@ const AddGroup = ({className}: IAddGroup) => {
 		console.log(filesItems)
 	}
 
+	// Audio
+	const [links, setLinks] = useState<string[]>([])
+	const [linksItems, setLinksItems] = useState<string[]>([])
+	const handleLinksSubmit = (linksCallback: string[]) => {
+		setLinks(linksCallback)
+		console.log(links, linksItems, 'LINKS')
+	}
+
+	const deleteLink = (link: string, index: number) => {
+		socket.emit('deleteLink', {
+			linkedId: currentOpenedGroup,
+			token: token,
+		})
+		socket.once('deleteLink', (data: any) => {
+			setLinks(links.filter((item) => item !== link))
+		})
+	}
+
+	useEffect(() => {
+		socket.emit('getLinksByLinkedId', {
+			linkedId: currentOpenedGroup,
+			token: token,
+		})
+		socket.emit('getLinksByLinkedId', {
+			linkedId: `${currentOpenedGroup}_items`,
+			token: token,
+		})
+	}, [])
+
+	// Items Audio
+	const handleLinksSubmitItems = (linksCallback: string[]) => {
+		setLinksItems(linksCallback)
+	}
+
+	const deleteLinkItems = (link: string, index: number) => {
+		socket.emit('deleteLink', {
+			linkedId: `${currentOpenedGroup}_items`,
+			token: token,
+		})
+		socket.once('deleteLink', (data: any) => {
+			setLinksItems(linksItems.filter((item) => item !== link))
+		})
+	}
+
+	socket.once('getLinksByLinkedId', (data: any) => {
+		if (data.tag === 'addGroup') {
+			setLinks(data.links)
+			console.log(data, 'ADDGROUP')
+		} else if (data.tag === 'addGroupItems') {
+			setLinksItems(data.links)
+			console.log(data, 'ADDGROUPITEMS')
+		}
+	})
 	const closeTimePicker = (index: number, id: number) => {
 		//get timeline
 		const timelineToUpdate = items[index].timeLinesArray.find(
@@ -1413,7 +1491,11 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={item.startLesson}
 													onChange={(newDate) =>
-														changeItemValue(index, 'startLesson', new Date(newDate))
+														changeItemValue(
+															index,
+															'startLesson',
+															new Date(newDate),
+														)
 													}
 													calendarId="startLesson"
 												/>
@@ -1429,7 +1511,11 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={item.endLesson}
 													onChange={(newDate) =>
-														changeItemValue(index, 'endLesson', new Date(newDate))
+														changeItemValue(
+															index,
+															'endLesson',
+															new Date(newDate),
+														)
 													}
 													calendarId="endLesson"
 												/>
@@ -1725,10 +1811,13 @@ const AddGroup = ({className}: IAddGroup) => {
 													</div>
 												</div>
 											</div>
-
 											<FileNLinks
 												alreadyUploaded={filesItems}
 												callback={handleAddFileItems}
+												linksArray={linksItems}
+												submitLinks={handleLinksSubmitItems}
+												deleteLink={deleteLinkItems}
+												fileInputId='1'
 											/>
 
 											<Line width="100%" className={s.Line} />
@@ -1905,7 +1994,11 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={student.prePayDate}
 													onChange={(newDate) =>
-														changeStudentValue(index, 'prePayDate', new Date(newDate))
+														changeStudentValue(
+															index,
+															'prePayDate',
+															new Date(newDate),
+														)
 													}
 													calendarId="prePay"
 												/>
@@ -1994,7 +2087,11 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={student.startLesson}
 													onChange={(newDate) =>
-														changeStudentValue(index, 'startLesson', new Date(newDate))
+														changeStudentValue(
+															index,
+															'startLesson',
+															new Date(newDate),
+														)
 													}
 													calendarId={`${index}startLessonStudent`}
 												/>
@@ -2010,7 +2107,11 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={student.endLesson}
 													onChange={(newDate) =>
-														changeStudentValue(index, 'endLesson', new Date(newDate))
+														changeStudentValue(
+															index,
+															'endLesson',
+															new Date(newDate),
+														)
 													}
 													calendarId={`${index}endLessonStudent`}
 												/>
@@ -2171,6 +2272,9 @@ const AddGroup = ({className}: IAddGroup) => {
 											<FileNLinks
 												alreadyUploaded={files}
 												callback={handleAddFile}
+												linksArray={links}
+												submitLinks={handleLinksSubmit}
+												deleteLink={deleteLink}
 											/>
 
 											<Line width="100%" className={s.Line} />
@@ -2207,7 +2311,7 @@ const AddGroup = ({className}: IAddGroup) => {
 							<div className={s.FooterButton}>
 								<div className={s.EditNSave}>
 									<button
-									disabled={currentOpenedGroup === ''}
+										disabled={currentOpenedGroup === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => setIsEditMode(!isEditMode)}>
 										<p>Редактировать</p>
@@ -2217,10 +2321,16 @@ const AddGroup = ({className}: IAddGroup) => {
 									</button>
 								</div>
 								<div className={s.ArchiveNDelete}>
-									<button disabled={currentOpenedGroup === ''} onClick={handleToArchive} className={s.Archive}>
+									<button
+										disabled={currentOpenedGroup === ''}
+										onClick={handleToArchive}
+										className={s.Archive}>
 										<p>В архив</p>
 									</button>
-									<button disabled={currentOpenedGroup === ''} onClick={handleDelete} className={s.Delete}>
+									<button
+										disabled={currentOpenedGroup === ''}
+										onClick={handleDelete}
+										className={s.Delete}>
 										<p>Удалить</p>
 									</button>
 								</div>

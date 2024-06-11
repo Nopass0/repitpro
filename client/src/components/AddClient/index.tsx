@@ -62,6 +62,32 @@ const AddClient = ({}: IAddClient) => {
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
 
+	const [links, setLinks] = useState<string[]>([])
+
+	const handleLinksSubmit = (linksCallback: string[]) => {
+		setLinks(linksCallback)
+	}
+
+	useEffect(() => {
+		socket.emit('getLinksByLinkedId', {
+			linkedId: currentOpenedClient,
+			token: token,
+		})
+		socket.once('getLinksByLinkedId', (data: any) => {
+			setLinks(data.links)
+		})
+	}, [])
+
+	const deleteLink = (link: string, index: number) => {
+		socket.emit('deleteLink', {
+			linkedId: currentOpenedClient,
+			token: token,
+		})
+		socket.once('deleteLink', (data: any) => {
+			setLinks(links.filter((item) => item !== link))
+		})
+	}
+
 	const handleAddFile = (
 		file: any,
 		name: string,
@@ -270,9 +296,14 @@ const AddClient = ({}: IAddClient) => {
 				token: token,
 				audios: audios,
 			})
+			socket.emit('createLink', {
+				tag: 'addClient',
+				linkedId: currentOpenedClient,
+				links: links,
+				token: token,
+			})
 		} else {
 			socket.emit('addClient', {
-
 				nameStudent: nameStudent,
 				phoneNumber: phoneNumber,
 				email: email,
@@ -282,6 +313,12 @@ const AddClient = ({}: IAddClient) => {
 				files: files,
 				token: token,
 				audios: audios,
+			})
+			socket.emit('createLink', {
+				tag: 'addClient',
+				linkedId: currentOpenedClient,
+				links: links,
+				token: token,
 			})
 		}
 
@@ -1780,6 +1817,9 @@ const AddClient = ({}: IAddClient) => {
 										<FileNLinks
 											alreadyUploaded={files}
 											callback={handleAddFile}
+											linksArray={links}
+											submitLinks={handleLinksSubmit}
+											deleteLink={deleteLink}
 										/>
 										<Line width="100%" className={s.Line} />
 										<TextAreaInputBlock

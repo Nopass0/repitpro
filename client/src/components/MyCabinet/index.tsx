@@ -14,7 +14,11 @@ import {ELeftMenuPage} from '../../types'
 
 interface IMyCabinet {}
 
-const MyCabinet = ({}: IMyCabinet) => {
+const MyCabinet = ({}: IMyCabinet) => {	
+	const user = useSelector((state: any) => state.user)
+	const token = user?.token
+	const dispatch = useDispatch()
+
 	const [name, setName] = useState<string>('')
 	const [email, setEmail] = useState<string>('')
 	const [password, setPassword] = useState<string>('')
@@ -47,9 +51,7 @@ const MyCabinet = ({}: IMyCabinet) => {
 		})
 	}
 
-	const user = useSelector((state: any) => state.user)
-	const token = user?.token
-	const dispatch = useDispatch()
+
 	useEffect(() => {
 		socket.emit('getUserData', token)
 		socket.once('getUserData', (data) => {
@@ -74,6 +76,39 @@ const MyCabinet = ({}: IMyCabinet) => {
 		setEdit(1)
 		setErrorPwd(false)
 	}
+
+	const [links, setLinks] = useState<string[]>([])
+	const handleLinksSubmit = (linksCallback: string[]) => {
+		setLinks(linksCallback)
+	}
+	useEffect(() => {
+		socket.emit('getLinksByLinkedId', {
+			linkedId: token,
+			token: token,
+		})
+		socket.once('getLinksByLinkedId', (data: any) => {
+			setLinks(data.links)
+		})
+	}, [])
+
+	const deleteLink = (link: string, index: number) => {
+		socket.emit('deleteLink', {
+			linkedId: token,
+			token: token,
+		})
+		socket.once('deleteLink', (data: any) => {
+			setLinks(links.filter((item) => item !== link))
+		})
+	}
+
+	useEffect(() => {
+		socket.emit('createLink', {
+			tag: 'MyCabinet',
+			linkedId: token,
+			links: links,
+			token: token,
+		})
+	}, [links])
 	return (
 		<>
 			<button
@@ -264,7 +299,10 @@ const MyCabinet = ({}: IMyCabinet) => {
 						<FileNLinks
 							alreadyUploaded={files}
 							callback={handleAddFile}
-							className={s.ListItemButton}
+							linksArray={links}
+							submitLinks={handleLinksSubmit}
+							deleteLink={deleteLink}
+							// className={s.ListItemButton}
 						/>
 						<mui.ListItemButton
 							className={s.ListItemButton}

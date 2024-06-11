@@ -49,7 +49,7 @@ export const upload = async (
         ext = fileExtension ? fileExtension : "unknown"; // Default to "unknown" if no extension is found
       }
 
-      const fileName = `${randomBytes(6).toString("hex")}.${ext}`;
+      const fileName = `${name.split(".")[0]}_${randomBytes(6).toString("hex")}.${ext}`;
       const filePath = join(FilesDir, fileName); // Use the new file name with the correct extension
 
       // Check if file already exists in db (By path)

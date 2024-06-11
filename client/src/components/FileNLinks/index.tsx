@@ -17,6 +17,7 @@ interface IFileNLinks {
 	submitLinks?: () => void
 	deleteLink?: (link: string, index: number) => void
 	linksArray?: string[]
+	fileInputId?: string
 }
 
 const FileNLinks: React.FC<IFileNLinks> = ({
@@ -27,6 +28,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	submitLinks,
 	linksArray,
 	deleteLink,
+	fileInputId,
 }: IFileNLinks) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const [files, setFiles] = useState<any>([])
@@ -70,10 +72,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	}, [])
 
 	const getFileLinkById = (id: string) => {
-		const baseLinkToThisSite = window.location.origin.replace(
-			`:${window.location.port}`,
-			':3000',
-		)
+		const baseLinkToThisSite = `${window.location.origin}:3000`
 		window.open(`${baseLinkToThisSite}/files/${id}`, '_blank')
 	}
 
@@ -121,7 +120,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 				}}>
 				<input
 					type="file"
-					id="fileInput"
+					id={`fileInput__${fileInputId}`}
 					multiple
 					style={{display: 'none'}}
 					onChange={(e) => {
@@ -142,7 +141,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					}}
 				/>
 				<label
-					htmlFor="fileInput"
+					htmlFor={`fileInput__${fileInputId}`}
 					style={{cursor: 'pointer'}}
 					className={s.LabelForFile}
 					onContextMenu={(event) => {
