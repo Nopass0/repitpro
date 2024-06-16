@@ -2,7 +2,7 @@ import io from "../socket";
 import db from "../db";
 import bcrypt from "bcrypt";
 
-export const login = async (data) => {
+export const login = async (data, socket) => {
   const user = await db.user.findUnique({
     where: {
       name: data.login,
@@ -10,7 +10,7 @@ export const login = async (data) => {
   });
 
   if (!user) {
-    return io.emit("login", {
+    return socket.emit("login", {
       error: "Пользователь не найден",
     });
   }
@@ -18,7 +18,7 @@ export const login = async (data) => {
   const hash = bcrypt.hashSync(user.password, 3);
 
   if (await bcrypt.compare(data.password, hash)) {
-    return io.emit("login", {
+    return socket.emit("login", {
       error: "Неверное имя пользователя или пароль",
     });
   }
@@ -40,5 +40,5 @@ export const login = async (data) => {
     },
   });
 
-  return io.emit("login", { token: token.token, message: "Вход выполнен" });
+  return socket.emit("login", { token: token.token, message: "Вход выполнен" });
 };

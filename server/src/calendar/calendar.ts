@@ -3,7 +3,7 @@ import io from "../socket";
 import { mockData } from "./mock";
 import { ICell } from "types";
 
-export const calendar = async (data) => {
+export const calendar = async (data, socket) => {
   try {
     const token = data?.token;
 
@@ -13,10 +13,10 @@ export const calendar = async (data) => {
       },
     });
 
-    const userId = await token_.userId;
+    const userId = token_?.userId;
 
     if (!userId) {
-      io.emit("calendar", { message: "Invalid token" });
+      return socket.emit("calendar", { message: "Invalid token" });
     }
 
     // Определение начальной и конечной даты месяца
@@ -87,14 +87,14 @@ export const calendar = async (data) => {
     // console.log(result);
 
     // Отправка данных через сокеты
-    io.emit("getMonth", result);
+    socket.emit("getMonth", result);
   } catch (error) {
     console.log("ERROR");
-    return io.emit("getMonth", { error: error.message });
+    return socket.emit("getMonth", { error: error.message });
   }
 };
 
-export const getByGroupId = async (data) => {
+export const getByGroupId = async (data, socket) => {
   try {
     const token = data?.token;
 
@@ -104,10 +104,10 @@ export const getByGroupId = async (data) => {
       },
     });
 
-    const userId = await token_.userId;
+    const userId = token_?.userId;
 
     if (!userId) {
-      io.emit("calendar", { message: "Invalid token" });
+      return socket.emit("calendar", { message: "Invalid token" });
     }
 
     let { groupId } = data;
@@ -133,14 +133,14 @@ export const getByGroupId = async (data) => {
     });
     console.log(studentScheduleJSON, "studentScheduleJSON");
 
-    io.emit("getByGroupId", studentScheduleJSON);
+    socket.emit("getByGroupId", studentScheduleJSON);
   } catch (error) {
     console.log("ERROR");
-    return io.emit("getByGroupId", { error: error.message });
+    return socket.emit("getByGroupId", { error: error.message });
   }
 };
 
-export const getByClientScheduleId = async (data) => {
+export const getByClientScheduleId = async (data, socket) => {
   try {
     const token = data?.token;
     const token_ = await db.token.findFirst({
@@ -148,9 +148,9 @@ export const getByClientScheduleId = async (data) => {
         token,
       },
     });
-    const userId = await token_.userId;
+    const userId = token_?.userId;
     if (!userId) {
-      io.emit("calendar", { message: "Invalid token" });
+      return socket.emit("calendar", { message: "Invalid token" });
     }
 
     let { clientId } = data;
@@ -173,14 +173,14 @@ export const getByClientScheduleId = async (data) => {
       return a.date.getTime() - b.date.getTime();
     });
     console.log(clientScheduleJSON, "clientScheduleJSON");
-    io.emit("getByClientScheduleId", clientScheduleJSON);
+    socket.emit("getByClientScheduleId", clientScheduleJSON);
   } catch (error) {
     console.log("ERROR");
-    return io.emit("getByClientScheduleId", { error: error.message });
+    return socket.emit("getByClientScheduleId", { error: error.message });
   }
 };
 
-export const getByGroupScheduleId = async (data) => {
+export const getByGroupScheduleId = async (data, socket) => {
   try {
     const token = data?.token;
     const token_ = await db.token.findFirst({
@@ -188,9 +188,9 @@ export const getByGroupScheduleId = async (data) => {
         token,
       },
     });
-    const userId = await token_.userId;
+    const userId = token_?.userId;
     if (!userId) {
-      io.emit("calendar", { message: "Invalid token" });
+      return socket.emit("calendar", { message: "Invalid token" });
     }
     let { groupId } = data;
     const groupSchedules = await db.studentSchedule.findMany({
@@ -211,9 +211,9 @@ export const getByGroupScheduleId = async (data) => {
       return a.date.getTime() - b.date.getTime();
     });
     console.log(groupScheduleJSON, "groupScheduleJSON");
-    io.emit("getByGroupScheduleId", groupScheduleJSON);
+    socket.emit("getByGroupScheduleId", groupScheduleJSON);
   } catch (error) {
     console.log("ERROR");
-    return io.emit("getByGroupScheduleId", { error: error.message });
+    return socket.emit("getByGroupScheduleId", { error: error.message });
   }
 };

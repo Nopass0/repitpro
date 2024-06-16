@@ -3,7 +3,7 @@ import db from "../db";
 import bcrypt from "bcrypt";
 import { upload } from "files/files";
 
-export const getUserData = async (_token) => {
+export const getUserData = async (_token, socket) => {
   console.log(_token);
   const token = await db.token.findFirst({
     where: {
@@ -27,14 +27,14 @@ export const getUserData = async (_token) => {
   });
 
   console.log(user);
-  return io.emit("getUserData", {
+  return socket.emit("getUserData", {
     userName: user.name,
     email: user.email,
     files: files,
   });
 };
 
-export const setUserData = async (data) => {
+export const setUserData = async (data, socket) => {
   console.log("Change user data", data);
   const token = await db.token.findFirst({
     where: {
@@ -52,7 +52,7 @@ export const setUserData = async (data) => {
 
   const hash = bcrypt.hashSync(password, 3);
 
-  let newData: any = {};
+  let newData = {};
 
   if (name) {
     newData.name = name;
@@ -71,10 +71,10 @@ export const setUserData = async (data) => {
     data: newData,
   });
 
-  return io.emit("getUserData", { userName: user.name, email: user.email });
+  return socket.emit("getUserData", { userName: user.name, email: user.email });
 };
 
-export const uploadUsersFiles = async (data) => {
+export const uploadUsersFiles = async (data, socket) => {
   const { token, files } = data;
 
   const token_ = await db.token.findFirst({
@@ -87,7 +87,7 @@ export const uploadUsersFiles = async (data) => {
 
   let filesIds = [];
   if (files.length > 0) {
-    filesIds = await upload(files, userId, "user", (ids: string[]) => {
+    filesIds = await upload(files, userId, "user", (ids) => {
       filesIds = ids;
     });
   }
