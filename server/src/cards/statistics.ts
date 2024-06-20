@@ -67,12 +67,15 @@ const parseDateFromSchedule = (day: string, month: string, year: string) => {
 };
 
 // Функция для получения данных для графика "Ученики-Финансы"
-export async function getStudentFinanceData(data: {
-  startDate: Date;
-  endDate: Date;
-  subjectIds: string[];
-  token: string;
-}) {
+export async function getStudentFinanceData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    subjectIds: string[];
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, subjectIds, token } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -177,7 +180,7 @@ export async function getStudentFinanceData(data: {
       return;
     }
 
-    io.emit("getStudentFinanceData", { labels, datasets });
+    socket.emit("getStudentFinanceData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching student finance data:", error);
@@ -185,12 +188,15 @@ export async function getStudentFinanceData(data: {
 }
 
 // Функция для получения данных для графика "Ученики-Количество"
-export async function getStudentCountData(data: {
-  startDate: Date;
-  endDate: Date;
-  subjectIds: string[];
-  token: string;
-}) {
+export async function getStudentCountData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    subjectIds: string[];
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, subjectIds, token } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -296,7 +302,7 @@ export async function getStudentCountData(data: {
       return;
     }
 
-    io.emit("getStudentCountData", { labels, datasets });
+    socket.emit("getStudentCountData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching student count data:", error);
@@ -304,12 +310,15 @@ export async function getStudentCountData(data: {
 }
 
 // Функция для получения данных для графика "Ученики-Занятия"
-export async function getStudentLessonsData(data: {
-  startDate: Date;
-  endDate: Date;
-  subjectIds: string[];
-  token: string;
-}) {
+export async function getStudentLessonsData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    subjectIds: string[];
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, subjectIds, token } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -415,7 +424,7 @@ export async function getStudentLessonsData(data: {
       return;
     }
 
-    io.emit("getStudentLessonsData", { labels, datasets });
+    socket.emit("getStudentLessonsData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching student lessons data:", error);
@@ -423,11 +432,14 @@ export async function getStudentLessonsData(data: {
 }
 
 // Функция для получения данных для графика "Заказчики-Финансы"
-export async function getClientFinanceData(data: {
-  startDate: Date;
-  endDate: Date;
-  token: string;
-}) {
+export async function getClientFinanceData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, token } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -518,7 +530,7 @@ export async function getClientFinanceData(data: {
       return;
     }
 
-    io.emit("getClientFinanceData", { labels, datasets });
+    socket.emit("getClientFinanceData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching client finance data:", error);
@@ -526,11 +538,14 @@ export async function getClientFinanceData(data: {
 }
 
 // Функция для получения данных для графика "Заказчики-Количество"
-export async function getClientCountData(data: {
-  startDate: Date;
-  endDate: Date;
-  token: string;
-}) {
+export async function getClientCountData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, token } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -624,7 +639,7 @@ export async function getClientCountData(data: {
       return;
     }
 
-    io.emit("getClientCountData", { labels, datasets });
+    socket.emit("getClientCountData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching client count data:", error);
@@ -632,11 +647,14 @@ export async function getClientCountData(data: {
 }
 
 // Функция для получения данных для графика "Заказчики-Работы"
-export async function getClientWorksData(data: {
-  startDate: Date;
-  endDate: Date;
-  token: string;
-}) {
+export async function getClientWorksData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, token } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -738,7 +756,7 @@ export async function getClientWorksData(data: {
       return;
     }
 
-    io.emit("getClientWorksData", { labels, datasets });
+    socket.emit("getClientWorksData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching client works data:", error);
@@ -746,11 +764,14 @@ export async function getClientWorksData(data: {
 }
 
 // Функция для получения данных для графика "Ученики - Заказчики сравнительный график"
-export async function getStudentClientComparisonData(data: {
-  startDate: Date;
-  endDate: Date;
-  token: string;
-}) {
+export async function getStudentClientComparisonData(
+  data: {
+    startDate: Date;
+    endDate: Date;
+    token: string;
+  },
+  socket: any
+) {
   const { startDate, endDate, token } = data;
   const token_ = await db.token.findFirst({
     where: {
@@ -915,14 +936,14 @@ export async function getStudentClientComparisonData(data: {
 
     console.log(labels, datasets);
 
-    io.emit("getStudentClientComparisonData", { labels, datasets });
+    socket.emit("getStudentClientComparisonData", { labels, datasets });
     return { labels, datasets };
   } catch (error) {
     console.error("Error fetching student-client comparison data:", error);
   }
 }
 
-export async function getAllItemsIdsAndNames(token: string) {
+export async function getAllItemsIdsAndNames(token: string, socket: any) {
   const token_ = await db.token.findFirst({
     where: {
       token,
@@ -942,7 +963,7 @@ export async function getAllItemsIdsAndNames(token: string) {
       },
     });
 
-    io.emit("getAllItemsIdsAndNames", items);
+    socket.emit("getAllItemsIdsAndNames", items);
     return items;
   } catch (error) {
     console.error("Error fetching items:", error);

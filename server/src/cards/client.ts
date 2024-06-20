@@ -10,7 +10,7 @@ import { Prisma, Job } from "@prisma/client";
 import { differenceInDays, addDays, getDay } from "date-fns";
 import { upload } from "files/files";
 
-export async function addClient(data: any) {
+export async function addClient(data: any, socket: any) {
   const {
     nameStudent,
     phoneNumber,
@@ -220,11 +220,14 @@ export async function addClient(data: any) {
     return updateClient;
   } catch (error) {
     console.error("Error creating client:", error);
-    io.emit("addClient", { error: error.message });
+    socket.emit("addClient", { error: error.message });
   }
 }
 
-export async function getClientById(data: { clientId: string; token: string }) {
+export async function getClientById(
+  data: { clientId: string; token: string },
+  socket: any
+) {
   try {
     const { clientId, token } = data;
 
@@ -300,25 +303,28 @@ export async function getClientById(data: { clientId: string; token: string }) {
     client_.files = filesDB;
     client_.audios = audiosDB;
 
-    io.emit("getClientById", client_);
+    socket.emit("getClientById", client_);
     return client;
   } catch (error) {
     console.error("Error fetching client:", error);
   }
 }
 
-export async function updateClient(data: {
-  id: string;
-  nameStudent: string;
-  phoneNumber: string;
-  email: string;
-  costStudent: string;
-  commentClient: string;
-  files: IUploadFiles[];
-  audios: IUploadFiles[];
-  jobs: any;
-  token: string;
-}) {
+export async function updateClient(
+  data: {
+    id: string;
+    nameStudent: string;
+    phoneNumber: string;
+    email: string;
+    costStudent: string;
+    commentClient: string;
+    files: IUploadFiles[];
+    audios: IUploadFiles[];
+    jobs: any;
+    token: string;
+  },
+  socket: any
+) {
   try {
     const {
       id,
@@ -383,16 +389,16 @@ export async function updateClient(data: {
       },
     });
 
-    io.emit("updateClient", updatedClient);
+    socket.emit("updateClient", updatedClient);
     console.log("Updated client:", updatedClient, nameStudent);
     return updatedClient;
   } catch (error) {
     console.error("Error updating client:", error);
-    io.emit("updateClient", { error: error.message });
+    socket.emit("updateClient", { error: error.message });
   }
 }
 
-export async function getClientList(token) {
+export async function getClientList(token, socket: any) {
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -430,7 +436,7 @@ export async function getClientList(token) {
       },
     });
 
-    io.emit("getClientList", clients);
+    socket.emit("getClientList", clients);
 
     return clients;
   } catch (error) {
@@ -438,7 +444,7 @@ export async function getClientList(token) {
   }
 }
 
-export async function getClientsByDate(data: any) {
+export async function getClientsByDate(data: any, socket: any) {
   const { token, day, month, year } = data;
 
   const token_ = await db.token.findFirst({
@@ -473,12 +479,12 @@ export async function getClientsByDate(data: any) {
 
   console.log("\n--------clients--------\n", clients, "\n--------\n");
 
-  io.emit("getClientsByDate", clients);
+  socket.emit("getClientsByDate", clients);
 
   return clients;
 }
 
-export async function getClientTableData(data) {
+export async function getClientTableData(data: any, socket: any) {
   const { token, dateRange } = data;
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_.userId;
@@ -545,7 +551,7 @@ export async function getClientTableData(data) {
       });
     });
 
-    io.emit("getClientTableData", clientTableData);
+    socket.emit("getClientTableData", clientTableData);
     return clientTableData;
   } catch (error) {
     console.error("Error fetching client table data:", error);
@@ -553,7 +559,7 @@ export async function getClientTableData(data) {
   }
 }
 
-export async function clientToArhive(data: any) {
+export async function clientToArhive(data: any, socket: any) {
   const { token, id, isArchived } = data;
 
   const token_ = await db.token.findFirst({
@@ -581,7 +587,7 @@ export async function clientToArhive(data: any) {
   }
 }
 
-export async function deleteClient(data: any) {
+export async function deleteClient(data: any, socket: any) {
   const { token, id } = data;
 
   try {

@@ -34,7 +34,7 @@ const days = [
   "Воскресенье",
 ];
 
-export async function addStudent(data) {
+export async function addStudent(data, socket: any) {
   try {
     // console.log(data, "Schedule", data.items[0].timeLinesArray[0]?.startTime); // Safe access with ?
 
@@ -303,14 +303,14 @@ export async function addStudent(data) {
       },
     });
 
-    io.emit("addStudent", { ok: true });
+    socket.emit("addStudent", { ok: true });
   } catch (error) {
     console.error("Error creating group:", error);
-    io.emit("addStudent", { error: error.message, ok: false });
+    socket.emit("addStudent", { error: error.message, ok: false });
   }
 }
 
-export async function getStudentList(token) {
+export async function getStudentList(token, socket: any) {
   try {
     const userId = await db.token.findFirst({
       where: {
@@ -336,17 +336,17 @@ export async function getStudentList(token) {
     });
 
     // console.log(students);
-    io.emit("getStudentList", students);
+    socket.emit("getStudentList", students);
     return students;
   } catch (error) {
     console.error("Error fetching student list:", error);
-    io.emit("getStudentList", {
+    socket.emit("getStudentList", {
       error: "Error fetching student list",
     });
   }
 }
 
-export async function getStudentWithItems(studentId: string) {
+export async function getStudentWithItems(studentId: string, socket: any) {
   try {
     const student = await db.student.findUnique({
       where: { id: studentId },
@@ -359,28 +359,32 @@ export async function getStudentWithItems(studentId: string) {
       },
     });
 
+    socket.emit("getStudentWithItems", student);
     return student;
   } catch (error) {
     console.error("Error fetching student with items:", error);
-    io.emit("getStudentWithItems", {
+    socket.emit("getStudentWithItems", {
       error: "Error fetching student with items",
     });
   }
 }
 
-export async function getStudentsByDate(data: {
-  day: string;
-  month: string;
-  year: string;
-  token: string;
-  isGroup: boolean;
-}) {
+export async function getStudentsByDate(
+  data: {
+    day: string;
+    month: string;
+    year: string;
+    token: string;
+    isGroup: boolean;
+  },
+  socket: any
+) {
   const { day, month, year, token, isGroup } = data;
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_?.userId;
 
   if (!userId) {
-    io.emit("getStudentsByDate", { error: "Invalid token" });
+    socket.emit("getStudentsByDate", { error: "Invalid token" });
     return;
   }
 
@@ -521,7 +525,7 @@ export async function getStudentsByDate(data: {
       groupsData.push(groupData);
     }
 
-    io.emit("getStudentsByDate", groupsData);
+    socket.emit("getStudentsByDate", groupsData);
   } else {
     const dataToEmit = [];
 
@@ -577,11 +581,11 @@ export async function getStudentsByDate(data: {
       dataToEmit.push(scheduleData);
     }
 
-    io.emit("getStudentsByDate", dataToEmit);
+    socket.emit("getStudentsByDate", dataToEmit);
   }
 }
 
-export async function updateStudentSchedule(data) {
+export async function updateStudentSchedule(data, socket: any) {
   const {
     id,
     day,
@@ -727,7 +731,7 @@ export async function updateStudentSchedule(data) {
   return updatedSchedule;
 }
 
-export async function getGroupByStudentId(data: any) {
+export async function getGroupByStudentId(data: any, socket: any) {
   const { token, studentId } = data;
 
   const token_ = await db.token.findFirst({
@@ -806,7 +810,7 @@ export async function getGroupByStudentId(data: any) {
     //   audio.buffer = await audiosBuffers[index];
     // });
 
-    io.emit("getGroupByStudentId", group_);
+    socket.emit("getGroupByStudentId", group_);
     return group.group;
   } catch (error) {
     console.error("Error retrieving group:", error);
@@ -814,7 +818,7 @@ export async function getGroupByStudentId(data: any) {
   }
 }
 
-export async function updateStudentAndItems(data: any) {
+export async function updateStudentAndItems(data: any, socket: any) {
   const { id, items, audios, files, token } = data;
 
   try {
@@ -897,7 +901,7 @@ export async function updateStudentAndItems(data: any) {
       })),
     });
 
-    io.emit("updateStudentAndItems", updatedStudent);
+    socket.emit("updateStudentAndItems", updatedStudent);
 
     return updatedStudent;
   } catch (error) {
@@ -906,7 +910,7 @@ export async function updateStudentAndItems(data: any) {
   }
 }
 
-export async function getAllIdStudents(data: any) {
+export async function getAllIdStudents(data: any, socket: any) {
   const { token } = data;
   const token_ = await db.token.findFirst({
     where: {
@@ -927,13 +931,13 @@ export async function getAllIdStudents(data: any) {
     },
   });
 
-  io.emit("getAllIdStudents", students);
+  socket.emit("getAllIdStudents", students);
   console.log(students, "students");
 
   return students;
 }
 
-export async function getTableData(data) {
+export async function getTableData(data, socket: any) {
   const { token, dateRange } = data;
 
   const token_ = await db.token.findFirst({
@@ -1021,7 +1025,7 @@ export async function getTableData(data) {
       });
     });
 
-    io.emit("getTableData", tableData);
+    socket.emit("getTableData", tableData);
     return tableData;
   } catch (error) {
     console.error("Error fetching table data:", error);
@@ -1029,7 +1033,10 @@ export async function getTableData(data) {
   }
 }
 
-export async function deleteStudent(data: { token: string; id: string }) {
+export async function deleteStudent(
+  data: { token: string; id: string },
+  socket: any
+) {
   const { token, id } = data; // token is the user's token. id is the student's id
 
   const token_ = await db.token.findFirst({
@@ -1077,7 +1084,7 @@ export async function deleteStudent(data: { token: string; id: string }) {
       });
     }
 
-    io.emit("deleteStudent", {
+    socket.emit("deleteStudent", {
       message: "student deleted successfully",
       deleted: deletedStudent,
     });
@@ -1089,11 +1096,14 @@ export async function deleteStudent(data: { token: string; id: string }) {
   return null;
 }
 
-export async function studentToArhive(data: {
-  token: string;
-  id: string;
-  isArchived: boolean;
-}) {
+export async function studentToArhive(
+  data: {
+    token: string;
+    id: string;
+    isArchived: boolean;
+  },
+  socket: any
+) {
   const { token, id, isArchived } = data; // token is the user's token. id is the student's id
 
   const token_ = await db.token.findFirst({
@@ -1139,7 +1149,7 @@ export async function studentToArhive(data: {
       },
     });
 
-    io.emit("studentToArhive", {
+    socket.emit("studentToArhive", {
       message: "student archived successfully",
       archived: student,
     });
@@ -1152,7 +1162,7 @@ export async function studentToArhive(data: {
   return null;
 }
 
-export async function createStudentSchedule(data: any) {
+export async function createStudentSchedule(data: any, socket: any) {
   const { token, day, month, year } = data; // token is the user's token. id is the student's id
 
   const token_ = await db.token.findFirst({
@@ -1247,7 +1257,7 @@ export async function createStudentSchedule(data: any) {
       },
     });
 
-    io.emit("createStudentSchedule", {
+    socket.emit("createStudentSchedule", {
       message: "student schedule created successfully",
       created: studentSchedule.id,
     });
@@ -1257,11 +1267,14 @@ export async function createStudentSchedule(data: any) {
   }
 }
 
-export async function deleteAudio(data: {
-  token: string;
-  id: string;
-  type: "student" | "client" | "group";
-}) {
+export async function deleteAudio(
+  data: {
+    token: string;
+    id: string;
+    type: "student" | "client" | "group";
+  },
+  socket: any
+) {
   try {
     const { token, id, type } = data; // token is the user's token. id is the file's id
     console.log(

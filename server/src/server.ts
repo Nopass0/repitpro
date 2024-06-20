@@ -70,74 +70,92 @@ io.on("connection", (socket) => {
   console.log("a user connected");
 
   //hooks
-  socket.on("login", (data) => login(data));
-  socket.on("register", (data) => register(data));
-  socket.on("getMonth", (data) => calendar(data));
+  socket.on("login", (data) => login(data, socket));
+  socket.on("register", (data) => register(data, socket));
+  socket.on("getMonth", (data) => calendar(data, socket));
 
-  socket.on("addStudent", (data) => addStudent(data));
-  socket.on("addGroup", (data) => addGroup(data));
-  socket.on("addClient", (data) => addClient(data));
+  socket.on("addStudent", (data) => addStudent(data, socket));
+  socket.on("addGroup", (data) => addGroup(data, socket));
+  socket.on("addClient", (data) => addClient(data, socket));
 
-  socket.on("getStudentList", (token) => getStudentList(token));
-  socket.on("getStudentsByDate", (token) => getStudentsByDate(token));
-  socket.on("getUserData", (token) => getUserData(token));
-  socket.on("getGroupByStudentId", (data) => getGroupByStudentId(data));
-  socket.on("getAllIdStudents", (data) => getAllIdStudents(data));
-  socket.on("getGroupList", (data) => getGroupList(data));
-  socket.on("getTableData", (data) => getTableData(data));
-  socket.on("deleteStudent", (data) => deleteStudent(data));
-  socket.on("studentToArhive", (data) => studentToArhive(data));
+  socket.on("getStudentList", (token) => getStudentList(token, socket));
+  socket.on("getStudentsByDate", (token) => getStudentsByDate(token, socket));
+  socket.on("getUserData", (token) => getUserData(token, socket));
+  socket.on("getGroupByStudentId", (data) => getGroupByStudentId(data, socket));
+  socket.on("getAllIdStudents", (data) => getAllIdStudents(data, socket));
+  socket.on("getGroupList", (data) => getGroupList(data, socket));
+  socket.on("getTableData", (data) => getTableData(data, socket));
+  socket.on("deleteStudent", (data) => deleteStudent(data, socket));
+  socket.on("studentToArhive", (data) => studentToArhive(data, socket));
 
-  socket.on("clientToArhive", (data) => clientToArhive(data));
-  socket.on("deleteClient", (data) => deleteClient(data));
-  socket.on("getClientList", (data) => getClientList(data));
-  socket.on("groupToArchive", (data) => groupToArchive(data));
-  socket.on("deleteGroup", (data) => deleteGroup(data));
-  socket.on("getClientsByDate", (data) => getClientsByDate(data));
-  socket.on("getGroupById", (data) => getGroupById(data));
-  socket.on("updateClient", (data) => updateClient(data));
-  socket.on("getClientById", (data) => getClientById(data));
-  socket.on("getGroupsByDate", (data) => getGroupsByDate(data));
-  socket.on("getClientTableData", (token) => getClientTableData(token));
+  socket.on("clientToArhive", (data) => clientToArhive(data, socket));
+  socket.on("deleteClient", (data) => deleteClient(data, socket));
+  socket.on("getClientList", (data) => getClientList(data, socket));
+  socket.on("groupToArchive", (data) => groupToArchive(data, socket));
+  socket.on("deleteGroup", (data) => deleteGroup(data, socket));
+  socket.on("getClientsByDate", (data) => getClientsByDate(data, socket));
+  socket.on("getGroupById", (data) => getGroupById(data, socket));
+  socket.on("updateClient", (data) => updateClient(data, socket));
+  socket.on("getClientById", (data) => getClientById(data, socket));
+  socket.on("getGroupsByDate", (data) => getGroupsByDate(data, socket));
+  socket.on("getClientTableData", (token) => getClientTableData(token, socket));
 
-  socket.on("getStudentFinanceData", (data) => getStudentFinanceData(data));
-  socket.on("getStudentCountData", (data) => getStudentCountData(data));
-  socket.on("getStudentLessonsData", (data) => getStudentLessonsData(data));
-  socket.on("getClientFinanceData", (data) => getClientFinanceData(data));
-  socket.on("getClientCountData", (data) => getClientCountData(data));
-  socket.on("getClientWorksData", (data) => getClientWorksData(data));
-  socket.on("getStudentClientComparisonData", (data) =>
-    getStudentClientComparisonData(data)
+  socket.on("getStudentFinanceData", (data) =>
+    getStudentFinanceData(data, socket)
   );
-  socket.on("fetchGroupsByDate", (data) => fetchGroupsByDate(data));
+  socket.on("getStudentCountData", (data) => getStudentCountData(data, socket));
+  socket.on("getStudentLessonsData", (data) =>
+    getStudentLessonsData(data, socket)
+  );
+  socket.on("getClientFinanceData", (data) =>
+    getClientFinanceData(data, socket)
+  );
+  socket.on("getClientCountData", (data) => getClientCountData(data, socket));
+  socket.on("getClientWorksData", (data) => getClientWorksData(data, socket));
+  socket.on("getStudentClientComparisonData", (data) =>
+    getStudentClientComparisonData(data, socket)
+  );
+  socket.on("fetchGroupsByDate", (data) => fetchGroupsByDate(data, socket));
   //modifyGroupSchedule
-  socket.on("modifyGroupSchedule", (data) => modifyGroupSchedule(data));
+  socket.on("modifyGroupSchedule", (data) => modifyGroupSchedule(data, socket));
 
-  socket.on("createStudentSchedule", (data) => createStudentSchedule(data));
+  socket.on("createStudentSchedule", (data) =>
+    createStudentSchedule(data, socket)
+  );
 
-  socket.on("getAllItemsIdsAndNames", (token) => getAllItemsIdsAndNames(token));
+  socket.on("getAllItemsIdsAndNames", (token) =>
+    getAllItemsIdsAndNames(token, socket)
+  );
 
-  socket.on("updateStudentSchedule", (data) => updateStudentSchedule(data));
+  socket.on("updateStudentSchedule", (data) =>
+    updateStudentSchedule(data, socket)
+  );
 
-  socket.on("createLink", (data) => createLink(data));
-  socket.on("getLinksByTag", (data) => getLinksByTag(data));
-  socket.on("getLinkById", (data) => getLinkById(data));
-  socket.on("getLinksByUser", (token) => getLinksByUser(token));
-  socket.on("getLinksByLinkedId", (data) => getLinksByLinkedId(data));
+  socket.on("createLink", (data) => createLink(data, socket));
+  socket.on("getLinksByTag", (data) => getLinksByTag(data, socket));
+  socket.on("getLinkById", (data) => getLinkById(data, socket));
+  socket.on("getLinksByUser", (token) => getLinksByUser(token, socket));
+  socket.on("getLinksByLinkedId", (data) => getLinksByLinkedId(data, socket));
 
-  // socket.on("updateStudents", (data) => updateStudents(data));
-  socket.on("updateStudentAndItems", (data) => updateStudentAndItems(data));
-  socket.on("updateGroup", (data) => updateGroup(data));
-  socket.on("uploadUsersFiles", (data) => uploadUsersFiles(data));
-  socket.on("deleteAudio", (data) => deleteAudio(data)); // files & audio
+  // socket.on("updateStudents", (data) => updateStudents(data, socket));
+  socket.on("updateStudentAndItems", (data) =>
+    updateStudentAndItems(data, socket)
+  );
+  socket.on("updateGroup", (data) => updateGroup(data, socket));
+  socket.on("uploadUsersFiles", (data) => uploadUsersFiles(data, socket));
+  socket.on("deleteAudio", (data) => deleteAudio(data, socket)); // files & audio
 
-  socket.on("setUserData", (data) => setUserData(data));
+  socket.on("setUserData", (data) => setUserData(data, socket));
 
-  socket.on("getByGroupId", (data) => getByGroupId(data));
-  socket.on("getByClientScheduleId", (data) => getByClientScheduleId(data));
-  socket.on("getByGroupScheduleId", (data) => getByGroupScheduleId(data));
+  socket.on("getByGroupId", (data) => getByGroupId(data, socket));
+  socket.on("getByClientScheduleId", (data) =>
+    getByClientScheduleId(data, socket)
+  );
+  socket.on("getByGroupScheduleId", (data) =>
+    getByGroupScheduleId(data, socket)
+  );
 
-  socket.on('deleteLink', (data) => deleteLink(data))
+  socket.on("deleteLink", (data) => deleteLink(data, socket));
   //check account
   socket.on("checkAccount", async (data) => {
     let token = await db.token.findFirst({

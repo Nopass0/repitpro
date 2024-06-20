@@ -17,7 +17,7 @@ import { getBufferByFilePath, upload, uploadFiles } from "../files/files";
 import { cache, strongCache } from "utils/Cache";
 import { deleteFileById } from "utils/filesystem";
 
-export const createLink = async (data: any) => {
+export const createLink = async (data: any, socket: any) => {
   try {
     const { tag, linkedId, links, token } = data;
 
@@ -73,14 +73,17 @@ export const createLink = async (data: any) => {
         "------------------- CREATED LINKS DATA ------------------"
       );
     }
-    io.emit("createLink", { message: "ok" });
+    socket.emit("createLink", { message: "ok" });
   } catch (err) {
     console.error(err);
-    io.emit("createLink", { message: `Error: ${err}` });
+    socket.emit("createLink", { message: `Error: ${err}` });
   }
 };
 
-export const getLinksByTag = async (data: { tag: string; token: string }) => {
+export const getLinksByTag = async (
+  data: { tag: string; token: string },
+  socket: any
+) => {
   try {
     const { tag, token } = data;
     const token_ = await db.token.findFirst({
@@ -93,14 +96,17 @@ export const getLinksByTag = async (data: { tag: string; token: string }) => {
       where: { tag, userId },
     });
 
-    io.emit("getLinksByTag", { links });
+    socket.emit("getLinksByTag", { links });
   } catch (err) {
     console.error(err);
-    io.emit("getLinksByTag", { message: `Error: ${err}` });
+    socket.emit("getLinksByTag", { message: `Error: ${err}` });
   }
 };
 
-export const getLinkById = async (data: { id: string; token: string }) => {
+export const getLinkById = async (
+  data: { id: string; token: string },
+  socket: any
+) => {
   try {
     const { id, token } = data;
     const token_ = await db.token.findFirst({
@@ -113,14 +119,14 @@ export const getLinkById = async (data: { id: string; token: string }) => {
       where: { id, userId },
     });
 
-    io.emit("getLinkById", { link });
+    socket.emit("getLinkById", { link });
   } catch (err) {
     console.error(err);
-    io.emit("getLinkById", { message: `Error: ${err}` });
+    socket.emit("getLinkById", { message: `Error: ${err}` });
   }
 };
 
-export const getLinksByUser = async (token: string) => {
+export const getLinksByUser = async (token: string, socket: any) => {
   try {
     const token_ = await db.token.findFirst({
       where: { token },
@@ -132,17 +138,20 @@ export const getLinksByUser = async (token: string) => {
       where: { userId },
     });
 
-    io.emit("getLinksByUser", { links });
+    socket.emit("getLinksByUser", { links });
   } catch (err) {
     console.error(err);
-    io.emit("getLinksByUser", { message: `Error: ${err}` });
+    socket.emit("getLinksByUser", { message: `Error: ${err}` });
   }
 };
 
-export const getLinksByLinkedId = async (data: {
-  linkedId: string;
-  token: string;
-}) => {
+export const getLinksByLinkedId = async (
+  data: {
+    linkedId: string;
+    token: string;
+  },
+  socket: any
+) => {
   try {
     const { linkedId, token } = data;
     const token_ = await db.token.findFirst({
@@ -155,22 +164,25 @@ export const getLinksByLinkedId = async (data: {
       where: { linkedId, userId },
     });
 
-    io.emit("getLinksByLinkedId", {
+    socket.emit("getLinksByLinkedId", {
       links: JSON.parse(JSON.stringify(links)).links,
       linkedId: JSON.parse(JSON.stringify(links)).linkedId,
       tag: links.tag,
     });
   } catch (err) {
     console.error(err);
-    io.emit("getLinksByLinkedId", { message: `Error: ${err}` });
+    socket.emit("getLinksByLinkedId", { message: `Error: ${err}` });
   }
 };
 
-export const getLinksByLinkedIdAndTag = async (data: {
-  linkedId: string;
-  tag: string;
-  token: string;
-}) => {
+export const getLinksByLinkedIdAndTag = async (
+  data: {
+    linkedId: string;
+    tag: string;
+    token: string;
+  },
+  socket: any
+) => {
   try {
     const { linkedId, tag, token } = data;
     const token_ = await db.token.findFirst({
@@ -183,18 +195,20 @@ export const getLinksByLinkedIdAndTag = async (data: {
       where: { linkedId, tag, userId },
     });
 
-    io.emit("getLinksByLinkedIdAndTag", { links });
+    socket.emit("getLinksByLinkedIdAndTag", { links });
   } catch (err) {
     console.error(err);
-    io.emit("getLinksByLinkedIdAndTag", { message: `Error: ${err}` });
+    socket.emit("getLinksByLinkedIdAndTag", { message: `Error: ${err}` });
   }
 };
 
-
-export const deleteLinksByLinkedId = async (data: {
-  linkedId: string;
-  token: string;
-}) => {
+export const deleteLinksByLinkedId = async (
+  data: {
+    linkedId: string;
+    token: string;
+  },
+  socket: any
+) => {
   try {
     const { linkedId, token } = data;
     const token_ = await db.token.findFirst({
@@ -207,14 +221,21 @@ export const deleteLinksByLinkedId = async (data: {
       where: { linkedId, userId },
     });
 
-    io.emit("deleteLinksByLinkedId", { links });
+    socket.emit("deleteLinksByLinkedId", { links });
   } catch (err) {
     console.error(err);
-    io.emit("deleteLinksByLinkedId", { message: `Error: ${err}` });
+    socket.emit("deleteLinksByLinkedId", { message: `Error: ${err}` });
   }
-}
+};
 
-export const deleteLink = async (data: { link: string; token: string; linkedId: string }) => {
+export const deleteLink = async (
+  data: {
+    link: string;
+    token: string;
+    linkedId: string;
+  },
+  socket: any
+) => {
   try {
     const { link, token, linkedId } = data;
     const token_ = await db.token.findFirst({
@@ -224,9 +245,11 @@ export const deleteLink = async (data: { link: string; token: string; linkedId: 
     const userId = token_.userId;
 
     const links = await db.link.findFirst({
-      where: {linkedId, userId },
+      where: { linkedId, userId },
     });
-    const newLinks = JSON.parse(JSON.stringify(links)).links.filter((item: string) => item !== link);
+    const newLinks = JSON.parse(JSON.stringify(links)).links.filter(
+      (item: string) => item !== link
+    );
 
     await db.link.update({
       where: { id: links?.id },
@@ -235,9 +258,9 @@ export const deleteLink = async (data: { link: string; token: string; linkedId: 
       },
     });
 
-    io.emit("deleteLink", { links });
+    socket.emit("deleteLink", { links });
   } catch (err) {
     console.error(err);
-    io.emit("deleteLink", { message: `Error: ${err}` });
+    socket.emit("deleteLink", { message: `Error: ${err}` });
   }
-}
+};

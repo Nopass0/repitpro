@@ -11,7 +11,7 @@ function getDay(date) {
   return dayIndex === -1 ? 6 : dayIndex;
 }
 
-export async function addGroup(data) {
+export async function addGroup(data: any, socket: any) {
   try {
     const {
       groupName,
@@ -300,14 +300,14 @@ export async function addGroup(data) {
       },
     });
 
-    io.emit("addGroup", { ok: true });
+    socket.emit("addGroup", { ok: true });
   } catch (error) {
     console.error("Error creating group:", error);
-    io.emit("addGroup", { error: error.message, ok: false });
+    socket.emit("addGroup", { error: error.message, ok: false });
   }
 }
 
-export async function getGroupList(token) {
+export async function getGroupList(token, socket: any) {
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -351,15 +351,15 @@ export async function getGroupList(token) {
     const groupsWithName = groups.filter((group) => group.groupName !== "");
 
     console.log(groups);
-    io.emit("getGroupList", groupsWithName);
+    socket.emit("getGroupList", groupsWithName);
     return groups;
   } catch (error) {
     console.error("Error fetching group list:", error);
-    io.emit("getGroupList", { error: "Error fetching group list" });
+    socket.emit("getGroupList", { error: "Error fetching group list" });
   }
 }
 
-export async function deleteGroup(data: any) {
+export async function deleteGroup(data: any, socket: any) {
   const { token, id } = data;
   let groupId = id;
   try {
@@ -439,7 +439,7 @@ export async function deleteGroup(data: any) {
   }
 }
 
-export async function groupToArchive(data: any) {
+export async function groupToArchive(data: any, socket: any) {
   const { token, id, isArchived } = data;
   let groupId = id;
   const token_ = await db.token.findFirst({
@@ -475,7 +475,7 @@ export async function groupToArchive(data: any) {
   }
 }
 
-export async function getGroupsByDate(data: any) {
+export async function getGroupsByDate(data: any, socket: any) {
   const { day, month, year, userId, dayOfWeekIndex } = data;
   const groupSchedules = await db.studentSchedule.findMany({
     where: {
@@ -520,7 +520,7 @@ export async function getGroupsByDate(data: any) {
 }
 
 //get group by id
-export async function getGroupById(data: any) {
+export async function getGroupById(data: any, socket: any) {
   const { token, groupId } = data;
 
   const token_ = await db.token.findFirst({
@@ -588,7 +588,7 @@ export async function getGroupById(data: any) {
     group_.audioItems = etAudioItems;
     group_.audioStudents = etAudioStudents;
 
-    io.emit("getGroupById", group_);
+    socket.emit("getGroupById", group_);
     return group;
   } catch (error) {
     console.error("Error getting group by id:", error);
@@ -596,7 +596,7 @@ export async function getGroupById(data: any) {
 }
 
 //update group (if data exist)
-export async function updateGroup(data) {
+export async function updateGroup(data, socket: any) {
   try {
     const {
       id,
@@ -845,14 +845,14 @@ export async function updateGroup(data) {
     });
 
     // Emit success event
-    io.emit("updateGroup", { ok: true });
+    socket.emit("updateGroup", { ok: true });
   } catch (error) {
     console.error("Error updating group:", error);
-    io.emit("updateGroup", { error: error.message, ok: false });
+    socket.emit("updateGroup", { error: error.message, ok: false });
   }
 }
 
-export async function deleteGroupFiles(data: any) {
+export async function deleteGroupFiles(data: any, socket: any) {
   const { token, groupId, fileIds } = data;
   try {
     const token_ = await db.token.findFirst({
@@ -911,18 +911,21 @@ export async function deleteGroupFiles(data: any) {
   }
 }
 
-export async function fetchGroupsByDate(data: {
-  day: string;
-  month: string;
-  year: string;
-  token: string;
-}) {
+export async function fetchGroupsByDate(
+  data: {
+    day: string;
+    month: string;
+    year: string;
+    token: string;
+  },
+  socket: any
+) {
   const { day, month, year, token } = data;
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_?.userId;
 
   if (!userId) {
-    io.emit("fetchGroupsByDate", { error: "Invalid token" });
+    socket.emit("fetchGroupsByDate", { error: "Invalid token" });
     return;
   }
 
@@ -1010,21 +1013,24 @@ export async function fetchGroupsByDate(data: {
     groupsData.push(groupData);
   }
 
-  io.emit("fetchGroupsByDate", groupsData);
+  socket.emit("fetchGroupsByDate", groupsData);
 }
 
-export async function modifyGroupSchedule(data: {
-  groupId: string;
-  items: any[];
-  students: any[];
-  token: string;
-}) {
+export async function modifyGroupSchedule(
+  data: {
+    groupId: string;
+    items: any[];
+    students: any[];
+    token: string;
+  },
+  socket: any
+) {
   const { groupId, items, students, token } = data;
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_?.userId;
 
   if (!userId) {
-    io.emit("modifyGroupSchedule", { error: "Invalid token" });
+    socket.emit("modifyGroupSchedule", { error: "Invalid token" });
     return;
   }
 
@@ -1085,9 +1091,9 @@ export async function modifyGroupSchedule(data: {
       });
     }
 
-    io.emit("modifyGroupSchedule", { ok: true });
+    socket.emit("modifyGroupSchedule", { ok: true });
   } catch (error) {
     console.error("Error updating group schedule:", error);
-    io.emit("modifyGroupSchedule", { error: error.message, ok: false });
+    socket.emit("modifyGroupSchedule", { error: error.message, ok: false });
   }
 }
