@@ -664,39 +664,52 @@ const AddStudent = ({}: IAddStudent) => {
 		return `#${hexColor}`
 	}
 
-	const handlePrePayment = () => {
+	const handlePrePayment = (historyLessons_:any) => {
 		if (prePayDate && prePayCost) {
 			const prePaymentDate = new Date(prePayDate)
 			let remainingPrePayment = Number(prePayCost)
+			const lessonCount = historyLessons_.filter((i) => i.isPaid).length
+			const costOneLessonItems =
+				items.find((item) => item.costOneLesson)?.costOneLesson || 0
+			console.log(
+				'Зашёл',
+				Number(prePayCost),
+				Number(costOneLessonItems),
+				Math.floor(Number(prePayCost) / Number(costOneLessonItems)),
+				lessonCount,
+			)
+			if (
+				Math.floor(Number(prePayCost) / Number(costOneLessonItems)) >
+				lessonCount
+			) {
+				console.log('Зашёл 2')
+				const updatedHistoryLesson = historyLessons_.map((lesson) => {
+					const lessonDate = new Date(lesson.date)
+					console.log(lesson)
+					if (
+						lessonDate >= prePaymentDate &&
+						remainingPrePayment >= Number(lesson.price)
+					) {
+						remainingPrePayment -= Number(lesson.price)
+						return {...lesson, isPaid: true}
+					} else {
+						return {...lesson}
+					}
+				})
 
-			const updatedHistoryLesson = historyLesson.map((lesson) => {
-				const lessonDate = new Date(lesson.date)
+				setHistoryLesson(updatedHistoryLesson)
+			}
 
-				if (
-					lessonDate >= prePaymentDate &&
-					remainingPrePayment >= Number(lesson.price)
-				) {
-					remainingPrePayment -= Number(lesson.price)
-					return {...lesson, isPaid: true}
-				}
-
-				return lesson
-			})
-
-			// Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
-			// const hls = updatedHistoryLesson.sort((a, b) => {
-			// 	const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-			// 	const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-			// 	return dateA - dateB
-			// })
-
-			// setHistoryLesson(hls)
+			console.log('Вышел')
+		
 		}
+		console.log('Не зашёл')
 	}
 
-	useEffect(() => {
-		handlePrePayment()
-	}, [prePayDate, prePayCost, historyLesson])
+	// useEffect(() => {
+	// 	handlePrePayment()
+	// 	console.log(historyLesson, prePayCost, 'historyLesson')
+	// }, [prePayDate, prePayCost])
 
 	// Function to compare dates for sorting
 	const compareDates = (a, b) => {
@@ -841,41 +854,15 @@ const AddStudent = ({}: IAddStudent) => {
 				}
 			}
 		}
-
-		// const hlTemp = historyLessons_
-		// // Сортируем массив historyLessons_ по ближайшей к сегодняшней дате
-		// hlTemp.sort((a, b) => {
-		// 	const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-		// 	const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-		// 	return dateA - dateB
-		// })
-
-		// const hlsNow = hlTemp.sort((a, b) => {
-		// 	const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-		// 	const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-		// 	return dateA - dateB
-		// })[hlTemp.length - 1]
-
-		// //delete hlsNow from hls
-		// const hls = hlTemp.filter((item) => item.date !== hlsNow.date)
-
-		// //remake hls with hlsNow at start
-		// hls.unshift(hlsNow)
-
-		// console.log(
-		// 	'\n-----------------hls-----------\n',
-		// 	hls,
-		// 	'\n-----------------hls-----------\n',
-		// 	'\n-------------today-------------\n',
-		// 	today,
-		// 	'\n-----------------hls-----------\n',
-		// )
+		console.log(historyLessons_, 'historyLesson___')
 
 		// Обновляем состояние
 		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-	}, [items])
+		handlePrePayment(historyLessons_)
+		console.log(historyLesson, 'historyLesson___2')
+	}, [items, prePayCost,prePayDate])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
 		setHistoryLesson((prevHistoryLesson: any) => [
@@ -1606,13 +1593,14 @@ const AddStudent = ({}: IAddStudent) => {
 													type="text"
 													value={item.costOneLesson}
 													disabled={isEditMode}
-													onChange={(e) =>
+													onChange={(e) => {
 														changeItemValue(
 															index,
 															'costOneLesson',
 															e.target.value,
 														)
-													}
+														// handlePrePayment()
+													}}
 													style={{borderBottom: '1px solid #e2e2e9'}}
 												/>
 												<p>₽</p>
@@ -1625,7 +1613,10 @@ const AddStudent = ({}: IAddStudent) => {
 													disabled={isEditMode}
 													type="text"
 													value={item.lessonDuration || ''}
-													onChange={(e: any) => handleLessonDurationChange(e)}
+													onChange={(e: any) => {
+														handleLessonDurationChange(e)
+														// handlePrePayment()
+													}}
 													style={{borderBottom: '1px solid #e2e2e9'}}
 												/>
 												<p>мин</p>

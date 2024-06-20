@@ -38,6 +38,7 @@ import {useNavigate} from 'react-router-dom'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import MiniCalendar from '../MiniCalendar'
 import {TailSpin} from 'react-loader-spinner'
+import {preview} from 'vite'
 
 interface IAddGroup {
 	className?: string
@@ -135,7 +136,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			costStudent: '',
 			commentStudent: '',
 			prePayCost: '',
-			prePayDate: '',
+			prePayDate: new Date(Date.now()),
 			selectedDate: null,
 			files: [],
 			storyLesson: '',
@@ -339,8 +340,124 @@ const AddGroup = ({className}: IAddGroup) => {
 		students.map(() => []),
 	)
 
+	const handlePrePay = () => {
+		const prePayDateStudent = students.find(
+			(item) => item.prePayDate,
+		)?.prePayDate
+		const prePayCostStudent = students.find(
+			(item) => item.prePayCost,
+		)?.prePayCost
+		const constOneLessonStudent = students.find(
+			(item) => item.costOneLesson,
+		)?.costOneLesson
+		if (prePayDateStudent && prePayCostStudent) {
+			const prePaymentDate = new Date(prePayDateStudent)
+			let remainingPrePayment = Number(prePayCostStudent)
+			const lessonCount = studentsHistoryLessons[currentStudentIndex].filter(
+				(i) => i.isPaid,
+			).length
+
+			if (
+				Math.floor(Number(prePayCost) / Number(constOneLessonStudent)) >
+				lessonCount
+			) {
+				const updatedHistoryLesson = studentsHistoryLessons[
+					currentStudentIndex
+				].map((lesson) => {
+					console.log(lesson)
+					const lessonDate = new Date(lesson.date)
+					if (
+						lessonDate >= prePaymentDate &&
+						remainingPrePayment >= Number(lesson.price)
+					) {
+						remainingPrePayment -= Number(lesson.price)
+						return {...lesson, isPaid: true}
+					} else {
+						return {...lesson}
+					}
+				})
+				setHistoryLesson(updatedHistoryLesson)
+			}
+		}
+	}
+
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
+
+	const handlePrePayPayment = (newHistory: any) => {
+		if (newHistory[currentStudentIndex] !== undefined) {
+			console.log('Вошёл')
+			// const newHistoryLesson = students.map((student, studentIndex) => {
+			console.log('Вошёл 2')
+			console.log(
+				students[currentStudentIndex].prePayDate,
+				students[currentStudentIndex].prePayCost,
+				'----- cost',
+			)
+			console.log(students, currentStudentIndex, 'STUDENTS')
+			const costLesson = Number(students[currentStudentIndex].costOneLesson)
+			const prePayment = Number(students[currentStudentIndex].prePayCost)
+			const lessonCount = newHistory[currentStudentIndex].filter(
+				(i) => i.isPaid,
+			).length
+			let remainingPrePayment = Number(students[currentStudentIndex].prePayCost)
+			if (
+				students[currentStudentIndex].prePayDate &&
+				students[currentStudentIndex].prePayCost
+			) {
+				const prePaymentDate = new Date(
+					students[currentStudentIndex].prePayDate,
+				)
+				if (Math.floor(prePayment / costLesson) > lessonCount) {
+					console.log('Вошёл 3')
+					const updatedHistoryLesson = newHistory[currentStudentIndex].map(
+						(lesson) => {
+							const lessonDate = new Date(lesson.date)
+							console.log(
+								lesson,
+								lessonDate,
+								'lessonDate',
+								prePaymentDate,
+								'prePaymentDate',
+								lessonDate >= prePaymentDate,
+							)
+							if (
+								lessonDate >= prePaymentDate &&
+								remainingPrePayment >= costLesson
+							) {
+								remainingPrePayment -= costLesson
+								console.log('Вошёл 4')
+								// history_.push({...lesson, isPaid: true})
+								return {...lesson, isPaid: true}
+							} else {
+								// history_.push({...lesson})
+								return {...lesson}
+							}
+						},
+					)
+					// console.log(history_, 'history_')
+					setHistoryLesson(updatedHistoryLesson)
+					setStudentsHistoryLessons((prev) => {
+						const prevHistory = [...prev]
+						prevHistory[currentStudentIndex] = updatedHistoryLesson
+						return prevHistory
+					})
+
+					console.log(
+						historyLesson,
+						'historyLesson HandlePrePayPayment',
+						currentStudentIndex,
+					)
+					console.log(
+						studentsHistoryLessons,
+						'studentsHistoryLessons HandlePrePayPayment',
+					)
+					console.log('Вышел ')
+				}
+			}
+		}
+		// })
+	}
 	useEffect(() => {
 		const newStudentsHistoryLessons = students.map((student, studentIndex) => {
 			const historyLessons_ = []
@@ -349,6 +466,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					items[i].endLesson,
 					items[i].startLesson,
 				)
+				console.log(differenceDays, 'differenceDays')
 				const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
 					addDays(items[i].startLesson, j),
 				)
@@ -376,11 +494,59 @@ const AddGroup = ({className}: IAddGroup) => {
 					}
 				}
 			}
+			console.log(historyLessons_, 'historyLessons_')
 			return historyLessons_
 		})
-
+		console.log(studentsHistoryLessons, 'studentsHistoryLessons UseEffect')
+		console.log(
+			newStudentsHistoryLessons,
+			'newStudentsHistoryLessons UseEffect',
+		)
 		setStudentsHistoryLessons(newStudentsHistoryLessons)
+		console.log(
+			studentsHistoryLessons[currentStudentIndex],
+			'studentsHistoryLessons[currentStudentIndex]',
+		)
+		handleHistoryLessonsDate()
+		console.log(studentsHistoryLessons, 'studentsHistoryLessons After Func')
+		handlePrePayPayment(studentsHistoryLessons)
+		setHistoryLesson(studentsHistoryLessons[currentStudentIndex])
+		console.log(historyLesson, 'historyLesson UseEffect')
 	}, [items, students])
+
+	const handleHistoryLessonsDate = () => {
+		if (studentsHistoryLessons[currentStudentIndex] !== undefined) {
+			let filteredLessons = studentsHistoryLessons[currentStudentIndex]
+				.sort(compareDates)
+				.filter((lesson) => {
+					const lessonDate = new Date(lesson.date)
+					const startLesson = new Date(
+						students[currentStudentIndex].startLesson,
+					)
+					const endLesson = new Date(students[currentStudentIndex].endLesson)
+					console.log(
+						lessonDate,
+						'lessonDate',
+						startLesson,
+						'startLesson',
+						endLesson,
+						'endLesson',
+					)
+					return lessonDate >= startLesson && lessonDate <= endLesson
+				})
+			console.log(filteredLessons, 'filteredLessons')
+			if (filteredLessons.length > 0) {
+				setStudentsHistoryLessons((prev) => {
+					const prevHis = [...prev]
+					console.log(prevHis, 'PrevHis')
+					prevHis[currentStudentIndex] = filteredLessons
+
+					console.log(prevHis, 'PrevHis aFter')
+					return prevHis
+				})
+			}
+		}
+	}
 
 	const setHistoryLessonIsDone = (studentIndex, lessonIndex, value) => {
 		setStudentsHistoryLessons((prevHistoryLessons) => {
@@ -393,7 +559,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			return updatedHistoryLessons
 		})
 	}
-
 	const setHistoryLessonIsPaid = (studentIndex, lessonIndex, value) => {
 		setStudentsHistoryLessons((prevHistoryLessons) => {
 			const updatedHistoryLessons = [...prevHistoryLessons]
@@ -876,7 +1041,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					costStudent: '',
 					commentStudent: '',
 					prePayCost: '',
-					prePayDate: '',
+					prePayDate: new Date(Date.now()),
 					selectedDate: null,
 					storyLesson: '',
 					costOneLesson: '',
@@ -1041,22 +1206,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			'FАА',
 		)
 
-		let currentStudentIndexHistoryLessons = index ? index : currentStudentIndex
-		const filteredLessons = studentsHistoryLessons[
-			currentStudentIndexHistoryLessons
-		]
-			.sort(compareDates)
-			.filter((lesson) => {
-				const lessonDate = new Date(lesson.date)
-				const startLesson = new Date(
-					students[currentStudentIndexHistoryLessons].startLesson,
-				)
-				const endLesson = new Date(
-					students[currentStudentIndexHistoryLessons].endLesson,
-				)
-				return lessonDate >= startLesson && lessonDate <= endLesson
-			})
-			.map((lesson, lessonIndex) => (
+		let filteredLessons = studentsHistoryLessons[currentStudentIndex].map(
+			(lesson, lessonIndex) => (
 				<div className={s.ListObject} key={lessonIndex}>
 					<p
 						style={{
@@ -1119,9 +1270,11 @@ const AddGroup = ({className}: IAddGroup) => {
 						<CreateIcon style={{width: '18px', height: '18px'}} />
 					</button>
 				</div>
-			))
+			),
+		)
 		return filteredLessons
 	}
+
 	const handleDuty = (student: any, index: number) => {
 		const duty =
 			(studentsHistoryLessons[index] &&
@@ -1137,6 +1290,7 @@ const AddGroup = ({className}: IAddGroup) => {
 		allDuty += duty
 		return duty
 	}
+
 	useEffect(() => {
 		studentsHistoryLessons[currentStudentIndex] &&
 			students.map((student: IStudent) => {
@@ -1817,7 +1971,7 @@ const AddGroup = ({className}: IAddGroup) => {
 												linksArray={linksItems}
 												submitLinks={handleLinksSubmitItems}
 												deleteLink={deleteLinkItems}
-												fileInputId='1'
+												fileInputId="1"
 											/>
 
 											<Line width="100%" className={s.Line} />

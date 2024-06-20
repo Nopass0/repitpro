@@ -658,105 +658,65 @@ const Statistics = ({}: IStatistics) => {
 				</button>
 			</div>
 			<div className={s.MainBlock}>
-				{!!financeData.datasets.length && !!financeData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={studFinItem}
-						OnChangeItem={(e: any) => setStudFinItem(e.target.value)}
-						DateState={studFinDate}
-						OnChangeDate={(e: any) => {
-							setStudFinDate(e.target.value)
-						}}
-						DateStartState={studFinDateStart}
-						OnChangeDateStart={(e: any) => setStudFinDateStart(e)}
-						DateEndState={studFinDateEnd}
-						OnChangeDateEnd={(e: any) => setStudFinDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={financeData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Ученики-Финансы"
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Ученики-финансы
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={studFinItem}
+					OnChangeItem={(e: any) => setStudFinItem(e.target.value)}
+					DateState={studFinDate}
+					OnChangeDate={(e: any) => {
+						setStudFinDate(e.target.value)
+					}}
+					DateStartState={studFinDateStart}
+					OnChangeDateStart={(e: any) => setStudFinDateStart(e)}
+					DateEndState={studFinDateEnd}
+					OnChangeDateEnd={(e: any) => setStudFinDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={financeData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики-Финансы"
+				/>
+
 				<Line width="100%" className={s.Line} />
-				{!!studentCountData.datasets.length &&
-				!!studentCountData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={studAmItem}
-						OnChangeItem={(e: any) => setStudAmItem(e.target.value)}
-						DateState={studAmDate}
-						OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
-						DateStartState={studAmDateStart}
-						OnChangeDateStart={(e: any) => setStudAmDateStart(e)}
-						DateEndState={studAmDateEnd}
-						OnChangeDateEnd={(e: any) => setStudAmDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={studentCountData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Ученики-Количество"
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Ученики-Количество
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={studAmItem}
+					OnChangeItem={(e: any) => setStudAmItem(e.target.value)}
+					DateState={studAmDate}
+					OnChangeDate={(e: any) => setStudAmDate(e.target.value)}
+					DateStartState={studAmDateStart}
+					OnChangeDateStart={(e: any) => setStudAmDateStart(e)}
+					DateEndState={studAmDateEnd}
+					OnChangeDateEnd={(e: any) => setStudAmDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={studentCountData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики-Количество"
+				/>
+
 				<Line width="100%" className={s.Line} />
-				{!!studentCountItemsData.datasets.length &&
-				!!studentCountItemsData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={studLesItem}
-						OnChangeItem={(e: any) => setStudLesItem(e.target.value)}
-						DateState={studLesDate}
-						OnChangeDate={(e: any) => setStudLesDate(e.target.value)}
-						DateStartState={studLesDateStart}
-						OnChangeDateStart={(e: any) => setStudLesDateStart(e)}
-						DateEndState={studLesDateEnd}
-						OnChangeDateEnd={(e: any) => setStudLesDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={studentCountItemsData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Ученики-Занятия"
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Ученики-Количество
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={studLesItem}
+					OnChangeItem={(e: any) => setStudLesItem(e.target.value)}
+					DateState={studLesDate}
+					OnChangeDate={(e: any) => setStudLesDate(e.target.value)}
+					DateStartState={studLesDateStart}
+					OnChangeDateStart={(e: any) => setStudLesDateStart(e)}
+					DateEndState={studLesDateEnd}
+					OnChangeDateEnd={(e: any) => setStudLesDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={studentCountItemsData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики-Занятия"
+				/>
 
 				<Line width="100%" className={s.Line} />
 				{/* Students Table */}
@@ -979,107 +939,68 @@ const Statistics = ({}: IStatistics) => {
 					</div>
 				</div>
 				<Line width="100%" className={s.Line} />
-				{!!clientsFinanceData.datasets.length &&
-				!!clientsFinanceData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={cliFinItem}
-						OnChangeItem={(e: any) => setCliFinItem(e.target.value)}
-						DateState={cliFinDate}
-						OnChangeDate={(e: any) => setCliFinDate(e.target.value)}
-						DateStartState={cliFinDateStart}
-						OnChangeDateStart={(e: any) => setCliFinDateStart(e)}
-						DateEndState={cliFinDateEnd}
-						OnChangeDateEnd={(e: any) => setCliFinDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={clientsFinanceData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Заказчики-Финансы"
-						isClient
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Заказчики-Финансы
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={cliFinItem}
+					OnChangeItem={(e: any) => setCliFinItem(e.target.value)}
+					DateState={cliFinDate}
+					OnChangeDate={(e: any) => setCliFinDate(e.target.value)}
+					DateStartState={cliFinDateStart}
+					OnChangeDateStart={(e: any) => setCliFinDateStart(e)}
+					DateEndState={cliFinDateEnd}
+					OnChangeDateEnd={(e: any) => setCliFinDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={clientsFinanceData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Заказчики-Финансы"
+					isClient
+				/>
+
 				<Line width="100%" className={s.Line} />
-				{!!clientsCountData.datasets.length &&
-				!!clientsCountData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={cliAmItem}
-						OnChangeItem={(e: any) => setCliAmItem(e.target.value)}
-						DateState={cliAmDate}
-						OnChangeDate={(e: any) => setCliAmDate(e.target.value)}
-						DateStartState={cliAmDateStart}
-						OnChangeDateStart={(e: any) => setCliAmDateStart(e)}
-						DateEndState={cliAmDateEnd}
-						OnChangeDateEnd={(e: any) => setCliAmDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={clientsCountData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Заказчики-Количество"
-						isClient
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Заказчики-Количество
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={cliAmItem}
+					OnChangeItem={(e: any) => setCliAmItem(e.target.value)}
+					DateState={cliAmDate}
+					OnChangeDate={(e: any) => setCliAmDate(e.target.value)}
+					DateStartState={cliAmDateStart}
+					OnChangeDateStart={(e: any) => setCliAmDateStart(e)}
+					DateEndState={cliAmDateEnd}
+					OnChangeDateEnd={(e: any) => setCliAmDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={clientsCountData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Заказчики-Количество"
+					isClient
+				/>
+
 				<Line width="100%" className={s.Line} />
-				{!!clientsWorksData.datasets.length &&
-				!!clientsWorksData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={cliWorkItem}
-						OnChangeItem={(e: any) => setCliWorkItem(e.target.value)}
-						DateState={cliWorkDate}
-						OnChangeDate={(e: any) => setCliWorkDate(e.target.value)}
-						DateStartState={cliWorkDateStart}
-						OnChangeDateStart={(e: any) => setCliWorkDateStart(e)}
-						DateEndState={cliWorkDateEnd}
-						OnChangeDateEnd={(e: any) => setCliWorkDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={clientsWorksData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Заказчики-Работы"
-						isClient
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Заказчики-Работы
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={cliWorkItem}
+					OnChangeItem={(e: any) => setCliWorkItem(e.target.value)}
+					DateState={cliWorkDate}
+					OnChangeDate={(e: any) => setCliWorkDate(e.target.value)}
+					DateStartState={cliWorkDateStart}
+					OnChangeDateStart={(e: any) => setCliWorkDateStart(e)}
+					DateEndState={cliWorkDateEnd}
+					OnChangeDateEnd={(e: any) => setCliWorkDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={clientsWorksData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Заказчики-Работы"
+					isClient
+				/>
+
 				<Line width="100%" className={s.Line} />
 				{/* Clients Table */}
 				<div className={s.GraphicBlock}>
@@ -1299,41 +1220,25 @@ const Statistics = ({}: IStatistics) => {
 					</div>
 				</div>
 				<Line width="100%" className={s.Line} />
-				{!!clientsNstudentsCompareData.datasets.length &&
-				!!clientsNstudentsCompareData.labels.length ? (
-					<GraphicBlock
-						StyledPickersLayout={StyledPickersLayout}
-						names={names}
-						ItemState={studRelatItem}
-						OnChangeItem={(e: any) => setStudRelatItem(e.target.value)}
-						DateState={studRelatDate}
-						OnChangeDate={(e: any) => setStudRelatDate(e.target.value)}
-						DateStartState={studRelatDateStart}
-						OnChangeDateStart={(e: any) =>
-							setStudRelatDateStart(e)
-						}
-						DateEndState={studRelatDateEnd}
-						OnChangeDateEnd={(e: any) => setStudRelatDateEnd(e)}
-						chooseGraphic={chooseGraphic}
-						data={clientsNstudentsCompareData}
-						options={options}
-						optionsBar={optionsBar}
-						title="Ученики - Заказчики сравнительный график"
-						isClient
-					/>
-				) : (
-					<>
-						<p
-							style={{
-								textAlign: 'center',
-								fontWeight: 'bold',
-								marginBottom: '20px',
-							}}>
-							Ученики-Заказчики сравнительный график
-						</p>
-						<p style={{textAlign: 'center'}}>Данных недостаточно</p>
-					</>
-				)}
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					names={names}
+					ItemState={studRelatItem}
+					OnChangeItem={(e: any) => setStudRelatItem(e.target.value)}
+					DateState={studRelatDate}
+					OnChangeDate={(e: any) => setStudRelatDate(e.target.value)}
+					DateStartState={studRelatDateStart}
+					OnChangeDateStart={(e: any) => setStudRelatDateStart(e)}
+					DateEndState={studRelatDateEnd}
+					OnChangeDateEnd={(e: any) => setStudRelatDateEnd(e)}
+					chooseGraphic={chooseGraphic}
+					data={clientsNstudentsCompareData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики - Заказчики сравнительный график"
+					isClient
+				/>
 			</div>
 		</div>
 	)
