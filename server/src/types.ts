@@ -1,9 +1,10 @@
 export interface ICell {
   workCount: number;
-  id: number;
-  day: number;
-  month: number;
-  year: number;
+  id: string;
+  day: string;
+  month: string;
+  year: string;
+  date: Date;
   lessonsCount: number;
   lessonsPrice: number;
   workPrice: number;
@@ -152,4 +153,15 @@ export interface ICardFile {
   hashSum: string;
   extraType: string;
   userId: string;
+}
+
+export interface IUserCredentials {
+  name?: string;
+  email?: string;
+  login: string;
+  password: string;
+}
+
+export interface IToken {
+  token: string;
 }

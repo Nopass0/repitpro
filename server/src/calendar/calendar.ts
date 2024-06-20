@@ -1,32 +1,28 @@
 import db from "../db";
-import io from "../socket";
+import { Request, Response } from "express";
+import api from "../api";
 import { mockData } from "./mock";
 import { ICell } from "types";
 
-export const calendar = async (data, socket) => {
+// Контроллер для получения календаря по токену и датам
+api.post("/getCalendar", async (req: Request, res: Response) => {
   try {
-    const token = data?.token;
-
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    const userId = token_?.userId;
+    const { token, currentYear, currentMonth } = req.body;
+    const tokenData = await db.token.findFirst({ where: { token } });
+    const userId = tokenData?.userId;
 
     if (!userId) {
-      return socket.emit("calendar", { message: "Invalid token" });
+      return res.status(401).json({ message: "Invalid token" });
     }
 
     // Определение начальной и конечной даты месяца
-    let currentDate = new Date(data.currentYear, data.currentMonth, 1);
-    let startDate = new Date(
+    const currentDate = new Date(currentYear, currentMonth, 1);
+    const startDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() - 1,
       1
     );
-    let endDate = new Date(
+    const endDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() + 1,
       0
@@ -44,74 +40,63 @@ export const calendar = async (data, socket) => {
     });
 
     // Преобразование данных в формат ICell и суммирование при совпадении дня, месяца и года
-    const result = studentSchedules.reduce((acc, schedule) => {
-      const date = new Date(
-        parseInt(schedule.year),
-        parseInt(schedule.month) - 1,
-        parseInt(schedule.day)
-      );
-      const existingCell = acc.find(
-        (cell) =>
-          cell.day === schedule.day &&
-          cell.month === schedule.month &&
-          cell.year === schedule.year
-      );
+    const result: ICell[] = studentSchedules.reduce(
+      (acc: ICell[], schedule) => {
+        const date = new Date(
+          parseInt(schedule.year),
+          parseInt(schedule.month) - 1,
+          parseInt(schedule.day)
+        );
+        const existingCell = acc.find(
+          (cell) =>
+            cell.day === schedule.day &&
+            cell.month === schedule.month &&
+            cell.year === schedule.year
+        );
 
-      if (existingCell) {
-        existingCell.workCount += schedule.workCount;
-        existingCell.lessonsCount += schedule.lessonsCount;
-        existingCell.lessonsPrice += schedule.lessonsPrice;
-        existingCell.workPrice += schedule.workPrice;
-      } else {
-        acc.push({
-          workCount: schedule.workCount,
-          id: schedule.id,
-          day: schedule.day,
-          month: schedule.month,
-          year: schedule.year,
-          lessonsCount: schedule.lessonsCount,
-          lessonsPrice: schedule.lessonsPrice,
-          workPrice: schedule.workPrice,
-          date,
-        });
-      }
+        if (existingCell) {
+          existingCell.workCount += schedule.workCount;
+          existingCell.lessonsCount += schedule.lessonsCount;
+          existingCell.lessonsPrice += schedule.lessonsPrice;
+          existingCell.workPrice += schedule.workPrice;
+        } else {
+          acc.push({
+            workCount: schedule.workCount,
+            id: schedule.id,
+            day: schedule.day,
+            month: schedule.month,
+            year: schedule.year,
+            lessonsCount: schedule.lessonsCount,
+            lessonsPrice: schedule.lessonsPrice,
+            workPrice: schedule.workPrice,
+            date,
+          });
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      },
+      []
+    );
 
     // Сортировка по дате
-    result.sort((a, b) => {
-      return a.date.getTime() - b.date.getTime();
-    });
+    result.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    // console.log(result);
-
-    // Отправка данных через сокеты
-    socket.emit("getMonth", result);
+    res.status(200).json(result);
   } catch (error) {
-    console.log("ERROR");
-    return socket.emit("getMonth", { error: error.message });
+    res.status(500).json({ error: error.message });
   }
-};
+});
 
-export const getByGroupId = async (data, socket) => {
+// Контроллер для получения расписания по ID группы
+api.post("/getByGroupScheduleId", async (req: Request, res: Response) => {
   try {
-    const token = data?.token;
-
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    const userId = token_?.userId;
+    const { token, groupId } = req.body;
+    const tokenData = await db.token.findFirst({ where: { token } });
+    const userId = tokenData?.userId;
 
     if (!userId) {
-      return socket.emit("calendar", { message: "Invalid token" });
+      return res.status(401).json({ message: "Invalid token" });
     }
-
-    let { groupId } = data;
-    console.log(data, "groupIdgroupIdgroupIdgroupId");
 
     const studentSchedules = await db.studentSchedule.findMany({
       where: {
@@ -121,99 +106,85 @@ export const getByGroupId = async (data, socket) => {
     });
 
     const studentScheduleJSON = JSON.parse(JSON.stringify(studentSchedules));
-    studentScheduleJSON.map((schedule) => {
+    studentScheduleJSON.forEach((schedule: any) => {
       schedule.date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
         parseInt(schedule.day)
       );
     });
-    studentScheduleJSON.sort((a, b) => {
-      return a.date.getTime() - b.date.getTime();
-    });
-    console.log(studentScheduleJSON, "studentScheduleJSON");
+    studentScheduleJSON.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    socket.emit("getByGroupId", studentScheduleJSON);
+    res.status(200).json(studentScheduleJSON);
   } catch (error) {
-    console.log("ERROR");
-    return socket.emit("getByGroupId", { error: error.message });
+    res.status(500).json({ error: error.message });
   }
-};
+});
 
-export const getByClientScheduleId = async (data, socket) => {
+// Контроллер для получения расписания по ID клиента
+api.post("/getByClientScheduleId", async (req: Request, res: Response) => {
   try {
-    const token = data?.token;
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-    const userId = token_?.userId;
+    const { token, clientId } = req.body;
+    const tokenData = await db.token.findFirst({ where: { token } });
+    const userId = tokenData?.userId;
+
     if (!userId) {
-      return socket.emit("calendar", { message: "Invalid token" });
+      return res.status(401).json({ message: "Invalid token" });
     }
 
-    let { clientId } = data;
-    console.log(data, "DATATATATAT");
     const clientSchedules = await db.studentSchedule.findMany({
       where: {
         userId,
         clientId,
       },
     });
+
     const clientScheduleJSON = JSON.parse(JSON.stringify(clientSchedules));
-    clientScheduleJSON.map((schedule) => {
+    clientScheduleJSON.forEach((schedule: any) => {
       schedule.date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
         parseInt(schedule.day)
       );
     });
-    clientScheduleJSON.sort((a, b) => {
-      return a.date.getTime() - b.date.getTime();
-    });
-    console.log(clientScheduleJSON, "clientScheduleJSON");
-    socket.emit("getByClientScheduleId", clientScheduleJSON);
-  } catch (error) {
-    console.log("ERROR");
-    return socket.emit("getByClientScheduleId", { error: error.message });
-  }
-};
+    clientScheduleJSON.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-export const getByGroupScheduleId = async (data, socket) => {
+    res.status(200).json(clientScheduleJSON);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Контроллер для получения расписания по ID группы
+api.post("/getByGroupScheduleId", async (req: Request, res: Response) => {
   try {
-    const token = data?.token;
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-    const userId = token_?.userId;
+    const { token, groupId } = req.body;
+    const tokenData = await db.token.findFirst({ where: { token } });
+    const userId = tokenData?.userId;
+
     if (!userId) {
-      return socket.emit("calendar", { message: "Invalid token" });
+      return res.status(401).json({ message: "Invalid token" });
     }
-    let { groupId } = data;
+
     const groupSchedules = await db.studentSchedule.findMany({
       where: {
         userId,
         groupId,
       },
     });
+
     const groupScheduleJSON = JSON.parse(JSON.stringify(groupSchedules));
-    groupScheduleJSON.map((schedule) => {
+    groupScheduleJSON.forEach((schedule: any) => {
       schedule.date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
         parseInt(schedule.day)
       );
     });
-    groupScheduleJSON.sort((a, b) => {
-      return a.date.getTime() - b.date.getTime();
-    });
-    console.log(groupScheduleJSON, "groupScheduleJSON");
-    socket.emit("getByGroupScheduleId", groupScheduleJSON);
+    groupScheduleJSON.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    res.status(200).json(groupScheduleJSON);
   } catch (error) {
-    console.log("ERROR");
-    return socket.emit("getByGroupScheduleId", { error: error.message });
+    res.status(500).json({ error: error.message });
   }
-};
+});

@@ -1,6 +1,7 @@
 import db from "./db";
 import express from "express";
 import { join } from "path";
+import cors from "cors";
 
 const api = express();
 
@@ -28,6 +29,22 @@ api.get("/files/:id", async (req, res) => {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
   }
+});
+
+// Настройка CORS для Express
+api.use(
+  cors({
+    origin: "*", // Настройте по необходимости
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
+  })
+);
+
+api.use(express.static(__dirname + "/public"));
+
+const server = api.listen(3000, () => {
+  console.log("Application started on port 3000!");
 });
 
 export default api;

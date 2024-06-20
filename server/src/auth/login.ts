@@ -1,44 +1,52 @@
-import io from "../socket";
 import db from "../db";
+import api from "../api";
 import bcrypt from "bcrypt";
 
-export const login = async (data, socket) => {
-  const user = await db.user.findUnique({
-    where: {
-      name: data.login,
-    },
-  });
+import { Request, Response } from "express";
 
-  if (!user) {
-    return socket.emit("login", {
-      error: "Пользователь не найден",
+api.post("/login", async (req: Request, res: Response) => {
+  try {
+    const { login, password } = req.body;
+
+    const user = await db.user.findUnique({
+      where: {
+        name: login,
+      },
     });
-  }
 
-  const hash = bcrypt.hashSync(user.password, 3);
+    if (!user) {
+      return res.status(404).json({
+        error: "Пользователь не найден",
+      });
+    }
 
-  if (await bcrypt.compare(data.password, hash)) {
-    return socket.emit("login", {
-      error: "Неверное имя пользователя или пароль",
+    const hash = bcrypt.hashSync(user.password, 3);
+
+    if (await bcrypt.compare(password, hash)) {
+      return res.status(401).json({
+        error: "Неверное имя пользователя или пароль",
+      });
+    }
+
+    await db.token.deleteMany({
+      where: {
+        userId: user.id,
+      },
     });
+
+    const token = await db.token.create({
+      data: {
+        userId: user.id,
+        token:
+          Math.random().toString(36).substring(2) +
+          Math.random().toString(36).substring(2),
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ token: token.token, message: "Вход выполнен" });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
   }
-
-  //delete all user's tokens
-  await db.token.deleteMany({
-    where: {
-      userId: user.id,
-    },
-  });
-
-  //create new token
-  const token = await db.token.create({
-    data: {
-      userId: user.id,
-      token:
-        Math.random().toString(36).substring(2) +
-        Math.random().toString(36).substring(2),
-    },
-  });
-
-  return socket.emit("login", { token: token.token, message: "Вход выполнен" });
-};
+});
