@@ -21,6 +21,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import {
 	ELeftMenuPage,
 	EPagePopUpExit,
+	IGroupHistoryLessons,
 	IItemCard,
 	IStudent,
 	ITimeLine,
@@ -59,6 +60,10 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
 	const editedCards = useSelector((state: any) => state.editedCards)
+	const currentOpenedGroup = useSelector(
+		(state: any) => state.currentOpenedGroup,
+	)
+
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
 	const [allPriceGroup, setAllPriceGroup] = useState<number>(0)
 	const [files, setFiles] = useState<{}[]>([])
@@ -68,35 +73,17 @@ const AddGroup = ({className}: IAddGroup) => {
 	const [audioItems, setAudioItems] = useState<{}[]>([])
 	const [audioStudents, setAudioStudents] = useState<{}[]>([])
 
+	const [errorList, setErrorList] = useState<string[]>([])
+
 	const [loading, setLoading] = useState<boolean>(false)
 
-	const handleAddAudioItems = (file, name, type, size) => {
-		setAudioItems([
-			...audioItems,
-			{name: name, type: type, file: file, size: size},
-		])
-	}
+	const [links, setLinks] = useState<string[]>([])
+	const [linksItems, setLinksItems] = useState<string[]>([])
 
-	const handleAddAudioStudents = (file, name, type, size) => {
-		setAudioStudents([
-			...audioStudents,
-			{name: name, type: type, file: file, size: size},
-		])
-	}
+	const [groupsIndexes, setGroupsIndexes] = useState<number[]>([])
+	const [currentGroupIndex, setCurrentGroupIndex] = useState<number>(0)
 
-	const getVoidWeek = (): ITimeLine[] => {
-		const week = daysOfWeek.map((day, index) => ({
-			id: (index + 1) * (currentItemIndex > 0 ? currentItemIndex : 1),
-			day,
-			active: false,
-			startTime: {hour: 0, minute: 0},
-			endTime: {hour: 0, minute: 0},
-			editingStart: false,
-			editingEnd: false,
-		}))
-
-		return week
-	}
+	const [data, setData] = useState()
 
 	// Block item
 	const [items, setItems] = useState<IItemCard[]>([
@@ -120,7 +107,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			nowLevel: 0,
 			valueMuiSelectArchive: 1,
 			timeLinesArray: getVoidWeek() as ITimeLine[],
-			costOneLesson: '',
 		},
 	])
 
@@ -146,6 +132,59 @@ const AddGroup = ({className}: IAddGroup) => {
 			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 		},
 	])
+
+	const [studentsHistoryLessons, setStudentsHistoryLessons] = useState<
+		IGroupHistoryLessons[][]
+	>([])
+
+	const [isEditMode, setIsEditMode] = useState(
+		currentOpenedGroup ? true : false,
+	)
+
+	const [openHistory, setOpenHistory] = useState(false)
+
+	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
+
+	let allDuty = 0
+	const [DutyStudents, setDutyStudents] = useState<any>([])
+
+	const handleAddAudioItems = (
+		file: Blob,
+		name: string,
+		type: string,
+		size: string,
+	) => {
+		setAudioItems([
+			...audioItems,
+			{name: name, type: type, file: file, size: size},
+		])
+	}
+
+	const handleAddAudioStudents = (
+		file: Blob,
+		name: string,
+		type: string,
+		size: string,
+	) => {
+		setAudioStudents([
+			...audioStudents,
+			{name: name, type: type, file: file, size: size},
+		])
+	}
+
+	function getVoidWeek(): ITimeLine[] {
+		const week = daysOfWeek.map((day, index) => ({
+			id: (index + 1) * (currentItemIndex > 0 ? currentItemIndex : 1),
+			day,
+			active: false,
+			startTime: {hour: 0, minute: 0},
+			endTime: {hour: 0, minute: 0},
+			editingStart: false,
+			editingEnd: false,
+		}))
+
+		return week
+	}
 
 	const sendInfo = () => {
 		setLoading(true)
@@ -216,81 +255,10 @@ const AddGroup = ({className}: IAddGroup) => {
 		// window.location.reload()
 	}
 
-	const [errorList, setErrorList] = useState<string[]>([])
-
-	socket.once('addGroup', (data) => {
-		console.log('\n---------ADD DATA---------\n', data)
-
-		const ok: boolean = data.ok
-
-		if (ok === true) {
-			window.location.reload()
-			// setLoading(false)
-		} else {
-			const meesage = data.error
-			if (errorList.indexOf(meesage) === -1) {
-				setErrorList([...errorList, meesage])
-			}
-			setLoading(false)
-		}
-	})
-
-	const [historyLesson, setHistoryLesson] = useState<any>([])
-
 	function getDay(date: any) {
 		const dayIndex = date.getDay() - 1
 		return dayIndex === -1 ? 6 : dayIndex
 	}
-
-	const [data, setData] = useState()
-	const currentOpenedGroup = useSelector(
-		(state: any) => state.currentOpenedGroup,
-	)
-	const [isEditMode, setIsEditMode] = useState(
-		currentOpenedGroup ? true : false,
-	)
-
-	const [groupsIndexes, setGroupsIndexes] = useState<number[]>([])
-	const [currentGroupIndex, setCurrentGroupIndex] = useState<number>(0)
-
-	useEffect(() => {
-		socket.emit('getGroupById', {
-			token: token,
-			groupId: currentOpenedGroup,
-		})
-		socket.emit('getGroupList', token)
-		socket.once('getGroupList', (data) => {
-			const arr = Object.values(data).map((item: any) => item.id)
-			const cgp = arr.indexOf(currentOpenedGroup)
-			setGroupsIndexes(arr)
-			setCurrentGroupIndex(cgp)
-		})
-
-		socket.once('getGroupById', (data) => {
-			setData(data)
-			setGroupName(data.groupName)
-			setItems(data.items)
-			setStudents(data.students)
-			setFiles(data.files)
-			setFilesItems(data.filesItems)
-			setAudioItems(data.audioItems)
-			setAudioStudents(data.audioStudents)
-		})
-	}, [])
-
-	useEffect(() => {
-		if (data) {
-			console.log(data, 'getGroupById DATA')
-
-			setGroupName(data.groupName)
-			setItems(data.items)
-			setStudents(data.students)
-			setFiles(data.files)
-			setFilesItems(data.filesItems)
-			setAudioItems(data.audioItems)
-			setAudioStudents(data.audioStudents)
-		}
-	}, [data])
 
 	const nextGroup = () => {
 		if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
@@ -336,275 +304,12 @@ const AddGroup = ({className}: IAddGroup) => {
 		}
 	}
 
-	const [studentsHistoryLessons, setStudentsHistoryLessons] = useState(
-		students.map(() => []),
-	)
-
-	const handlePrePay = () => {
-		const prePayDateStudent = students.find(
-			(item) => item.prePayDate,
-		)?.prePayDate
-		const prePayCostStudent = students.find(
-			(item) => item.prePayCost,
-		)?.prePayCost
-		const constOneLessonStudent = students.find(
-			(item) => item.costOneLesson,
-		)?.costOneLesson
-		if (prePayDateStudent && prePayCostStudent) {
-			const prePaymentDate = new Date(prePayDateStudent)
-			let remainingPrePayment = Number(prePayCostStudent)
-			const lessonCount = studentsHistoryLessons[currentStudentIndex].filter(
-				(i) => i.isPaid,
-			).length
-
-			if (
-				Math.floor(Number(prePayCost) / Number(constOneLessonStudent)) >
-				lessonCount
-			) {
-				const updatedHistoryLesson = studentsHistoryLessons[
-					currentStudentIndex
-				].map((lesson) => {
-					console.log(lesson)
-					const lessonDate = new Date(lesson.date)
-					if (
-						lessonDate >= prePaymentDate &&
-						remainingPrePayment >= Number(lesson.price)
-					) {
-						remainingPrePayment -= Number(lesson.price)
-						return {...lesson, isPaid: true}
-					} else {
-						return {...lesson}
-					}
-				})
-				setHistoryLesson(updatedHistoryLesson)
-			}
-		}
-	}
-
-	const [allLessons, setAllLessons] = useState<number>(0)
-	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
-
-	const handlePrePayPayment = (newHistory: any) => {
-		if (newHistory[currentStudentIndex] !== undefined) {
-			console.log('Вошёл')
-			// const newHistoryLesson = students.map((student, studentIndex) => {
-			console.log('Вошёл 2')
-			console.log(
-				students[currentStudentIndex].prePayDate,
-				students[currentStudentIndex].prePayCost,
-				'----- cost',
-			)
-			console.log(students, currentStudentIndex, 'STUDENTS')
-			const costLesson = Number(students[currentStudentIndex].costOneLesson)
-			const prePayment = Number(students[currentStudentIndex].prePayCost)
-			const lessonCount = newHistory[currentStudentIndex].filter(
-				(i) => i.isPaid,
-			).length
-			let remainingPrePayment = Number(students[currentStudentIndex].prePayCost)
-			if (
-				students[currentStudentIndex].prePayDate &&
-				students[currentStudentIndex].prePayCost
-			) {
-				const prePaymentDate = new Date(
-					students[currentStudentIndex].prePayDate,
-				)
-				if (Math.floor(prePayment / costLesson) > lessonCount) {
-					console.log('Вошёл 3')
-					const updatedHistoryLesson = newHistory[currentStudentIndex].map(
-						(lesson) => {
-							const lessonDate = new Date(lesson.date)
-							console.log(
-								lesson,
-								lessonDate,
-								'lessonDate',
-								prePaymentDate,
-								'prePaymentDate',
-								lessonDate >= prePaymentDate,
-							)
-							if (
-								lessonDate >= prePaymentDate &&
-								remainingPrePayment >= costLesson
-							) {
-								remainingPrePayment -= costLesson
-								console.log('Вошёл 4')
-								// history_.push({...lesson, isPaid: true})
-								return {...lesson, isPaid: true}
-							} else {
-								// history_.push({...lesson})
-								return {...lesson}
-							}
-						},
-					)
-					// console.log(history_, 'history_')
-					setHistoryLesson(updatedHistoryLesson)
-					setStudentsHistoryLessons((prev) => {
-						const prevHistory = [...prev]
-						prevHistory[currentStudentIndex] = updatedHistoryLesson
-						return prevHistory
-					})
-
-					console.log(
-						historyLesson,
-						'historyLesson HandlePrePayPayment',
-						currentStudentIndex,
-					)
-					console.log(
-						studentsHistoryLessons,
-						'studentsHistoryLessons HandlePrePayPayment',
-					)
-					console.log('Вышел ')
-				}
-			}
-		}
-		// })
-	}
-	useEffect(() => {
-		const newStudentsHistoryLessons = students.map((student, studentIndex) => {
-			const historyLessons_ = []
-			for (let i = 0; i < items.length; i++) {
-				const differenceDays = differenceInDays(
-					items[i].endLesson,
-					items[i].startLesson,
-				)
-				console.log(differenceDays, 'differenceDays')
-				const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
-					addDays(items[i].startLesson, j),
-				)
-
-				for (const date of dateRange) {
-					const dayOfWeek = getDay(date)
-					const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
-
-					const cond =
-						scheduleForDay.startTime.hour === 0 &&
-						scheduleForDay.startTime.minute === 0 &&
-						scheduleForDay.endTime.hour === 0 &&
-						scheduleForDay.endTime.minute === 0
-
-					if (!cond) {
-						const hl = {
-							date: date,
-							itemName: items[i].itemName,
-							isDone: date <= new Date(Date.now()) ? true : false,
-							price: students[studentIndex].costOneLesson,
-							isPaid: false,
-						}
-
-						historyLessons_.push(hl)
-					}
-				}
-			}
-			console.log(historyLessons_, 'historyLessons_')
-			return historyLessons_
-		})
-		console.log(studentsHistoryLessons, 'studentsHistoryLessons UseEffect')
-		console.log(
-			newStudentsHistoryLessons,
-			'newStudentsHistoryLessons UseEffect',
-		)
-		setStudentsHistoryLessons(newStudentsHistoryLessons)
-		console.log(
-			studentsHistoryLessons[currentStudentIndex],
-			'studentsHistoryLessons[currentStudentIndex]',
-		)
-		handleHistoryLessonsDate()
-		console.log(studentsHistoryLessons, 'studentsHistoryLessons After Func')
-		handlePrePayPayment(studentsHistoryLessons)
-		setHistoryLesson(studentsHistoryLessons[currentStudentIndex])
-		console.log(historyLesson, 'historyLesson UseEffect')
-	}, [items, students])
-
-	const handleHistoryLessonsDate = () => {
-		if (studentsHistoryLessons[currentStudentIndex] !== undefined) {
-			let filteredLessons = studentsHistoryLessons[currentStudentIndex]
-				.sort(compareDates)
-				.filter((lesson) => {
-					const lessonDate = new Date(lesson.date)
-					const startLesson = new Date(
-						students[currentStudentIndex].startLesson,
-					)
-					const endLesson = new Date(students[currentStudentIndex].endLesson)
-					console.log(
-						lessonDate,
-						'lessonDate',
-						startLesson,
-						'startLesson',
-						endLesson,
-						'endLesson',
-					)
-					return lessonDate >= startLesson && lessonDate <= endLesson
-				})
-			console.log(filteredLessons, 'filteredLessons')
-			if (filteredLessons.length > 0) {
-				setStudentsHistoryLessons((prev) => {
-					const prevHis = [...prev]
-					console.log(prevHis, 'PrevHis')
-					prevHis[currentStudentIndex] = filteredLessons
-
-					console.log(prevHis, 'PrevHis aFter')
-					return prevHis
-				})
-			}
-		}
-	}
-
-	const setHistoryLessonIsDone = (studentIndex, lessonIndex, value) => {
-		setStudentsHistoryLessons((prevHistoryLessons) => {
-			const updatedHistoryLessons = [...prevHistoryLessons]
-			updatedHistoryLessons[studentIndex] = updatedHistoryLessons[
-				studentIndex
-			].map((lesson, index) =>
-				index === lessonIndex ? {...lesson, isDone: value} : lesson,
-			)
-			return updatedHistoryLessons
-		})
-	}
-	const setHistoryLessonIsPaid = (studentIndex, lessonIndex, value) => {
-		setStudentsHistoryLessons((prevHistoryLessons) => {
-			const updatedHistoryLessons = [...prevHistoryLessons]
-			updatedHistoryLessons[studentIndex] = updatedHistoryLessons[
-				studentIndex
-			].map((lesson, index) =>
-				index === lessonIndex ? {...lesson, isPaid: value} : lesson,
-			)
-			return updatedHistoryLessons
-		})
-	}
-
-	//add item function
-	const addItem = () => {
-		setItems([
-			...items,
-			{
-				itemName: '',
-				tryLessonCheck: false,
-				tryLessonCost: '',
-				todayProgramStudent: '',
-				targetLesson: '',
-				programLesson: '',
-				typeLesson: '1',
-				placeLesson: '',
-				costOneLesson: '',
-				files: [],
-				timeLesson: '',
-				valueMuiSelectArchive: 1,
-				startLesson: new Date(Date.now()),
-				endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
-				nowLevel: undefined,
-				lessonDuration: null,
-				timeLinesArray: getVoidWeek() as ITimeLine[],
-				costOneLesson: '',
-			},
-		])
-	}
-
 	//change item function by name of value
 	const changeItemValue = (
 		itemIndex: number,
 		name: string,
 		value: string | boolean | number | Date | null,
 	) => {
-		console.log('Changed: ', itemIndex, name, value)
 		setItems(
 			items.map((item, index) =>
 				index === itemIndex ? {...item, [name]: value} : item,
@@ -624,8 +329,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			),
 		)
 	}
-
-	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
 
 	const handleClick_delete = (itemIndex: number, id: number) => {
 		setItems((prevItems) =>
@@ -649,7 +352,6 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const handleClick_dp = (itemIndex: number, id: number) => {
-		console.log(itemIndex, id, items)
 		setItems((prevItems) =>
 			prevItems.map((item, index) =>
 				index === itemIndex
@@ -769,11 +471,6 @@ const AddGroup = ({className}: IAddGroup) => {
 		}
 	}
 
-	const handleLessonDurationChange = (e: any) => {
-		const value = parseInt(e.target.value, 10)
-		changeItemValue(currentItemIndex, 'lessonDuration', value)
-	}
-
 	const handleNextItem = () => {
 		if (currentItemIndex < items.length - 1) {
 			setCurrentItemIndex(currentItemIndex + 1)
@@ -786,8 +483,9 @@ const AddGroup = ({className}: IAddGroup) => {
 		}
 	}
 
-	const compareDates = (a, b) => {
-		return a.date - b.date
+	// ! TODO
+	const compareDates = (a: IGroupHistoryLessons, b: IGroupHistoryLessons) => {
+		return new Date(a.date).getTime() - new Date(b.date).getTime()
 	}
 
 	// Function to hash a string using a custom hash function
@@ -876,7 +574,6 @@ const AddGroup = ({className}: IAddGroup) => {
 					valueMuiSelectArchive: 1,
 					lessonDuration: null,
 					timeLinesArray: getVoidWeek() as ITimeLine[],
-					costOneLesson: '',
 				},
 			])
 			setCurrentItemIndex(currentItemIndex + 1)
@@ -894,7 +591,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			...prevData,
 			{name: name, type: type, size: size, file: file},
 		])
-		console.log('\n-------files---------\n', files)
 	}
 
 	const handleAddFileItems = (
@@ -911,12 +607,9 @@ const AddGroup = ({className}: IAddGroup) => {
 		console.log(filesItems)
 	}
 
-	// Audio
-	const [links, setLinks] = useState<string[]>([])
-	const [linksItems, setLinksItems] = useState<string[]>([])
+	// ! CHECK THIS
 	const handleLinksSubmit = (linksCallback: string[]) => {
 		setLinks(linksCallback)
-		console.log(links, linksItems, 'LINKS')
 	}
 
 	const deleteLink = (link: string, index: number) => {
@@ -928,17 +621,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			setLinks(links.filter((item) => item !== link))
 		})
 	}
-
-	useEffect(() => {
-		socket.emit('getLinksByLinkedId', {
-			linkedId: currentOpenedGroup,
-			token: token,
-		})
-		socket.emit('getLinksByLinkedId', {
-			linkedId: `${currentOpenedGroup}_items`,
-			token: token,
-		})
-	}, [])
 
 	// Items Audio
 	const handleLinksSubmitItems = (linksCallback: string[]) => {
@@ -955,15 +637,6 @@ const AddGroup = ({className}: IAddGroup) => {
 		})
 	}
 
-	socket.once('getLinksByLinkedId', (data: any) => {
-		if (data.tag === 'addGroup') {
-			setLinks(data.links)
-			console.log(data, 'ADDGROUP')
-		} else if (data.tag === 'addGroupItems') {
-			setLinksItems(data.links)
-			console.log(data, 'ADDGROUPITEMS')
-		}
-	})
 	const closeTimePicker = (index: number, id: number) => {
 		//get timeline
 		const timelineToUpdate = items[index].timeLinesArray.find(
@@ -1056,91 +729,9 @@ const AddGroup = ({className}: IAddGroup) => {
 		}
 	}
 
-	const StyledPickersLayout = styled('span')({
-		'.MuiDateCalendar-root': {
-			color: '#25991c',
-			borderRadius: 2,
-			borderWidth: 1,
-			borderColor: '#25991c',
-			border: '1px solid',
-			// backgroundColor: '#bbdefb',
-		},
-		'.MuiPickersDay-today': {
-			border: '1px solid #25991c ',
-		},
-		'.Mui-selected': {
-			color: '#fff',
-			backgroundColor: '#25991c !important',
-		},
-		'.Mui-selected:focus': {
-			color: '#fff',
-			backgroundColor: '#25991c',
-		},
-		'.MuiButtonBase-root:focus': {
-			color: '#fff',
-			backgroundColor: '#25991c',
-		},
-		'.MuiPickersYear-yearButton .Mui-selected:focus': {
-			color: '#fff',
-			backgroundColor: '#25991c',
-		},
-	})
-	const [open, setOpen] = useState(true)
-	const [openHistory, setOpenHistory] = useState(false)
-
-	//calulations
-	//Всего занятий - начало + окончание + расписание в предмете
-	const getTotalLessons = (
-		startDate: Date,
-		endDate: Date,
-		timeLinesArray: ITimeLine[],
-	) => {
-		let totalLessons = 0
-		let start = startDate
-		while (start.getTime() < endDate.getTime()) {
-			totalLessons += timeLinesArray.filter((timeLine) => {
-				return timeLine.startTime.hour !== 0 && timeLine.startTime.minute !== 0
-			}).length
-			start = new Date(start.getTime() + 60 * 60 * 1000)
-		}
-		console.log(totalLessons, 'totalLessons')
-		return totalLessons
-	}
-
-	//Сумма - Всего занятия * Общая стоимость 1-го занятия
-	const totalCostForGroup = (totalLessons: number, costPerLesson: number) => {
-		return totalLessons * costPerLesson
-	}
-
-	//Прошло - от календаря, то есть нынешняя дата и начало занятия
-	const passedLessons = (
-		historyLessons: {
-			isDone: boolean
-			isPaid: boolean
-		}[],
-	) => {
-		let passed = 0
-		historyLessons.forEach((historyLesson) => {
-			if (historyLesson.isDone) passed++
-		})
-		return passed
-	}
-
-	//Оплачено - Прошло * Общая стоимость занятия
-	const paidLessons = (
-		historyLessons: {
-			isDone: boolean
-			isPaid: boolean
-		}[],
-	) => {
-		let paid = 0
-		historyLessons.forEach((historyLesson) => {
-			if (historyLesson.isPaid) paid++
-		})
-		return paid
-	}
-
+	// ? CHECK THIS
 	const NotPayedStudent = (index: number) => {
+		if (studentsHistoryLessons[index] === undefined) return '0'
 		const Payed =
 			studentsHistoryLessons[index].filter((i) => i.isDone).length -
 			studentsHistoryLessons[index].filter((i) => i.isPaid).length
@@ -1148,27 +739,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			return Payed
 		} else return '0'
 	}
-
-	let allDuty = 0
-	const [DutyStudents, setDutyStudents] = useState<any>([])
-	useEffect(() => {
-		//sum all costStudent and write to allCost
-		let sumCost = 0
-		let totalCostGroup = 0
-		students.forEach((student) => {
-			sumCost += Number(student.costStudent)
-			totalCostGroup += Number(student.costOneLesson) || 0
-
-			// studentsHistoryLessons[index] &&
-			// 	(studentsHistoryLessons[index].filter((i) => i.isDone).length -
-			// 		studentsHistoryLessons[index].filter((i) => i.isPaid).length) *
-			// 		student.costOneLesson
-		})
-		console.log(students, 'students')
-
-		setAllCostForGroup(sumCost)
-		setAllPriceGroup(totalCostGroup)
-	}, [students, historyLesson, studentsHistoryLessons])
 
 	const handleDutyStudent = (student: any, index: number) => {
 		const duty =
@@ -1198,82 +768,163 @@ const AddGroup = ({className}: IAddGroup) => {
 		})
 		window.location.reload()
 	}
+	// const handleStudentsHistoryLessons = (index: number) => {
+	// 	let filteredLessons = studentsHistoryLessons[currentStudentIndex].map(
+	// 		(lesson: IGroupHistoryLessons, lessonIndex: number) => (
+	// 			<div className={s.ListObject} key={lessonIndex}>
+	// 				<p
+	// 					style={{
+	// 						fontWeight: '500',
+	// 						fontSize: '14px',
+	// 						marginRight: '5px',
+	// 						display: 'flex',
+	// 						flexDirection: 'row',
+	// 						alignItems: 'center',
+	// 					}}>
+	// 					<div
+	// 						style={{
+	// 							backgroundColor: hashToColor(hashString(lesson.itemName)),
+	// 							width: '10px',
+	// 							height: '35px',
+	// 							borderTopLeftRadius: '8px',
+	// 							borderBottomLeftRadius: '8px',
+	// 							marginRight: '5px',
+	// 						}}></div>
+	// 					{formatDate(lesson.date)}
+	// 				</p>
+	// 				<p
+	// 					style={{
+	// 						fontWeight: '300',
+	// 						fontSize: '14px',
+	// 						width: '95px',
+	// 						minWidth: '95px',
+	// 						maxWidth: '95px',
+	// 						whiteSpace: 'nowrap',
+	// 						overflow: 'hidden',
+	// 						textOverflow: 'ellipsis',
+	// 					}}>
+	// 					{lesson.itemName}
+	// 				</p>
+	// 				<CheckBox
+	// 					checked={lesson.isDone}
+	// 					size="16px"
+	// 					onChange={() =>
+	// 						setHistoryLessonIsDone(index, lessonIndex, !lesson.isDone)
+	// 					}
+	// 				/>
+	// 				<p
+	// 					style={{
+	// 						width: '100px',
+	// 						textAlign: 'end',
+	// 						fontSize: '14px',
+	// 						textOverflow: 'ellipsis',
+	// 						overflow: 'hidden',
+	// 					}}>
+	// 					{lesson.price || 0}₽
+	// 				</p>
+	// 				<CheckBox
+	// 					checked={lesson.isPaid}
+	// 					size="16px"
+	// 					onChange={() =>
+	// 						setHistoryLessonIsPaid(index, lessonIndex, !lesson.isPaid)
+	// 					}
+	// 				/>
+	// 				<button className={s.ButtonEdit}>
+	// 					<CreateIcon style={{width: '18px', height: '18px'}} />
+	// 				</button>
+	// 			</div>
+	// 		),
+	// 	)
+	// 	return filteredLessons
+	// }
 
-	const handleStudentsHistoryLessons = (student: IStudent, index: number) => {
-		console.log(
-			studentsHistoryLessons[currentStudentIndex],
-			compareDates,
-			'FАА',
-		)
+	const [filteredLessonsHistory, setFilteredLessonsHistory] = useState<
+		JSX.Element[]
+	>([])
 
-		let filteredLessons = studentsHistoryLessons[currentStudentIndex].map(
-			(lesson, lessonIndex) => (
-				<div className={s.ListObject} key={lessonIndex}>
-					<p
-						style={{
-							fontWeight: '500',
-							fontSize: '14px',
-							marginRight: '5px',
-							display: 'flex',
-							flexDirection: 'row',
-							alignItems: 'center',
-						}}>
-						<div
-							style={{
-								backgroundColor: hashToColor(hashString(lesson.itemName)),
-								width: '10px',
-								height: '35px',
-								borderTopLeftRadius: '8px',
-								borderBottomLeftRadius: '8px',
-								marginRight: '5px',
-							}}></div>
-						{formatDate(lesson.date)}
-					</p>
-					<p
-						style={{
-							fontWeight: '300',
-							fontSize: '14px',
-							width: '95px',
-							minWidth: '95px',
-							maxWidth: '95px',
-							whiteSpace: 'nowrap',
-							overflow: 'hidden',
-							textOverflow: 'ellipsis',
-						}}>
-						{lesson.itemName}
-					</p>
-					<CheckBox
-						checked={lesson.isDone}
-						size="16px"
-						onChange={() =>
-							setHistoryLessonIsDone(index, lessonIndex, !lesson.isDone)
-						}
-					/>
-					<p
-						style={{
-							width: '100px',
-							textAlign: 'end',
-							fontSize: '14px',
-							textOverflow: 'ellipsis',
-							overflow: 'hidden',
-						}}>
-						{lesson.price || 0}₽
-					</p>
-					<CheckBox
-						checked={lesson.isPaid}
-						size="16px"
-						onChange={() =>
-							setHistoryLessonIsPaid(index, lessonIndex, !lesson.isPaid)
-						}
-					/>
-					<button className={s.ButtonEdit}>
-						<CreateIcon style={{width: '18px', height: '18px'}} />
-					</button>
-				</div>
-			),
-		)
-		return filteredLessons
-	}
+	useEffect(() => {
+		const updateFilteredLessons = () => {
+			if (studentsHistoryLessons[currentStudentIndex]) {
+				const lessons = studentsHistoryLessons[currentStudentIndex].map(
+					(lesson: IGroupHistoryLessons, lessonIndex: number) => (
+						<div className={s.ListObject} key={lessonIndex}>
+							<p
+								style={{
+									fontWeight: '500',
+									fontSize: '14px',
+									marginRight: '5px',
+									display: 'flex',
+									flexDirection: 'row',
+									alignItems: 'center',
+								}}>
+								<div
+									style={{
+										backgroundColor: hashToColor(hashString(lesson.itemName)),
+										width: '10px',
+										height: '35px',
+										borderTopLeftRadius: '8px',
+										borderBottomLeftRadius: '8px',
+										marginRight: '5px',
+									}}></div>
+								{formatDate(lesson.date)}
+							</p>
+							<p
+								style={{
+									fontWeight: '300',
+									fontSize: '14px',
+									width: '95px',
+									minWidth: '95px',
+									maxWidth: '95px',
+									whiteSpace: 'nowrap',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+								}}>
+								{lesson.itemName}
+							</p>
+							<CheckBox
+								checked={lesson.isDone}
+								size="16px"
+								onChange={() =>
+									setHistoryLessonIsDone(
+										currentStudentIndex,
+										lessonIndex,
+										!lesson.isDone,
+									)
+								}
+							/>
+							<p
+								style={{
+									width: '100px',
+									textAlign: 'end',
+									fontSize: '14px',
+									textOverflow: 'ellipsis',
+									overflow: 'hidden',
+								}}>
+								{lesson.price || 0}₽
+							</p>
+							<CheckBox
+								checked={lesson.isPaid}
+								size="16px"
+								onChange={() =>
+									setHistoryLessonIsPaid(
+										currentStudentIndex,
+										lessonIndex,
+										!lesson.isPaid,
+									)
+								}
+							/>
+							<button className={s.ButtonEdit}>
+								<CreateIcon style={{width: '18px', height: '18px'}} />
+							</button>
+						</div>
+					),
+				)
+				setFilteredLessonsHistory(lessons)
+			}
+		}
+
+		updateFilteredLessons()
+	}, [studentsHistoryLessons, currentStudentIndex])
 
 	const handleDuty = (student: any, index: number) => {
 		const duty =
@@ -1291,18 +942,230 @@ const AddGroup = ({className}: IAddGroup) => {
 		return duty
 	}
 
-	useEffect(() => {
-		studentsHistoryLessons[currentStudentIndex] &&
-			students.map((student: IStudent) => {
-				handleStudentsHistoryLessons(student)
-			})
+	socket.once('addGroup', (data) => {
+		const ok: boolean = data.ok
 
-		console.log(
-			currentStudentIndex,
-			students[currentStudentIndex],
-			'students[currentStudentIndex]',
-		)
-	}, [students, students[currentStudentIndex], currentStudentIndex])
+		if (ok === true) {
+			window.location.reload()
+			// setLoading(false)
+		} else {
+			const meesage = data.error
+			if (errorList.indexOf(meesage) === -1) {
+				setErrorList([...errorList, meesage])
+			}
+			setLoading(false)
+		}
+	})
+
+	socket.once('getLinksByLinkedId', (data: any) => {
+		if (data.tag === 'addGroup') {
+			setLinks(data.links)
+			console.log(data, 'ADDGROUP')
+		} else if (data.tag === 'addGroupItems') {
+			setLinksItems(data.links)
+			console.log(data, 'ADDGROUPITEMS')
+		}
+	})
+
+	useEffect(() => {
+		socket.emit('getGroupById', {
+			token: token,
+			groupId: currentOpenedGroup,
+		})
+		socket.emit('getGroupList', token)
+		socket.once('getGroupList', (data) => {
+			const arr = Object.values(data).map((item: any) => item.id)
+			const cgp = arr.indexOf(currentOpenedGroup)
+			setGroupsIndexes(arr)
+			setCurrentGroupIndex(cgp)
+		})
+
+		socket.once('getGroupById', (data) => {
+			setData(data)
+			setGroupName(data.groupName)
+			setItems(data.items)
+			setStudents(data.students)
+			setFiles(data.files)
+			setFilesItems(data.filesItems)
+			setAudioItems(data.audioItems)
+			setAudioStudents(data.audioStudents)
+		})
+
+		socket.emit('getLinksByLinkedId', {
+			linkedId: currentOpenedGroup,
+			token: token,
+		})
+		socket.emit('getLinksByLinkedId', {
+			linkedId: `${currentOpenedGroup}_items`,
+			token: token,
+		})
+	}, [])
+
+	useEffect(() => {
+		if (data) {
+			console.log(data, 'getGroupById DATA')
+
+			setGroupName(data.groupName)
+			setItems(data.items)
+			setStudents(data.students)
+			setFiles(data.files)
+			setFilesItems(data.filesItems)
+			setAudioItems(data.audioItems)
+			setAudioStudents(data.audioStudents)
+		}
+	}, [data])
+
+	const setHistoryLessonIsDone = (
+		studentIndex: number,
+		lessonIndex: number,
+		value: boolean,
+	) => {
+		setStudentsHistoryLessons((prevHistoryLessons) => {
+			const updatedHistoryLessons = [...prevHistoryLessons]
+			updatedHistoryLessons[studentIndex] = updatedHistoryLessons[
+				studentIndex
+			].map((lesson, index) =>
+				index === lessonIndex ? {...lesson, isDone: value} : lesson,
+			)
+			return updatedHistoryLessons
+		})
+	}
+	const setHistoryLessonIsPaid = (
+		studentIndex: number,
+		lessonIndex: number,
+		value: boolean,
+	) => {
+		setStudentsHistoryLessons((prevHistoryLessons) => {
+			const updatedHistoryLessons = [...prevHistoryLessons]
+			updatedHistoryLessons[studentIndex] = updatedHistoryLessons[
+				studentIndex
+			].map((lesson, index) =>
+				index === lessonIndex ? {...lesson, isPaid: value} : lesson,
+			)
+			return updatedHistoryLessons
+		})
+	}
+
+	const updateHistoryLessons = () => {
+		const newStudentsHistoryLessons = students.map((student, studentIndex) => {
+			const historyLessons_ = []
+			for (let i = 0; i < items.length; i++) {
+				const differenceDays = differenceInDays(
+					items[i].endLesson!,
+					items[i].startLesson!,
+				)
+				const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+					addDays(items[i].startLesson!, j),
+				)
+
+				for (const date of dateRange) {
+					const dayOfWeek = getDay(date)
+					const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
+
+					const cond =
+						scheduleForDay.startTime.hour === 0 &&
+						scheduleForDay.startTime.minute === 0 &&
+						scheduleForDay.endTime.hour === 0 &&
+						scheduleForDay.endTime.minute === 0
+
+					if (!cond) {
+						const existingLesson = studentsHistoryLessons[studentIndex]?.find(
+							(l) =>
+								new Date(l.date).getTime() === date.getTime() &&
+								l.itemName === items[i].itemName,
+						)
+
+						const hl = {
+							date: date,
+							itemName: items[i].itemName,
+							isDone: existingLesson
+								? existingLesson.isDone
+								: date <= new Date(Date.now()),
+							price: Number(students[studentIndex].costOneLesson),
+							isPaid: existingLesson ? existingLesson.isPaid : false,
+						}
+
+						historyLessons_.push(hl)
+					}
+				}
+			}
+			return historyLessons_
+		})
+
+		if (
+			JSON.stringify(studentsHistoryLessons) !==
+			JSON.stringify(newStudentsHistoryLessons)
+		) {
+			const currentStudent = students[currentStudentIndex]
+			const costLesson = Number(currentStudent.costOneLesson)
+			const prePayment = Number(currentStudent.prePayCost)
+			const prePaymentDate = currentStudent.prePayDate
+				? new Date(currentStudent.prePayDate)
+				: null
+			let remainingPrePayment = prePayment
+
+			const updatedHistoryLessons = newStudentsHistoryLessons.map(
+				(lessons, studentIndex) => {
+					if (studentIndex === currentStudentIndex) {
+						return lessons
+							.sort(compareDates)
+							.filter((lesson: IGroupHistoryLessons) => {
+								const lessonDate = new Date(lesson.date)
+								const startLesson = new Date(currentStudent.startLesson!)
+								const endLesson = new Date(currentStudent.endLesson!)
+
+								return lessonDate >= startLesson && lessonDate <= endLesson
+							})
+							.map((lesson) => {
+								const lessonDate = new Date(lesson.date)
+								if (
+									prePaymentDate &&
+									lessonDate >= prePaymentDate &&
+									remainingPrePayment >= costLesson
+								) {
+									remainingPrePayment -= costLesson
+									return {...lesson, isPaid: true}
+								}
+								return lesson
+							})
+					}
+					return lessons
+				},
+			)
+
+			setStudentsHistoryLessons(updatedHistoryLessons)
+		}
+	}
+
+	useEffect(() => {
+		updateHistoryLessons()
+		console.log(studentsHistoryLessons, 'STUDENTS_HISTORY_LESSONS')
+	}, [items, students, currentStudentIndex])
+
+	// useEffect(() => {
+	// 	if (studentsHistoryLessons.length > 0) {
+	// 		handleUpdatedHistoryLessons()
+	// 	}
+	// }, [studentsHistoryLessons])
+
+	useEffect(() => {
+		//sum all costStudent and write to allCost
+		let sumCost = 0
+		let totalCostGroup = 0
+		students.forEach((student) => {
+			sumCost += Number(student.costStudent)
+			totalCostGroup += Number(student.costOneLesson) || 0
+		})
+
+		setAllCostForGroup(sumCost)
+		setAllPriceGroup(totalCostGroup)
+	}, [students, studentsHistoryLessons])
+
+	// ! CHECK THIS
+	// useEffect(() => {
+	// 	studentsHistoryLessons[currentStudentIndex] &&
+	// 		handleStudentsHistoryLessons(currentStudentIndex)
+	// }, [students, students[currentStudentIndex], currentStudentIndex])
 
 	useEffect(() => {
 		if (
@@ -1320,8 +1183,6 @@ const AddGroup = ({className}: IAddGroup) => {
 					item.valueMuiSelectArchive !== 1 ||
 					item.nowLevel !== 0 ||
 					item.lessonDuration !== null
-					// item.startLesson !== new Date(Date.now()) ||
-					// item.endLesson !== new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2)
 				)
 			}) ||
 			groupName !== '' ||
@@ -1341,6 +1202,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			dispatch({type: 'SET_EDITED_CARDS', payload: true})
 		}
 	}, [items, students, groupName])
+
 	return (
 		<>
 			<button
@@ -2300,8 +2162,7 @@ const AddGroup = ({className}: IAddGroup) => {
 															{studentsHistoryLessons[currentStudentIndex] &&
 															studentsHistoryLessons[currentStudentIndex]
 																.length !== 0
-																? handleStudentsHistoryLessons(student, index)
-																		.length
+																? filteredLessonsHistory.length
 																: '0'}
 														</p>
 														<p>
@@ -2309,8 +2170,8 @@ const AddGroup = ({className}: IAddGroup) => {
 															{studentsHistoryLessons[currentStudentIndex] &&
 															studentsHistoryLessons[currentStudentIndex]
 																.length !== 0
-																? handleStudentsHistoryLessons(student, index)
-																		.length * Number(student.costOneLesson) || 0
+																? filteredLessonsHistory.length *
+																		Number(student.costOneLesson) || 0
 																: '0'}
 															₽
 														</p>
@@ -2408,9 +2269,7 @@ const AddGroup = ({className}: IAddGroup) => {
 														{studentsHistoryLessons[currentStudentIndex] &&
 														studentsHistoryLessons[currentStudentIndex]
 															.length !== 0 ? (
-															<>
-																{handleStudentsHistoryLessons(student, index)}
-															</>
+															<>{filteredLessonsHistory}</>
 														) : (
 															<>
 																<div className={s.ListNoInfo}>

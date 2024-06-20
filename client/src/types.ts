@@ -72,6 +72,14 @@ export interface IItemCard {
 	timeLinesArray: ITimeLine[]
 }
 
+export interface IGroupHistoryLessons {
+	date: Date
+	isDone: boolean
+	isPaid: boolean
+	itemName: string
+	price: number
+}
+
 export interface IStudent {
 	nameStudent: string
 	contactFace: string
@@ -83,7 +91,7 @@ export interface IStudent {
 	costStudent: string
 	commentStudent: string
 	prePayCost: string
-	prePayDate: string
+	prePayDate: Date
 	selectedDate: null
 	costOneLesson: string
 	storyLesson: string
@@ -113,7 +121,6 @@ export interface ChartData {
 	labels: string[]
 	datasets: Dataset[]
 }
-
 
 export interface IlinksArray {
 	tag?: string
