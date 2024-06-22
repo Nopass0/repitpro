@@ -83,7 +83,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	const [groupsIndexes, setGroupsIndexes] = useState<number[]>([])
 	const [currentGroupIndex, setCurrentGroupIndex] = useState<number>(0)
 
-	const [data, setData] = useState()
+	const [data, setData] = useState<any>()
 
 	// Block item
 	const [items, setItems] = useState<IItemCard[]>([
@@ -236,6 +236,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					filesItems: filesItems,
 					audiosItems: audioItems,
 					audiosStudents: audioStudents,
+					historyLessons: studentsHistoryLessons,
 				})
 
 				socket.emit('createLink', {
@@ -464,7 +465,7 @@ const AddGroup = ({className}: IAddGroup) => {
 						: item,
 				),
 			)
-			console.log('close', index, id)
+			// console.log('close', index, id)
 			setShowEndTimePicker(-1)
 		} else {
 			console.log('End time must be greater than start time')
@@ -1047,7 +1048,15 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const updateHistoryLessons = () => {
+		console.log(
+			'\n------------------Функция updateHistoryLessons вызвана----------------\n',
+		)
+
 		const newStudentsHistoryLessons = students.map((student, studentIndex) => {
+			console.log(
+				`\n------------------Обработка студента ${student.nameStudent} (индекс ${studentIndex})----------------\n`,
+			)
+
 			const historyLessons_ = []
 			for (let i = 0; i < items.length; i++) {
 				const differenceDays = differenceInDays(
@@ -1058,9 +1067,19 @@ const AddGroup = ({className}: IAddGroup) => {
 					addDays(items[i].startLesson!, j),
 				)
 
+				console.log(
+					`\n------------------Урок ${items[i].itemName} имеет диапазон дат от ${items[i].startLesson} до ${items[i].endLesson}----------------\n`,
+				)
+				console.log('Диапазон дат:', dateRange)
+
 				for (const date of dateRange) {
 					const dayOfWeek = getDay(date)
 					const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
+
+					console.log(
+						`\n------------------Дата ${date} (день недели: ${dayOfWeek})----------------\n`,
+					)
+					console.log('Расписание на этот день:', scheduleForDay)
 
 					const cond =
 						scheduleForDay.startTime.hour === 0 &&
@@ -1072,7 +1091,13 @@ const AddGroup = ({className}: IAddGroup) => {
 						const existingLesson = studentsHistoryLessons[studentIndex]?.find(
 							(l) =>
 								new Date(l.date).getTime() === date.getTime() &&
-								l.itemName === items[i].itemName,
+								l.itemName === items[i].itemName &&
+								l.price === Number(students[studentIndex].costOneLesson),
+						)
+
+						console.log(
+							'\n------------------Существующий урок истории (existingLesson)----------------\n',
+							existingLesson,
 						)
 
 						const hl = {
@@ -1085,17 +1110,35 @@ const AddGroup = ({className}: IAddGroup) => {
 							isPaid: existingLesson ? existingLesson.isPaid : false,
 						}
 
+						console.log(
+							'\n------------------Новый урок истории----------------\n',
+							hl,
+						)
+
 						historyLessons_.push(hl)
 					}
 				}
 			}
+			console.log(
+				'\n------------------История уроков для студента----------------\n',
+				historyLessons_,
+			)
 			return historyLessons_
 		})
+
+		console.log(
+			'\n------------------Новая история уроков студентов----------------\n',
+			newStudentsHistoryLessons,
+		)
 
 		if (
 			JSON.stringify(studentsHistoryLessons) !==
 			JSON.stringify(newStudentsHistoryLessons)
 		) {
+			console.log(
+				'\n------------------Изменения в истории уроков обнаружены----------------\n',
+			)
+
 			const currentStudent = students[currentStudentIndex]
 			const costLesson = Number(currentStudent.costOneLesson)
 			const prePayment = Number(currentStudent.prePayCost)
@@ -1104,33 +1147,66 @@ const AddGroup = ({className}: IAddGroup) => {
 				: null
 			let remainingPrePayment = prePayment
 
+			console.log(
+				'\n------------------Текущий студент и начальные данные предоплаты----------------\n',
+				{
+					currentStudent,
+					costLesson,
+					prePayment,
+					prePaymentDate,
+					remainingPrePayment,
+				},
+			)
+
 			const updatedHistoryLessons = newStudentsHistoryLessons.map(
 				(lessons, studentIndex) => {
 					if (studentIndex === currentStudentIndex) {
-						return lessons
+						console.log(
+							'\n------------------Обновление истории уроков для текущего студента----------------\n',
+						)
+
+						const sortedAndFilteredLessons = lessons
 							.sort(compareDates)
-							.filter((lesson: IGroupHistoryLessons) => {
+							.filter((lesson) => {
 								const lessonDate = new Date(lesson.date)
 								const startLesson = new Date(currentStudent.startLesson!)
 								const endLesson = new Date(currentStudent.endLesson!)
 
 								return lessonDate >= startLesson && lessonDate <= endLesson
 							})
-							.map((lesson) => {
-								const lessonDate = new Date(lesson.date)
-								if (
-									prePaymentDate &&
-									lessonDate >= prePaymentDate &&
-									remainingPrePayment >= costLesson
-								) {
-									remainingPrePayment -= costLesson
-									return {...lesson, isPaid: true}
-								}
-								return lesson
-							})
+
+						console.log(
+							'\n------------------Отсортированные и отфильтрованные уроки----------------\n',
+							sortedAndFilteredLessons,
+						)
+
+						const mappedLessons = sortedAndFilteredLessons.map((lesson) => {
+							const lessonDate = new Date(lesson.date)
+							if (
+								prePaymentDate &&
+								lessonDate >= prePaymentDate &&
+								remainingPrePayment >= costLesson
+							) {
+								remainingPrePayment -= costLesson
+								return {...lesson, isPaid: true}
+							}
+							return lesson
+						})
+
+						console.log(
+							'\n------------------Уроки с учетом предоплаты----------------\n',
+							mappedLessons,
+						)
+
+						return mappedLessons
 					}
 					return lessons
 				},
+			)
+
+			console.log(
+				'\n------------------Обновленная история уроков----------------\n',
+				updatedHistoryLessons,
 			)
 
 			setStudentsHistoryLessons(updatedHistoryLessons)
@@ -1138,8 +1214,14 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	useEffect(() => {
+		console.log('\n------------------useEffect вызван----------------\n')
 		updateHistoryLessons()
-		console.log(studentsHistoryLessons, 'STUDENTS_HISTORY_LESSONS')
+
+		console.log(
+			'\n------------------Текущая история уроков студентов----------------\n',
+			studentsHistoryLessons,
+			'STUDENTS_HISTORY_LESSONS',
+		)
 	}, [items, students, currentStudentIndex])
 
 	// useEffect(() => {
@@ -1484,9 +1566,9 @@ const AddGroup = ({className}: IAddGroup) => {
 												<p>Продолжительность занятия:</p>
 												<input
 													disabled={isEditMode}
-													num
+													// num
 													type="text"
-													value={item.lessonDuration}
+													value={item.lessonDuration!}
 													onChange={(e) =>
 														changeItemValue(
 															currentItemIndex,

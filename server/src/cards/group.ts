@@ -22,6 +22,7 @@ export async function addGroup(data: any, socket: any) {
       filesItems = [],
       audiosItems = [],
       audiosStudents = [],
+      historyLessons,
     } = data;
 
     const token_ = await db.token.findFirst({
@@ -136,6 +137,7 @@ export async function addGroup(data: any, socket: any) {
       data: {
         groupName,
         userId,
+        historyLessons: historyLessons,
         items: {
           create: items.map((item) => ({
             itemName: item.itemName,
@@ -148,6 +150,7 @@ export async function addGroup(data: any, socket: any) {
             placeLesson: item.placeLesson || "",
             timeLesson: item.timeLesson || "",
             costOneLesson: "",
+
             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
             startLesson: item.startLesson ? new Date(item.startLesson) : null,
             endLesson: item.endLesson ? new Date(item.endLesson) : null,

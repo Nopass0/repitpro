@@ -75,6 +75,7 @@ model Group {
   files           String[]
   userId          String
   isArchived       Boolean @default(false)
+  historyLessons          Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
