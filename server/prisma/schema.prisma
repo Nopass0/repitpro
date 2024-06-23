@@ -133,6 +133,12 @@ model Student {
   prePayCost      String
   prePayDate      DateTime?
   selectedDate    DateTime?
+  // !
+  startLesson     DateTime
+  endLesson      DateTime
+  nowLevel        String
+  tryLessonCost   String
+  tryLessonCheck  Boolean
   storyLesson     String
   costOneLesson   String
   files           String[]

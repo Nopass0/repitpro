@@ -45,6 +45,7 @@ const Input: React.FC<IInput> = ({
 			type={type ? type : 'text'}
 			value={value}
 			disabled={disabled}
+			width={width}
 			onChange={(e) => {
 				if (num) {
 					onlyNumbers(e)

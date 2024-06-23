@@ -200,6 +200,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				filesItems: filesItems,
 				audiosItems: audioItems,
 				audiosStudents: audioStudents,
+				historyLessons: studentsHistoryLessons,
 			})
 			socket.emit('createLink', {
 				tag: 'addGroup',
@@ -501,6 +502,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const formatDate = (date: Date) => {
+		console.log(date, 'DATE----')
 		const day = String(date.getDate()).padStart(2, '0')
 		const month = String(date.getMonth() + 1).padStart(2, '0')
 		const year = String(date.getFullYear()).slice(-2) // Take last 2 digits of the year
@@ -990,6 +992,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			setFilesItems(data.filesItems)
 			setAudioItems(data.audioItems)
 			setAudioStudents(data.audioStudents)
+			// setStudentsHistoryLessons(data.historyLessons)
+			console.log(data.historyLessons, 'data.historyLessons ----')
 		})
 
 		socket.emit('getLinksByLinkedId', {
@@ -1131,86 +1135,81 @@ const AddGroup = ({className}: IAddGroup) => {
 			newStudentsHistoryLessons,
 		)
 
-		if (
-			JSON.stringify(studentsHistoryLessons) !==
-			JSON.stringify(newStudentsHistoryLessons)
-		) {
-			console.log(
-				'\n------------------Изменения в истории уроков обнаружены----------------\n',
-			)
+		console.log(
+			'\n------------------Изменения в истории уроков обнаружены----------------\n',
+		)
 
-			const currentStudent = students[currentStudentIndex]
-			const costLesson = Number(currentStudent.costOneLesson)
-			const prePayment = Number(currentStudent.prePayCost)
-			const prePaymentDate = currentStudent.prePayDate
-				? new Date(currentStudent.prePayDate)
-				: null
-			let remainingPrePayment = prePayment
+		const currentStudent = students[currentStudentIndex]
+		const costLesson = Number(currentStudent.costOneLesson)
+		const prePayment = Number(currentStudent.prePayCost)
+		const prePaymentDate = currentStudent.prePayDate
+			? new Date(currentStudent.prePayDate)
+			: null
+		let remainingPrePayment = prePayment
 
-			console.log(
-				'\n------------------Текущий студент и начальные данные предоплаты----------------\n',
-				{
-					currentStudent,
-					costLesson,
-					prePayment,
-					prePaymentDate,
-					remainingPrePayment,
-				},
-			)
-			// ! DATES
-			const updatedHistoryLessons = newStudentsHistoryLessons.map(
-				(lessons, studentIndex) => {
-					if (studentIndex === currentStudentIndex) {
-						console.log(
-							'\n------------------Обновление истории уроков для текущего студента----------------\n',
-						)
+		console.log(
+			'\n------------------Текущий студент и начальные данные предоплаты----------------\n',
+			{
+				currentStudent,
+				costLesson,
+				prePayment,
+				prePaymentDate,
+				remainingPrePayment,
+			},
+		)
+		// ! DATES
+		const updatedHistoryLessons = newStudentsHistoryLessons.map(
+			(lessons, studentIndex) => {
+				if (studentIndex === currentStudentIndex) {
+					console.log(
+						'\n------------------Обновление истории уроков для текущего студента----------------\n',
+					)
 
-						const sortedAndFilteredLessons = lessons
-							.sort(compareDates)
-							.filter((lesson) => {
-								const lessonDate = new Date(lesson.date)
-								const startLesson = new Date(currentStudent.startLesson!)
-								const endLesson = new Date(currentStudent.endLesson!)
-
-								return lessonDate >= startLesson && lessonDate <= endLesson
-							})
-
-						console.log(
-							'\n------------------Отсортированные и отфильтрованные уроки----------------\n',
-							sortedAndFilteredLessons,
-						)
-
-						const mappedLessons = sortedAndFilteredLessons.map((lesson) => {
+					const sortedAndFilteredLessons = lessons
+						.sort(compareDates)
+						.filter((lesson) => {
 							const lessonDate = new Date(lesson.date)
-							if (
-								prePaymentDate &&
-								lessonDate >= prePaymentDate &&
-								remainingPrePayment >= costLesson
-							) {
-								remainingPrePayment -= costLesson
-								return {...lesson, isPaid: true}
-							}
-							return lesson
+							const startLesson = new Date(currentStudent.startLesson!)
+							const endLesson = new Date(currentStudent.endLesson!)
+
+							return lessonDate >= startLesson && lessonDate <= endLesson
 						})
 
-						console.log(
-							'\n------------------Уроки с учетом предоплаты----------------\n',
-							mappedLessons,
-						)
+					console.log(
+						'\n------------------Отсортированные и отфильтрованные уроки----------------\n',
+						sortedAndFilteredLessons,
+					)
 
-						return mappedLessons
-					}
-					return lessons
-				},
-			)
+					const mappedLessons = sortedAndFilteredLessons.map((lesson) => {
+						const lessonDate = new Date(lesson.date)
+						if (
+							prePaymentDate &&
+							lessonDate >= prePaymentDate &&
+							remainingPrePayment >= costLesson
+						) {
+							remainingPrePayment -= costLesson
+							return {...lesson, isPaid: true}
+						}
+						return lesson
+					})
 
-			console.log(
-				'\n------------------Обновленная история уроков----------------\n',
-				updatedHistoryLessons,
-			)
+					console.log(
+						'\n------------------Уроки с учетом предоплаты----------------\n',
+						mappedLessons,
+					)
 
-			setStudentsHistoryLessons(updatedHistoryLessons)
-		}
+					return mappedLessons
+				}
+				return lessons
+			},
+		)
+
+		console.log(
+			'\n------------------Обновленная история уроков----------------\n',
+			updatedHistoryLessons,
+		)
+
+		setStudentsHistoryLessons(updatedHistoryLessons)
 	}
 
 	useEffect(() => {
@@ -1223,12 +1222,6 @@ const AddGroup = ({className}: IAddGroup) => {
 			'STUDENTS_HISTORY_LESSONS',
 		)
 	}, [items, students, currentStudentIndex])
-
-	// useEffect(() => {
-	// 	if (studentsHistoryLessons.length > 0) {
-	// 		handleUpdatedHistoryLessons()
-	// 	}
-	// }, [studentsHistoryLessons])
 
 	useEffect(() => {
 		//sum all costStudent and write to allCost
@@ -1564,9 +1557,9 @@ const AddGroup = ({className}: IAddGroup) => {
 
 											<div className={s.StudentCard}>
 												<p>Продолжительность занятия:</p>
-												<input
+												<Input
 													disabled={isEditMode}
-													// num
+													num
 													type="text"
 													value={item.lessonDuration!}
 													onChange={(e) =>
@@ -1595,7 +1588,7 @@ const AddGroup = ({className}: IAddGroup) => {
 															new Date(newDate),
 														)
 													}
-													calendarId="startLesson"
+													calendarId={`startLesson_${index}`}
 												/>
 
 												<p style={{color: 'red'}}>*</p>
@@ -1615,7 +1608,7 @@ const AddGroup = ({className}: IAddGroup) => {
 															new Date(newDate),
 														)
 													}
-													calendarId="endLesson"
+													calendarId={`endLesson_${index}`}
 												/>
 												<p style={{color: 'red'}}>*</p>
 											</div>
@@ -2067,7 +2060,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCard}>
 												<p>Расходы по ученику:</p>
-												<input
+												<Input
 													disabled={isEditMode}
 													num
 													value={student.costStudent}
@@ -2098,10 +2091,9 @@ const AddGroup = ({className}: IAddGroup) => {
 															new Date(newDate),
 														)
 													}
-													calendarId="prePay"
+													calendarId={`prePay_${index}`}
 												/>
-
-												<input
+												<Input
 													disabled={isEditMode}
 													num
 													className={s.PrePayCostInput}
@@ -2123,14 +2115,31 @@ const AddGroup = ({className}: IAddGroup) => {
 												<div className={s.CardCheckBox}>
 													<p>Пробное занятие:</p>
 												</div>
-												<CheckBox className={s.CheckBox} size="20px" />
+												<CheckBox
+													checked={student.tryLessonCheck}
+													onChange={() =>
+														changeStudentValue(
+															index,
+															'tryLessonCheck',
+															!student.tryLessonCheck,
+														)
+													}
+													className={s.CheckBox}
+													size="20px"
+												/>
 												<p>Стоимость:</p>
-												<input
+												<Input
 													disabled={isEditMode}
 													num
 													type="text"
-													value={students[currentStudentIndex].tryLessonCost}
-													onChange={(e) => setTryLessonCost(e.target.value)}
+													value={student.tryLessonCost}
+													onChange={(e) =>
+														changeStudentValue(
+															index,
+															'tryLessonsCost',
+															String(e.target.value),
+														)
+													}
 												/>
 												<p>₽</p>
 											</div>
@@ -2141,7 +2150,18 @@ const AddGroup = ({className}: IAddGroup) => {
 													<p>Текущий уровень:</p>
 												</div>
 
-												<NowLevel disabled={isEditMode} amountInputs={5} />
+												<NowLevel
+													disabled={isEditMode}
+													value={Number(student.nowLevel)}
+													onChange={(e) => {
+														changeStudentValue(
+															index,
+															'nowLevel',
+															String(e.target.value),
+														)
+													}}
+													amountInputs={5}
+												/>
 											</div>
 											<Line width="100%" className={s.Line} />
 											<TextAreaInputBlock
@@ -2219,7 +2239,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCard}>
 												<p>Стоимость одного занятия:</p>
-												<input
+												<Input
 													disabled={isEditMode}
 													// width={`${student.costOneLesson}ch`}
 													num
@@ -2376,10 +2396,14 @@ const AddGroup = ({className}: IAddGroup) => {
 											<TextAreaInputBlock
 												disabled={isEditMode}
 												title="Комментарий:"
-												value={commentStudent}
+												value={students[currentStudentIndex].commentStudent}
 												// disabled={isEditMode}
 												onChange={(e) => {
-													setCommentStudent(e.target.value)
+													changeStudentValue(
+														index,
+														'commentStudent',
+														e.target.value,
+													)
 												}}
 												textIndent="120px"
 											/>

@@ -179,6 +179,11 @@ export async function addGroup(data: any, socket: any) {
             costOneLesson: String(student.costOneLesson) || "",
             targetLessonStudent: student.targetLessonStudent || "",
             todayProgramStudent: student.todayProgramStudent || "",
+            startLesson: student.startLesson ? new Date(student.startLesson) : null,
+            endLesson: student.endLesson ? new Date(student.endLesson) : null,
+            nowLevel: student.nowLevel || 0,
+            tryLessonCost: student.tryLessonCost || "",
+            tryLessonCheck: student.tryLessonCheck || false,
             userId,
           })),
         },
@@ -547,6 +552,7 @@ export async function getGroupById(data: any, socket: any) {
         groupName: true,
         files: true,
         students: true,
+        historyLessons: true,
       },
     });
 
@@ -611,6 +617,7 @@ export async function updateGroup(data, socket: any) {
       filesItems,
       audiosItems,
       audiosStudents,
+      historyLessons,
     } = data;
 
     const token_ = await db.token.findFirst({
@@ -650,6 +657,7 @@ export async function updateGroup(data, socket: any) {
       },
       data: {
         groupName,
+        historyLessons,
       },
     });
 
@@ -739,6 +747,11 @@ export async function updateGroup(data, socket: any) {
               ? new Date(newStudent.prePayDate)
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
+            startLesson: newStudent.startLesson ? new Date(student.startLesson) : null,
+            endLesson: student.endLesson ? new Date(newStudent.endLesson) : null,
+            nowLevel: newStudent.nowLevel || 0,
+            tryLessonCost: newStudent.tryLessonCost || "",
+            tryLessonCheck: newStudent.tryLessonCheck || false,
             userId,
             groupId: id,
           },
@@ -763,6 +776,11 @@ export async function updateGroup(data, socket: any) {
               ? new Date(newStudent.prePayDate)
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
+            startLesson: newStudent.startLesson ? new Date(newStudent.startLesson) : null,
+            endLesson: newStudent.endLesson ? new Date(newStudent.endLesson) : null,
+            nowLevel: newStudent.nowLevel || 0,
+            tryLessonCost: newStudent.tryLessonCost || "",
+            tryLessonCheck: newStudent.tryLessonCheck || false,
             userId,
             groupId: id,
           },
@@ -1010,6 +1028,7 @@ export async function fetchGroupsByDate(
         costOneLesson: student.costOneLesson,
         targetLessonStudent: student.targetLessonStudent,
         todayProgramStudent: student.todayProgramStudent,
+        
       })),
     };
 
