@@ -366,6 +366,7 @@ const AddStudent = ({}: IAddStudent) => {
 				costOneLesson,
 				files,
 				audios,
+				historyLesson,
 
 				items,
 				token,
@@ -386,6 +387,7 @@ const AddStudent = ({}: IAddStudent) => {
 				contactFace,
 				email,
 				linkStudent,
+				historyLessons: historyLesson,
 				costStudent,
 				commentStudent,
 				prePayCost,
@@ -664,7 +666,7 @@ const AddStudent = ({}: IAddStudent) => {
 		return `#${hexColor}`
 	}
 
-	const handlePrePayment = (historyLessons_:any) => {
+	const handlePrePayment = (historyLessons_: any) => {
 		if (prePayDate && prePayCost) {
 			const prePaymentDate = new Date(prePayDate)
 			let remainingPrePayment = Number(prePayCost)
@@ -701,7 +703,6 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 
 			console.log('Вышел')
-		
 		}
 		console.log('Не зашёл')
 	}
@@ -862,7 +863,7 @@ const AddStudent = ({}: IAddStudent) => {
 		setAllLessonsPrice(countLessonsPrice)
 		handlePrePayment(historyLessons_)
 		console.log(historyLesson, 'historyLesson___2')
-	}, [items, prePayCost,prePayDate])
+	}, [items, prePayCost, prePayDate])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
 		setHistoryLesson((prevHistoryLesson: any) => [

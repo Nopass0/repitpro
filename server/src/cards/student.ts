@@ -50,6 +50,7 @@ export async function addStudent(data, socket: any) {
       link,
       audios,
       cost,
+      historyLessons,
       files,
       items,
       token,
@@ -172,6 +173,7 @@ export async function addStudent(data, socket: any) {
       data: {
         groupName: "",
         userId,
+        historyLessons: JSON.parse(JSON.stringify(historyLessons)),
         items: {
           create: items.map((item) => ({
             itemName: item.itemName,

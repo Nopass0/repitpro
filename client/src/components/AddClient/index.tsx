@@ -403,6 +403,17 @@ const AddClient = ({}: IAddClient) => {
 		}
 	}, [data])
 
+	useEffect(() => {
+		// ! Фиксануть это говно
+		if (jobs) {
+			if (jobs[currentJobIndex].stages.length > 1) {
+				setStages(2)
+			} else {
+				setStages(1)
+			}
+		}
+	}, [jobs])
+
 	const nextClient = () => {
 		if (Number(currentClientPosition) < allIdsClient.length - 1) {
 			setCurrentClientPosition(Number(currentClientPosition) + 1)
@@ -710,7 +721,7 @@ const AddClient = ({}: IAddClient) => {
 										<Line width="100%" className={s.Line} />
 										<div className={s.StudentCard}>
 											<mui.Select
-												disabled={isEditMode}
+												// disabled={isEditMode}
 												variant={'standard'}
 												// defaultValue={1}
 												value={stages}
@@ -856,7 +867,7 @@ const AddClient = ({}: IAddClient) => {
 																			index,
 																			indexStage,
 																			'cost',
-																			e.target.value,
+																			Number(e.target.value),
 																		)
 																	}}
 																/>

@@ -1157,7 +1157,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					remainingPrePayment,
 				},
 			)
-
+			// ! DATES
 			const updatedHistoryLessons = newStudentsHistoryLessons.map(
 				(lessons, studentIndex) => {
 					if (studentIndex === currentStudentIndex) {

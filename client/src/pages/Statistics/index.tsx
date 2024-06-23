@@ -36,20 +36,6 @@ ChartJS.register(
 	BarElement,
 )
 
-const getLabels = () => Array.from({length: 200}, (_, i) => i)
-
-const getDatasets = () => {
-	const datasets = []
-	for (let i = 0; i < 200; i++) {
-		let a = Math.abs(Math.random() * Math.abs(Math.cos(i)))
-		if (datasets[i - 1] - a < Math.E) {
-			a = datasets[i - 1] + datasets[i - 1] * 0.06
-		}
-		datasets.push(a)
-	}
-	return datasets
-}
-
 const options = {
 	responsive: true,
 	maintainAspectRatio: false,
@@ -77,19 +63,6 @@ const optionsBar = {
 		y: {stacked: true},
 	},
 	aspectRatio: 2,
-}
-
-const labels = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль']
-
-const data = {
-	labels: labels,
-	datasets: Array.from({length: 5}, (_, i) => ({
-		label: `Dataset ${i + 1}`,
-		data: [1, 2, 3, 4, 5, 6, 7],
-		fill: false,
-		backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-		borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-	})),
 }
 
 const StyledPickersLayout = styled('span')({
@@ -129,7 +102,7 @@ const Statistics = ({}: IStatistics) => {
 	const [studFinDate, setStudFinDate] = useState<number>(0)
 	const [studFinDateStart, setStudFinDateStart] = useState<Date>(new Date())
 	const [studFinDateEnd, setStudFinDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
 	)
 	const [studFinCheck2, setStudFinCheck2] = useState<boolean>(true)
 	const [studFinCheck1, setStudFinCheck1] = useState<boolean>(true)
@@ -142,7 +115,7 @@ const Statistics = ({}: IStatistics) => {
 	const [studAmDate, setStudAmDate] = useState<number>(0)
 	const [studAmDateStart, setStudAmDateStart] = useState<Date>(new Date())
 	const [studAmDateEnd, setStudAmDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 	const [studAmCheck2, setStudAmCheck2] = useState<boolean>(true)
 	const [studAmCheck1, setStudAmCheck1] = useState<boolean>(true)
@@ -151,7 +124,7 @@ const Statistics = ({}: IStatistics) => {
 	const [studLesDate, setStudLesDate] = useState<number>(0)
 	const [studLesDateStart, setStudLesDateStart] = useState<Date>(new Date())
 	const [studLesDateEnd, setStudLesDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 	const [studLesCheck2, setStudLesCheck2] = useState<boolean>(true)
 	const [studLesCheck1, setStudLesCheck1] = useState<boolean>(true)
@@ -160,7 +133,7 @@ const Statistics = ({}: IStatistics) => {
 	const [cliFinDate, setCliFinDate] = useState<number>(0)
 	const [cliFinDateStart, setCliFinDateStart] = useState<Date>(new Date())
 	const [cliFinDateEnd, setCliFinDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 	const [cliFinCheck2, setCliFinCheck2] = useState<boolean>(true)
 	const [cliFinCheck1, setCliFinCheck1] = useState<boolean>(true)
@@ -169,7 +142,7 @@ const Statistics = ({}: IStatistics) => {
 	const [cliAmDate, setCliAmDate] = useState<number>(0)
 	const [cliAmDateStart, setCliAmDateStart] = useState<Date>(new Date())
 	const [cliAmDateEnd, setCliAmDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 	const [cliAmCheck2, setCliAmCheck2] = useState<boolean>(true)
 	const [cliAmCheck1, setCliAmCheck1] = useState<boolean>(true)
@@ -178,7 +151,7 @@ const Statistics = ({}: IStatistics) => {
 	const [cliWorkDate, setCliWorkDate] = useState<number>(0)
 	const [cliWorkDateStart, setCliWorkDateStart] = useState<Date>(new Date())
 	const [cliWorkDateEnd, setCliWorkDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 	const [cliWorkCheck2, setCliWorkCheck2] = useState<boolean>(true)
 	const [cliWorkCheck1, setCliWorkCheck1] = useState<boolean>(true)
@@ -187,21 +160,21 @@ const Statistics = ({}: IStatistics) => {
 	const [studRelatDate, setStudRelatDate] = useState<number>(0)
 	const [studRelatDateStart, setStudRelatDateStart] = useState<Date>(new Date())
 	const [studRelatDateEnd, setStudRelatDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 	const [studRelatCheck2, setStudRelatCheck2] = useState<boolean>(true)
 	const [studRelatCheck1, setStudRelatCheck1] = useState<boolean>(true)
 
-	const [studTableDate, setStudTableDate] = useState<number>(0)
+	const [studTableDate, setStudTableDate] = useState<number>(3)
 	const [studTableDateStart, setStudTableDateStart] = useState<Date>(new Date())
 	const [studTableDateEnd, setStudTableDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 
 	const [cliTableDate, setCliTableDate] = useState<number>(0)
 	const [cliTableDateStart, setCliTableDateStart] = useState<Date>(new Date())
 	const [cliTableDateEnd, setCliTableDateEnd] = useState<Date>(
-		new Date(Date.now() + 30 * 24 * 60 * 60 * 3000),
+		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
 	)
 
 	const [sortColumn, setSortColumn] = useState<string | null>(null)
@@ -339,10 +312,10 @@ const Statistics = ({}: IStatistics) => {
 			setClientsNstudentsCompareData(data),
 		)
 	}, [
-		chooseGraphic,
+		// chooseGraphic,
 		startData,
 		endData,
-		token,
+		// token,
 		studFinDateStart,
 		studFinDateEnd,
 		studAmDateStart,
@@ -355,7 +328,7 @@ const Statistics = ({}: IStatistics) => {
 		cliFinDateEnd,
 		cliWorkDateStart,
 		cliWorkDateEnd,
-		itemsIds,
+		// itemsIds,
 	])
 
 	const sortData = (data: any, column: string, direction: string) => {
