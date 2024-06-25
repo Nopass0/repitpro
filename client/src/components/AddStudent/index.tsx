@@ -1669,7 +1669,7 @@ const AddStudent = ({}: IAddStudent) => {
 															new Date(newDate),
 														)
 													}
-													calendarId="startLesson"
+													calendarId={`startLesson_${index}`}
 												/>
 											</div>
 											<Line width="100%" className={s.Line} />
@@ -1687,7 +1687,7 @@ const AddStudent = ({}: IAddStudent) => {
 															new Date(newDate),
 														)
 													}
-													calendarId="endLesson"
+													calendarId={`endLesson_${index}`}
 												/>
 											</div>
 											<div className={s.ScheduleWrapper}>

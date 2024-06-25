@@ -722,6 +722,7 @@ const Statistics = ({}: IStatistics) => {
 								<MiniCalendar
 									value={studTableDateStart}
 									onChange={(newDate) => setStudTableDateStart(newDate)}
+									
 								/>
 							</div>
 							<Line width="20px" className={s.LineDate} />
