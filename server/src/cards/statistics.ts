@@ -76,13 +76,26 @@ export async function getStudentFinanceData(
   },
   socket: any
 ) {
-  const { startDate, endDate, subjectIds, token } = data;
+  let { startDate, endDate, subjectIds, token } = data;
+
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
+
   try {
     const token_ = await db.token.findFirst({
       where: {
         token,
       },
     });
+
+    console.log(
+      "\n------------infostatistics------------\n",
+      startDate,
+      endDate,
+      subjectIds,
+      token,
+      "\n------------\n"
+    );
 
     if (!token_) {
       console.error("Invalid token");
@@ -197,7 +210,9 @@ export async function getStudentCountData(
   },
   socket: any
 ) {
-  const { startDate, endDate, subjectIds, token } = data;
+  let { startDate, endDate, subjectIds, token } = data;
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -319,7 +334,10 @@ export async function getStudentLessonsData(
   },
   socket: any
 ) {
-  const { startDate, endDate, subjectIds, token } = data;
+  let { startDate, endDate, subjectIds, token } = data;
+
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -440,7 +458,9 @@ export async function getClientFinanceData(
   },
   socket: any
 ) {
-  const { startDate, endDate, token } = data;
+  let { startDate, endDate, token } = data;
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -546,7 +566,9 @@ export async function getClientCountData(
   },
   socket: any
 ) {
-  const { startDate, endDate, token } = data;
+  let { startDate, endDate, token } = data;
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -655,7 +677,9 @@ export async function getClientWorksData(
   },
   socket: any
 ) {
-  const { startDate, endDate, token } = data;
+  let { startDate, endDate, token } = data;
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
   try {
     const token_ = await db.token.findFirst({
       where: {
@@ -772,7 +796,9 @@ export async function getStudentClientComparisonData(
   },
   socket: any
 ) {
-  const { startDate, endDate, token } = data;
+  let { startDate, endDate, token } = data;
+  startDate = new Date(startDate);
+  endDate = new Date(endDate);
   const token_ = await db.token.findFirst({
     where: {
       token,
