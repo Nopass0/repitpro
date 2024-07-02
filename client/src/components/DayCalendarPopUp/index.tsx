@@ -353,18 +353,34 @@ const DayCalendarPopUp = ({
 				<section className={s.MainBlock}>
 					<Line width="700px" className={s.LineHeader} />
 					{clients &&
-						clients.map((client: any) => (
+						clients.map((client: any, index: number) => (
 							<>
-								<DayCalendarLineClient
-									id={client.clientId}
-									key={client.id}
-									name={client.studentName}
-									price={client.workPrice}
-									studentId=""
-									item={client.itemName}
-								/>
-
-								<Line className={s.Line} width="700px" />
+								{client.clientId !== clients[index + 1]?.clientId && (
+									<>
+										<DayCalendarLineClient
+											id={client.clientId}
+											key={client.id}
+											name={client.studentName}
+											price={client.workPrice}
+											studentId=""
+											item={client.itemName}
+											priceCheck={
+												client.workStages[0].endPaymentPrice ===
+												client.workPrice
+													? client.workStages[0].endPaymentPayed
+													: client.workStages[0].firstPaymentPayed
+											}
+											procent={`
+											${Math.round((client.workPrice / client.totalWorkPrice) * 100)}`}
+										/>
+										<div
+											className=""
+											onClick={() => console.log(client, clients, index)}>
+											12345
+										</div>
+										<Line className={s.Line} width="700px" />
+									</>
+								)}
 							</>
 						))}
 

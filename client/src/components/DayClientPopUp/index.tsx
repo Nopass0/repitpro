@@ -185,10 +185,10 @@ const DayClientPopUp = ({
 									size={'20px'}
 									checked={client.workStages[0].firstPaymentPayed}
 								/>
-								<p>
+								<p onClick={() => console.log(client,clients)}>
 									{client.totalWorkPrice !== 0
 										? Math.round(
-												(client.workStages[0].firstPaymentPayed /
+												(client.workStages[0].fisrtPaymentPrice /
 													client.totalWorkPrice) *
 													100,
 											)
@@ -221,7 +221,7 @@ const DayClientPopUp = ({
 								<p>
 									{client.totalWorkPrice !== 0
 										? Math.round(
-												(client.workStages[0].endPaymentPayed /
+												(client.workStages[0].endPaymentPrice /
 													client.totalWorkPrice) *
 													100,
 											)
