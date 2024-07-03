@@ -230,18 +230,36 @@ const Statistics = ({}: IStatistics) => {
 	const [clientsNstudentsCompareData, setClientsNstudentsCompareData] =
 		useState<any>({labels: [], datasets: []})
 
+	const getSubjectIds = (
+		selectedItems: string[],
+		allItems: string[],
+		allIds: string[],
+	) => {
+		if (selectedItems.includes('Все предметы')) {
+			return allIds
+		}
+		return selectedItems.map((item) => allIds[allItems.indexOf(item) - 1])
+	}
+
 	useEffect(() => {
 		socket.emit('getAllItemsIdsAndNames', token)
 		socket.on('getAllItemsIdsAndNames', (data: any) => {
 			const namesTemp = ['Все предметы']
-			const idsTemp = []
-			data.forEach((item) => {
-				if (item.itemName !== 'void') {
+			const idsTemp: Array<string> = []
+			data.forEach((item: any) => {
+				if (item.itemName !== 'void' && item.itemName !== '') {
 					namesTemp.push(item.itemName)
 				}
-				if (item.id !== '') {
+				if (
+					item.id !== '' &&
+					item.itemName !== '' &&
+					item.itemName !== 'void'
+				) {
 					idsTemp.push(item.id)
 				}
+				console.log(
+					`\n------------------(item)-------------------\n${JSON.stringify(item)}\n------------------\n${namesTemp}\n------------------\n${idsTemp}\n------------------\n`,
+				)
 			})
 			setNames(namesTemp)
 			setItemsIds(idsTemp)
@@ -262,42 +280,48 @@ const Statistics = ({}: IStatistics) => {
 		const emitDataRequests = () => {
 			const payload = {
 				token: token,
-				subjectIds: itemsIds,
 			}
 			socket.emit('getStudentFinanceData', {
 				...payload,
+				subjectIds: getSubjectIds(studFinItem, names, itemsIds),
 				startDate: studFinDateStart,
 				endDate: studFinDateEnd,
 			})
 			socket.emit('getStudentCountData', {
 				...payload,
+				subjectIds: getSubjectIds(studAmItem, names, itemsIds),
 				startDate: studAmDateStart,
 				endDate: studAmDateEnd,
 			})
 			socket.emit('getStudentLessonsData', {
 				...payload,
-				startDate: studRelatDateStart,
-				endDate: studRelatDateEnd,
+				subjectIds: getSubjectIds(studLesItem, names, itemsIds),
+				startDate: studLesDateStart,
+				endDate: studLesDateEnd,
 			})
 			socket.emit('getClientFinanceData', {
 				...payload,
-				startDate: cliAmDateStart,
-				endDate: cliAmDateEnd,
-			})
-			socket.emit('getClientCountData', {
-				...payload,
+				subjectIds: getSubjectIds(cliFinItem, names, itemsIds),
 				startDate: cliFinDateStart,
 				endDate: cliFinDateEnd,
 			})
+			socket.emit('getClientCountData', {
+				...payload,
+				subjectIds: getSubjectIds(cliAmItem, names, itemsIds),
+				startDate: cliAmDateStart,
+				endDate: cliAmDateEnd,
+			})
 			socket.emit('getClientWorksData', {
 				...payload,
+				subjectIds: getSubjectIds(cliWorkItem, names, itemsIds),
 				startDate: cliWorkDateStart,
 				endDate: cliWorkDateEnd,
 			})
 			socket.emit('getStudentClientComparisonData', {
 				...payload,
-				startDate: cliAmDateStart,
-				endDate: cliAmDateEnd,
+				subjectIds: getSubjectIds(studRelatItem, names, itemsIds),
+				startDate: studRelatDateStart,
+				endDate: studRelatDateEnd,
 			})
 		}
 
@@ -317,10 +341,8 @@ const Statistics = ({}: IStatistics) => {
 			setClientsNstudentsCompareData(data),
 		)
 	}, [
-		// chooseGraphic,
 		startData,
 		endData,
-		// token,
 		studFinDateStart,
 		studFinDateEnd,
 		studAmDateStart,
@@ -333,7 +355,12 @@ const Statistics = ({}: IStatistics) => {
 		cliFinDateEnd,
 		cliWorkDateStart,
 		cliWorkDateEnd,
-		// itemsIds,
+		studFinItem,
+		studAmItem,
+		studRelatItem,
+		cliAmItem,
+		cliFinItem,
+		cliWorkItem,
 	])
 
 	const sortData = (data: any, column: string, direction: string) => {

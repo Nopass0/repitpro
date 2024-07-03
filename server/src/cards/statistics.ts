@@ -124,6 +124,13 @@ export async function getStudentFinanceData(
       },
     });
 
+    // Сортировка по day, month, year как строки
+    data_.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
+    });
+
     // Создадим объект, где ключом будет комбинация года, месяца и дня
     const combinedData: {
       [date: string]: {
@@ -248,6 +255,13 @@ export async function getStudentCountData(
         year: true,
         itemName: true,
       },
+    });
+
+    // Сортировка по day, month, year как строки
+    data_.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
     });
 
     // Создадим объект, где ключом будет комбинация года, месяца и дня
@@ -375,6 +389,13 @@ export async function getStudentLessonsData(
       },
     });
 
+    // Сортировка по day, month, year как строки
+    data_.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
+    });
+
     // Создадим объект, где ключом будет комбинация года, месяца и дня
     const combinedData: {
       [date: string]: {
@@ -496,6 +517,13 @@ export async function getClientFinanceData(
       },
     });
 
+    // Сортировка по day, month, year как строки
+    data_.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
+    });
+
     // Создадим объект, где ключом будет clientId
     const combinedData: {
       [clientId: string]: {
@@ -532,10 +560,22 @@ export async function getClientFinanceData(
       return;
     }
 
-    const labels = combinedDataArray.map((item) => `Client ${item.clientId}`);
+    let clients = await db.client.findMany({
+      where: {
+        id: {
+          in: combinedDataArray.map((item) => item.clientId),
+        },
+      },
+      select: {
+        nameStudent: true,
+      },
+    });
+    const labels = combinedDataArray.map((item, index) => {
+      return `Клиент ${clients[index].nameStudent}`;
+    });
     const datasets = [
       {
-        label: "Work Price",
+        label: "Цена работ",
         data: combinedDataArray.map((item) => item.workPrice),
         fill: false,
         backgroundColor: "rgba(75,192,192,0.4)",
@@ -607,6 +647,13 @@ export async function getClientCountData(
       },
     });
 
+    // Сортировка по day, month, year как строки
+    data_.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
+    });
+
     // Создадим объект, где ключом будет clientId
     const combinedData: {
       [clientId: string]: {
@@ -643,10 +690,22 @@ export async function getClientCountData(
       return;
     }
 
-    const labels = combinedDataArray.map((item) => `Client ${item.clientId}`);
+    let clients = await db.client.findMany({
+      where: {
+        id: {
+          in: combinedDataArray.map((item) => item.clientId),
+        },
+      },
+      select: {
+        nameStudent: true,
+      },
+    });
+    const labels = combinedDataArray.map((item, index) => {
+      return `Клиент ${clients[index].nameStudent}`;
+    });
     const datasets = [
       {
-        label: "Work Count",
+        label: "Количество работ",
         data: combinedDataArray.map((item) => item.workCount),
         fill: false,
         backgroundColor: "rgba(75,192,192,0.4)",
@@ -715,6 +774,13 @@ export async function getClientWorksData(
       },
     });
 
+    // Сортировка по day, month, year как строки
+    data_.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
+    });
+
     // Создадим объект, где ключом будет комбинация clientId и itemName
     const combinedData: {
       [key: string]: {
@@ -755,7 +821,7 @@ export async function getClientWorksData(
     }
 
     const labels = Array.from(
-      new Set(combinedDataArray.map((item) => `Client ${item.clientId}`))
+      new Set(combinedDataArray.map((item) => `Клиент ${item.clientId}`))
     );
     const datasets = Array.from(
       new Set(combinedDataArray.map((item) => item.itemName))
@@ -860,6 +926,13 @@ export async function getStudentClientComparisonData(
     });
 
     const combinedData = [...studentData, ...clientData];
+
+    // Сортировка по day, month, year как строки
+    combinedData.sort((a: any, b: any) => {
+      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
+      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
+      return dateA - dateB;
+    });
 
     // Создадим объект, где ключом будет комбинация года, месяца и дня
     const groupedData: {
