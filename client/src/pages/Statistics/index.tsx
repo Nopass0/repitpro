@@ -49,11 +49,17 @@ const options = {
 			y: {ticks: {display: false}, grid: {display: false}},
 		},
 	},
+	scales: {
+		x: {stacked: true},
+		y: {stacked: true},
+	},
 }
 
 const optionsBar = {
 	responsive: true,
 	maintainAspectRatio: false,
+	aspectRatio: 2,
+
 	plugins: {
 		legend: {display: false},
 		title: {display: true, text: 'Chart.js Bar Chart - Stacked'},
@@ -62,7 +68,6 @@ const optionsBar = {
 		x: {stacked: true},
 		y: {stacked: true},
 	},
-	aspectRatio: 2,
 }
 
 const StyledPickersLayout = styled('span')({
@@ -488,6 +493,7 @@ const Statistics = ({}: IStatistics) => {
 				setCliFinDateStart(new Date(currentYear, 0, 1))
 				const endDate = new Date(currentYear, 11, 31)
 				setCliFinDateEnd(endDate)
+				console.log(cliFinDate, 'CliFinDate')
 				break
 		}
 	}, [cliFinDate])
@@ -722,7 +728,6 @@ const Statistics = ({}: IStatistics) => {
 								<MiniCalendar
 									value={studTableDateStart}
 									onChange={(newDate) => setStudTableDateStart(newDate)}
-									
 								/>
 							</div>
 							<Line width="20px" className={s.LineDate} />

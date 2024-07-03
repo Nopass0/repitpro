@@ -129,7 +129,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 							/>
 						</div>
 					</div>
-					<div className={s.DataBlock}>
+					{/* <div className={s.DataBlock}>
 						<p></p>
 						<p></p>
 						<p style={{fontWeight: '500', textAlign: 'center'}}>Рубли</p>
@@ -163,7 +163,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 							}}>
 							100
 						</p>
-					</div>
+					</div> */}
 				</div>
 				{(() => {
 					switch (chooseGraphic) {
