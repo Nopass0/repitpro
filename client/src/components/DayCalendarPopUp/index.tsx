@@ -373,11 +373,6 @@ const DayCalendarPopUp = ({
 											procent={`
 											${Math.round((client.workPrice / client.totalWorkPrice) * 100)}`}
 										/>
-										<div
-											className=""
-											onClick={() => console.log(client, clients, index)}>
-											12345
-										</div>
 										<Line className={s.Line} width="700px" />
 									</>
 								)}

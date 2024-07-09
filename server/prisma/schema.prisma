@@ -136,7 +136,7 @@ model Student {
   // !
   startLesson     DateTime?
   endLesson      DateTime?
-  nowLevel        String?
+  nowLevel        Int?
   tryLessonCost   String?
   tryLessonCheck  Boolean?
   storyLesson     String
