@@ -2157,7 +2157,7 @@ const AddGroup = ({className}: IAddGroup) => {
 														changeStudentValue(
 															index,
 															'nowLevel',
-															String(e.target.value),
+															e.target.value,
 														)
 													}}
 													amountInputs={5}
