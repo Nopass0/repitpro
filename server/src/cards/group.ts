@@ -179,7 +179,9 @@ export async function addGroup(data: any, socket: any) {
             costOneLesson: String(student.costOneLesson) || "",
             targetLessonStudent: student.targetLessonStudent || "",
             todayProgramStudent: student.todayProgramStudent || "",
-            startLesson: student.startLesson ? new Date(student.startLesson) : null,
+            startLesson: student.startLesson
+              ? new Date(student.startLesson)
+              : null,
             endLesson: student.endLesson ? new Date(student.endLesson) : null,
             nowLevel: student.nowLevel || 0,
             tryLessonCost: student.tryLessonCost || "",
@@ -747,8 +749,12 @@ export async function updateGroup(data, socket: any) {
               ? new Date(newStudent.prePayDate)
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
-            startLesson: newStudent.startLesson ? new Date(student.startLesson) : null,
-            endLesson: student.endLesson ? new Date(newStudent.endLesson) : null,
+            startLesson: newStudent.startLesson
+              ? new Date(student.startLesson)
+              : null,
+            endLesson: student.endLesson
+              ? new Date(newStudent.endLesson)
+              : null,
             nowLevel: newStudent.nowLevel || 0,
             tryLessonCost: newStudent.tryLessonCost || "",
             tryLessonCheck: newStudent.tryLessonCheck || false,
@@ -776,8 +782,12 @@ export async function updateGroup(data, socket: any) {
               ? new Date(newStudent.prePayDate)
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
-            startLesson: newStudent.startLesson ? new Date(newStudent.startLesson) : null,
-            endLesson: newStudent.endLesson ? new Date(newStudent.endLesson) : null,
+            startLesson: newStudent.startLesson
+              ? new Date(newStudent.startLesson)
+              : null,
+            endLesson: newStudent.endLesson
+              ? new Date(newStudent.endLesson)
+              : null,
             nowLevel: newStudent.nowLevel || 0,
             tryLessonCost: newStudent.tryLessonCost || "",
             tryLessonCheck: newStudent.tryLessonCheck || false,
@@ -1028,7 +1038,6 @@ export async function fetchGroupsByDate(
         costOneLesson: student.costOneLesson,
         targetLessonStudent: student.targetLessonStudent,
         todayProgramStudent: student.todayProgramStudent,
-        
       })),
     };
 

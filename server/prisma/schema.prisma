@@ -136,14 +136,14 @@ model Student {
   // !
   startLesson     DateTime?
   endLesson      DateTime?
-  nowLevel        String?
+  nowLevel        Int?
   tryLessonCost   String?
   tryLessonCheck  Boolean?
-  storyLesson     String
-  costOneLesson   String
+  storyLesson     String?
+  costOneLesson   String?
   files           String[]
-  targetLessonStudent String
-  todayProgramStudent String
+  targetLessonStudent String?
+  todayProgramStudent String?
   isArchived      Boolean @default(false)
   group           Group    @relation(fields: [groupId], references: [id])
   groupId         String
