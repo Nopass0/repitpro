@@ -370,6 +370,166 @@ export async function updateClient(
       updatedFiles = [...updatedFiles, ...audioIds];
     }
 
+    for (const newJob of jobs) {
+      const existingJob = await db.job.findUnique({
+        where: { id: newJob.id },
+        include: { stages: true },
+      });
+
+      if (existingJob) {
+        // Обновление существующей job
+        await db.job.update({
+          where: { id: newJob.id },
+          data: {
+            jobName: newJob.jobName,
+            itemName: newJob.itemName,
+            cost: newJob.cost,
+            clientId: newJob.clientId,
+            userId: newJob.userId,
+          },
+        });
+
+        // Обновление существующих stages
+        for (const newStage of newJob.stages) {
+          if (newStage.id) {
+            // Обновление существующего stage
+            await db.stage.update({
+              where: { id: newStage.id },
+              data: {
+                totalCost: String(newStage.totalCost),
+                name: newStage.name,
+                typePayment: newStage.typePayment,
+                dateStart: newStage.dateStart
+                  ? new Date(newStage.dateStart)
+                  : null,
+                cost: newStage.cost,
+                prePay: newStage.prePay,
+                postPay: newStage.postPay,
+                payment: newStage.payment,
+                payed: newStage.payed,
+                date: newStage.date ? new Date(newStage.date) : null,
+                workStarted: newStage.workStarted,
+                paymentDate: newStage.paymentDate
+                  ? new Date(newStage.paymentDate)
+                  : null,
+                endPaymentPrice: newStage.endPaymentPrice,
+                endPaymentDate: newStage.endPaymentDate
+                  ? new Date(newStage.endPaymentDate)
+                  : null,
+                firstPaymentPayed: newStage.firstPaymentPayed,
+                startWorkDate: newStage.startWorkDate
+                  ? new Date(newStage.startWorkDate)
+                  : null,
+                isStartWork: newStage.isStartWork,
+                firstPaymentDate: newStage.firstPaymentDate
+                  ? new Date(newStage.firstPaymentDate)
+                  : null,
+                fisrtPaymentPrice: newStage.fisrtPaymentPrice,
+                endPaymentPayed: newStage.endPaymentPayed,
+                endWorkDate: newStage.endWorkDate
+                  ? new Date(newStage.endWorkDate)
+                  : null,
+                isEndWork: newStage.isEndWork,
+              },
+            });
+          } else {
+            // Создание нового stage
+            await db.stage.create({
+              data: {
+                totalCost: String(newStage.totalCost),
+                name: newStage.name,
+                typePayment: newStage.typePayment,
+                dateStart: newStage.dateStart
+                  ? new Date(newStage.dateStart)
+                  : null,
+                cost: newStage.cost,
+                prePay: newStage.prePay,
+                postPay: newStage.postPay,
+                payment: newStage.payment,
+                payed: newStage.payed,
+                date: newStage.date ? new Date(newStage.date) : null,
+                workStarted: newStage.workStarted,
+                paymentDate: newStage.paymentDate
+                  ? new Date(newStage.paymentDate)
+                  : null,
+                endPaymentPrice: newStage.endPaymentPrice,
+                endPaymentDate: newStage.endPaymentDate
+                  ? new Date(newStage.endPaymentDate)
+                  : null,
+                firstPaymentPayed: newStage.firstPaymentPayed,
+                startWorkDate: newStage.startWorkDate
+                  ? new Date(newStage.startWorkDate)
+                  : null,
+                isStartWork: newStage.isStartWork,
+                firstPaymentDate: newStage.firstPaymentDate
+                  ? new Date(newStage.firstPaymentDate)
+                  : null,
+                fisrtPaymentPrice: newStage.fisrtPaymentPrice,
+                endPaymentPayed: newStage.endPaymentPayed,
+                endWorkDate: newStage.endWorkDate
+                  ? new Date(newStage.endWorkDate)
+                  : null,
+                isEndWork: newStage.isEndWork,
+                jobId: newJob.id,
+                userId: newJob.userId, // Ensure userId is passed correctly
+                clientId: newJob.clientId, // Ensure clientId is passed correctly
+              },
+            });
+          }
+        }
+      } else {
+        // Создание новой job и stages
+        await db.job.create({
+          data: {
+            id: newJob.id, // Assuming you have id in the new jobs data
+            jobName: newJob.jobName,
+            itemName: newJob.itemName,
+            cost: newJob.cost,
+            clientId: newJob.clientId,
+            userId: newJob.userId,
+            stages: {
+              create: newJob.stages.map((stage) => ({
+                totalCost: stage.totalCost,
+                name: stage.name,
+                typePayment: stage.typePayment,
+                dateStart: stage.dateStart ? new Date(stage.dateStart) : null,
+                cost: stage.cost,
+                prePay: stage.prePay,
+                postPay: stage.postPay,
+                payment: stage.payment,
+                payed: stage.payed,
+                date: stage.date ? new Date(stage.date) : null,
+                workStarted: stage.workStarted,
+                paymentDate: stage.paymentDate
+                  ? new Date(stage.paymentDate)
+                  : null,
+                endPaymentPrice: stage.endPaymentPrice,
+                endPaymentDate: stage.endPaymentDate
+                  ? new Date(stage.endPaymentDate)
+                  : null,
+                firstPaymentPayed: stage.firstPaymentPayed,
+                startWorkDate: stage.startWorkDate
+                  ? new Date(stage.startWorkDate)
+                  : null,
+                isStartWork: stage.isStartWork,
+                firstPaymentDate: stage.firstPaymentDate
+                  ? new Date(stage.firstPaymentDate)
+                  : null,
+                fisrtPaymentPrice: stage.fisrtPaymentPrice,
+                endPaymentPayed: stage.endPaymentPayed,
+                endWorkDate: stage.endWorkDate
+                  ? new Date(stage.endWorkDate)
+                  : null,
+                isEndWork: stage.isEndWork,
+                userId: newJob.userId, // Ensure userId is passed correctly
+                clientId: newJob.clientId, // Ensure clientId is passed correctly
+              })),
+            },
+          },
+        });
+      }
+    }
+
     const updatedClient = await db.client.update({
       where: {
         id,
@@ -380,10 +540,7 @@ export async function updateClient(
         phoneNumber,
         email,
         commentClient,
-        // !REPAIR
-        jobs: {
-          update: jobs,
-        },
+
         costStudent,
         files: updatedFiles,
       },

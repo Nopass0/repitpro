@@ -4,7 +4,7 @@ import RecordNListen from '../RecordNListen'
 import {Option, Select, SelectOption} from '@mui/base'
 import uploadFile from '../../assets/UploadFile.svg'
 import NowLevel from '../NowLevel'
-import CheckBox from '../CheckBox'
+import {IDayGroupStudent, IStudentPoints} from '../../types'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import {useDispatch, useSelector} from 'react-redux'
 import {useEffect, useState} from 'react'
@@ -40,6 +40,8 @@ const DayGroupPopUp = ({
 	groupId,
 }: IDayGroupPopUp) => {
 	const dispatch = useDispatch()
+
+	//Redux states
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
 	)
@@ -49,38 +51,41 @@ const DayGroupPopUp = ({
 	const calendarNowPopupYear = useSelector(
 		(state: any) => state.calendarNowPopupYear,
 	)
-	const currentOpenedStudent = useSelector(
-		(state: any) => state.currentOpenedStudent,
-	)
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
 	const user = useSelector((state: any) => state.user)
+	//End Redux states
+
 	const token = user.token
 
-	const [pagePopUp, setPagePopUp] = useState<EPagePopUp>(EPagePopUp.None)
-
-	const [student, setStudent] = useState<any>({})
-	const [isOpened, setIsOpened] = useState(false)
-	const [openSelect1, setOpenSelect1] = useState(false)
-	const [openSelect2, setOpenSelect2] = useState(false)
+	const [student, setStudent] = useState<IDayGroupStudent | {}>({})
+	const [isOpened, setIsOpened] = useState<boolean>(false)
+	const [openSelect1, setOpenSelect1] = useState<boolean>(false)
+	const [openSelect2, setOpenSelect2] = useState<boolean>(false)
 
 	const [homeWorkComment, setHomeWorkComment] = useState('')
 	const [classroomComment, setClassroomComment] = useState('')
+
 	const [homeFiles, setHomeFiles] = useState<any[]>([])
-	const [homeFilesPaths, setHomeFilesPaths] = useState<string[]>([])
 	const [classroomFiles, setClassroomFiles] = useState<any[]>([])
-	const [classroomFilesPaths, setClassroomFilesPaths] = useState<string[]>([])
+
 	const [homeAudios, setHomeAudios] = useState<any[]>([])
 	const [classAudios, setClassAudios] = useState<any[]>([])
-	const [homeStudentsPoints, setHomeStudentsPoints] = useState<any[]>([])
-	const [classroomStudentsPoints, setClassroomStudentsPoints] = useState<any[]>(
-		[],
-	)
+
+	const [homeStudentsPoints, setHomeStudentsPoints] = useState<
+		IStudentPoints[]
+	>([])
+	const [classroomStudentsPoints, setClassroomStudentsPoints] = useState<
+		IStudentPoints[]
+	>([])
 
 	const [groupSchedules, setGroupSchedules] = useState<any>()
 	const [groupCurrentIndexSchedule, setGroupCurrentIndexSchedule] =
 		useState<number>()
+
+	const [students, setStudents] = useState<IDayGroupStudent[]>([])
+	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
 
 	const handleAddHomeAudio = (
 		file: any,
@@ -189,6 +194,7 @@ const DayGroupPopUp = ({
 			)
 		})
 	}, [student, currentScheduleDay])
+
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
@@ -203,6 +209,9 @@ const DayGroupPopUp = ({
 				(student: any) => student.id === currentScheduleDay,
 			)
 			setStudent(student || {})
+			console.log(
+				`\n---------\n${JSON.stringify(student, null, 2)}\n------------\n`,
+			)
 			console.log(
 				'\n-------------------------students(group----------------------------)\n',
 				student,
@@ -242,6 +251,7 @@ const DayGroupPopUp = ({
 	])
 
 	useEffect(() => {
+		console.log('UPDATE-UPDATE-UPDATE')
 		if (currentScheduleDay && isOpened) {
 			socket.emit('updateStudentSchedule', {
 				id: currentScheduleDay,
@@ -251,18 +261,22 @@ const DayGroupPopUp = ({
 				token: token,
 				classFiles: classroomFiles.map((file) => file.file),
 				classWork: classroomComment,
-				classStudentsPoints: classroomStudentsPoints.map((student) => ({
-					studentId: student.studentId,
-					points: student.points,
-				})),
+				classStudentsPoints: classroomStudentsPoints
+					? classroomStudentsPoints.map((student) => ({
+							studentId: student.studentId,
+							points: student.points,
+						}))
+					: [],
 				homeFiles: homeFiles.map((file) => file.file),
 				homeWork: homeWorkComment,
 				homeAudios: homeAudios.map((audio) => audio.file),
 				classAudios: classAudios.map((audio) => audio.file),
-				homeStudentsPoints: homeStudentsPoints.map((student) => ({
-					studentId: student.studentId,
-					points: student.points,
-				})),
+				homeStudentsPoints: homeStudentsPoints
+					? homeStudentsPoints.map((student) => ({
+							studentId: student.studentId,
+							points: student.points,
+						}))
+					: [],
 			})
 		}
 	}, [
@@ -275,11 +289,7 @@ const DayGroupPopUp = ({
 		homeStudentsPoints,
 		classroomStudentsPoints,
 		currentScheduleDay,
-		
 	])
-
-	const [students, setStudents] = useState<any[]>([])
-	const [currentIndex, setCurrentIndex] = useState(0) // Track the current student index
 
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {

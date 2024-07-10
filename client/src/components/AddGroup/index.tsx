@@ -254,7 +254,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				})
 			}
 		}
-		// window.location.reload()
+		window.location.reload()
 	}
 
 	function getDay(date: any) {
@@ -720,6 +720,9 @@ const AddGroup = ({className}: IAddGroup) => {
 					prePayDate: new Date(Date.now()),
 					selectedDate: null,
 					storyLesson: '',
+					tryLessonCheck: false,
+					tryLessonCost: '',
+					nowLevel: 0,
 					costOneLesson: '',
 					targetLessonStudent: '',
 					todayProgramStudent: '',
@@ -2154,11 +2157,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													value={Number(student.nowLevel)}
 													onChange={(e) => {
-														changeStudentValue(
-															index,
-															'nowLevel',
-															e.target.value,
-														)
+														changeStudentValue(index, 'nowLevel', Number(e))
 													}}
 													amountInputs={5}
 												/>

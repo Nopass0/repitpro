@@ -400,19 +400,14 @@ const AddClient = ({}: IAddClient) => {
 			setFiles(data.files)
 			setcommentClient(data.commentClient)
 			setAudios(data.audios)
-		}
-	}, [data])
 
-	useEffect(() => {
-		// ! Фиксануть это говно
-		if (jobs) {
-			if (jobs[currentJobIndex].stages.length > 1) {
+			if (data.jobs[currentJobIndex].stages.length > 1) {
 				setStages(2)
 			} else {
 				setStages(1)
 			}
 		}
-	}, [jobs])
+	}, [data])
 
 	const nextClient = () => {
 		if (Number(currentClientPosition) < allIdsClient.length - 1) {

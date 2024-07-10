@@ -729,6 +729,11 @@ export async function updateGroup(data, socket: any) {
       const existingStudent = existingGroup.students.find(
         (student) => student.id === newStudent.id
       );
+      console.log(
+        "----------newStudent, existingStudent--------",
+        newStudent,
+        existingStudent
+      );
       if (existingStudent) {
         // Update existing student
         await db.student.update({
@@ -750,9 +755,9 @@ export async function updateGroup(data, socket: any) {
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
             startLesson: newStudent.startLesson
-              ? new Date(student.startLesson)
+              ? new Date(newStudent.startLesson)
               : null,
-            endLesson: student.endLesson
+            endLesson: newStudent.endLesson
               ? new Date(newStudent.endLesson)
               : null,
             nowLevel: newStudent.nowLevel || 0,
@@ -772,7 +777,7 @@ export async function updateGroup(data, socket: any) {
             email: newStudent.email,
             address: newStudent.address || "",
             storyLesson: newStudent.storyLesson || "",
-            costOneLesson: newStudent.costOneLesson || "",
+            costOneLesson: String(newStudent.costOneLesson) || "",
             targetLessonStudent: newStudent.targetLessonStudent || "",
             linkStudent: newStudent.linkStudent || "",
             costStudent: newStudent.costStudent || "",

@@ -47,7 +47,8 @@ export async function addStudent(data, socket: any) {
       prePayDate,
       costOneLesson,
       commentStudent,
-      link,
+      linkStudent,
+      costStudent,
       audios,
       cost,
       historyLessons,
@@ -203,8 +204,8 @@ export async function addStudent(data, socket: any) {
               phoneNumber,
               email,
               address: "",
-              linkStudent: link || "",
-              costStudent: cost || "",
+              linkStudent: linkStudent || "",
+              costStudent: costStudent || "",
               commentStudent,
               prePayCost,
               prePayDate: prePayDate ? new Date(prePayDate) : null,
@@ -481,6 +482,7 @@ export async function getStudentsByDate(
       ) {
         homeStudentsPoints = students.map((student) => ({
           studentId: student.id,
+          studentName: student.nameStudent,
           points: 0,
         }));
       }
@@ -491,6 +493,7 @@ export async function getStudentsByDate(
       ) {
         classStudentsPoints = students.map((student) => ({
           studentId: student.id,
+          studentName: student.nameStudent,
           points: 0,
         }));
       }
@@ -651,6 +654,29 @@ export async function updateStudentSchedule(data, socket: any) {
 
   const updatedFields: any = {};
 
+  let studentIds = [];
+  let studentNames = [];
+
+  if (homeStudentsPoints !== undefined) {
+    homeStudentsPoints.map((obj) => {
+      studentIds.push(obj.studentId);
+    });
+  }
+
+  let students = await db.student.findMany({
+    where: {
+      id: {
+        in: studentIds,
+      },
+    },
+  });
+
+  if (students.length > 0) {
+    students.map((student) => {
+      studentNames.push(student.nameStudent);
+    });
+  }
+
   if (lessonsPrice !== undefined)
     updatedFields.lessonsPrice = Number(lessonsPrice);
   if (itemName !== undefined) updatedFields.itemName = itemName;
@@ -661,11 +687,17 @@ export async function updateStudentSchedule(data, socket: any) {
   if (classWork !== undefined) updatedFields.classWork = classWork;
   if (homeStudentsPoints !== undefined)
     updatedFields.homeStudentsPoints = Array.isArray(homeStudentsPoints)
-      ? homeStudentsPoints
+      ? homeStudentsPoints.map((obj, i) => ({
+          ...obj,
+          studentName: studentNames[i],
+        }))
       : [];
   if (classStudentsPoints !== undefined)
     updatedFields.classStudentsPoints = Array.isArray(classStudentsPoints)
-      ? classStudentsPoints
+      ? classStudentsPoints.map((obj, i) => ({
+          ...obj,
+          studentName: studentNames[i],
+        }))
       : [];
   if (address !== undefined) updatedFields.address = address;
   if (homeFilePaths.length > 0) updatedFields.homeFiles = homeFilePaths;
@@ -878,7 +910,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
         prePayCost: data.prePayCost,
         prePayDate: data.prePayDate,
         costOneLesson: data.costOneLesson,
-        linkStudent: data.link,
+        linkStudent: data.linkStudent,
         files: AllFiles,
         costStudent: data.costStudent,
         phoneNumber: data.phoneNumber,
@@ -1204,6 +1236,7 @@ export async function createStudentSchedule(data: any, socket: any) {
       data: {
         groupName: "",
         userId,
+        historyLessons: [],
         items: {
           connect: {
             id: item.id,

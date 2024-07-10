@@ -93,6 +93,9 @@ export interface IStudent {
 	prePayCost: string
 	prePayDate: Date
 	selectedDate: null
+	nowLevel: number
+	tryLessonCheck: boolean
+	tryLessonCost: string
 	costOneLesson: string
 	storyLesson: string
 	targetLessonStudent: string
@@ -127,4 +130,53 @@ export interface IlinksArray {
 	linkedId?: string
 	links: string[]
 	token: string
+}
+
+export interface IDayGroupStudent {
+	id: string
+	itemName: string
+	nameStudent: string
+	typeLesson: number
+	homeFiles: any[]
+	classFiles: any[]
+	homeAudios: any[]
+	classAudios: any[]
+	homeWork: string
+	place: string
+	classWork: string
+	isCheck: boolean
+	tryLessonCheck: boolean
+	startTime: {
+		hour: number
+		minute: number
+	}
+	endTime: {
+		hour: number
+		minute: number
+	}
+	homeStudentsPoints: {
+		points: number
+		studentId: string
+		studentName: string
+	}[]
+	classStudentsPoints: {
+		points: number
+		studentId: string
+		studentName: string
+	}[]
+	groupName: string
+	groupId: string
+	students: {
+		id: string
+		nameStudent: string
+		costOneLesson: string
+		targetLessonStudent: string
+		todayProgramStudent: string
+	}[]
+}
+
+export interface IStudentPoints {
+	studentId: string
+	studentName?: string
+	points: number
 }
