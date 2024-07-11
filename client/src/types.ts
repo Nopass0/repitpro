@@ -154,16 +154,8 @@ export interface IDayGroupStudent {
 		hour: number
 		minute: number
 	}
-	homeStudentsPoints: {
-		points: number
-		studentId: string
-		studentName: string
-	}[]
-	classStudentsPoints: {
-		points: number
-		studentId: string
-		studentName: string
-	}[]
+	homeStudentsPoints: IStudentPoints[]
+	classStudentsPoints: IStudentPoints[]
 	groupName: string
 	groupId: string
 	students: {
@@ -179,4 +171,11 @@ export interface IStudentPoints {
 	studentId: string
 	studentName?: string
 	points: number
+}
+
+export interface IFile {
+	file: any
+	name: string
+	type: string
+	size: number
 }
