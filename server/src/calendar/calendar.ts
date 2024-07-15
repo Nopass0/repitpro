@@ -111,7 +111,7 @@ export const getByGroupId = async (data, socket) => {
     }
 
     let { groupId } = data;
-    console.log(data, "groupIdgroupIdgroupIdgroupId");
+    // console.log(data, "groupIdgroupIdgroupIdgroupId");
 
     const studentSchedules = await db.studentSchedule.findMany({
       where: {
@@ -131,7 +131,7 @@ export const getByGroupId = async (data, socket) => {
     studentScheduleJSON.sort((a, b) => {
       return a.date.getTime() - b.date.getTime();
     });
-    console.log(studentScheduleJSON, "studentScheduleJSON");
+    // console.log(studentScheduleJSON, "studentScheduleJSON");
 
     socket.emit("getByGroupId", studentScheduleJSON);
   } catch (error) {

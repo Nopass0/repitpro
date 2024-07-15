@@ -379,10 +379,11 @@ export async function getStudentsByDate(
     year: string;
     token: string;
     isGroup: boolean;
+    studentId: string;
   },
   socket: any
 ) {
-  const { day, month, year, token, isGroup } = data;
+  const { day, month, year, token, isGroup, studentId } = data;
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_?.userId;
 
@@ -441,8 +442,10 @@ export async function getStudentsByDate(
     },
   });
 
+  console.log("This is isGroup", isGroup);
   if (isGroup) {
     const groupsData = [];
+    console.log("This is GROUP");
 
     for (const schedule of studentSchedules) {
       const { item } = schedule;
@@ -536,8 +539,9 @@ export async function getStudentsByDate(
 
     for (const schedule of studentSchedules) {
       const { item } = schedule;
-      const student =
-        item.group.students.find((s) => s.id === schedule.studentId) || null;
+      console.log("This is studentId", studentId, schedule);
+      const student = item.group.students[0];
+      console.log(student, "\n-----student", studentId);
       const timeLinesArray = schedule.timeLinesArray;
       const daySchedule = timeLinesArray[dayOfWeekIndex];
       const homeFiles = await db.file.findMany({
@@ -554,6 +558,38 @@ export async function getStudentsByDate(
       });
       const groupStudentSchedule = schedule.item.group.groupName;
 
+      let homeStudentsPoints = schedule.homeStudentsPoints;
+      let classStudentsPoints = schedule.classStudentsPoints;
+
+      // Приведение данных к нужному формату
+      if (
+        (!Array.isArray(homeStudentsPoints) ||
+          homeStudentsPoints.length !== 1) &&
+        student
+      ) {
+        homeStudentsPoints = [
+          {
+            studentId: student.id,
+            studentName: student.nameStudent,
+            points: 0,
+          },
+        ];
+      }
+
+      if (
+        (!Array.isArray(classStudentsPoints) ||
+          classStudentsPoints.length !== 1) &&
+        student
+      ) {
+        classStudentsPoints = [
+          {
+            studentId: student.id,
+            studentName: student.nameStudent,
+            points: 0,
+          },
+        ];
+      }
+
       const scheduleData = {
         id: schedule.id,
         nameStudent: student ? student.nameStudent : schedule.studentName,
@@ -568,11 +604,11 @@ export async function getStudentsByDate(
         homeWork: schedule.homeWork,
         place: item.placeLesson,
         classWork: schedule.classWork,
-        homeStudentsPoints: Array.isArray(schedule.homeStudentsPoints)
-          ? schedule.homeStudentsPoints
+        homeStudentsPoints: Array.isArray(homeStudentsPoints)
+          ? homeStudentsPoints
           : [],
-        classStudentsPoints: Array.isArray(schedule.classStudentsPoints)
-          ? schedule.classStudentsPoints
+        classStudentsPoints: Array.isArray(classStudentsPoints)
+          ? classStudentsPoints
           : [],
         isCheck: schedule.isChecked,
         tryLessonCheck: item.tryLessonCheck,
@@ -623,7 +659,7 @@ export async function updateStudentSchedule(data, socket: any) {
 
   const userId = token_.userId;
 
-  console.log("data", data);
+  // console.log("data", data);
 
   let homeFilePaths = [];
   let classFilePaths = [];
@@ -650,7 +686,7 @@ export async function updateStudentSchedule(data, socket: any) {
     classAudiosPaths = await upload(classAudios, userId, "class/audio");
   }
 
-  console.log("homeFiles", homeFiles, "classFiles", classFiles);
+  // console.log("homeFiles", homeFiles, "classFiles", classFiles);
 
   const updatedFields: any = {};
 
@@ -761,7 +797,12 @@ export async function updateStudentSchedule(data, socket: any) {
     data: updatedFields,
   });
 
-  console.log(updatedSchedule);
+  console.log(
+    "\n----------------student-schedule---------------------\n",
+    studentIds,
+    updatedSchedule,
+    "\n--------------------------------------\n"
+  );
   return updatedSchedule;
 }
 

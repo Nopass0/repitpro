@@ -6,7 +6,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
 import * as pr from 'react-multi-date-picker'
 interface CalendarProps {
-	value?: string
+	value?: string | Date
 	onChange: (value: Date) => void
 	calendarId?: string
 	disabled?: boolean
@@ -178,7 +178,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		<div className={s.container}>
 			<div className={s.input__init}>
 				<input
-				disabled={disabled}
+					disabled={disabled}
 					type="text"
 					value={formatDate(selectedDate ? selectedDate : new Date())}
 					onClick={() => setIsOpen(!isOpen)}
@@ -197,7 +197,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 							<CloseIcon className={s.closeIcon} />
 						</button>
 						<pr.Calendar
-						disabled={disabled}
+							disabled={disabled}
 							value={value}
 							onChange={onChange}
 							numberOfMonths={1}

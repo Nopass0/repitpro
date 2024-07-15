@@ -21,6 +21,7 @@ import {useEffect, useState} from 'react'
 import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import {IStudentPoints} from '@/types'
 interface IDayStudentPopUp {
 	icon?: any
 	name?: string
@@ -119,11 +120,10 @@ const DayStudentPopUp = ({
 	const [classroomFiles, setClassroomFiles] = useState<any>(
 		student?.classFiles || [],
 	)
-	const [homeStudentsPoints, setHomeStudentsPoints] = useState<number>(
-		student?.homeStudentsPoints?.points || 1,
-	)
+	const [homeStudentsPoints, setHomeStudentsPoints] =
+		useState<IStudentPoints[]>()
 	const [classroomStudentsPoints, setClassroomStudentsPoints] =
-		useState<number>(student?.classStudentsPoints?.points || 1)
+		useState<IStudentPoints[]>()
 
 	const handleAddHomeFile = (e: any) => {
 		const fileToAdd = e.target.files[0]
@@ -192,6 +192,11 @@ const DayStudentPopUp = ({
 	}, [student, currentScheduleDay])
 
 	function nextStudentSchedule() {
+		console.log(
+			'nextStudentSchedule',
+			currentIndexStudentSchedules,
+			studentSchedules,
+		)
 		if (currentIndexStudentSchedules! < studentSchedules.length - 1) {
 			dispatch({
 				type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
@@ -236,83 +241,59 @@ const DayStudentPopUp = ({
 	}
 
 	useEffect(() => {
+		console.log(
+			'\n---------------currentOpenedStudent---------------\n',
+			currentOpenedStudent,
+		)
+	}, [currentOpenedStudent])
+
+	useEffect(() => {
+		console.log(
+			'\n---------------currentOpenedStudent---------------\n',
+			currentOpenedStudent,
+		)
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
+			studentId: currentOpenedStudent,
+			isGroup: false,
 		})
-		socket.once('getStudentsByDate', (data: any) => {
-			console.log('getStudentsByDate', data)
-			//get students array and get by id
-			console.log('data', data, 'currentScheduleDay', currentScheduleDay)
-			const student = data?.find(
-				(student: any) => student.id === currentScheduleDay,
-			)
-			setStudent(student || {})
-			console.log(
-				'studentstudentstudentstudentstudentstudentstudentstudentstudent',
-				student,
-			)
-			setHomeWorkComment(student?.homeWork || '')
-			setClassroomComment(student?.classWork || '')
-			setHomeFiles(student?.homeFiles || [])
-			setClassroomFiles(student?.classFiles || [])
-			// setAudios(student?.audios || [])
-			// setClassAudio(student?.classAudio || [])
-			setHomeFilesPaths(student?.homeFilesPath || [])
-			setClassroomFilesPaths(student?.classFilesPath || [])
-			setHomeStudentsPoints(student?.homeStudentsPoints?.points || 1)
-			setClassroomStudentsPoints(student?.classStudentsPoints?.points || 1)
-		})
+	}, [
+		currentScheduleDay,
+		calendarNowPopupDay,
+		calendarNowPopupMonth,
+		calendarNowPopupYear,
+		currentOpenedStudent,
+	])
+
+	socket.once('getStudentsByDate', (data: any) => {
+		console.log('getStudentsByDate', data)
+		//get students array and get by id
+		console.log('data', data, 'currentScheduleDay', currentScheduleDay)
+		const student = data?.find(
+			(student: any) => student.id === currentScheduleDay,
+		)
+		setStudent(student || {})
+		console.log(
+			'studentstudentstudentstudentstudentstudentstudentstudentstudent',
+			student,
+		)
+		setHomeWorkComment(student?.homeWork || '')
+		setClassroomComment(student?.classWork || '')
+		setHomeFiles(student?.homeFiles || [])
+		setClassroomFiles(student?.classFiles || [])
+		// setAudios(student?.audios || [])
+		// setClassAudio(student?.classAudio || [])
+		setHomeFilesPaths(student?.homeFilesPath || [])
+		setClassroomFilesPaths(student?.classFilesPath || [])
+		setHomeStudentsPoints(student?.homeStudentsPoints)
+		setClassroomStudentsPoints(student?.classStudentsPoints)
 		setIsOpened(true)
-	}, [currentScheduleDay])
+	})
 
 	console.log('groupgroupgroupgroupgroup', group)
-
-	useEffect(() => {
-		if (currentScheduleDay && isOpened) {
-			console.log(
-				'New info: ',
-				currentScheduleDay,
-				homeWorkComment,
-				classroomComment,
-				homeFiles,
-				classroomFiles,
-				homeStudentsPoints,
-				classroomStudentsPoints,
-			)
-
-			socket.emit('updateStudentSchedule', {
-				id: currentScheduleDay,
-				day: calendarNowPopupDay,
-				month: calendarNowPopupMonth,
-				year: calendarNowPopupYear,
-				token: token,
-				classFiles: classroomFiles,
-				classWork: classroomComment,
-				classStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: classroomStudentsPoints,
-				},
-				homeFiles: homeFiles,
-				homeWork: homeWorkComment,
-				// audios: audios,
-				// classAudio: classAudio,
-				homeStudentsPoints: {
-					studentId: currentOpenedStudent,
-					points: homeStudentsPoints,
-				},
-			})
-		}
-	}, [
-		homeWorkComment,
-		classroomComment,
-		homeFiles,
-		classroomFiles,
-		homeStudentsPoints,
-		classroomStudentsPoints,
-	])
 
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
@@ -337,6 +318,69 @@ const DayStudentPopUp = ({
 			setCurrentIndex(currentStudentIndex)
 		}
 	}, [students, currentScheduleDay])
+
+	useEffect(() => {
+		if (currentScheduleDay && isOpened && student) {
+			console.log(
+				'New info: ',
+				currentScheduleDay,
+				homeWorkComment,
+				classroomComment,
+				homeFiles,
+				classroomFiles,
+				homeStudentsPoints,
+				classroomStudentsPoints,
+			)
+
+			socket.emit('updateStudentSchedule', {
+				id: currentScheduleDay,
+				day: calendarNowPopupDay,
+				month: calendarNowPopupMonth,
+				year: calendarNowPopupYear,
+				token: token,
+				classFiles: classroomFiles,
+				classWork: classroomComment,
+				classStudentsPoints: [
+					{
+						studentId: currentOpenedStudent,
+						studentName: student.name,
+						points:
+							(classroomStudentsPoints &&
+								((classroomStudentsPoints[0].points &&
+									classroomStudentsPoints[0].points) ||
+									1)) ||
+							1,
+					},
+				],
+				homeFiles: homeFiles,
+				homeWork: homeWorkComment,
+				// audios: audios,
+				// classAudio: classAudio,
+				homeStudentsPoints: [
+					{
+						studentId: currentOpenedStudent,
+						studentName: student.name,
+						points:
+							(homeStudentsPoints &&
+								((homeStudentsPoints[0].points &&
+									homeStudentsPoints[0].points) ||
+									1)) ||
+							1,
+					},
+				],
+			})
+		}
+	}, [
+		student,
+		homeWorkComment,
+		classroomComment,
+		classroomFiles,
+		homeFiles,
+		classroomStudentsPoints,
+		homeStudentsPoints,
+		currentScheduleDay,
+	])
+
 	return (
 		<div style={style} className={s.wrapper}>
 			<div className={s.InfoBlock}>
@@ -439,11 +483,19 @@ const DayStudentPopUp = ({
 						</div>
 						<h1>Выполнение домашней работы</h1>
 
-						<NowLevel
-							className={s.NowLevel}
-							value={homeStudentsPoints}
-							onChange={(e) => setHomeStudentsPoints(e)}
-						/>
+						{homeStudentsPoints && (
+							<NowLevel
+								className={s.NowLevel}
+								value={
+									homeStudentsPoints.length > 0
+										? homeStudentsPoints[0].points
+										: 1
+								}
+								onChange={(e) =>
+									setHomeStudentsPoints((prev) => [{...prev[0], points: e}])
+								}
+							/>
+						)}
 					</div>
 					<div className={s.Devider}></div>
 					<div className={s.LessonWrapper}>
@@ -525,16 +577,25 @@ const DayStudentPopUp = ({
 							</Select>
 						</div>
 						<h1>Работа на занятии</h1>
-
-						<NowLevel
-							className={s.NowLevel}
-							value={classroomStudentsPoints}
-							onChange={(e) => setClassroomStudentsPoints(e)}
-						/>
-						<div className={s.PrePay}>
+						{classroomStudentsPoints && (
+							<NowLevel
+								className={s.NowLevel}
+								value={
+									classroomStudentsPoints.length > 0
+										? classroomStudentsPoints[0].points
+										: 1
+								}
+								onChange={(e) =>
+									setClassroomStudentsPoints((prev) => [
+										{...prev[0], points: e},
+									])
+								}
+							/>
+						)}
+						{/* <div className={s.PrePay}>
 							<p>{!hiddenNum && <>0</>} ₽</p>
 							<CheckBox size="16px" />
-						</div>
+						</div> */}
 					</div>
 				</div>
 			</div>

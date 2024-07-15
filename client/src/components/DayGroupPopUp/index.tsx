@@ -157,7 +157,13 @@ const DayGroupPopUp = ({
 	}
 
 	const handleNextStudent = () => {
+		console.log(
+			'\n-----------------',
+			groupCurrentIndexSchedule,
+			groupSchedules,
+		)
 		if (groupCurrentIndexSchedule! < groupSchedules.length - 1) {
+			console.log('Next student')
 			dispatch({
 				type: 'SET_CURRENT_OPENED_SCHEDULE_DAY',
 				payload: groupSchedules[groupCurrentIndexSchedule! + 1].id,
@@ -188,7 +194,21 @@ const DayGroupPopUp = ({
 			})
 		}
 	}
-	useSocketOnce('getByGroupScheduleId', (data: any) => {
+	// useSocketOnce('getByGroupScheduleId', (data: any) => {
+	// 	setGroupSchedules(data)
+	// 	let indexOfStudent = data.findIndex(
+	// 		(student: any) => student.id === currentScheduleDay,
+	// 	)
+	// 	setGroupCurrentIndexSchedule(indexOfStudent)
+	// 	console.log(
+	// 		data,
+	// 		indexOfStudent,
+	// 		currentScheduleDay,
+	// 		'currentIndexStudentSchedules',
+	// 	)
+	// })
+
+	socket.once('getByGroupScheduleId', (data: any) => {
 		setGroupSchedules(data)
 		let indexOfStudent = data.findIndex(
 			(student: any) => student.id === currentScheduleDay,
@@ -224,10 +244,23 @@ const DayGroupPopUp = ({
 		calendarNowPopupMonth,
 		calendarNowPopupYear,
 		currentScheduleDay,
+		groupCurrentIndexSchedule,
 	])
 
 	// ? GET STUDENT DATA AND SEND getByGroupScheduleId
-	useSocketOnce('getStudentsByDate', (data: IDayGroupStudent[]) => {
+	// useSocketOnce('getStudentsByDate', (data: IDayGroupStudent[]) => {
+	// 	const student = data?.find(
+	// 		(student: any) => student.id === currentScheduleDay,
+	// 	)
+	// 	console.log('ONCE --- getByGroupScheduleId', student)
+	// 	student &&
+	// 		socket.emit('getByGroupScheduleId', {
+	// 			groupId: student.groupId,
+	// 			token: token,
+	// 		})
+	// })
+
+	socket.once('getStudentsByDate', (data: IDayGroupStudent[]) => {
 		const student = data?.find(
 			(student: any) => student.id === currentScheduleDay,
 		)

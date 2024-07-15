@@ -58,7 +58,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		})
 	}
 
-	const handleClickOutside = (event) => {
+	const handleClickOutside = (event: MouseEvent) => {
 		if (modalRef.current && !modalRef.current.contains(event.target)) {
 			setContextMenu({mouseX: 0, mouseY: 0})
 		}

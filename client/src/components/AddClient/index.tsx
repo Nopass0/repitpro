@@ -721,7 +721,7 @@ const AddClient = ({}: IAddClient) => {
 												// defaultValue={1}
 												value={stages}
 												onChange={(e) => {
-													setStages(e.target.value)
+													setStages(Number(e.target.value))
 												}}>
 												<mui.MenuItem value={1}>
 													<p>Стандартная работа</p>
@@ -738,7 +738,7 @@ const AddClient = ({}: IAddClient) => {
 											<>
 												<div className={s.StudentCard}>
 													<p>Общая стоимость работы:</p>
-													<input
+													<Input
 														disabled={isEditMode}
 														width={`${String(job.stages[0].totalCost).length}ch`}
 														num
@@ -759,7 +759,7 @@ const AddClient = ({}: IAddClient) => {
 											<>
 												<div className={s.StudentCard}>
 													<p>Общая стоимость работы:</p>
-													<input
+													<Input
 														disabled={isEditMode}
 														width={`${String(job.stages[0].totalCost).length}ch`}
 														num
@@ -850,7 +850,7 @@ const AddClient = ({}: IAddClient) => {
 															<Line width="100%" className={s.Line} />
 															<div className={s.StudentCard}>
 																<p>Стоимость этапа:</p>
-																<input
+																<Input
 																	disabled={isEditMode}
 																	style={{borderBottom: '1px solid #e2e2e9'}}
 																	num
@@ -962,7 +962,7 @@ const AddClient = ({}: IAddClient) => {
 																			/>
 																			<div className={s.PayInput}>
 																				<p>Оплата</p>
-																				<input
+																				<Input
 																					disabled={isEditMode}
 																					num
 																					type="text"
@@ -1060,7 +1060,7 @@ const AddClient = ({}: IAddClient) => {
 																			/>
 																			<div className={s.PayInput}>
 																				<p>Оплата</p>
-																				<input
+																				<Input
 																					disabled={isEditMode}
 																					num
 																					type="text"
@@ -1141,7 +1141,7 @@ const AddClient = ({}: IAddClient) => {
 																			/>
 																			<div className={s.PayInput}>
 																				<p>Оплата</p>
-																				<input
+																				<Input
 																					disabled={isEditMode}
 																					num
 																					type="text"
@@ -1240,7 +1240,7 @@ const AddClient = ({}: IAddClient) => {
 																			/>
 																			<div className={s.PayInput}>
 																				<p>Оплата</p>
-																				<input
+																				<Input
 																					disabled={isEditMode}
 																					num
 																					type="text"
@@ -1433,7 +1433,7 @@ const AddClient = ({}: IAddClient) => {
 																/>
 																<div className={s.PayInput}>
 																	<p>Оплата</p>
-																	<input
+																	<Input
 																		disabled={isEditMode}
 																		width={`${
 																			String(job.stages[0].fisrtPaymentPrice)
@@ -1536,7 +1536,7 @@ const AddClient = ({}: IAddClient) => {
 																/>
 																<div className={s.PayInput}>
 																	<p>Оплата</p>
-																	<input
+																	<Input
 																		disabled={isEditMode}
 																		width={`${
 																			String(job.stages[0].endPaymentPrice)
@@ -1620,7 +1620,7 @@ const AddClient = ({}: IAddClient) => {
 																/>
 																<div className={s.PayInput}>
 																	<p>Оплата</p>
-																	<input
+																	<Input
 																		disabled={isEditMode}
 																		num
 																		type="text"
@@ -1719,7 +1719,7 @@ const AddClient = ({}: IAddClient) => {
 																/>
 																<div className={s.PayInput}>
 																	<p>Оплата</p>
-																	<input
+																	<Input
 																		disabled={isEditMode}
 																		num
 																		type="text"

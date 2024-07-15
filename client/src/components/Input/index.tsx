@@ -6,14 +6,14 @@ interface IInput {
 	style?: React.CSSProperties
 	children?: React.ReactNode
 	type?: string
-	value?: string
+	value?: string | number
 	onChange?: (e: any) => void
 	onClick?: (e: any) => void
 	num?: boolean
 	disabled?: boolean
 	width?: string
 	maxWidth?: string
-	minWidth?:string
+	minWidth?: string
 }
 
 const Input: React.FC<IInput> = ({
