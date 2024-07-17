@@ -15,6 +15,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import useOnce from '../../hooks/useOnce'
 import useOnceEvery from '../../hooks/useOnceEvery'
 import useSocketOnce from '../../hooks/useSocketOnce'
+import { TailSpin } from 'react-loader-spinner'
 
 interface IDayGroupPopUp {
 	icon?: any
@@ -89,7 +90,7 @@ const DayGroupPopUp = ({
 			return {...prev, [key]: value} // Update the specific field
 		})
 	}
-
+	const [loader, setLoader] = useState<boolean>(false)
 	const handleAddHomeAudio = (
 		file: any,
 		name: string,
@@ -176,6 +177,7 @@ const DayGroupPopUp = ({
 					year: groupSchedules[groupCurrentIndexSchedule! + 1].year,
 				},
 			})
+			setLoader(true)
 		}
 	}
 	const handlePrevStudent = () => {
@@ -192,6 +194,7 @@ const DayGroupPopUp = ({
 					year: groupSchedules[groupCurrentIndexSchedule! - 1].year,
 				},
 			})
+			setLoader(true)
 		}
 	}
 	// useSocketOnce('getByGroupScheduleId', (data: any) => {
@@ -301,244 +304,268 @@ const DayGroupPopUp = ({
 						}))
 					: [],
 			})
+			setLoader(false)
 		}
 	}, [student, currentScheduleDay])
 
 	return (
 		<div style={style} className={s.wrapper}>
-			<div className={s.InfoBlock}>
-				<div className={s.Header}>
-					<div className={s.MainHeader}>
-						<div className={s.IconHeader}>
-							<img src={icon} alt="icon" />
-							<p>{student?.nameStudent}</p>
+			{!loader ? (
+				<>
+					<div className={s.InfoBlock}>
+						<div className={s.Header}>
+							<div className={s.MainHeader}>
+								<div className={s.IconHeader}>
+									<img src={icon} alt="icon" />
+									<p>{student?.nameStudent}</p>
+								</div>
+								<div className={s.Devider}></div>
+								<div className={s.AddressHeader}>
+									<p>Адрес:</p>
+									<p>{student?.place}</p>
+								</div>
+								<div className={s.Devider}></div>
+								<div className={s.DateHeader}>
+									<p>{date}</p>
+									<p>{time}</p>
+								</div>
+							</div>
 						</div>
-						<div className={s.Devider}></div>
-						<div className={s.AddressHeader}>
-							<p>Адрес:</p>
-							<p>{student?.place}</p>
-						</div>
-						<div className={s.Devider}></div>
-						<div className={s.DateHeader}>
-							<p>{date}</p>
-							<p>{time}</p>
-						</div>
-					</div>
-				</div>
-				<div className={s.MainBlock}>
-					<div className={s.HomeWorkWrapper}>
-						<h1>Домашняя работа</h1>
-						<textarea
-							className={s.TextArea}
-							placeholder="Задания, комментарий"
-							value={student?.homeWork}
-							onChange={(e) => changeStudentField('homeWork', e.target.value)}
-						/>
-						<div className={s.MediaBlock}>
-							<RecordNListen
-								typeCard="day/home/audio"
-								alreadyRecorded={student?.homeAudios}
-								callback={handleAddHomeAudio}
-								className={s.RecordNListen}
-							/>
-							<input
-								type="file"
-								id="inputFile1"
-								className={s.InputFile}
-								onChange={handleAddHomeFile}
-							/>
-							<Select
-								className={s.Select}
-								multiple
-								onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
-								renderValue={(selected: SelectOption<number>[]) => (
-									<>
-										<div className={s.ListWrapper}>
-											<label htmlFor="inputFile1" className={s.LabelFile}>
-												<img src={uploadFile} alt="uploadFile" />
-											</label>
-											<div className={s.Icons}>
-												{openSelect1 ? <ExpandLess /> : <ExpandMore />}
-											</div>
-										</div>
-									</>
-								)}>
-								{student?.homeFiles.length === 0 ? (
-									<Option className={s.Option} value={0}>
-										Список пока пуст
-									</Option>
-								) : (
-									student?.homeFiles.map((file: any, index: number) => (
-										<Option className={s.Option} key={index} value={index}>
-											<div className={s.FileWrapper}>
-												<p>{file.name.slice(0, 25) + '...'}</p>
-												<button
-													className={s.DeleteBtn}
-													onClick={() =>
-														changeStudentField(
-															'homeFiles',
-															student.homeFiles.filter(
-																(f: any) => f.name !== file.name,
-															),
-														)
-													}>
-													<DeleteOutlineIcon />
-												</button>
-											</div>
-										</Option>
-									))
-								)}
-							</Select>
-						</div>
-						<h1>Выполнение домашней работы</h1>
-
-						{student &&
-							student.homeStudentsPoints.map(
-								(studentPoints: IStudentPoints, index: number) => (
-									<div key={index} className={s.HomeWorkGroups}>
-										<div className={s.HomeWorkStud}>
-											<p>{studentPoints.studentName}</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={studentPoints.points}
-												onChange={(newPoints) => {
-													const updatedPoints = student.homeStudentsPoints.map(
-														(s: IStudentPoints, i: number) =>
-															i === index ? {...s, points: newPoints} : s,
-													)
-													changeStudentField(
-														'homeStudentsPoints',
-														updatedPoints,
-													)
-												}}
-											/>
-										</div>
-										{index < student.homeStudentsPoints.length - 1 && (
-											<Line width="371px" className={s.Line} />
-										)}
-									</div>
-								),
-							)}
-					</div>
-					<div className={s.Devider}></div>
-					<div className={s.LessonWrapper}>
-						<h1>Занятие</h1>
-						<textarea
-							className={s.TextArea}
-							placeholder="Комментарий"
-							value={student?.classWork}
-							onChange={(e) => changeStudentField('classWork', e.target.value)}
-						/>
-						<div className={s.MediaBlock}>
-							<RecordNListen
-								typeCard="day/classroom/audio"
-								alreadyRecorded={student?.classAudios}
-								callback={handleAddClassroomAudio}
-								className={s.RecordNListen}
-							/>
-							<input
-								type="file"
-								id="inputFile2"
-								className={s.InputFile}
-								onChange={handleAddClassroomFile}
-							/>
-							<Select
-								className={s.Select}
-								multiple
-								onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
-								renderValue={(selected: SelectOption<number>[]) => {
-									return (
-										<>
-											<div className={s.ListWrapper}>
-												<label htmlFor="inputFile2" className={s.LabelFile}>
-													<img src={uploadFile} alt="uploadFile" />
-												</label>
-												<div className={s.Icons}>
-													{openSelect2 ? <ExpandLess /> : <ExpandMore />}
+						<div className={s.MainBlock}>
+							<div className={s.HomeWorkWrapper}>
+								<h1>Домашняя работа</h1>
+								<textarea
+									className={s.TextArea}
+									placeholder="Задания, комментарий"
+									value={student?.homeWork}
+									onChange={(e) =>
+										changeStudentField('homeWork', e.target.value)
+									}
+								/>
+								<div className={s.MediaBlock}>
+									<RecordNListen
+										typeCard="day/home/audio"
+										alreadyRecorded={student?.homeAudios}
+										callback={handleAddHomeAudio}
+										className={s.RecordNListen}
+									/>
+									<input
+										type="file"
+										id="inputFile1"
+										className={s.InputFile}
+										onChange={handleAddHomeFile}
+									/>
+									<Select
+										className={s.Select}
+										multiple
+										onListboxOpenChange={() => setOpenSelect1(!openSelect1)}
+										renderValue={(selected: SelectOption<number>[]) => (
+											<>
+												<div className={s.ListWrapper}>
+													<label htmlFor="inputFile1" className={s.LabelFile}>
+														<img src={uploadFile} alt="uploadFile" />
+													</label>
+													<div className={s.Icons}>
+														{openSelect1 ? <ExpandLess /> : <ExpandMore />}
+													</div>
 												</div>
-											</div>
-										</>
-									)
-								}}>
-								{student && student.classFiles.length === 0 ? (
-									<Option className={s.Option} value={0}>
-										Список пока пуст
-									</Option>
-								) : (
-									student?.classFiles.map((file: any, index: number) => (
-										<Option className={s.Option} key={index} value={index}>
-											<div className={s.FileWrapper}>
-												<p>{file.name.slice(0, 25) + '...'}</p>
-												<button
-													className={s.DeleteBtn}
-													onClick={() =>
-														changeStudentField(
-															'classFiles',
-															student.classFiles.filter(
-																(f: any) => f.name !== file.name,
-															),
-														)
-													}>
-													<DeleteOutlineIcon />
-												</button>
-											</div>
-										</Option>
-									))
-								)}
-							</Select>
-						</div>
-						<h1>Работа на занятии</h1>
-
-						{student &&
-							student.classStudentsPoints.map(
-								(studentPoints: IStudentPoints, index: number) => (
-									<div className={s.WorkClassGroup}>
-										<div key={index} className={s.WorkClassStud}>
-											<p>{studentPoints.studentName}</p>
-											<NowLevel
-												className={s.NowLevel}
-												value={studentPoints.points}
-												onChange={(newPoints) => {
-													const updatedPoints = student.classStudentsPoints.map(
-														(s: IStudentPoints, i: number) =>
-															i === index ? {...s, points: newPoints} : s,
-													)
-													changeStudentField(
-														'classStudentsPoints',
-														updatedPoints,
-													)
-												}}
-											/>
-										</div>
-										{index < student.classStudentsPoints.length - 1 && (
-											<Line width="100%" className={s.Line} />
+											</>
+										)}>
+										{student?.homeFiles.length === 0 ? (
+											<Option className={s.Option} value={0}>
+												Список пока пуст
+											</Option>
+										) : (
+											student?.homeFiles.map((file: any, index: number) => (
+												<Option className={s.Option} key={index} value={index}>
+													<div className={s.FileWrapper}>
+														<p>{file.name.slice(0, 25) + '...'}</p>
+														<button
+															className={s.DeleteBtn}
+															onClick={() =>
+																changeStudentField(
+																	'homeFiles',
+																	student.homeFiles.filter(
+																		(f: any) => f.name !== file.name,
+																	),
+																)
+															}>
+															<DeleteOutlineIcon />
+														</button>
+													</div>
+												</Option>
+											))
 										)}
-									</div>
-								),
-							)}
-						<div className={s.Total}>
-							<p>Итог: </p>
+									</Select>
+								</div>
+								<h1>Выполнение домашней работы</h1>
+
+								{student &&
+									student.homeStudentsPoints.map(
+										(studentPoints: IStudentPoints, index: number) => (
+											<div key={index} className={s.HomeWorkGroups}>
+												<div className={s.HomeWorkStud}>
+													<p>{studentPoints.studentName}</p>
+													<NowLevel
+														className={s.NowLevel}
+														value={studentPoints.points}
+														onChange={(newPoints) => {
+															const updatedPoints =
+																student.homeStudentsPoints.map(
+																	(s: IStudentPoints, i: number) =>
+																		i === index ? {...s, points: newPoints} : s,
+																)
+															changeStudentField(
+																'homeStudentsPoints',
+																updatedPoints,
+															)
+														}}
+													/>
+												</div>
+												{index < student.homeStudentsPoints.length - 1 && (
+													<Line width="371px" className={s.Line} />
+												)}
+											</div>
+										),
+									)}
+							</div>
+							<div className={s.Devider}></div>
+							<div className={s.LessonWrapper}>
+								<h1>Занятие</h1>
+								<textarea
+									className={s.TextArea}
+									placeholder="Комментарий"
+									value={student?.classWork}
+									onChange={(e) =>
+										changeStudentField('classWork', e.target.value)
+									}
+								/>
+								<div className={s.MediaBlock}>
+									<RecordNListen
+										typeCard="day/classroom/audio"
+										alreadyRecorded={student?.classAudios}
+										callback={handleAddClassroomAudio}
+										className={s.RecordNListen}
+									/>
+									<input
+										type="file"
+										id="inputFile2"
+										className={s.InputFile}
+										onChange={handleAddClassroomFile}
+									/>
+									<Select
+										className={s.Select}
+										multiple
+										onListboxOpenChange={() => setOpenSelect2(!openSelect2)}
+										renderValue={(selected: SelectOption<number>[]) => {
+											return (
+												<>
+													<div className={s.ListWrapper}>
+														<label htmlFor="inputFile2" className={s.LabelFile}>
+															<img src={uploadFile} alt="uploadFile" />
+														</label>
+														<div className={s.Icons}>
+															{openSelect2 ? <ExpandLess /> : <ExpandMore />}
+														</div>
+													</div>
+												</>
+											)
+										}}>
+										{student && student.classFiles.length === 0 ? (
+											<Option className={s.Option} value={0}>
+												Список пока пуст
+											</Option>
+										) : (
+											student?.classFiles.map((file: any, index: number) => (
+												<Option className={s.Option} key={index} value={index}>
+													<div className={s.FileWrapper}>
+														<p>{file.name.slice(0, 25) + '...'}</p>
+														<button
+															className={s.DeleteBtn}
+															onClick={() =>
+																changeStudentField(
+																	'classFiles',
+																	student.classFiles.filter(
+																		(f: any) => f.name !== file.name,
+																	),
+																)
+															}>
+															<DeleteOutlineIcon />
+														</button>
+													</div>
+												</Option>
+											))
+										)}
+									</Select>
+								</div>
+								<h1>Работа на занятии</h1>
+
+								{student &&
+									student.classStudentsPoints.map(
+										(studentPoints: IStudentPoints, index: number) => (
+											<div className={s.WorkClassGroup}>
+												<div key={index} className={s.WorkClassStud}>
+													<p>{studentPoints.studentName}</p>
+													<NowLevel
+														className={s.NowLevel}
+														value={studentPoints.points}
+														onChange={(newPoints) => {
+															const updatedPoints =
+																student.classStudentsPoints.map(
+																	(s: IStudentPoints, i: number) =>
+																		i === index ? {...s, points: newPoints} : s,
+																)
+															changeStudentField(
+																'classStudentsPoints',
+																updatedPoints,
+															)
+														}}
+													/>
+												</div>
+												{index < student.classStudentsPoints.length - 1 && (
+													<Line width="100%" className={s.Line} />
+												)}
+											</div>
+										),
+									)}
+								<div className={s.Total}>
+									<p>Итог: </p>
+								</div>
+							</div>
 						</div>
 					</div>
+					<div className={s.buttons}>
+						<button onClick={onExit}>
+							<CloseIcon className={s.closeIcon} />
+						</button>
+						<div className={s.btn}>
+							<button className={s.btnRight} onClick={handleNextStudent}>
+								<span>
+									<Arrow direction={ArrowType.right} />
+								</span>
+							</button>
+							<button className={s.btnLeft} onClick={handlePrevStudent}>
+								<span>
+									<Arrow direction={ArrowType.left} />
+								</span>
+							</button>
+						</div>
+					</div>
+				</>
+			) : (
+				<div className={s.Spin}>
+					<TailSpin
+						visible={true}
+						height="80"
+						width="80"
+						color="#4fa94d"
+						ariaLabel="tail-spin-loading"
+						radius="1"
+						wrapperStyle={{}}
+						wrapperClass=""
+					/>
 				</div>
-			</div>
-			<div className={s.buttons}>
-				<button onClick={onExit}>
-					<CloseIcon className={s.closeIcon} />
-				</button>
-				<div className={s.btn}>
-					<button className={s.btnRight} onClick={handleNextStudent}>
-						<span>
-							<Arrow direction={ArrowType.right} />
-						</span>
-					</button>
-					<button className={s.btnLeft} onClick={handlePrevStudent}>
-						<span>
-							<Arrow direction={ArrowType.left} />
-						</span>
-					</button>
-				</div>
-			</div>
+			)}
 		</div>
 	)
 }

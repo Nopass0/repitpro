@@ -106,6 +106,7 @@ const MainPage = () => {
 					id: studentId,
 					isArchived: false,
 				})
+				window.location.reload()
 				break
 
 			case 'group':
@@ -124,6 +125,7 @@ const MainPage = () => {
 					id: studentId,
 					isArchived: false,
 				})
+				window.location.reload()
 				break
 			case 'client':
 				const newClients = clients.map((client, i) => {
@@ -141,6 +143,7 @@ const MainPage = () => {
 					id: studentId,
 					isArchived: false,
 				})
+				window.location.reload()
 				break
 			default:
 				break

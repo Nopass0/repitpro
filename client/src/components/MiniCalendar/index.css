@@ -1,0 +1,6 @@
+.rmdp-week-day:nth-child(6),
+.rmdp-week-day:nth-child(7),
+.rmdp-day:nth-child(6),
+.rmdp-day:nth-child(7) {
+	color: red;
+}

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import s from './index.module.scss'
 import CloseIcon from '@mui/icons-material/Close'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-
+import './index.css'
 import * as pr from 'react-multi-date-picker'
 interface CalendarProps {
 	value?: string | Date
