@@ -446,7 +446,7 @@ export async function getStudentsByDate(
   if (isGroup) {
     const groupsData = [];
     console.log("This is GROUP");
-
+    let totalPrice = 0;
     for (const schedule of studentSchedules) {
       const { item } = schedule;
       const timeLinesArray = schedule.timeLinesArray;
@@ -478,6 +478,7 @@ export async function getStudentsByDate(
       let homeStudentsPoints = schedule.homeStudentsPoints;
       let classStudentsPoints = schedule.classStudentsPoints;
 
+      totalPrice += schedule.lessonsPrice;
       // Приведение данных к нужному формату
       if (
         !Array.isArray(homeStudentsPoints) ||
@@ -533,6 +534,8 @@ export async function getStudentsByDate(
       groupsData.push(groupData);
     }
 
+    groupsData.push({ totalPrice });
+    console.log(groupsData, "\n-----groupsData");
     socket.emit("getStudentsByDate", groupsData);
   } else {
     const dataToEmit = [];
