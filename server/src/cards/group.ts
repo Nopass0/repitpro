@@ -127,7 +127,7 @@ function getDay(date) {
 //             )}`;
 //           }
 
-//           io.emit("addGroup", { error: errorMessage, ok: false });
+//           socket.emit("addGroup", { error: errorMessage, ok: false });
 //           return;
 //         }
 //       }
@@ -434,7 +434,11 @@ export async function addGroup(data: any, socket: any) {
             )}`;
           }
 
-          io.emit("addGroup", { error: errorMessage, freeSlots, ok: false });
+          socket.emit("addGroup", {
+            error: errorMessage,
+            freeSlots,
+            ok: false,
+          });
           return;
         } else {
           const freeSlot = {

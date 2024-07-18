@@ -166,7 +166,7 @@ const days = [
 //     }
 
 //     if (conflicts.length > 0) {
-//       io.emit("addStudent", { error: conflicts, ok: false });
+//       socket.emit("addStudent", { error: conflicts, ok: false });
 //       return;
 //     }
 
@@ -453,7 +453,7 @@ export async function addStudent(data, socket: any) {
     }
 
     if (conflicts.length > 0) {
-      io.emit("addStudent", { error: conflicts, freeSlots, ok: false });
+      socket.emit("addStudent", { error: conflicts, freeSlots, ok: false });
       return;
     }
 
@@ -1688,12 +1688,12 @@ export async function deleteAudio(
       }
     }
 
-    io.emit("deleteAudio", {
+    socket.emit("deleteAudio", {
       message: "Audio deleted successfully",
     });
     console.log("Audio deleted successfully");
   } catch (error) {
-    io.emit("deleteAudio", {
+    socket.emit("deleteAudio", {
       message: "Error deleting audio",
       error: error.message,
     });
