@@ -91,16 +91,19 @@ const DayStudentPopUp = ({
 
 	const [classAudio, setClassAudio] = useState<any>(student?.classAudio || [])
 
+	const [disabled, setDisabled] = useState<boolean>(false)
+
 	const handleAddHomeAudio = (
 		file: any,
 		name: string,
 		type: string,
 		size: number,
 	) => {
-		console.log(file, name, type, size)
 		setAudios([...homeFiles, {name: name, type: type, size: size, file: file}])
-
-		console.log('\n--------home-audio--------\n', audios, '\n--------\n')
+		setDisabled(true)
+		setTimeout(() => {
+			setDisabled(false)
+		}, 2000)
 	}
 
 	const handleAddClassroomAudio = (
@@ -114,6 +117,10 @@ const DayStudentPopUp = ({
 			...classAudio,
 			{name: name, type: type, size: size, file: file},
 		])
+		setDisabled(true)
+		setTimeout(() => {
+			setDisabled(false)
+		}, 2000)
 		console.log('\n--------class-audio--------\n', classAudio, '\n--------\n')
 	}
 
@@ -139,6 +146,10 @@ const DayStudentPopUp = ({
 					file: fileToAdd,
 				},
 			])
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 		} else {
 			console.log('Этот файл уже был добавлен.')
 		}
@@ -157,6 +168,10 @@ const DayStudentPopUp = ({
 					file: fileToAdd,
 				},
 			])
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 		} else {
 			console.log('Этот файл уже был добавлен.')
 		}
@@ -210,6 +225,10 @@ const DayStudentPopUp = ({
 					year: studentSchedules[currentIndexStudentSchedules! + 1].year,
 				},
 			})
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 			console.log(
 				studentSchedules[currentIndexStudentSchedules! + 1],
 				currentScheduleDay,
@@ -232,6 +251,10 @@ const DayStudentPopUp = ({
 					year: studentSchedules[currentIndexStudentSchedules! - 1].year,
 				},
 			})
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 			console.log(
 				studentSchedules[currentIndexStudentSchedules! - 1],
 				currentScheduleDay,
@@ -604,12 +627,18 @@ const DayStudentPopUp = ({
 					<CloseIcon className={s.closeIcon} />
 				</button>
 				<div className={s.btn}>
-					<button className={s.btnRight} onClick={nextStudentSchedule}>
+					<button
+						disabled={disabled}
+						className={s.btnRight}
+						onClick={nextStudentSchedule}>
 						<span>
 							<Arrow direction={ArrowType.right} />
 						</span>
 					</button>
-					<button className={s.btnLeft} onClick={prevStudentSchedule}>
+					<button
+						disabled={disabled}
+						className={s.btnLeft}
+						onClick={prevStudentSchedule}>
 						<span>
 							<Arrow direction={ArrowType.left} />
 						</span>

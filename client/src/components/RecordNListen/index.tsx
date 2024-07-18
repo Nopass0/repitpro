@@ -86,8 +86,11 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 			id,
 			type: typeCard,
 		})
-		
-		console.log('delete Audio', id, alreadyRecorded)
+		setRecordedAudios((prev) =>
+			prev.filter((audio) => {
+				return audio.id !== id
+			}),
+		)
 	}
 
 	const stopRecording = () => {
