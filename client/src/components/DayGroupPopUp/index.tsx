@@ -15,7 +15,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import useOnce from '../../hooks/useOnce'
 import useOnceEvery from '../../hooks/useOnceEvery'
 import useSocketOnce from '../../hooks/useSocketOnce'
-import { TailSpin } from 'react-loader-spinner'
+import {TailSpin} from 'react-loader-spinner'
 
 interface IDayGroupPopUp {
 	icon?: any
@@ -91,6 +91,7 @@ const DayGroupPopUp = ({
 		})
 	}
 	const [loader, setLoader] = useState<boolean>(false)
+	const [disabled, setDisabled] = useState<boolean>(false)
 	const handleAddHomeAudio = (
 		file: any,
 		name: string,
@@ -102,6 +103,10 @@ const DayGroupPopUp = ({
 				...student.homeAudios,
 				{name, type, size, file},
 			])
+		setDisabled(true)
+		setTimeout(() => {
+			setDisabled(false)
+		}, 2000)
 	}
 
 	const handleAddClassroomAudio = (
@@ -115,6 +120,10 @@ const DayGroupPopUp = ({
 				...student.classAudios,
 				{name, type, size, file},
 			])
+		setDisabled(true)
+		setTimeout(() => {
+			setDisabled(false)
+		}, 2000)
 	}
 
 	const handleAddHomeFile = (e: any) => {
@@ -132,6 +141,10 @@ const DayGroupPopUp = ({
 					file: fileToAdd,
 				},
 			])
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 		} else {
 			console.log('Этот файл уже был добавлен.')
 		}
@@ -152,6 +165,10 @@ const DayGroupPopUp = ({
 					file: fileToAdd,
 				},
 			])
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 		} else {
 			console.log('Этот файл уже был добавлен.')
 		}
@@ -177,7 +194,10 @@ const DayGroupPopUp = ({
 					year: groupSchedules[groupCurrentIndexSchedule! + 1].year,
 				},
 			})
-			setLoader(true)
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 		}
 	}
 	const handlePrevStudent = () => {
@@ -194,7 +214,10 @@ const DayGroupPopUp = ({
 					year: groupSchedules[groupCurrentIndexSchedule! - 1].year,
 				},
 			})
-			setLoader(true)
+			setDisabled(true)
+			setTimeout(() => {
+				setDisabled(false)
+			}, 2000)
 		}
 	}
 	// useSocketOnce('getByGroupScheduleId', (data: any) => {
@@ -279,13 +302,16 @@ const DayGroupPopUp = ({
 	useEffect(() => {
 		if (currentScheduleDay && isOpened && student) {
 			console.log('UPDATE-UPDATE-UPDATE')
+
 			socket.emit('updateStudentSchedule', {
 				id: currentScheduleDay,
 				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
 				token: token,
-				classFiles: student.classFiles.map((file) => file.file),
+				classFiles: student.classFiles.map((file) => {
+					return file
+				}),
 				classWork: student.classWork,
 				classStudentsPoints: student.classStudentsPoints
 					? student.classStudentsPoints.map((student) => ({
@@ -293,10 +319,16 @@ const DayGroupPopUp = ({
 							points: student.points,
 						}))
 					: [],
-				homeFiles: student.homeFiles.map((file) => file.file),
+				homeFiles: student.homeFiles.map((file) => {
+					return file
+				}),
 				homeWork: student.homeWork,
-				homeAudios: student.homeAudios.map((audio) => audio.file),
-				classAudios: student.classAudios.map((audio) => audio.file),
+				homeAudios: student.homeAudios.map((audio) => {
+					return audio
+				}),
+				classAudios: student.classAudios.map((audio) => {
+					return audio
+				}),
 				homeStudentsPoints: student.homeStudentsPoints
 					? student.homeStudentsPoints.map((student) => ({
 							studentId: student.studentId,
@@ -304,9 +336,8 @@ const DayGroupPopUp = ({
 						}))
 					: [],
 			})
-			setLoader(false)
 		}
-	}, [student, currentScheduleDay])
+	}, [student])
 
 	return (
 		<div style={style} className={s.wrapper}>
@@ -539,12 +570,18 @@ const DayGroupPopUp = ({
 							<CloseIcon className={s.closeIcon} />
 						</button>
 						<div className={s.btn}>
-							<button className={s.btnRight} onClick={handleNextStudent}>
+							<button
+								disabled={disabled}
+								className={s.btnRight}
+								onClick={handleNextStudent}>
 								<span>
 									<Arrow direction={ArrowType.right} />
 								</span>
 							</button>
-							<button className={s.btnLeft} onClick={handlePrevStudent}>
+							<button
+								disabled={disabled}
+								className={s.btnLeft}
+								onClick={handlePrevStudent}>
 								<span>
 									<Arrow direction={ArrowType.left} />
 								</span>

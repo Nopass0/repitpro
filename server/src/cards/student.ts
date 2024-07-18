@@ -949,7 +949,7 @@ export async function updateStudentSchedule(data, socket: any) {
 
   const userId = token_.userId;
 
-  // console.log("data", data);
+  console.log("data HOME FILES", data);
 
   let homeFilePaths = [];
   let classFilePaths = [];
@@ -957,6 +957,7 @@ export async function updateStudentSchedule(data, socket: any) {
   let classAudiosPaths = [];
 
   // Save home files
+  console.log(homeFiles, "HOME FILES");
   if (homeFiles?.length > 0) {
     homeFilePaths = await upload(homeFiles, userId, "home");
   }
@@ -1160,20 +1161,20 @@ export async function getGroupByStudentId(data: any, socket: any) {
     group_.group.students[0].filesData = files;
     group_.group.students[0].audiosData = audios;
 
-    // //get audios buffers
-    // const audiosBuffers = await JSON.parse(JSON.stringify(audios)).map(
-    //   (audio) => {
-    //     return getBufferByFilePath(audio.path);
-    //   }
-    // );
+    //get audios buffers
+    const audiosBuffers = await JSON.parse(JSON.stringify(audios)).map(
+      (audio) => {
+        return getBufferByFilePath(audio.path);
+      }
+    );
 
-    // console.log(audiosBuffers, "audiosBuffers");
+    console.log(audiosBuffers, "audiosBuffers");
 
-    // //add audios buffers to every audio object
+    //add audios buffers to every audio object
 
-    // await group_.group.students[0].audiosData.forEach(async (audio, index) => {
-    //   audio.buffer = await audiosBuffers[index];
-    // });
+    await group_.group.students[0].audiosData.forEach(async (audio, index) => {
+      audio.buffer = await audiosBuffers[index];
+    });
 
     socket.emit("getGroupByStudentId", group_);
     return group.group;
@@ -1665,10 +1666,14 @@ export async function deleteAudio(
       { name: "Group", field: "files" },
       { name: "Student", field: "files" },
       { name: "Client", field: "files" },
+      { name: "StudentSchedule", field: "homeAudios" },
+      { name: "StudentSchedule", field: "classAudios" },
     ];
 
     for (const model of models) {
-      const items = await db[model.name.toLowerCase()].findMany({
+      const items = await db[
+        model.name.charAt(0).toLowerCase() + model.name.slice(1)
+      ].findMany({
         where: {
           userId,
           [model.field]: {
@@ -1681,7 +1686,9 @@ export async function deleteAudio(
         const updatedFiles = item[model.field].filter(
           (fileId) => fileId !== id
         );
-        await db[model.name.toLowerCase()].update({
+        await db[
+          model.name.charAt(0).toLowerCase() + model.name.slice(1)
+        ].update({
           where: { id: item.id },
           data: { [model.field]: updatedFiles },
         });

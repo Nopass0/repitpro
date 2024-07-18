@@ -23,7 +23,7 @@ export const upload = async (
   if (data && data.length > 0) {
     const FilesDir = join("./files", folderName);
     mkdirSync(FilesDir, { recursive: true });
-
+    console.log(data, "FILE FILE FILE");
     for (const item of data) {
       const { file, name, size, type } = item;
       // Calculate hash-sum
@@ -49,7 +49,9 @@ export const upload = async (
         ext = fileExtension ? fileExtension : "unknown"; // Default to "unknown" if no extension is found
       }
 
-      const fileName = `${name.split(".")[0]}_${randomBytes(6).toString("hex")}.${ext}`;
+      const fileName = `${name.split(".")[0]}_${randomBytes(6).toString(
+        "hex"
+      )}.${ext}`;
       const filePath = join(FilesDir, fileName); // Use the new file name with the correct extension
 
       // Check if file already exists in db (By path)
