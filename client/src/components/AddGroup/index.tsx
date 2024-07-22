@@ -995,7 +995,16 @@ const AddGroup = ({className}: IAddGroup) => {
 			setFilesItems(data.filesItems)
 			setAudioItems(data.audioItems)
 			setAudioStudents(data.audioStudents)
-			// setStudentsHistoryLessons(data.historyLessons)
+			// !! Check This
+			let dateHistory = data.historyLessons.map((i) => {
+				return i.map((j) => {
+					{
+						return {...j, date: new Date(j.date)}
+					}
+				})
+			})
+			console.log(dateHistory, 'DateHISTORY')
+			setStudentsHistoryLessons(dateHistory)
 			console.log(data.historyLessons, 'data.historyLessons ----')
 		})
 
@@ -2108,7 +2117,6 @@ const AddGroup = ({className}: IAddGroup) => {
 															'prePayCost',
 															e.target.value,
 														)
-														
 													}}
 												/>
 
@@ -2143,7 +2151,6 @@ const AddGroup = ({className}: IAddGroup) => {
 															'tryLessonsCost',
 															String(e.target.value),
 														)
-														
 													}}
 												/>
 												<p>₽</p>
