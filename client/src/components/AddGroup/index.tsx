@@ -2102,13 +2102,14 @@ const AddGroup = ({className}: IAddGroup) => {
 													className={s.PrePayCostInput}
 													type="text"
 													value={student.prePayCost}
-													onChange={(e) =>
+													onChange={(e) => {
 														changeStudentValue(
 															index,
 															'prePayCost',
 															e.target.value,
 														)
-													}
+														
+													}}
 												/>
 
 												<p>₽</p>
@@ -2135,14 +2136,15 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													num
 													type="text"
-													value={student.tryLessonCost}
-													onChange={(e) =>
+													value={student.tryLessonsCost}
+													onChange={(e) => {
 														changeStudentValue(
 															index,
 															'tryLessonsCost',
 															String(e.target.value),
 														)
-													}
+														
+													}}
 												/>
 												<p>₽</p>
 											</div>

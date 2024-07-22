@@ -336,6 +336,21 @@ const DayGroupPopUp = ({
 						}))
 					: [],
 			})
+			if (student.homeWork === null) {
+				setStudent((prev: IDayGroupStudent | undefined) => {
+					if (!prev) return prev // Handle undefined case
+		
+					return {...prev, 'homeWork': ''} // Update the specific field
+				})
+				
+			} else if ( student.classWork === null) {
+				setStudent((prev: IDayGroupStudent | undefined) => {
+					if (!prev) return prev // Handle undefined case
+		
+					return {...prev, 'classWork': ''} // Update the specific field
+				})
+			}
+			console.log(student,'STUDENT')
 		}
 	}, [student])
 
