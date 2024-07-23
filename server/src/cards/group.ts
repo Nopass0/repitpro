@@ -317,7 +317,327 @@ function getDay(date) {
 //   }
 // }
 
-export async function addGroup(data: any, socket: any) {
+// export async function addGroup(data: any, socket: any) {
+//   try {
+//     const {
+//       groupName,
+//       items,
+//       students,
+//       token,
+//       files = [],
+//       filesItems = [],
+//       audiosItems = [],
+//       audiosStudents = [],
+//       historyLessons,
+//     } = data;
+
+//     const token_ = await db.token.findFirst({
+//       where: { token },
+//     });
+
+//     if (!token_) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = token_.userId;
+
+//     if (!userId) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const conflicts = [];
+//     const freeSlots = {};
+
+//     for (const item of items) {
+//       const startDate = new Date(item.startLesson);
+//       const endDate = new Date(item.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+//         const dayOfMonth = date.getDate();
+
+//         const cacheKey = `${userId}-${dayOfMonth}-${
+//           date.getMonth() + 1
+//         }-${date.getFullYear()}`;
+//         let existingSchedules = cache.get(cacheKey);
+
+//         if (!existingSchedules) {
+//           existingSchedules = await db.studentSchedule.findMany({
+//             where: {
+//               day: dayOfMonth.toString(),
+//               month: (date.getMonth() + 1).toString(),
+//               year: date.getFullYear().toString(),
+//               userId,
+//             },
+//           });
+//           cache.set(cacheKey, existingSchedules, 3600000); // 1 час TTL
+//         }
+
+//         const conflictingSchedules = existingSchedules.filter((schedule) => {
+//           if (!schedule.timeLinesArray || !schedule.timeLinesArray[dayOfWeek]) {
+//             return false;
+//           }
+//           const scheduleStartTime =
+//             schedule.timeLinesArray[dayOfWeek].startTime;
+//           const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+
+//           const newStartTime = scheduleForDay.startTime;
+//           const newEndTime = scheduleForDay.endTime;
+
+//           return (
+//             (newStartTime.hour < scheduleEndTime.hour ||
+//               (newStartTime.hour === scheduleEndTime.hour &&
+//                 newStartTime.minute <= scheduleEndTime.minute)) &&
+//             (newEndTime.hour > scheduleStartTime.hour ||
+//               (newEndTime.hour === scheduleStartTime.hour &&
+//                 newEndTime.minute >= scheduleStartTime.minute))
+//           );
+//         });
+
+//         if (conflictingSchedules.length > 0) {
+//           const daysOfWeek = [
+//             "Воскресенье",
+//             "Понедельник",
+//             "Вторник",
+//             "Среда",
+//             "Четверг",
+//             "Пятница",
+//             "Суббота",
+//           ];
+//           const dayName = daysOfWeek[dayOfWeek];
+//           const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
+//           const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
+
+//           let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
+
+//           const freeTimeSlots = [];
+//           for (const schedule of existingSchedules) {
+//             if (schedule.timeLinesArray && schedule.timeLinesArray[dayOfWeek]) {
+//               const scheduleStartTime =
+//                 schedule.timeLinesArray[dayOfWeek].startTime;
+//               const scheduleEndTime =
+//                 schedule.timeLinesArray[dayOfWeek].endTime;
+//               freeTimeSlots.push(
+//                 `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
+//               );
+//             }
+//           }
+
+//           if (freeTimeSlots.length > 0) {
+//             errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
+//               ", "
+//             )}`;
+//           }
+
+//           socket.emit("addGroup", {
+//             error: errorMessage,
+//             freeSlots,
+//             ok: false,
+//           });
+//           return;
+//         } else {
+//           const freeSlot = {
+//             startTime: `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`,
+//             endTime: `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`,
+//           };
+//           if (!freeSlots[dayOfWeek]) {
+//             freeSlots[dayOfWeek] = [];
+//           }
+//           freeSlots[dayOfWeek].push(freeSlot);
+//         }
+//       }
+//     }
+
+//     const createdGroup = await db.group.create({
+//       data: {
+//         groupName,
+//         userId,
+//         historyLessons: historyLessons,
+//         items: {
+//           create: items.map((item) => ({
+//             itemName: item.itemName,
+//             tryLessonCheck: item.tryLessonCheck || false,
+//             tryLessonCost: item.tryLessonCost || "",
+//             todayProgramStudent: item.todayProgramStudent || "",
+//             targetLesson: item.targetLesson || "",
+//             programLesson: item.programLesson || "",
+//             typeLesson: Number(item.typeLesson) || 1,
+//             placeLesson: item.placeLesson || "",
+//             timeLesson: item.timeLesson || "",
+//             costOneLesson: "",
+
+//             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
+//             startLesson: item.startLesson ? new Date(item.startLesson) : null,
+//             endLesson: item.endLesson ? new Date(item.endLesson) : null,
+//             nowLevel: item.nowLevel || 0,
+//             lessonDuration: Number(item.lessonDuration) || null,
+//             timeLinesArray: item.timeLinesArray || {},
+//             userId,
+//           })),
+//         },
+//         students: {
+//           create: students.map((student) => ({
+//             nameStudent: student.nameStudent,
+//             contactFace: student.contactFace,
+//             phoneNumber: student.phoneNumber,
+//             email: student.email,
+//             address: student.address || "",
+//             linkStudent: student.linkStudent || "",
+//             costStudent: student.costStudent || "",
+//             commentStudent: student.commentStudent || "",
+//             prePayCost: student.prePayCost || "",
+//             prePayDate: student.prePayDate
+//               ? new Date(student.prePayDate)
+//               : null,
+//             selectedDate: null,
+//             storyLesson: student.storyLesson || "",
+//             costOneLesson: String(student.costOneLesson) || "",
+//             targetLessonStudent: student.targetLessonStudent || "",
+//             todayProgramStudent: student.todayProgramStudent || "",
+//             startLesson: student.startLesson
+//               ? new Date(student.startLesson)
+//               : null,
+//             endLesson: student.endLesson ? new Date(student.endLesson) : null,
+//             nowLevel: student.nowLevel || 0,
+//             tryLessonCost: student.tryLessonCost || "",
+//             tryLessonCheck: student.tryLessonCheck || false,
+//             userId,
+//           })),
+//         },
+//       },
+//       select: {
+//         _count: true,
+//         id: true,
+//         groupName: true,
+//         userId: true,
+//         items: true,
+//         isArchived: true,
+//         students: true,
+//       },
+//     });
+
+//     for (const item of createdGroup.items) {
+//       const startDate = new Date(item.startLesson);
+//       const endDate = new Date(item.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+//         const dayOfMonth = date.getDate();
+
+//         const cond =
+//           scheduleForDay.startTime.hour === 0 &&
+//           scheduleForDay.startTime.minute === 0 &&
+//           scheduleForDay.endTime.hour === 0 &&
+//           scheduleForDay.endTime.minute === 0;
+
+//         const costOneLesson = await db.group.findUnique({
+//           where: { id: createdGroup.id },
+//           select: {
+//             students: {
+//               where: { userId },
+//               select: { costOneLesson: true },
+//             },
+//           },
+//         });
+
+//         if (!cond) {
+//           await db.studentSchedule.create({
+//             data: {
+//               day: dayOfMonth.toString(),
+//               groupId: createdGroup.id,
+//               workCount: 0,
+//               lessonsCount: 1,
+//               lessonsPrice: Number(costOneLesson.students[0].costOneLesson),
+//               workPrice: 0,
+//               month: (date.getMonth() + 1).toString(),
+//               timeLinesArray: item.timeLinesArray,
+//               isChecked: false,
+//               itemName: item.itemName,
+//               typeLesson: item.typeLesson,
+//               year: date.getFullYear().toString(),
+//               itemId: item.id,
+//               userId,
+//             },
+//           });
+//         }
+//       }
+//     }
+
+//     let filesIds = [];
+//     let filesItemsIds = [];
+
+//     if (files.length > 0) {
+//       filesIds = await upload(files, userId, "group/files", (ids) => {
+//         filesIds = ids;
+//       });
+//     }
+
+//     if (filesItems.length > 0) {
+//       filesItemsIds = await upload(
+//         filesItems,
+//         userId,
+//         "group/filesItems",
+//         (ids) => {
+//           filesItemsIds = ids;
+//         }
+//       );
+//     }
+
+//     let audiosItemsIds = [];
+//     let audiosStudentsIds = [];
+
+//     if (audiosItems.length > 0) {
+//       audiosItemsIds = await upload(
+//         audiosItems,
+//         userId,
+//         "group/audioItems",
+//         (ids) => {
+//           audiosItemsIds = ids;
+//         }
+//       );
+//     }
+
+//     if (audiosStudents.length > 0) {
+//       audiosStudentsIds = await upload(
+//         audiosStudents,
+//         userId,
+//         "group/audioStudents",
+//         (ids) => {
+//           audiosStudentsIds = ids;
+//         }
+//       );
+//     }
+
+//     await db.group.update({
+//       where: { id: createdGroup.id },
+//       data: {
+//         files: [
+//           ...filesIds,
+//           ...filesItemsIds,
+//           ...audiosItemsIds,
+//           ...audiosStudentsIds,
+//         ],
+//       },
+//     });
+
+//     socket.emit("addGroup", { ok: true });
+//   } catch (error) {
+//     console.error("Error creating group:", error);
+//     socket.emit("addGroup", { error: error.message, ok: false });
+//   }
+// }
+ 
+export async function addGroup(data, socket) {
   try {
     const {
       groupName,
@@ -330,24 +650,23 @@ export async function addGroup(data: any, socket: any) {
       audiosStudents = [],
       historyLessons,
     } = data;
-
+ 
     const token_ = await db.token.findFirst({
       where: { token },
     });
-
+ 
     if (!token_) {
       throw new Error("Invalid token");
     }
-
+ 
     const userId = token_.userId;
-
+ 
     if (!userId) {
       throw new Error("Invalid token");
     }
-
-    const conflicts = [];
+ 
     const freeSlots = {};
-
+ 
     for (const item of items) {
       const startDate = new Date(item.startLesson);
       const endDate = new Date(item.endLesson);
@@ -355,17 +674,15 @@ export async function addGroup(data: any, socket: any) {
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
         addDays(startDate, i)
       );
-
+ 
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
         const dayOfMonth = date.getDate();
-
-        const cacheKey = `${userId}-${dayOfMonth}-${
-          date.getMonth() + 1
-        }-${date.getFullYear()}`;
+ 
+        const cacheKey = `${userId}-${dayOfMonth}-${date.getMonth() + 1}-${date.getFullYear()}`;
         let existingSchedules = cache.get(cacheKey);
-
+ 
         if (!existingSchedules) {
           existingSchedules = await db.studentSchedule.findMany({
             where: {
@@ -375,30 +692,24 @@ export async function addGroup(data: any, socket: any) {
               userId,
             },
           });
-          cache.set(cacheKey, existingSchedules, 3600000); // 1 час TTL
+          cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
         }
-
+ 
         const conflictingSchedules = existingSchedules.filter((schedule) => {
           if (!schedule.timeLinesArray || !schedule.timeLinesArray[dayOfWeek]) {
             return false;
           }
-          const scheduleStartTime =
-            schedule.timeLinesArray[dayOfWeek].startTime;
-          const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-
-          const newStartTime = scheduleForDay.startTime;
-          const newEndTime = scheduleForDay.endTime;
-
+          const { startTime: scheduleStartTime, endTime: scheduleEndTime } = schedule.timeLinesArray[dayOfWeek];
+          const { startTime: newStartTime, endTime: newEndTime } = scheduleForDay;
+ 
           return (
             (newStartTime.hour < scheduleEndTime.hour ||
-              (newStartTime.hour === scheduleEndTime.hour &&
-                newStartTime.minute <= scheduleEndTime.minute)) &&
+              (newStartTime.hour === scheduleEndTime.hour && newStartTime.minute <= scheduleEndTime.minute)) &&
             (newEndTime.hour > scheduleStartTime.hour ||
-              (newEndTime.hour === scheduleStartTime.hour &&
-                newEndTime.minute >= scheduleStartTime.minute))
+              (newEndTime.hour === scheduleStartTime.hour && newEndTime.minute >= scheduleStartTime.minute))
           );
         });
-
+ 
         if (conflictingSchedules.length > 0) {
           const daysOfWeek = [
             "Воскресенье",
@@ -412,28 +723,22 @@ export async function addGroup(data: any, socket: any) {
           const dayName = daysOfWeek[dayOfWeek];
           const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
           const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
-
+ 
           let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
-
-          const freeTimeSlots = [];
-          for (const schedule of existingSchedules) {
+ 
+          const freeTimeSlots = existingSchedules.flatMap((schedule) => {
             if (schedule.timeLinesArray && schedule.timeLinesArray[dayOfWeek]) {
-              const scheduleStartTime =
-                schedule.timeLinesArray[dayOfWeek].startTime;
-              const scheduleEndTime =
-                schedule.timeLinesArray[dayOfWeek].endTime;
-              freeTimeSlots.push(
-                `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`
-              );
+              const scheduleStartTime = schedule.timeLinesArray[dayOfWeek].startTime;
+              const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+              return [`${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`];
             }
-          }
-
+            return [];
+          });
+ 
           if (freeTimeSlots.length > 0) {
-            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
-              ", "
-            )}`;
+            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(", ")}`;
           }
-
+ 
           socket.emit("addGroup", {
             error: errorMessage,
             freeSlots,
@@ -452,7 +757,7 @@ export async function addGroup(data: any, socket: any) {
         }
       }
     }
-
+ 
     const createdGroup = await db.group.create({
       data: {
         groupName,
@@ -470,7 +775,6 @@ export async function addGroup(data: any, socket: any) {
             placeLesson: item.placeLesson || "",
             timeLesson: item.timeLesson || "",
             costOneLesson: "",
-
             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
             startLesson: item.startLesson ? new Date(item.startLesson) : null,
             endLesson: item.endLesson ? new Date(item.endLesson) : null,
@@ -491,17 +795,13 @@ export async function addGroup(data: any, socket: any) {
             costStudent: student.costStudent || "",
             commentStudent: student.commentStudent || "",
             prePayCost: student.prePayCost || "",
-            prePayDate: student.prePayDate
-              ? new Date(student.prePayDate)
-              : null,
+            prePayDate: student.prePayDate ? new Date(student.prePayDate) : null,
             selectedDate: null,
             storyLesson: student.storyLesson || "",
             costOneLesson: String(student.costOneLesson) || "",
             targetLessonStudent: student.targetLessonStudent || "",
             todayProgramStudent: student.todayProgramStudent || "",
-            startLesson: student.startLesson
-              ? new Date(student.startLesson)
-              : null,
+            startLesson: student.startLesson ? new Date(student.startLesson) : null,
             endLesson: student.endLesson ? new Date(student.endLesson) : null,
             nowLevel: student.nowLevel || 0,
             tryLessonCost: student.tryLessonCost || "",
@@ -520,7 +820,7 @@ export async function addGroup(data: any, socket: any) {
         students: true,
       },
     });
-
+ 
     for (const item of createdGroup.items) {
       const startDate = new Date(item.startLesson);
       const endDate = new Date(item.endLesson);
@@ -528,18 +828,18 @@ export async function addGroup(data: any, socket: any) {
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
         addDays(startDate, i)
       );
-
+ 
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
         const dayOfMonth = date.getDate();
-
+ 
         const cond =
           scheduleForDay.startTime.hour === 0 &&
           scheduleForDay.startTime.minute === 0 &&
           scheduleForDay.endTime.hour === 0 &&
           scheduleForDay.endTime.minute === 0;
-
+ 
         const costOneLesson = await db.group.findUnique({
           where: { id: createdGroup.id },
           select: {
@@ -549,7 +849,7 @@ export async function addGroup(data: any, socket: any) {
             },
           },
         });
-
+ 
         if (!cond) {
           await db.studentSchedule.create({
             data: {
@@ -572,16 +872,16 @@ export async function addGroup(data: any, socket: any) {
         }
       }
     }
-
+ 
     let filesIds = [];
     let filesItemsIds = [];
-
+ 
     if (files.length > 0) {
       filesIds = await upload(files, userId, "group/files", (ids) => {
         filesIds = ids;
       });
     }
-
+ 
     if (filesItems.length > 0) {
       filesItemsIds = await upload(
         filesItems,
@@ -592,51 +892,46 @@ export async function addGroup(data: any, socket: any) {
         }
       );
     }
-
+ 
     let audiosItemsIds = [];
     let audiosStudentsIds = [];
-
+ 
     if (audiosItems.length > 0) {
       audiosItemsIds = await upload(
         audiosItems,
         userId,
-        "group/audioItems",
+        "group/audiosItems",
         (ids) => {
           audiosItemsIds = ids;
         }
       );
     }
-
+ 
     if (audiosStudents.length > 0) {
       audiosStudentsIds = await upload(
         audiosStudents,
         userId,
-        "group/audioStudents",
+        "group/audiosStudents",
         (ids) => {
           audiosStudentsIds = ids;
         }
       );
     }
-
-    await db.group.update({
-      where: { id: createdGroup.id },
-      data: {
-        files: [
-          ...filesIds,
-          ...filesItemsIds,
-          ...audiosItemsIds,
-          ...audiosStudentsIds,
-        ],
-      },
+ 
+    socket.emit("addGroup", {
+      data: createdGroup,
+      filesIds,
+      filesItemsIds,
+      audiosItemsIds,
+      audiosStudentsIds,
+      freeSlots,
+      ok: true,
     });
-
-    socket.emit("addGroup", { ok: true });
   } catch (error) {
-    console.error("Error creating group:", error);
+    console.error(error);
     socket.emit("addGroup", { error: error.message, ok: false });
   }
 }
-
 export async function getGroupList(token, socket: any) {
   try {
     const token_ = await db.token.findFirst({
@@ -878,7 +1173,6 @@ export async function getGroupById(data: any, socket: any) {
       },
     });
 
-    console.log(group, "getGroupById", group.files, "files");
 
     const files = await db.file.findMany({
       where: {
@@ -1012,6 +1306,7 @@ export async function updateGroup(data, socket: any) {
             nowLevel: newItem.nowLevel || 0,
             lessonDuration: Number(newItem.lessonDuration) || null,
             timeLinesArray: newItem.timeLinesArray || {},
+            commentItem: newItem.commentItem || "",
             userId,
           },
         });
@@ -1037,6 +1332,7 @@ export async function updateGroup(data, socket: any) {
             nowLevel: newItem.nowLevel || 0,
             lessonDuration: Number(newItem.lessonDuration) || null,
             timeLinesArray: newItem.timeLinesArray || {},
+            commentItem: newItem.commentItem || "",
             userId,
             groupId: id,
           },

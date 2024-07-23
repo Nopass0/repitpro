@@ -102,7 +102,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			startLesson: new Date(Date.now()),
 			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 			// totalCostOneLesson: 0,
-			// commentItem: '',
+			commentItem: '',
 			lessonDuration: null,
 			nowLevel: 0,
 			valueMuiSelectArchive: 1,
@@ -126,6 +126,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			selectedDate: null,
 			files: [],
 			storyLesson: '',
+			tryLessonCheck: false,
+			tryLessonCost: '',
 			targetLessonStudent: '',
 			todayProgramStudent: '',
 			startLesson: new Date(Date.now()),
@@ -227,6 +229,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				filesItems,
 				'\n----------------------------sendInfo----------------\n',
 			)
+			setLoading(false)
 			if (groupName && students.every((student) => student.nameStudent)) {
 				socket.emit('addGroup', {
 					groupName: groupName,
@@ -254,7 +257,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				})
 			}
 		}
-		window.location.reload()
+		// window.location.reload()
 	}
 
 	function getDay(date: any) {
@@ -576,6 +579,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					nowLevel: 0,
 					valueMuiSelectArchive: 1,
 					lessonDuration: null,
+					commentItem: '',
 					timeLinesArray: getVoidWeek() as ITimeLine[],
 				},
 			])
@@ -950,10 +954,8 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	socket.once('addGroup', (data) => {
 		const ok: boolean = data.ok
-
 		if (ok === true) {
 			window.location.reload()
-			// setLoading(false)
 		} else {
 			const meesage = data.error
 			if (errorList.indexOf(meesage) === -1) {
@@ -1932,7 +1934,7 @@ const AddGroup = ({className}: IAddGroup) => {
 													setItems(
 														items.map((item, index) => {
 															return index === currentItemIndex
-																? {...item, comment: e.target.value}
+																? {...item, commentItem: e.target.value}
 																: item
 														}),
 													)
@@ -2144,11 +2146,11 @@ const AddGroup = ({className}: IAddGroup) => {
 													disabled={isEditMode}
 													num
 													type="text"
-													value={student.tryLessonsCost}
+													value={student.tryLessonCost}
 													onChange={(e) => {
 														changeStudentValue(
 															index,
-															'tryLessonsCost',
+															'tryLessonCost',
 															String(e.target.value),
 														)
 													}}

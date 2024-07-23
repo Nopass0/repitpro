@@ -729,7 +729,7 @@ const Statistics = ({}: IStatistics) => {
 				<div className={s.GraphicBlock}>
 					<div className={s.MenuForGraphic}>
 						<p className={s.TitleTable}>Ученики сводная таблица</p>
-						<Select
+						{/* <Select
 							className={s.muiSelect}
 							value={studTableDate}
 							onChange={(e: any) => {
@@ -748,8 +748,8 @@ const Statistics = ({}: IStatistics) => {
 							<MenuItem value={3}>
 								<p>За всё время</p>
 							</MenuItem>
-						</Select>
-						<Line width="260px" />
+						</Select> */}
+						{/* <Line width="260px" />
 						<div className={s.Dates}>
 							<div className={s.DatePicker}>
 								<MiniCalendar
@@ -764,8 +764,8 @@ const Statistics = ({}: IStatistics) => {
 									onChange={(newDate) => setStudTableDateEnd(newDate)}
 								/>
 							</div>
-						</div>
-						<div className={s.DataBlock}>
+						</div> */}
+						{/* <div className={s.DataBlock}>
 							<p></p>
 							<p></p>
 							<p style={{fontWeight: '500', textAlign: 'center'}}>Рубли</p>
@@ -799,7 +799,7 @@ const Statistics = ({}: IStatistics) => {
 								}}>
 								100
 							</p>
-						</div>
+						</div> */}
 					</div>
 					<div className={s.TableWrap}>
 						<table className={s.Table}>
@@ -1012,7 +1012,7 @@ const Statistics = ({}: IStatistics) => {
 				<div className={s.GraphicBlock}>
 					<div className={s.MenuForGraphic}>
 						<p className={s.TitleTable}>Заказчики сводная таблица</p>
-						<Select
+						{/* <Select
 							className={s.muiSelect}
 							value={cliTableDate}
 							onChange={(e: any) => setCliTableDate(e.target.value)}
@@ -1080,7 +1080,7 @@ const Statistics = ({}: IStatistics) => {
 								}}>
 								100
 							</p>
-						</div>
+						</div> */}
 					</div>
 					<div className={s.TableWrap}>
 						<table className={s.Table}>

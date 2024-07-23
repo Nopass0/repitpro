@@ -180,6 +180,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [currentItemIndex, setCurrentItemIndex] = useState(0)
 	const dispatch = useDispatch()
 
+	const [historyLessonsFirst, setHistoryLessonsFirst] = useState<boolean>(true)
 	const sortHistoryByClosestDate = (history) => {
 		const today = new Date()
 		return history.sort((a, b) => {
@@ -366,7 +367,7 @@ const AddStudent = ({}: IAddStudent) => {
 				costOneLesson,
 				files,
 				audios,
-				historyLesson,
+				historyLessons: historyLesson,
 
 				items,
 				token,
@@ -379,7 +380,6 @@ const AddStudent = ({}: IAddStudent) => {
 				links: links,
 				token: token,
 			})
-			// setLoading(false)
 			window.location.reload()
 		} else {
 			socket.emit('addStudent', {
@@ -790,6 +790,7 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const handleClick = () => {
 		setOpen(!open)
+		setHistoryLessonsFirst(false)
 	}
 
 	function handlePrePayDate(newValue: any) {
@@ -858,10 +859,12 @@ const AddStudent = ({}: IAddStudent) => {
 		console.log(historyLessons_, 'historyLesson___')
 
 		// Обновляем состояние
-		setHistoryLesson(historyLessons_)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		handlePrePayment(historyLessons_)
+		if (!historyLessonsFirst) {
+			setHistoryLesson(historyLessons_)
+			handlePrePayment(historyLessons_)
+		}
 		console.log(historyLesson, 'historyLesson___2')
 	}, [items, prePayCost, prePayDate])
 
@@ -954,7 +957,11 @@ const AddStudent = ({}: IAddStudent) => {
 			setItems(data.items)
 			setFiles(data.students[0].filesData)
 			setAudios(data.students[0].audiosData)
-			console.log('--data-------', data)
+			let dateHistory = data.historyLessons.map((i) => {
+				return {...i, date: new Date(i.date)}
+			})
+			setHistoryLesson(dateHistory)
+			console.log('dataHistory', data)
 		}
 	}, [data])
 
@@ -1929,9 +1936,11 @@ const AddStudent = ({}: IAddStudent) => {
 
 								{errorList.length > 0 && (
 									<div className={s.ErrorList}>
-										{errorList.map((i) => (
-											<p key={i}>{JSON.stringify(i)}</p>
-										))}
+										<p>
+											Данное время занято:{' '}
+											{errorList.map((i) => i[0].day)[0] + ' '}
+											{errorList.map((i) => i[0].timeLines)[0][0].time}
+										</p>
 									</div>
 								)}
 							</div>

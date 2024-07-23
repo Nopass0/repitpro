@@ -70,6 +70,7 @@ export interface IItemCard {
 	endLesson: Date | null
 	nowLevel: number | undefined
 	timeLinesArray: ITimeLine[]
+	commentItem?: string
 }
 
 export interface IGroupHistoryLessons {

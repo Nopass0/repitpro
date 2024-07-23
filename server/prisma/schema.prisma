@@ -110,6 +110,7 @@ model Item {
   costOneLesson  String
   lessonDuration  Int?
   timeLinesArray Json //Objects
+  commentItem String?
 
   group             Group?       @relation(fields: [groupId], references: [id])
   groupId           String?

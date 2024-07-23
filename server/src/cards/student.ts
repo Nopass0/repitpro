@@ -1120,6 +1120,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
             id: true,
             items: true,
             students: true,
+            historyLessons: true,            
           },
         },
       },
@@ -1258,6 +1259,14 @@ export async function updateStudentAndItems(data: any, socket: any) {
       },
     });
 
+    const groupUpdated = await db.group.update({
+      where: {
+        id: group.id,
+      },
+      data: {
+        historyLessons: data.historyLessons,
+      },
+    })
     const items_ = db.item.updateMany({
       where: {
         groupId: group.id,
