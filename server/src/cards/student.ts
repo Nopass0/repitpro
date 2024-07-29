@@ -1267,6 +1267,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
         historyLessons: data.historyLessons,
       },
     })
+    // !! TODO НЕ ОБНОВЛЯЕТСЯ ПРЕДМЕТ В УЧЕНИКЕ
     const items_ = db.item.updateMany({
       where: {
         groupId: group.id,

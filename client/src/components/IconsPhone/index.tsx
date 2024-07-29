@@ -11,19 +11,40 @@ interface IIconsPhone {
 	email?: string
 }
 
-const IconsPhone: React.FC<IIconsPhone> = ({phoneNumber, email}: IIconsPhone) => {
+const IconsPhone: React.FC<IIconsPhone> = ({
+	phoneNumber,
+	email,
+}: IIconsPhone) => {
+	let phone = phoneNumber && phoneNumber.replace(/[^0-9]/g, '')
 	return (
 		<div className={s.Icons}>
-			<Link to={`tel:${phoneNumber}`}>
+			<Link
+				rel="noopener noreferrer"
+				target="_blank"
+				className={`${!!phone ? '' : s.disabled}`}
+				onClick={(e) => e.preventDefault()}
+				to={`${!!phone ? 'tel:' + phone : ''}`}>
 				<img src={phoneIcon} alt="phoneIcon" />
 			</Link>
-			<Link to={`mailto:${email}`}>
+			<Link
+				rel="noopener noreferrer"
+				target="_blank"
+				className={`${!!email ? '' : s.disabled}`}
+				to={`${!!email ? 'mailto:' + email : ''}`}>
 				<img src={EmailIcon} alt="EmailIcon" />
 			</Link>
-			<Link to={`tg://resolve?domain=${phoneNumber}`}>
+			<Link
+				rel="noopener noreferrer"
+				target="_blank"
+				className={`${!!phone ? '' : s.disabled}`}
+				to={`${!!phone ? 'https://t.me/+' + phone : ''}`}>
 				<img src={TelegramIcon} alt="TelegramIcon" />
 			</Link>
-			<Link to={`https://wa.me/${phoneNumber}`}>
+			<Link
+				rel="noopener noreferrer"
+				target="_blank"
+				className={`${!!phone ? '' : s.disabled}`}
+				to={`${!!phone ? 'https://wa.me/' + phone : ''}`}>
 				<img src={WhatsAppIcon} alt="WhatsApp" />
 			</Link>
 		</div>

@@ -965,6 +965,10 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [data])
 
+	useEffect(() => {
+		console.log(editedCards, 'editedCards')
+	}, [editedCards])
+
 	return (
 		<>
 			<button
@@ -1951,10 +1955,15 @@ const AddStudent = ({}: IAddStudent) => {
 									<button
 										disabled={currentOpenedStudent === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
-										onClick={() => setIsEditMode(!isEditMode)}>
+										onClick={() => {
+											setIsEditMode(!isEditMode)
+											// dispatch({type: 'SET_EDITED_CARDS', payload: !isEditMode})
+										}}>
 										<p>Редактировать</p>
 									</button>
-									<button onClick={sendData} className={s.Save}>
+									<button
+										onClick={sendData}
+										className={!isEditMode ? s.Save : s.SaveWhite}>
 										<p>Сохранить</p>
 									</button>
 								</div>

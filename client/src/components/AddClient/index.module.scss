@@ -300,7 +300,8 @@
 				font-size: 16px;
 			}
 
-			.Save {
+			.Save,
+			.SaveWhite {
 				background: #25991c;
 				border: 1px solid #25991c;
 				border-radius: 8px;
@@ -314,7 +315,10 @@
 				font-weight: 400;
 				font-size: 16px;
 			}
-
+			.SaveWhite {
+				background: #fff !important;
+				color: #000 !important;
+			}
 			.Delete {
 				background: #fff;
 				border: 1px solid red;
@@ -514,7 +518,6 @@
 			p:first-child {
 				margin-right: 10px;
 			}
-
 		}
 		.PayText {
 			width: 100px;

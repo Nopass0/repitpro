@@ -306,7 +306,8 @@
 				font-size: 16px;
 			}
 
-			.Save {
+			.Save,
+			.SaveWhite {
 				background: #25991c;
 				border: 1px solid #25991c;
 				border-radius: 8px;
@@ -319,6 +320,11 @@
 				color: #fff;
 				font-weight: 400;
 				font-size: 16px;
+			}
+
+			.SaveWhite {
+				background: #fff !important;
+				color: #000 !important;
 			}
 
 			.Delete {

@@ -1855,7 +1855,9 @@ const AddClient = ({}: IAddClient) => {
 										onClick={() => setIsEditMode(!isEditMode)}>
 										<p>Редактировать</p>
 									</button>
-									<button className={s.Save} onClick={sendInfo}>
+									<button
+										className={!isEditMode ? s.Save : s.SaveWhite}
+										onClick={sendInfo}>
 										<p>Сохранить</p>
 									</button>
 								</div>
