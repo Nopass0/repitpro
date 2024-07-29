@@ -354,27 +354,27 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										<td
 											className={s.td}
 											onClick={() => {
-												console.log(
-													'calendar-day',
-													isUsed ? currentMonth + 1 : currentMonth,
-													'currentPartOfMonth',
-													currentPartOfMonth,
-													'currentMonth',
-													currentMonth,
-												)
+												// console.log(
+												// 	'calendar-day',
+												// 	isUsed ? currentMonth + 1 : currentMonth,
+												// 	'currentPartOfMonth',
+												// 	currentPartOfMonth,
+												// 	'currentMonth',
+												// 	currentMonth,
+												// )
 												dispatch({
 													type: 'SET_CALENDAR_NOW_POPUP',
 													payload: {
 														day: String(day),
 														month: String(
-															isUsed ? currentMonth + 2 : currentMonth + 1,
-															// (currentPartOfMonth == 1
-															// 	? currentMonth + 1
-															// 	: currentPartOfMonth == 0
-															// 		? currentMonth - 1
-															// 		: currentPartOfMonth == 2
-															// 			? currentMonth + 2
-															// 			: currentMonth) - 1,
+															// isUsed ? currentMonth + 2 : currentMonth + 1,
+															(currentPartOfMonth == 1
+																? currentMonth + 1
+																: currentPartOfMonth == 0
+																	? currentMonth - 1
+																	: currentPartOfMonth == 2
+																		? currentMonth + 2
+																		: currentMonth) - 1,
 														),
 														year: String(currentYear),
 													},

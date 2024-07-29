@@ -1120,7 +1120,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
             id: true,
             items: true,
             students: true,
-            historyLessons: true,            
+            historyLessons: true,
           },
         },
       },
@@ -1185,6 +1185,107 @@ export async function getGroupByStudentId(data: any, socket: any) {
   }
 }
 
+// export async function updateStudentAndItems(data: any, socket: any) {
+//   const { id, items, audios, files, token } = data;
+
+//   try {
+//     const token_ = await db.token.findFirst({
+//       where: {
+//         token,
+//       },
+//     });
+
+//     const userId = token_.userId;
+
+//     const existFiles = await db.student.findUnique({
+//       where: {
+//         id,
+//       },
+//       select: {
+//         files: true,
+//       },
+//     });
+
+//     const existFilesIds = JSON.parse(JSON.stringify(existFiles)).files;
+
+//     // const isDeleted = await deleteFileById(, existFilesIds);
+
+//     let justFilesIds = [];
+
+//     justFilesIds = await upload(
+//       files,
+//       userId,
+//       "student/file",
+//       (paths: string[]) => {
+//         justFilesIds = paths;
+//       }
+//     );
+
+//     let justAudiosIds = [];
+
+//     justAudiosIds = await upload(
+//       audios,
+//       userId,
+//       "student/audio",
+//       (paths: string[]) => {
+//         justAudiosIds = paths;
+//       }
+//     );
+
+//     const AllFiles = Object.assign(justFilesIds, justAudiosIds, existFilesIds);
+
+//     const updatedStudent = await db.student.update({
+//       where: {
+//         id: id,
+//       },
+//       data: {
+//         commentStudent: data.commentStudent,
+//         prePayCost: data.prePayCost,
+//         prePayDate: data.prePayDate,
+//         costOneLesson: data.costOneLesson,
+//         linkStudent: data.linkStudent,
+//         files: AllFiles,
+//         costStudent: data.costStudent,
+//         phoneNumber: data.phoneNumber,
+//         contactFace: data.contactFace,
+//         email: data.email,
+//         nameStudent: data.nameStudent,
+//       },
+//     });
+
+//     const group = await db.group.findUnique({
+//       where: {
+//         id: updatedStudent.groupId,
+//       },
+//     });
+
+//     const groupUpdated = await db.group.update({
+//       where: {
+//         id: group.id,
+//       },
+//       data: {
+//         historyLessons: data.historyLessons,
+//       },
+//     })
+//     // !! TODO НЕ ОБНОВЛЯЕТСЯ ПРЕДМЕТ В УЧЕНИКЕ
+//     const items_ = db.item.updateMany({
+//       where: {
+//         groupId: group.id,
+//       },
+//       data: items.map((itemData) => ({
+//         ...itemData,
+//       })),
+//     });
+
+//     socket.emit("updateStudentAndItems", updatedStudent);
+
+//     return updatedStudent;
+//   } catch (error) {
+//     console.error("Error updating student and items:", error);
+//     console.log(error);
+//   }
+// }
+
 export async function updateStudentAndItems(data: any, socket: any) {
   const { id, items, audios, files, token } = data;
 
@@ -1195,53 +1296,65 @@ export async function updateStudentAndItems(data: any, socket: any) {
       },
     });
 
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
     const userId = token_.userId;
 
-    const existFiles = await db.student.findUnique({
+    const existingStudent = await db.student.findUnique({
       where: {
         id,
       },
       select: {
         files: true,
+        groupId: true,
       },
     });
 
-    const existFilesIds = JSON.parse(JSON.stringify(existFiles)).files;
+    if (!existingStudent) {
+      throw new Error("Student not found");
+    }
 
-    // const isDeleted = await deleteFileById(, existFilesIds);
+    const existFilesIds = existingStudent.files;
 
+    // Upload new files and audios
     let justFilesIds = [];
-
-    justFilesIds = await upload(
-      files,
-      userId,
-      "student/file",
-      (paths: string[]) => {
-        justFilesIds = paths;
-      }
-    );
+    if (files && files.length > 0) {
+      justFilesIds = await upload(
+        files,
+        userId,
+        "student/file",
+        (paths: string[]) => {
+          justFilesIds = paths;
+        }
+      );
+    }
 
     let justAudiosIds = [];
+    if (audios && audios.length > 0) {
+      justAudiosIds = await upload(
+        audios,
+        userId,
+        "student/audio",
+        (paths: string[]) => {
+          justAudiosIds = paths;
+        }
+      );
+    }
 
-    justAudiosIds = await upload(
-      audios,
-      userId,
-      "student/audio",
-      (paths: string[]) => {
-        justAudiosIds = paths;
-      }
-    );
-
-    const AllFiles = Object.assign(justFilesIds, justAudiosIds, existFilesIds);
+    const AllFiles = [
+      ...new Set([...justFilesIds, ...justAudiosIds, ...existFilesIds]),
+    ];
 
     const updatedStudent = await db.student.update({
       where: {
-        id: id,
+        id,
       },
       data: {
         commentStudent: data.commentStudent,
         prePayCost: data.prePayCost,
-        prePayDate: data.prePayDate,
+        prePayDate: data.prePayDate ? new Date(data.prePayDate) : null,
         costOneLesson: data.costOneLesson,
         linkStudent: data.linkStudent,
         files: AllFiles,
@@ -1259,30 +1372,90 @@ export async function updateStudentAndItems(data: any, socket: any) {
       },
     });
 
-    const groupUpdated = await db.group.update({
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    await db.group.update({
       where: {
         id: group.id,
       },
       data: {
         historyLessons: data.historyLessons,
       },
-    })
-    // !! TODO НЕ ОБНОВЛЯЕТСЯ ПРЕДМЕТ В УЧЕНИКЕ
-    const items_ = db.item.updateMany({
-      where: {
-        groupId: group.id,
-      },
-      data: items.map((itemData) => ({
-        ...itemData,
-      })),
     });
+
+    // Update or create items
+    for (const itemData of items) {
+      const existingItem = await db.item.findUnique({
+        where: {
+          id: itemData.id,
+        },
+      });
+
+      if (existingItem) {
+        await db.item.update({
+          where: {
+            id: itemData.id,
+          },
+          data: {
+            itemName: itemData.itemName,
+            tryLessonCheck: itemData.tryLessonCheck || false,
+            tryLessonCost: itemData.tryLessonCost || "",
+            todayProgramStudent: itemData.todayProgramStudent || "",
+            targetLesson: itemData.targetLesson || "",
+            programLesson: itemData.programLesson || "",
+            typeLesson: Number(itemData.typeLesson) || 1,
+            placeLesson: itemData.placeLesson || "",
+            timeLesson: itemData.timeLesson || "",
+            valueMuiSelectArchive: itemData.valueMuiSelectArchive || 1,
+            startLesson: itemData.startLesson
+              ? new Date(itemData.startLesson)
+              : null,
+            endLesson: itemData.endLesson ? new Date(itemData.endLesson) : null,
+            nowLevel: itemData.nowLevel || 0,
+            lessonDuration: Number(itemData.lessonDuration) || null,
+            timeLinesArray: itemData.timeLinesArray || {},
+            commentItem: itemData.commentItem || "",
+            userId,
+            groupId: group.id,
+          },
+        });
+      } else {
+        await db.item.create({
+          data: {
+            itemName: itemData.itemName,
+            tryLessonCheck: itemData.tryLessonCheck || false,
+            tryLessonCost: itemData.tryLessonCost || "",
+            todayProgramStudent: itemData.todayProgramStudent || "",
+            targetLesson: itemData.targetLesson || "",
+            programLesson: itemData.programLesson || "",
+            typeLesson: Number(itemData.typeLesson) || 1,
+            placeLesson: itemData.placeLesson || "",
+            timeLesson: itemData.timeLesson || "",
+            costOneLesson: itemData.costOneLesson || "",
+            valueMuiSelectArchive: itemData.valueMuiSelectArchive || 1,
+            startLesson: itemData.startLesson
+              ? new Date(itemData.startLesson)
+              : null,
+            endLesson: itemData.endLesson ? new Date(itemData.endLesson) : null,
+            nowLevel: itemData.nowLevel || 0,
+            lessonDuration: Number(itemData.lessonDuration) || null,
+            timeLinesArray: itemData.timeLinesArray || {},
+            commentItem: itemData.commentItem || "",
+            userId,
+            groupId: group.id,
+          },
+        });
+      }
+    }
 
     socket.emit("updateStudentAndItems", updatedStudent);
 
     return updatedStudent;
   } catch (error) {
     console.error("Error updating student and items:", error);
-    console.log(error);
+    socket.emit("updateStudentAndItems", { error: error.message });
   }
 }
 
