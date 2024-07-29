@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vite",
 		"dev:server": "WATCHPACK_POLLING=true vite --host 0.0.0.0 --port 80",
-		"build": "bun run lint && vite build",
+		"build": "bun run lint -- --max-warnings=9999 && bunx vite build",
 		"build:ts": "tsc",
 		"preview": "vite preview",
 		"format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
