@@ -70,6 +70,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	)
 	console.log(currentScheduleDay, 'currentScheduleDay')
 
+	//
 	const currentPopUpType = useSelector((state: any) => state.currentPopUpType)
 
 	const dispatch = useDispatch()
@@ -185,10 +186,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						(currentPartOfMonth == 1
 							? currentMonth + 1
 							: currentPartOfMonth == 0
-							? currentMonth - 1
-							: currentPartOfMonth == 2
-							? currentMonth + 2
-							: currentMonth) - 1,
+								? currentMonth - 1
+								: currentPartOfMonth == 2
+									? currentMonth + 2
+									: currentMonth) - 1,
 					),
 					year: String(currentYear),
 				},
@@ -196,6 +197,9 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			setPagePopup(PagePopup.DayCalendar)
 		}
 	}, [currentLeftMenu])
+
+	let usedDates = new Map()
+
 	return (
 		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />
@@ -272,10 +276,21 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												(currentPartOfMonth == 1
 													? currentMonth + 1
 													: currentPartOfMonth == 0
-													? currentMonth - 1
-													: currentPartOfMonth == 2
-													? currentMonth + 2
-													: currentMonth),
+														? currentMonth - 1
+														: currentPartOfMonth == 2
+															? currentMonth + 2
+															: currentMonth),
+									)
+
+									let isPrevMonth = usedDates.get(day) == 0
+
+									let isNowMonth = usedDates.get(day) == 1 // 0 or 1
+
+									let isNextMonth = usedDates.get(day) == 2
+
+									usedDates.set(
+										day,
+										usedDates.has(day) ? usedDates.get(day) + 1 : 0,
 									)
 
 									//get current day of week
@@ -284,10 +299,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										currentPartOfMonth == 1
 											? currentMonth + 1
 											: currentPartOfMonth == 0
-											? currentMonth - 1
-											: currentPartOfMonth == 2
-											? currentMonth + 2
-											: currentMonth,
+												? currentMonth - 1
+												: currentPartOfMonth == 2
+													? currentMonth + 2
+													: currentMonth,
 										day,
 									).getDay()
 
@@ -339,18 +354,27 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										<td
 											className={s.td}
 											onClick={() => {
+												console.log(
+													'calendar-day',
+													isUsed ? currentMonth + 1 : currentMonth,
+													'currentPartOfMonth',
+													currentPartOfMonth,
+													'currentMonth',
+													currentMonth,
+												)
 												dispatch({
 													type: 'SET_CALENDAR_NOW_POPUP',
 													payload: {
 														day: String(day),
 														month: String(
-															(currentPartOfMonth == 1
-																? currentMonth + 1
-																: currentPartOfMonth == 0
-																? currentMonth - 1
-																: currentPartOfMonth == 2
-																? currentMonth + 2
-																: currentMonth) - 1,
+															isUsed ? currentMonth + 2 : currentMonth + 1,
+															// (currentPartOfMonth == 1
+															// 	? currentMonth + 1
+															// 	: currentPartOfMonth == 0
+															// 		? currentMonth - 1
+															// 		: currentPartOfMonth == 2
+															// 			? currentMonth + 2
+															// 			: currentMonth) - 1,
 														),
 														year: String(currentYear),
 													},
@@ -363,11 +387,14 @@ export const Calendar = ({className, cells}: ICalendar) => {
 													id="day"
 													className={`
 														${s.dayIndex}
-														${(dayIndex === 6 || dayIndex === 5 ? s.red : '')} 
-														${(currentPartOfMonth !== 1 && s.grey)} ${day === todayDay &&
+														${dayIndex === 6 || dayIndex === 5 ? s.red : ''} 
+														${currentPartOfMonth !== 1 && s.grey} ${
+															day === todayDay &&
 															currentMonth === todayMonth &&
-															weekIndex === weekIndexToday && !details && s.dayToday}` 
-													}>
+															weekIndex === weekIndexToday &&
+															!details &&
+															s.dayToday
+														}`}>
 													{day}
 												</p>
 												{/* {cell && ( */}
@@ -425,7 +452,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 																		{cell
 																			? toMoneyFormat(
 																					cell.workPrice + cell.lessonsPrice,
-																			  )
+																				)
 																					.toString()
 																					.slice(0, 12)
 																			: 0}
