@@ -1567,71 +1567,8 @@ export async function updateStudentAndItems(data: any, socket: any) {
       },
     });
 
-    // Update or create items
+    // Create new studentSchedule records
     for (const itemData of items) {
-      const existingItem = await db.item.findUnique({
-        where: {
-          id: itemData.id,
-        },
-      });
-
-      if (existingItem) {
-        await db.item.update({
-          where: {
-            id: itemData.id,
-          },
-          data: {
-            itemName: itemData.itemName,
-            tryLessonCheck: itemData.tryLessonCheck || false,
-            tryLessonCost: itemData.tryLessonCost || "",
-            todayProgramStudent: itemData.todayProgramStudent || "",
-            targetLesson: itemData.targetLesson || "",
-            programLesson: itemData.programLesson || "",
-            typeLesson: Number(itemData.typeLesson) || 1,
-            placeLesson: itemData.placeLesson || "",
-            timeLesson: itemData.timeLesson || "",
-            valueMuiSelectArchive: itemData.valueMuiSelectArchive || 1,
-            startLesson: itemData.startLesson
-              ? new Date(itemData.startLesson)
-              : null,
-            endLesson: itemData.endLesson ? new Date(itemData.endLesson) : null,
-            nowLevel: itemData.nowLevel || 0,
-            lessonDuration: Number(itemData.lessonDuration) || null,
-            timeLinesArray: itemData.timeLinesArray || {},
-            commentItem: itemData.commentItem || "",
-            userId,
-            groupId: group.id,
-          },
-        });
-      } else {
-        await db.item.create({
-          data: {
-            itemName: itemData.itemName,
-            tryLessonCheck: itemData.tryLessonCheck || false,
-            tryLessonCost: itemData.tryLessonCost || "",
-            todayProgramStudent: itemData.todayProgramStudent || "",
-            targetLesson: itemData.targetLesson || "",
-            programLesson: itemData.programLesson || "",
-            typeLesson: Number(itemData.typeLesson) || 1,
-            placeLesson: itemData.placeLesson || "",
-            timeLesson: itemData.timeLesson || "",
-            costOneLesson: itemData.costOneLesson || "",
-            valueMuiSelectArchive: itemData.valueMuiSelectArchive || 1,
-            startLesson: itemData.startLesson
-              ? new Date(itemData.startLesson)
-              : null,
-            endLesson: itemData.endLesson ? new Date(itemData.endLesson) : null,
-            nowLevel: itemData.nowLevel || 0,
-            lessonDuration: Number(itemData.lessonDuration) || null,
-            timeLinesArray: itemData.timeLinesArray || {},
-            commentItem: itemData.commentItem || "",
-            userId,
-            groupId: group.id,
-          },
-        });
-      }
-
-      // Create new studentSchedule records
       const startDate = new Date(itemData.startLesson);
       const endDate = new Date(itemData.endLesson);
       const daysToAdd = differenceInDays(endDate, startDate);
