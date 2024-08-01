@@ -1286,6 +1286,181 @@ export async function getGroupByStudentId(data: any, socket: any) {
 //   }
 // }
 
+// export async function updateStudentAndItems(data: any, socket: any) {
+//   const { id, items, audios, files, token } = data;
+
+//   try {
+//     const token_ = await db.token.findFirst({
+//       where: {
+//         token,
+//       },
+//     });
+
+//     if (!token_) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = token_.userId;
+
+//     const existingStudent = await db.student.findUnique({
+//       where: {
+//         id,
+//       },
+//       select: {
+//         files: true,
+//         groupId: true,
+//       },
+//     });
+
+//     if (!existingStudent) {
+//       throw new Error("Student not found");
+//     }
+
+//     const existFilesIds = existingStudent.files;
+
+//     // Upload new files and audios
+//     let justFilesIds = [];
+//     if (files && files.length > 0) {
+//       justFilesIds = await upload(
+//         files,
+//         userId,
+//         "student/file",
+//         (paths: string[]) => {
+//           justFilesIds = paths;
+//         }
+//       );
+//     }
+
+//     let justAudiosIds = [];
+//     if (audios && audios.length > 0) {
+//       justAudiosIds = await upload(
+//         audios,
+//         userId,
+//         "student/audio",
+//         (paths: string[]) => {
+//           justAudiosIds = paths;
+//         }
+//       );
+//     }
+
+//     const AllFiles = [
+//       ...new Set([...justFilesIds, ...justAudiosIds, ...existFilesIds]),
+//     ];
+
+//     const updatedStudent = await db.student.update({
+//       where: {
+//         id,
+//       },
+//       data: {
+//         commentStudent: data.commentStudent,
+//         prePayCost: data.prePayCost,
+//         prePayDate: data.prePayDate ? new Date(data.prePayDate) : null,
+//         costOneLesson: data.costOneLesson,
+//         linkStudent: data.linkStudent,
+//         files: AllFiles,
+//         costStudent: data.costStudent,
+//         phoneNumber: data.phoneNumber,
+//         contactFace: data.contactFace,
+//         email: data.email,
+//         nameStudent: data.nameStudent,
+//       },
+//     });
+
+//     const group = await db.group.findUnique({
+//       where: {
+//         id: updatedStudent.groupId,
+//       },
+//     });
+
+//     if (!group) {
+//       throw new Error("Group not found");
+//     }
+
+//     await db.group.update({
+//       where: {
+//         id: group.id,
+//       },
+//       data: {
+//         historyLessons: data.historyLessons,
+//       },
+//     });
+
+//     // Update or create items
+//     for (const itemData of items) {
+//       const existingItem = await db.item.findUnique({
+//         where: {
+//           id: itemData.id,
+//         },
+//       });
+
+//       if (existingItem) {
+//         await db.item.update({
+//           where: {
+//             id: itemData.id,
+//           },
+//           data: {
+//             itemName: itemData.itemName,
+//             tryLessonCheck: itemData.tryLessonCheck || false,
+//             tryLessonCost: itemData.tryLessonCost || "",
+//             todayProgramStudent: itemData.todayProgramStudent || "",
+//             targetLesson: itemData.targetLesson || "",
+//             programLesson: itemData.programLesson || "",
+//             typeLesson: Number(itemData.typeLesson) || 1,
+//             placeLesson: itemData.placeLesson || "",
+//             timeLesson: itemData.timeLesson || "",
+//             valueMuiSelectArchive: itemData.valueMuiSelectArchive || 1,
+//             startLesson: itemData.startLesson
+//               ? new Date(itemData.startLesson)
+//               : null,
+//             endLesson: itemData.endLesson ? new Date(itemData.endLesson) : null,
+//             nowLevel: itemData.nowLevel || 0,
+//             lessonDuration: Number(itemData.lessonDuration) || null,
+//             timeLinesArray: itemData.timeLinesArray || {},
+//             commentItem: itemData.commentItem || "",
+//             userId,
+//             groupId: group.id,
+//           },
+//         });
+//       } else {
+//         await db.item.create({
+//           data: {
+//             itemName: itemData.itemName,
+//             tryLessonCheck: itemData.tryLessonCheck || false,
+//             tryLessonCost: itemData.tryLessonCost || "",
+//             todayProgramStudent: itemData.todayProgramStudent || "",
+//             targetLesson: itemData.targetLesson || "",
+//             programLesson: itemData.programLesson || "",
+//             typeLesson: Number(itemData.typeLesson) || 1,
+//             placeLesson: itemData.placeLesson || "",
+//             timeLesson: itemData.timeLesson || "",
+//             costOneLesson: itemData.costOneLesson || "",
+//             valueMuiSelectArchive: itemData.valueMuiSelectArchive || 1,
+//             startLesson: itemData.startLesson
+//               ? new Date(itemData.startLesson)
+//               : null,
+//             endLesson: itemData.endLesson ? new Date(itemData.endLesson) : null,
+//             nowLevel: itemData.nowLevel || 0,
+//             lessonDuration: Number(itemData.lessonDuration) || null,
+//             timeLinesArray: itemData.timeLinesArray || {},
+//             commentItem: itemData.commentItem || "",
+//             userId,
+//             groupId: group.id,
+//           },
+//         });
+//       }
+//     }
+
+//     socket.emit("updateStudentAndItems", updatedStudent);
+
+//     return updatedStudent;
+//   } catch (error) {
+//     console.error("Error updating student and items:", error);
+//     socket.emit("updateStudentAndItems", { error: error.message });
+//   }
+// }
+
+// import { addDays, differenceInDays, getDay } from "date-fns";
+
 export async function updateStudentAndItems(data: any, socket: any) {
   const { id, items, audios, files, token } = data;
 
@@ -1385,6 +1560,13 @@ export async function updateStudentAndItems(data: any, socket: any) {
       },
     });
 
+    // Delete old studentSchedule records
+    await db.studentSchedule.deleteMany({
+      where: {
+        studentId: id,
+      },
+    });
+
     // Update or create items
     for (const itemData of items) {
       const existingItem = await db.item.findUnique({
@@ -1447,6 +1629,54 @@ export async function updateStudentAndItems(data: any, socket: any) {
             groupId: group.id,
           },
         });
+      }
+
+      // Create new studentSchedule records
+      const startDate = new Date(itemData.startLesson);
+      const endDate = new Date(itemData.endLesson);
+      const daysToAdd = differenceInDays(endDate, startDate);
+      const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+        addDays(startDate, i)
+      );
+
+      for (const date of dateRange) {
+        const dayOfWeek = getDay(date);
+        const scheduleForDay = itemData.timeLinesArray[dayOfWeek];
+
+        if (!scheduleForDay) {
+          console.warn(
+            `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+          );
+          continue;
+        }
+
+        const cond =
+          scheduleForDay.startTime.hour === 0 &&
+          scheduleForDay.startTime.minute === 0 &&
+          scheduleForDay.endTime.hour === 0 &&
+          scheduleForDay.endTime.minute === 0;
+
+        if (!cond) {
+          await db.studentSchedule.create({
+            data: {
+              day: date.getDate().toString(),
+              groupId: group.id,
+              workCount: 0,
+              lessonsCount: 1,
+              lessonsPrice: Number(itemData.costOneLesson),
+              workPrice: 0,
+              month: (date.getMonth() + 1).toString(),
+              timeLinesArray: itemData.timeLinesArray,
+              isChecked: false,
+              itemName: itemData.itemName,
+              studentName: updatedStudent.nameStudent,
+              typeLesson: itemData.typeLesson,
+              year: date.getFullYear().toString(),
+              itemId: itemData.id,
+              userId,
+            },
+          });
+        }
       }
     }
 
