@@ -16,6 +16,7 @@
     "@mui/x-date-pickers": "^6.19.7",
     "concurrently": "^8.2.2",
     "dayjs": "^1.11.10",
+    "framer-motion": "^11.3.21",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
