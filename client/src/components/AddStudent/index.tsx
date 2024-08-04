@@ -37,6 +37,7 @@ import IconsPhone from '../IconsPhone/index'
 import MiniCalendar from '../MiniCalendar'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import {TailSpin} from 'react-loader-spinner'
+import {Button} from '@/ui/button'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -1016,9 +1017,8 @@ const AddStudent = ({}: IAddStudent) => {
 							<div className={s.StudNameHead}>
 								<div className={s.StudentCardName}>
 									<div className={s.StudentCardInput}>
-										<p>Имя:</p>
-										<input
-											type="text"
+										<TextAreaInputBlock
+											title="Имя:"
 											value={nameStudent}
 											disabled={isEditMode}
 											onChange={(e) =>
@@ -1027,6 +1027,8 @@ const AddStudent = ({}: IAddStudent) => {
 														e.target.value.slice(1).toLowerCase(),
 												)
 											}
+											textIndent="40px"
+											firstMinSymbols={30}
 										/>
 									</div>
 									<p>*</p>
@@ -1038,12 +1040,13 @@ const AddStudent = ({}: IAddStudent) => {
 						<div className={s.wrapperMenu}>
 							<div className={s.StudentInput}>
 								<div className={s.StudentCard}>
-									<p>Контактное лицо:</p>
-									<input
-										type="text"
+									<TextAreaInputBlock
+										title="Контактное лицо:"
 										value={contactFace}
 										disabled={isEditMode}
 										onChange={(e) => setContactFace(e.target.value)}
+										textIndent="140px"
+										firstMinSymbols={20}
 									/>
 								</div>
 
@@ -1121,6 +1124,7 @@ const AddStudent = ({}: IAddStudent) => {
 									/>
 
 									<p>₽</p>
+									<Button variant="outline">Добавить</Button>
 								</div>
 
 								<Line width="100%" className={s.Line} />
@@ -1352,9 +1356,8 @@ const AddStudent = ({}: IAddStudent) => {
 												currentItemIndex === index ? s.ItemActive : s.ItemMain
 											}>
 											<div className={s.StudentCard}>
-												<input
-													type="text"
-													disabled={isEditMode}
+												<TextAreaInputBlock
+													// title="Контактное лицо:"
 													value={
 														item.itemName
 															? `${item.itemName[0].toUpperCase()}${item.itemName
@@ -1362,6 +1365,7 @@ const AddStudent = ({}: IAddStudent) => {
 																	.toLowerCase()}`
 															: ''
 													}
+													disabled={isEditMode}
 													onChange={(e) =>
 														changeItemValue(
 															index,
@@ -1369,6 +1373,8 @@ const AddStudent = ({}: IAddStudent) => {
 															e.target.value.toLowerCase(),
 														)
 													}
+													textIndent="0px"
+													firstMinSymbols={56}
 													placeholder="Наименование"
 												/>
 											</div>
@@ -1582,11 +1588,10 @@ const AddStudent = ({}: IAddStudent) => {
 											</div>
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCard}>
-												<p>Место проведения:</p>
-												<input
-													type="text"
-													disabled={isEditMode}
+												<TextAreaInputBlock
+													title="Место проведения:"
 													value={item.placeLesson!}
+													disabled={isEditMode}
 													onChange={(e) => {
 														changeItemValue(
 															index,
@@ -1594,6 +1599,8 @@ const AddStudent = ({}: IAddStudent) => {
 															e.target.value,
 														)
 													}}
+													textIndent="150px"
+													// firstMinSymbols={31}
 												/>
 											</div>
 											<Line width="100%" className={s.Line} />

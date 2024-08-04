@@ -1338,11 +1338,10 @@ const AddGroup = ({className}: IAddGroup) => {
 							<div className={s.StudNameHead}>
 								<div className={s.StudentCardName}>
 									<div className={s.StudentCarName__Left}>
-										<p>Группа:</p>
-										<input
-											disabled={isEditMode}
-											type="text"
+										<TextAreaInputBlock
+											title="Группа:"
 											value={groupName}
+											disabled={isEditMode}
 											onChange={(e) =>
 												setGroupName(
 													e.target.value.charAt(0).toUpperCase() +
@@ -1350,6 +1349,7 @@ const AddGroup = ({className}: IAddGroup) => {
 												)
 											}
 											placeholder="Название группы"
+											textIndent="60px"
 										/>
 									</div>
 									<p>*</p>
@@ -1388,23 +1388,21 @@ const AddGroup = ({className}: IAddGroup) => {
 											className={
 												currentItemIndex === index ? s.ItemActive : s.ItemMain
 											}>
-											<div className={s.StudentCard}>
-												<input
-													disabled={isEditMode}
-													type="text"
-													value={item.itemName}
-													onChange={(e) =>
-														changeItemValue(
-															index,
-															'itemName',
-															e.target.value.charAt(0).toUpperCase() +
-																e.target.value.slice(1).toLowerCase(),
-														)
-													}
-													placeholder="Наименование"
-												/>
-											</div>
-
+											<TextAreaInputBlock
+												style={{width: '100%'}}
+												value={item.itemName}
+												disabled={isEditMode}
+												onChange={(e) =>
+													changeItemValue(
+														index,
+														'itemName',
+														e.target.value.charAt(0).toUpperCase() +
+															e.target.value.slice(1).toLowerCase(),
+													)
+												}
+												placeholder="Наименование"
+												textIndent="0px"
+											/>
 											<Line width="100%" className={s.Line} />
 											<TextAreaInputBlock
 												disabled={isEditMode}
@@ -1551,22 +1549,20 @@ const AddGroup = ({className}: IAddGroup) => {
 											</div>
 
 											<Line width="100%" className={s.Line} />
-											<div className={s.StudentCard}>
-												<p>Место проведения:</p>
-												<input
-													disabled={isEditMode}
-													type="text"
-													value={item.placeLesson}
-													onChange={(e) =>
-														changeItemValue(
-															currentItemIndex,
-															'placeLesson',
-															e.target.value,
-														)
-													}
-												/>
-											</div>
 
+											<TextAreaInputBlock
+												title="Место проведения"
+												disabled={isEditMode}
+												value={item.placeLesson}
+												onChange={(e) =>
+													changeItemValue(
+														currentItemIndex,
+														'placeLesson',
+														e.target.value,
+													)
+												}
+												textIndent="150px"
+											/>
 											<Line width="100%" className={s.Line} />
 
 											<div className={s.StudentCard}>
@@ -1982,43 +1978,42 @@ const AddGroup = ({className}: IAddGroup) => {
 													: s.ItemMain
 											}>
 											<div
-												style={{justifyContent: 'space-between'}}
-												className={s.StudentCard}>
-												<div className={s.StudentCarName__Left}>
-													<p>Имя:</p>
-													<input
-														disabled={isEditMode}
-														type="text"
-														value={student.nameStudent}
-														onChange={(e) =>
-															changeStudentValue(
-																index,
-																'nameStudent',
-																e.target.value.charAt(0).toUpperCase() +
-																	e.target.value.slice(1).toLowerCase(),
-															)
-														}
-													/>
-												</div>
-												<p style={{color: 'red'}}>*</p>
-											</div>
-											<Line width="100%" className={s.Line} />
-											<div className={s.StudentCard}>
-												<p>Контактное лицо:</p>
-												<input
+												style={{
+													display: 'flex',
+													justifyContent: 'space-between',
+												}}>
+												<TextAreaInputBlock
+													style={{width: '100%'}}
+													title="Имя"
 													disabled={isEditMode}
-													type="text"
-													value={student.contactFace}
+													value={student.nameStudent}
 													onChange={(e) =>
 														changeStudentValue(
 															index,
-															'contactFace',
-															e.target.value,
+															'nameStudent',
+															e.target.value.charAt(0).toUpperCase() +
+																e.target.value.slice(1).toLowerCase(),
 														)
 													}
+													textIndent="40px"
 												/>
+												<p style={{color: 'red'}}>*</p>
 											</div>
+											<Line width="100%" className={s.Line} />
 
+											<TextAreaInputBlock
+												title="Контактное лицо:"
+												disabled={isEditMode}
+												value={student.contactFace}
+												onChange={(e) =>
+													changeStudentValue(
+														index,
+														'contactFace',
+														e.target.value,
+													)
+												}
+												textIndent="140px"
+											/>
 											<Line width="100%" className={s.Line} />
 
 											<div className={s.StudentCard}>
@@ -2191,12 +2186,11 @@ const AddGroup = ({className}: IAddGroup) => {
 
 											<Line width="100%" className={s.Line} />
 
-											<div className={s.StudentCard}>
-												<p>Цель занятий:</p>
-												<input
-													disabled={isEditMode}
-													type="text"
-													value={student.targetLessonStudent}
+											
+											<TextAreaInputBlock
+												title="Цель занятий:"
+												disabled={isEditMode}
+												value={student.targetLessonStudent}
 													onChange={(e) =>
 														changeStudentValue(
 															index,
@@ -2204,8 +2198,8 @@ const AddGroup = ({className}: IAddGroup) => {
 															e.target.value,
 														)
 													}
-												/>
-											</div>
+												textIndent="110px"
+											/>
 											<Line width="100%" className={s.Line} />
 
 											{/* NO DATA */}

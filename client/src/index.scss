@@ -1,64 +1,64 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+// @tailwind base;
+// @tailwind components;
+// @tailwind utilities;
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
-@layer base {
-	:root {
-		--background: 0 0% 100%;
-		--foreground: 240 10% 3.9%;
-		--card: 0 0% 100%;
-		--card-foreground: 240 10% 3.9%;
-		--popover: 0 0% 100%;
-		--popover-foreground: 240 10% 3.9%;
-		--primary: 142 86% 28%;
-		--primary-foreground: 356 29% 98%;
-		--secondary: 240 4.8% 95.9%;
-		--secondary-foreground: 240 5.9% 10%;
-		--muted: 240 4.8% 95.9%;
-		--muted-foreground: 240 3.8% 45%;
-		--accent: 240 4.8% 95.9%;
-		--accent-foreground: 240 5.9% 10%;
-		--destructive: 0 72% 51%;
-		--destructive-foreground: 0 0% 98%;
-		--border: 240 5.9% 90%;
-		--input: 240 5.9% 90%;
-		--radius: 0.5rem;
-		--ring: 142 86% 28%;
-		--chart-1: 139 65% 20%;
-		--chart-2: 140 74% 44%;
-		--chart-3: 142 88% 28%;
-		--chart-4: 137 55% 15%;
-		--chart-5: 141 40% 9%;
-	}
+// @layer base {
+// 	:root {
+// 		--background: 0 0% 100%;
+// 		--foreground: 240 10% 3.9%;
+// 		--card: 0 0% 100%;
+// 		--card-foreground: 240 10% 3.9%;
+// 		--popover: 0 0% 100%;
+// 		--popover-foreground: 240 10% 3.9%;
+// 		--primary: 142 86% 28%;
+// 		--primary-foreground: 356 29% 98%;
+// 		--secondary: 240 4.8% 95.9%;
+// 		--secondary-foreground: 240 5.9% 10%;
+// 		--muted: 240 4.8% 95.9%;
+// 		--muted-foreground: 240 3.8% 45%;
+// 		--accent: 240 4.8% 95.9%;
+// 		--accent-foreground: 240 5.9% 10%;
+// 		--destructive: 0 72% 51%;
+// 		--destructive-foreground: 0 0% 98%;
+// 		--border: 240 5.9% 90%;
+// 		--input: 240 5.9% 90%;
+// 		--radius: 0.5rem;
+// 		--ring: 142 86% 28%;
+// 		--chart-1: 139 65% 20%;
+// 		--chart-2: 140 74% 44%;
+// 		--chart-3: 142 88% 28%;
+// 		--chart-4: 137 55% 15%;
+// 		--chart-5: 141 40% 9%;
+// 	}
 
-	.dark {
-		--background: 240 10% 3.9%;
-		--foreground: 0 0% 98%;
-		--card: 240 10% 3.9%;
-		--card-foreground: 0 0% 98%;
-		--popover: 240 10% 3.9%;
-		--popover-foreground: 0 0% 98%;
-		--primary: 142 86% 28%;
-		--primary-foreground: 356 29% 98%;
-		--secondary: 240 4.8% 95.9%;
-		--secondary-foreground: 240 5.9% 10%;
-		--muted: 240 3.7% 15.9%;
-		--muted-foreground: 240 5% 64.9%;
-		--accent: 240 3.7% 15.9%;
-		--accent-foreground: 0 0% 98%;
-		--destructive: 0 72% 51%;
-		--destructive-foreground: 0 0% 98%;
-		--border: 240 3.7% 15.9%;
-		--input: 240 3.7% 15.9%;
-		--ring: 142 86% 28%;
-		--chart-1: 142 88% 28%;
-		--chart-2: 139 65% 20%;
-		--chart-3: 140 74% 24%;
-		--chart-4: 137 55% 15%;
-		--chart-5: 141 40% 9%;
-	}
-}
+// 	.dark {
+// 		--background: 240 10% 3.9%;
+// 		--foreground: 0 0% 98%;
+// 		--card: 240 10% 3.9%;
+// 		--card-foreground: 0 0% 98%;
+// 		--popover: 240 10% 3.9%;
+// 		--popover-foreground: 0 0% 98%;
+// 		--primary: 142 86% 28%;
+// 		--primary-foreground: 356 29% 98%;
+// 		--secondary: 240 4.8% 95.9%;
+// 		--secondary-foreground: 240 5.9% 10%;
+// 		--muted: 240 3.7% 15.9%;
+// 		--muted-foreground: 240 5% 64.9%;
+// 		--accent: 240 3.7% 15.9%;
+// 		--accent-foreground: 0 0% 98%;
+// 		--destructive: 0 72% 51%;
+// 		--destructive-foreground: 0 0% 98%;
+// 		--border: 240 3.7% 15.9%;
+// 		--input: 240 3.7% 15.9%;
+// 		--ring: 142 86% 28%;
+// 		--chart-1: 142 88% 28%;
+// 		--chart-2: 139 65% 20%;
+// 		--chart-3: 140 74% 24%;
+// 		--chart-4: 137 55% 15%;
+// 		--chart-5: 141 40% 9%;
+// 	}
+// }
 
 @mixin scrollbars(
 	$size,
@@ -86,13 +86,13 @@
 * {
 	@include scrollbars(6px, #eee, #ccc);
 }
-// button,
-// input {
-// 	cursor: pointer;
-// 	border: none;
-// 	background: none;
-// 	outline: none;
-// }
+button,
+input {
+	cursor: pointer;
+	border: none;
+	background: none;
+	outline: none;
+}
 .roboto-thin {
 	font-family: 'Roboto', sans-serif;
 	font-weight: 100;

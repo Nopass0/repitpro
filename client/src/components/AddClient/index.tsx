@@ -558,20 +558,18 @@ const AddClient = ({}: IAddClient) => {
 							</div>
 							<div className={s.StudNameHead}>
 								<div className={s.StudentCardName}>
-									<div className={s.StudentCardName_Left}>
-										<p>Имя:</p>
-										<input
-											disabled={isEditMode}
-											type="text"
-											value={nameStudent}
-											onChange={(e) =>
-												setNameStudent(
-													e.target.value.charAt(0).toUpperCase() +
-														e.target.value.slice(1).toLowerCase(),
-												)
-											}
-										/>
-									</div>
+									<TextAreaInputBlock
+										title="Имя:"
+										disabled={isEditMode}
+										value={nameStudent}
+										onChange={(e) =>
+											setNameStudent(
+												e.target.value.charAt(0).toUpperCase() +
+													e.target.value.slice(1).toLowerCase(),
+											)
+										}
+										textIndent="40px"
+									/>
 									<p>*</p>
 								</div>
 
@@ -677,42 +675,36 @@ const AddClient = ({}: IAddClient) => {
 										className={
 											currentJobIndex === index ? s.ItemActive_ : s.ItemMain_
 										}>
-										<div className={s.StudentCard}>
-											<p>Предмет:</p>
-											<input
-												disabled={isEditMode}
-												type="text"
-												value={job.itemName}
-												onChange={(e) => {
-													changeJob(
-														index,
-														'itemName',
-														e.target.value.charAt(0).toUpperCase() +
-															e.target.value.slice(1).toLowerCase(),
-													)
-												}}
-											/>
-										</div>
-
+										<TextAreaInputBlock
+											title="Предмет:"
+											disabled={isEditMode}
+											value={job.itemName}
+											onChange={(e) => {
+												changeJob(
+													index,
+													'itemName',
+													e.target.value.charAt(0).toUpperCase() +
+														e.target.value.slice(1).toLowerCase(),
+												)
+											}}
+											textIndent="75px"
+										/>
 										<Line width="100%" className={s.Line} />
 
-										<div className={s.StudentCard}>
-											<p>Название работы:</p>
-											<input
-												disabled={isEditMode}
-												type="text"
-												value={job.jobName}
-												onChange={(e) => {
-													changeJob(
-														index,
-														'jobName',
-														e.target.value.charAt(0).toUpperCase() +
-															e.target.value.slice(1).toLowerCase(),
-													)
-												}}
-											/>
-										</div>
-
+										<TextAreaInputBlock
+											title="Название работы:"
+											disabled={isEditMode}
+											value={job.jobName}
+											onChange={(e) => {
+												changeJob(
+													index,
+													'jobName',
+													e.target.value.charAt(0).toUpperCase() +
+														e.target.value.slice(1).toLowerCase(),
+												)
+											}}
+											textIndent="140px"
+										/>
 										<Line width="100%" className={s.Line} />
 										<div className={s.StudentCard}>
 											<mui.Select
@@ -830,12 +822,11 @@ const AddClient = ({}: IAddClient) => {
 																	? s.ItemActive_
 																	: s.ItemMain_
 															}>
-															<div className={s.StudentCard}>
-																<p>Название:</p>
-																<input
-																	disabled={isEditMode}
-																	type="text"
-																	value={item.name}
+															
+															<TextAreaInputBlock
+																title="Название:"
+																disabled={isEditMode}
+																value={item.name}
 																	onChange={(e) => {
 																		changeStage(
 																			index,
@@ -845,8 +836,8 @@ const AddClient = ({}: IAddClient) => {
 																				e.target.value.slice(1).toLowerCase(),
 																		)
 																	}}
-																/>
-															</div>
+																textIndent="80px"
+															/>
 															<Line width="100%" className={s.Line} />
 															<div className={s.StudentCard}>
 																<p>Стоимость этапа:</p>

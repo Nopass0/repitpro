@@ -628,6 +628,7 @@ const DayStudentPopUp = ({
 				</button>
 				<div className={s.btn}>
 					<button
+						style={{display: disabled ? 'none' : 'block'}}
 						disabled={disabled}
 						className={s.btnRight}
 						onClick={nextStudentSchedule}>
@@ -636,6 +637,7 @@ const DayStudentPopUp = ({
 						</span>
 					</button>
 					<button
+						style={{display: disabled ? 'none' : 'block'}}
 						disabled={disabled}
 						className={s.btnLeft}
 						onClick={prevStudentSchedule}>

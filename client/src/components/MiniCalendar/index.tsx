@@ -12,6 +12,11 @@ interface CalendarProps {
 	disabled?: boolean
 }
 
+const handleCalendarChange = (onChange, setIsOpen) => (newDate) => {
+	onChange(newDate);
+	setIsOpen(false);
+}
+
 const MiniCalendar: React.FC<CalendarProps> = ({
 	value = formatDate(new Date(Date.now())),
 	onChange,
@@ -114,6 +119,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		setTempYear((prevYear) => (prevMonth === 11 ? prevYear + 1 : prevYear))
 	}
 
+
 	const handleDateClick = (day: number) => {
 		if (selectedDate) {
 			const newDate = new Date(selectedDate)
@@ -199,7 +205,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 						<pr.Calendar
 							disabled={disabled}
 							value={value}
-							onChange={onChange}
+							onChange={handleCalendarChange(onChange, setIsOpen)}
 							numberOfMonths={1}
 							disableMonthPicker={false}
 							disableYearPicker={true}
