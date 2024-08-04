@@ -129,6 +129,21 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	// Ваш импорт и код до возвращения компонента
 
+	const isDatePast = (day, month, year) => {
+		const today = new Date()
+		const cellDate = new Date(year, month - 1, day)
+		return cellDate < today
+	}
+
+	const isDateToday = (day, month, year) => {
+		const today = new Date()
+		return (
+			day === today.getDate() &&
+			month === today.getMonth() + 1 &&
+			year === today.getFullYear()
+		)
+	}
+
 	const firstDayOfWeekIndex = 1
 
 	const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -350,6 +365,19 @@ export const Calendar = ({className, cells}: ICalendar) => {
 										(todayDay + firstDayOfMonth - 1) / 7,
 									)
 									console.log(todayDay, '1235', todayMonth, weekIndexToday)
+
+									const cellMonth =
+										currentPartOfMonth === 1
+											? currentMonth + 1
+											: currentPartOfMonth === 0
+												? currentMonth
+												: currentPartOfMonth === 2
+													? currentMonth + 2
+													: currentMonth + 1
+
+									const isPastDate = isDatePast(day, cellMonth, currentYear)
+									const isToday = isDateToday(day, cellMonth, currentYear)
+
 									return (
 										<td
 											className={s.td}
@@ -386,15 +414,11 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												<p
 													id="day"
 													className={`
-														${s.dayIndex}
-														${dayIndex === 6 || dayIndex === 5 ? s.red : ''} 
-														${currentPartOfMonth !== 1 && s.grey} ${
-															day === todayDay &&
-															currentMonth === todayMonth &&
-															weekIndex === weekIndexToday &&
-															!details &&
-															s.dayToday
-														}`}>
+                        ${s.dayIndex}
+                        ${dayIndex === 6 || dayIndex === 5 ? s.red : ''}
+                        ${isToday ? s.today : ''}
+                        ${!isToday ? (isPastDate ? s.pastDay : s.futureDay) : ''}
+                      `}>
 													{day}
 												</p>
 												{/* {cell && ( */}

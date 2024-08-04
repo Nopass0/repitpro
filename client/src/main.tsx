@@ -12,7 +12,11 @@ import socket from './socket'
 import Register from './pages/Register/index.tsx'
 import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
+<<<<<<< HEAD
 import Statistics from './pages/Statistics/index'
+=======
+import Statistics from './pages/Statistics'
+>>>>>>> d685c7cc9d7d27ac12773bafbecfbba5a8a1d026
 import {ELeftMenuPage, ECurrentDayPopUp} from './types.ts'
 
 socket.on('connect', () => {
