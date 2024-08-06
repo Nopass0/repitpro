@@ -675,22 +675,30 @@
 }
 
 .pastDay {
-	color: #000000; // Чёрный цвет для прошедших дней
+	color: black;
 }
 
 .futureDay {
-	color: #808080; // Серый цвет для будущих дней
+	color: grey;
 }
 
-.today {
-	font-weight: bold;
-	// Дополнительные стили для выделения текущего дня, если нужно
+.pastData {
+	color: black;
 }
 
-.grey {
-	color: #c0c0c0; // Светло-серый цвет для чисел предыдущего и следующего месяцев
+.futureWeekendData {
+	color: #ff0000aa; /* Red with some transparency */
 }
 
 .red {
-	color: #ff0000; // Красный цвет для выходных дней
+	color: #dc2d2d;
+}
+
+.today {
+	background-color: #179417;
+	border-radius: 2px;
+	width: 12px;
+	display: flex;
+	justify-content: center;
+	color: #fff;
 }

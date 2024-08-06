@@ -377,6 +377,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 									const isPastDate = isDatePast(day, cellMonth, currentYear)
 									const isToday = isDateToday(day, cellMonth, currentYear)
+									const isWeekend = dayIndex === 5 || dayIndex === 6
 
 									return (
 										<td
@@ -415,18 +416,22 @@ export const Calendar = ({className, cells}: ICalendar) => {
 													id="day"
 													className={`
                         ${s.dayIndex}
-                        ${dayIndex === 6 || dayIndex === 5 ? s.red : ''}
-                        ${isToday ? s.today : ''}
+                        ${isWeekend ? s.red : ''}
+
                         ${!isToday ? (isPastDate ? s.pastDay : s.futureDay) : ''}
+						${!isPastDate && isWeekend ? s.futureWeekendData : ''}
                       `}>
-													{day}
+													<p className={`${isToday ? s.today : ''}`}>{day}</p>
 												</p>
 												{/* {cell && ( */}
 
 												<div
-													className={
-														s.data + ' ' + (currentPartOfMonth !== 1 && s.grey)
-													}>
+													className={`
+														${s.data}
+														${currentPartOfMonth !== 1 ? s.grey : ''}
+														${isPastDate ? s.pastData : ''}
+														                        ${!isToday ? (isPastDate ? s.pastDay : s.futureDay) : ''}
+													  `}>
 													{details ? (
 														<>
 															<p className={s.dataField}>
