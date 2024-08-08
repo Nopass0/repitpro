@@ -674,6 +674,12 @@ export async function getStudentsByDate(
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_?.userId;
 
+  console.log(
+    "getStudentsByDate-------------------------",
+    data,
+    "------------------------------------------------------------"
+  );
+
   if (!userId) {
     socket.emit("getStudentsByDate", { error: "Invalid token" });
     return;
@@ -695,6 +701,7 @@ export async function getStudentsByDate(
       isChecked: true,
       homeFiles: true,
       classFiles: true,
+      lessonsCount: true,
       homeWork: true,
       classWork: true,
       homeStudentsPoints: true,
@@ -799,6 +806,8 @@ export async function getStudentsByDate(
         homeAudios,
         classAudios,
         homeWork: schedule.homeWork,
+        lessonPrice: schedule.lessonsPrice,
+        lessonCount: schedule.lessonsCount,
         place: item.placeLesson,
         classWork: schedule.classWork,
         isCheck: schedule.isChecked,
@@ -893,6 +902,8 @@ export async function getStudentsByDate(
         classAudios,
         homeWork: schedule.homeWork,
         place: item.placeLesson,
+        lessonPrice: schedule.lessonsPrice,
+        lessonCount: schedule.lessonsCount,
         classWork: schedule.classWork,
         homeStudentsPoints: Array.isArray(homeStudentsPoints)
           ? homeStudentsPoints
@@ -912,6 +923,7 @@ export async function getStudentsByDate(
       dataToEmit.push(scheduleData);
     }
 
+    console.log("tihs is popup day", dataToEmit, "dataToEmit");
     socket.emit("getStudentsByDate", dataToEmit);
   }
 }

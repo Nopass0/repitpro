@@ -6,7 +6,7 @@ import * as mui from '@mui/base'
 
 import Plus from '../../assets/ItemPlus.svg'
 import {useDispatch, useSelector} from 'react-redux'
-import {useEffect} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import socket from '../../socket'
 import React from 'react'
 import {debounce} from 'lodash'
@@ -82,8 +82,24 @@ const DayCalendarPopUp = ({
 	>([])
 
 	const [clients, setClients] = React.useState<any[]>()
+	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+	const dispatch = useDispatch()
+	const retryCountRef = useRef(0)
+	const mountedRef = useRef(false)
 
 	useEffect(() => {
+		mountedRef.current = true
+		return () => {
+			mountedRef.current = false
+		}
+	}, [])
+
+	const fetchData = () => {
+		console.log(`Fetching data (Attempt ${retryCountRef.current + 1}/5)`)
+		setIsLoading(true)
+		setError(null)
+
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
@@ -96,20 +112,62 @@ const DayCalendarPopUp = ({
 			year: calendarNowPopupYear,
 			token: token,
 		})
-	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
-	socket.once('getStudentsByDate', (data: any) => {
-		console.log('getStudentsByDate', data)
-		setStudents(data)
-	})
+	}
 
-	socket.on('getClientsByDate', (data: any) => {
-		console.log(
-			'\n------------getClientsByDate-------------\n',
-			data,
-			'\n------------\n',
-		)
-		setClients(data)
-	})
+	useEffect(() => {
+		let timeoutId: NodeJS.Timeout
+
+		const handleStudentsData = (data: any) => {
+			console.log('Received students data:', data)
+			if (mountedRef.current) {
+				setStudents(data)
+				setIsLoading(false)
+				clearTimeout(timeoutId)
+				retryCountRef.current = 0 // Reset retry count on successful fetch
+			}
+		}
+
+		const handleClientsData = (data: any) => {
+			console.log('Received clients data:', data)
+			if (mountedRef.current) {
+				setClients(data)
+				setIsLoading(false)
+				clearTimeout(timeoutId)
+				retryCountRef.current = 0 // Reset retry count on successful fetch
+			}
+		}
+
+		const retryFetch = () => {
+			if (retryCountRef.current < 4) {
+				// We've already tried once, so we'll retry up to 4 more times
+				retryCountRef.current++
+				fetchData()
+			} else {
+				if (mountedRef.current) {
+					setError('Failed to fetch data after 5 attempts')
+					setIsLoading(false)
+				}
+			}
+		}
+
+		fetchData()
+
+		timeoutId = setTimeout(() => {
+			if (isLoading) {
+				console.log('Data fetch timeout, retrying...')
+				retryFetch()
+			}
+		}, 5000) // 5 seconds timeout
+
+		socket.on('getStudentsByDate', handleStudentsData)
+		socket.on('getClientsByDate', handleClientsData)
+
+		return () => {
+			socket.off('getStudentsByDate', handleStudentsData)
+			socket.off('getClientsByDate', handleClientsData)
+			clearTimeout(timeoutId)
+		}
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 
 	//hour or minute to normal view. Ex: 12:3 to 12:03/ 1:5 to 01:05
 	const timeNormalize = (time: number) => {
@@ -201,6 +259,23 @@ const DayCalendarPopUp = ({
 		}
 	}
 
+	// Function to manually trigger data fetch
+	const refreshData = () => {
+		// Re-fetch data
+		socket.emit('getStudentsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+		socket.emit('getClientsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+	}
+
 	// useEffect(() => {
 	// 	console.log('Students upd: ', students)
 	// }, [students])
@@ -234,6 +309,11 @@ const DayCalendarPopUp = ({
 	}
 
 	const debouncedOnUpdate = debounce(updData, 2)
+
+	const manualRefresh = () => {
+		retryCountRef.current = 0 // Reset retry count
+		fetchData()
+	}
 
 	const handleAddDay = () => {
 		//get calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear (Ex: '1', '1', "2023") and remake it to Date and add 1 day

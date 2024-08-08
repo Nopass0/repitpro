@@ -68,7 +68,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
-	console.log(currentScheduleDay, 'currentScheduleDay')
+	// console.log(currentScheduleDay, 'currentScheduleDay')
 
 	//
 	const currentPopUpType = useSelector((state: any) => state.currentPopUpType)
@@ -120,7 +120,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	socket.once('getMonth', (data) => {
 		setCurrentCells(data)
-		console.log(data)
+		// console.log(data)
 	})
 
 	useEffect(() => {
@@ -260,7 +260,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 											(item) => item.month == currentMonth,
 										)
 
-										console.log('prevMonthCells', prevMonthCell)
+										// console.log('prevMonthCells', prevMonthCell)
 									}
 
 									if (day == 1 && currentPartOfMonth == 1) {
@@ -337,15 +337,15 @@ export const Calendar = ({className, cells}: ICalendar) => {
 											(cell ? cell.workPrice : 0),
 									}
 
-									console.log(cell)
-									console.log(
-										'День: ',
-										day,
-										'Месяц: ',
-										currentMonth,
-										'Неделя: ',
-										weekIndex,
-									)
+									// console.log(cell)
+									// console.log(
+									// 	'День: ',
+									// 	day,
+									// 	'Месяц: ',
+									// 	currentMonth,
+									// 	'Неделя: ',
+									// 	weekIndex,
+									// )
 
 									const today = new Date(Date.now())
 									const todayDay = today.getDate()
@@ -364,7 +364,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 									const weekIndexToday = Math.ceil(
 										(todayDay + firstDayOfMonth - 1) / 7,
 									)
-									console.log(todayDay, '1235', todayMonth, weekIndexToday)
+									// console.log(todayDay, '1235', todayMonth, weekIndexToday)
 
 									const cellMonth =
 										currentPartOfMonth === 1

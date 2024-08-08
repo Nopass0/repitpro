@@ -49,8 +49,11 @@ const DayStudentPopUp = ({
 	groupId,
 }: IDayStudentPopUp) => {
 	const dispatch = useDispatch()
-	const calendarNowPopupDay = useSelector(
+	const _calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
+	)
+	const [calendarNowPopupDay, setCalendarNowPopupDay] = useState<string>(
+		_calendarNowPopupDay.replace(/^0+/, ''),
 	)
 	const calendarNowPopupMonth = useSelector(
 		(state: any) => state.calendarNowPopupMonth,
@@ -276,7 +279,7 @@ const DayStudentPopUp = ({
 			currentOpenedStudent,
 		)
 		socket.emit('getStudentsByDate', {
-			day: calendarNowPopupDay,
+			day: calendarNowPopupDay.replace(/^0+/, ''),
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
@@ -320,7 +323,7 @@ const DayStudentPopUp = ({
 
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
-			day: calendarNowPopupDay,
+			day: calendarNowPopupDay.replace(/^0+/, ''),
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
@@ -357,7 +360,7 @@ const DayStudentPopUp = ({
 
 			socket.emit('updateStudentSchedule', {
 				id: currentScheduleDay,
-				day: calendarNowPopupDay,
+				day: calendarNowPopupDay.replace(/^0+/, ''),
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
 				token: token,
