@@ -555,9 +555,15 @@ const MainPage = () => {
 																		) {
 																			return (
 																				<>
-																					<div className={s.ListWrapper}>
-																						<button className={s.btn}></button>
-																						<p>{student.nameStudent}</p>
+																					<div
+																						style={{marginLeft: '50px'}}
+																						className={s.ListWrapper}>
+																						<button className={s.btn}>
+																							<img src={Home} alt="Home" />
+																						</button>
+																						<p style={{width: '150px'}}>
+																							{student.nameStudent}
+																						</p>
 																						<div className={s.Icons}>
 																							{openedStudents.includes(
 																								index,
@@ -573,13 +579,19 @@ const MainPage = () => {
 																		}
 																		return (
 																			<>
-																				<div className={s.ListWrapper}>
+																				<div
+																					style={{marginLeft: '50px'}}
+																					className={s.ListWrapper}>
 																					<button
 																						onClick={() =>
 																							handleOpenCard(student.id)
 																						}
-																						className={s.btn}></button>
-																					<p>{student.nameStudent}</p>
+																						className={s.btn}>
+																						<img src={Home} alt="Home" />
+																					</button>
+																					<p style={{width: '150px'}}>
+																						{student.nameStudent}
+																					</p>
 
 																					<div className={s.Icons}>
 																						{openedStudents.includes(index) ? (
@@ -933,9 +945,15 @@ const MainPage = () => {
 																		) {
 																			return (
 																				<>
-																					<div className={s.ListWrapper}>
-																						<button className={s.btn}></button>
-																						<p>{student.nameStudent}</p>
+																					<div
+																						style={{marginLeft: '50px'}}
+																						className={s.ListWrapper}>
+																						<button className={s.btn}>
+																							<img src={Home} alt="Home" />
+																						</button>
+																						<p style={{width: '150px'}}>
+																							{student.nameStudent}
+																						</p>
 																						<div className={s.Icons}>
 																							{openedStudents.includes(
 																								index,
@@ -951,9 +969,15 @@ const MainPage = () => {
 																		}
 																		return (
 																			<>
-																				<div className={s.ListWrapper}>
-																					<button className={s.btn}></button>
-																					<p>{student.nameStudent}</p>
+																				<div
+																					style={{marginLeft: '50px'}}
+																					className={s.ListWrapper}>
+																					<button className={s.btn}>
+																						<img src={Home} alt="Home" />
+																					</button>
+																					<p style={{width: '150px'}}>
+																						{student.nameStudent}
+																					</p>
 
 																					<div className={s.Icons}>
 																						{openedStudents.includes(index) ? (
@@ -1303,10 +1327,15 @@ const MainPage = () => {
 																			) {
 																				return (
 																					<>
-																						<div className={s.ListWrapper}>
-																							<button
-																								className={s.btn}></button>
-																							<p>{student.nameStudent}</p>
+																						<div
+																							style={{marginLeft: '50px'}}
+																							className={s.ListWrapper}>
+																							<button className={s.btn}>
+																								<img src={Home} alt="Home" />
+																							</button>
+																							<p style={{width: '150px'}}>
+																								{student.nameStudent}
+																							</p>
 																							<div className={s.Icons}>
 																								{openedStudents.includes(
 																									index,
@@ -1315,6 +1344,7 @@ const MainPage = () => {
 																								) : (
 																									<ExpandMore />
 																								)}
+																								У
 																							</div>
 																						</div>
 																					</>
@@ -1322,9 +1352,15 @@ const MainPage = () => {
 																			}
 																			return (
 																				<>
-																					<div className={s.ListWrapper}>
-																						<button className={s.btn}></button>
-																						<p>{student.nameStudent}</p>
+																					<div
+																						style={{marginLeft: '50px'}}
+																						className={s.ListWrapper}>
+																						<button className={s.btn}>
+																							<img src={Home} alt="Home" />
+																						</button>
+																						<p style={{width: '150px'}}>
+																							{student.nameStudent}
+																						</p>
 
 																						<div className={s.Icons}>
 																							{openedStudents.includes(

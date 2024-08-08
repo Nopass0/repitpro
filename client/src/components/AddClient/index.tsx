@@ -537,7 +537,12 @@ const AddClient = ({}: IAddClient) => {
 						<div className={s.Header}>
 							<div className={s.HeaderAddClient}>
 								<div className={s.dataSlidePicker}>
-									<button className={s.btn} onClick={prevClient}>
+									<button
+										className={s.btn}
+										style={{
+											backgroundColor: currentClientPosition === 0 && '#eee',
+										}}
+										onClick={prevClient}>
 										<span>
 											<Arrow direction={ArrowType.left} />
 										</span>
@@ -549,7 +554,14 @@ const AddClient = ({}: IAddClient) => {
 								${allIdsClient.length}`
 											: `${allIdsClient.length + 1} / ${allIdsClient.length + 1}`}
 									</p>
-									<button className={s.btn} onClick={nextClient}>
+									<button
+										className={s.btn}
+										style={{
+											backgroundColor:
+												currentClientPosition === allIdsClient.length - 1 &&
+												'#eee',
+										}}
+										onClick={nextClient}>
 										<span>
 											<Arrow direction={ArrowType.right} />
 										</span>
@@ -822,20 +834,19 @@ const AddClient = ({}: IAddClient) => {
 																	? s.ItemActive_
 																	: s.ItemMain_
 															}>
-															
 															<TextAreaInputBlock
 																title="Название:"
 																disabled={isEditMode}
 																value={item.name}
-																	onChange={(e) => {
-																		changeStage(
-																			index,
-																			indexStage,
-																			'name',
-																			e.target.value.charAt(0).toUpperCase() +
-																				e.target.value.slice(1).toLowerCase(),
-																		)
-																	}}
+																onChange={(e) => {
+																	changeStage(
+																		index,
+																		indexStage,
+																		'name',
+																		e.target.value.charAt(0).toUpperCase() +
+																			e.target.value.slice(1).toLowerCase(),
+																	)
+																}}
 																textIndent="80px"
 															/>
 															<Line width="100%" className={s.Line} />
