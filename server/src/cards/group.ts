@@ -636,7 +636,7 @@ function getDay(date) {
 //     socket.emit("addGroup", { error: error.message, ok: false });
 //   }
 // }
- 
+
 export async function addGroup(data, socket) {
   try {
     const {
@@ -650,23 +650,23 @@ export async function addGroup(data, socket) {
       audiosStudents = [],
       historyLessons,
     } = data;
- 
+
     const token_ = await db.token.findFirst({
       where: { token },
     });
- 
+
     if (!token_) {
       throw new Error("Invalid token");
     }
- 
+
     const userId = token_.userId;
- 
+
     if (!userId) {
       throw new Error("Invalid token");
     }
- 
+
     const freeSlots = {};
- 
+
     for (const item of items) {
       const startDate = new Date(item.startLesson);
       const endDate = new Date(item.endLesson);
@@ -674,15 +674,17 @@ export async function addGroup(data, socket) {
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
         addDays(startDate, i)
       );
- 
+
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
         const dayOfMonth = date.getDate();
- 
-        const cacheKey = `${userId}-${dayOfMonth}-${date.getMonth() + 1}-${date.getFullYear()}`;
+
+        const cacheKey = `${userId}-${dayOfMonth}-${
+          date.getMonth() + 1
+        }-${date.getFullYear()}`;
         let existingSchedules = cache.get(cacheKey);
- 
+
         if (!existingSchedules) {
           existingSchedules = await db.studentSchedule.findMany({
             where: {
@@ -694,22 +696,26 @@ export async function addGroup(data, socket) {
           });
           cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
         }
- 
+
         const conflictingSchedules = existingSchedules.filter((schedule) => {
           if (!schedule.timeLinesArray || !schedule.timeLinesArray[dayOfWeek]) {
             return false;
           }
-          const { startTime: scheduleStartTime, endTime: scheduleEndTime } = schedule.timeLinesArray[dayOfWeek];
-          const { startTime: newStartTime, endTime: newEndTime } = scheduleForDay;
- 
+          const { startTime: scheduleStartTime, endTime: scheduleEndTime } =
+            schedule.timeLinesArray[dayOfWeek];
+          const { startTime: newStartTime, endTime: newEndTime } =
+            scheduleForDay;
+
           return (
             (newStartTime.hour < scheduleEndTime.hour ||
-              (newStartTime.hour === scheduleEndTime.hour && newStartTime.minute <= scheduleEndTime.minute)) &&
+              (newStartTime.hour === scheduleEndTime.hour &&
+                newStartTime.minute <= scheduleEndTime.minute)) &&
             (newEndTime.hour > scheduleStartTime.hour ||
-              (newEndTime.hour === scheduleStartTime.hour && newEndTime.minute >= scheduleStartTime.minute))
+              (newEndTime.hour === scheduleStartTime.hour &&
+                newEndTime.minute >= scheduleStartTime.minute))
           );
         });
- 
+
         if (conflictingSchedules.length > 0) {
           const daysOfWeek = [
             "Воскресенье",
@@ -723,22 +729,28 @@ export async function addGroup(data, socket) {
           const dayName = daysOfWeek[dayOfWeek];
           const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
           const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
- 
+
           let errorMessage = `В ${dayName} на данное время ${startTime}-${endTime} уже есть занятие`;
- 
+
           const freeTimeSlots = existingSchedules.flatMap((schedule) => {
             if (schedule.timeLinesArray && schedule.timeLinesArray[dayOfWeek]) {
-              const scheduleStartTime = schedule.timeLinesArray[dayOfWeek].startTime;
-              const scheduleEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
-              return [`${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`];
+              const scheduleStartTime =
+                schedule.timeLinesArray[dayOfWeek].startTime;
+              const scheduleEndTime =
+                schedule.timeLinesArray[dayOfWeek].endTime;
+              return [
+                `${scheduleEndTime.hour}:${scheduleEndTime.minute}-${scheduleStartTime.hour}:${scheduleStartTime.minute}`,
+              ];
             }
             return [];
           });
- 
+
           if (freeTimeSlots.length > 0) {
-            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(", ")}`;
+            errorMessage += `, в этот день есть свободные промежутки: ${freeTimeSlots.join(
+              ", "
+            )}`;
           }
- 
+
           socket.emit("addGroup", {
             error: errorMessage,
             freeSlots,
@@ -757,7 +769,7 @@ export async function addGroup(data, socket) {
         }
       }
     }
- 
+
     const createdGroup = await db.group.create({
       data: {
         groupName,
@@ -795,13 +807,17 @@ export async function addGroup(data, socket) {
             costStudent: student.costStudent || "",
             commentStudent: student.commentStudent || "",
             prePayCost: student.prePayCost || "",
-            prePayDate: student.prePayDate ? new Date(student.prePayDate) : null,
+            prePayDate: student.prePayDate
+              ? new Date(student.prePayDate)
+              : null,
             selectedDate: null,
             storyLesson: student.storyLesson || "",
             costOneLesson: String(student.costOneLesson) || "",
             targetLessonStudent: student.targetLessonStudent || "",
             todayProgramStudent: student.todayProgramStudent || "",
-            startLesson: student.startLesson ? new Date(student.startLesson) : null,
+            startLesson: student.startLesson
+              ? new Date(student.startLesson)
+              : null,
             endLesson: student.endLesson ? new Date(student.endLesson) : null,
             nowLevel: student.nowLevel || 0,
             tryLessonCost: student.tryLessonCost || "",
@@ -820,7 +836,7 @@ export async function addGroup(data, socket) {
         students: true,
       },
     });
- 
+
     for (const item of createdGroup.items) {
       const startDate = new Date(item.startLesson);
       const endDate = new Date(item.endLesson);
@@ -828,18 +844,18 @@ export async function addGroup(data, socket) {
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
         addDays(startDate, i)
       );
- 
+
       for (const date of dateRange) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = item.timeLinesArray[dayOfWeek];
         const dayOfMonth = date.getDate();
- 
+
         const cond =
           scheduleForDay.startTime.hour === 0 &&
           scheduleForDay.startTime.minute === 0 &&
           scheduleForDay.endTime.hour === 0 &&
           scheduleForDay.endTime.minute === 0;
- 
+
         const costOneLesson = await db.group.findUnique({
           where: { id: createdGroup.id },
           select: {
@@ -849,7 +865,7 @@ export async function addGroup(data, socket) {
             },
           },
         });
- 
+
         if (!cond) {
           await db.studentSchedule.create({
             data: {
@@ -872,16 +888,16 @@ export async function addGroup(data, socket) {
         }
       }
     }
- 
+
     let filesIds = [];
     let filesItemsIds = [];
- 
+
     if (files.length > 0) {
       filesIds = await upload(files, userId, "group/files", (ids) => {
         filesIds = ids;
       });
     }
- 
+
     if (filesItems.length > 0) {
       filesItemsIds = await upload(
         filesItems,
@@ -892,10 +908,10 @@ export async function addGroup(data, socket) {
         }
       );
     }
- 
+
     let audiosItemsIds = [];
     let audiosStudentsIds = [];
- 
+
     if (audiosItems.length > 0) {
       audiosItemsIds = await upload(
         audiosItems,
@@ -906,7 +922,7 @@ export async function addGroup(data, socket) {
         }
       );
     }
- 
+
     if (audiosStudents.length > 0) {
       audiosStudentsIds = await upload(
         audiosStudents,
@@ -917,7 +933,7 @@ export async function addGroup(data, socket) {
         }
       );
     }
- 
+
     socket.emit("addGroup", {
       data: createdGroup,
       filesIds,
@@ -964,6 +980,7 @@ export async function getGroupList(token, socket: any) {
         },
         students: {
           select: {
+            id: true,
             nameStudent: true,
             phoneNumber: true,
             email: true,
@@ -1172,7 +1189,6 @@ export async function getGroupById(data: any, socket: any) {
         historyLessons: true,
       },
     });
-
 
     const files = await db.file.findMany({
       where: {

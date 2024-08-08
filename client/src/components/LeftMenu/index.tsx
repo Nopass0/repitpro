@@ -574,7 +574,11 @@ const MainPage = () => {
 																		return (
 																			<>
 																				<div className={s.ListWrapper}>
-																					<button className={s.btn}></button>
+																					<button
+																						onClick={() =>
+																							handleOpenCard(student.id)
+																						}
+																						className={s.btn}></button>
 																					<p>{student.nameStudent}</p>
 
 																					<div className={s.Icons}>

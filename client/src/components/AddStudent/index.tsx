@@ -1146,7 +1146,8 @@ const AddStudent = ({}: IAddStudent) => {
 										disablePadding
 										ref={collapseRef}>
 										<div className={s.ListObjectWrapper}>
-											{historyLesson.length !== 0 || prePayCost !== '' ? (
+											{(historyLesson ?? historyLesson.length !== 0) ||
+											prePayCost !== '' ? (
 												<>
 													{historyLesson
 														.sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -1164,7 +1165,7 @@ const AddStudent = ({}: IAddStudent) => {
 																	<div
 																		style={{
 																			backgroundColor: hashToColor(
-																				hashString(lesson.itemName),
+																				hashString(lesson.itemName || ''),
 																			),
 																			width: '10px',
 																			height: '35px',
