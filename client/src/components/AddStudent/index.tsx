@@ -996,7 +996,7 @@ const AddStudent = ({}: IAddStudent) => {
 						<div className={s.Header}>
 							<div className={s.HeaderAddStudent}>
 								<div className={s.dataSlidePicker}>
-									<button onClick={prevStud} className={s.btn}>
+									<button onClick={prevStud} style={{backgroundColor: currentStudPosition === 0 && '#eee'}} className={s.btn}>
 										<span>
 											<Arrow direction={ArrowType.left} />
 										</span>
@@ -1007,7 +1007,7 @@ const AddStudent = ({}: IAddStudent) => {
 											? `${currentStudPosition + 1}/${allIdStudent.length}`
 											: `${allIdStudent.length + 1}/${allIdStudent.length + 1}`}
 									</p>
-									<button onClick={nextStud} className={s.btn}>
+									<button onClick={nextStud} style={{backgroundColor: currentStudPosition === allIdStudent.length - 1 && '#eee'}} className={s.btn}>
 										<span>
 											<Arrow direction={ArrowType.right} />
 										</span>

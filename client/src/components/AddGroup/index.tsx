@@ -1317,7 +1317,7 @@ const AddGroup = ({className}: IAddGroup) => {
 						<div className={s.Header}>
 							<div className={s.HeaderAddGroup}>
 								<div className={s.dataSlidePicker}>
-									<button className={s.btn} onClick={() => prevGroup()}>
+									<button className={s.btn} style={{backgroundColor: currentGroupIndex === 0 && '#eee'}} onClick={() => prevGroup()}>
 										<span>
 											<Arrow direction={ArrowType.left} />
 										</span>
@@ -1328,7 +1328,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											? `${currentGroupIndex + 1} / ${groupsIndexes.length}`
 											: `${groupsIndexes.length + 1} / ${groupsIndexes.length + 1}`}
 									</p>
-									<button className={s.btn} onClick={() => nextGroup()}>
+									<button className={s.btn} style={{backgroundColor: currentGroupIndex === groupsIndexes.length - 1 && '#eee'}} onClick={() => nextGroup()}>
 										<span>
 											<Arrow direction={ArrowType.right} />
 										</span>
