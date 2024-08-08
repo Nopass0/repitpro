@@ -704,6 +704,7 @@ export async function getStudentsByDate(
       lessonsCount: true,
       homeWork: true,
       classWork: true,
+
       homeStudentsPoints: true,
       classStudentsPoints: true,
       groupId: true,
@@ -713,6 +714,8 @@ export async function getStudentsByDate(
       item: {
         select: {
           tryLessonCheck: true,
+          tryLessonCost: true,
+
           todayProgramStudent: true,
           targetLesson: true,
           programLesson: true,
@@ -725,6 +728,10 @@ export async function getStudentsByDate(
                   id: true,
                   nameStudent: true,
                   costOneLesson: true,
+                  tryLessonCheck: true,
+                  prePayCost: true,
+                  prePayDate: true,
+                  tryLessonCost: true,
                   targetLessonStudent: true,
                   todayProgramStudent: true,
                 },
@@ -814,6 +821,7 @@ export async function getStudentsByDate(
         tryLessonCheck: item.tryLessonCheck,
         startTime: daySchedule?.startTime,
         endTime: daySchedule?.endTime,
+        tryLessonCost: item.tryLessonCost,
         homeStudentsPoints,
         classStudentsPoints,
         groupName: groupStudentSchedule,
@@ -840,6 +848,7 @@ export async function getStudentsByDate(
       const { item } = schedule;
       console.log("This is studentId", studentId, schedule);
       const student = item.group.students[0];
+
       console.log(student, "\n-----student", studentId);
       const timeLinesArray = schedule.timeLinesArray;
       const daySchedule = timeLinesArray[dayOfWeekIndex];
@@ -859,6 +868,15 @@ export async function getStudentsByDate(
 
       let homeStudentsPoints = schedule.homeStudentsPoints;
       let classStudentsPoints = schedule.classStudentsPoints;
+
+      const History = await db.group.findMany({
+        where: {
+          id: item.group.id,
+        },
+        select: {
+          historyLessons: true,
+        },
+      });
 
       // Приведение данных к нужному формату
       if (
@@ -902,6 +920,8 @@ export async function getStudentsByDate(
         classAudios,
         homeWork: schedule.homeWork,
         place: item.placeLesson,
+        prePayDate: item.group.students[0].prePayDate,
+        prePayCost: item.group.students[0].prePayCost,
         lessonPrice: schedule.lessonsPrice,
         lessonCount: schedule.lessonsCount,
         classWork: schedule.classWork,
@@ -913,6 +933,8 @@ export async function getStudentsByDate(
           : [],
         isCheck: schedule.isChecked,
         tryLessonCheck: item.tryLessonCheck,
+        tryLessonCost: item.tryLessonCost,
+        history: History || null,
         startTime: daySchedule?.startTime,
         endTime: daySchedule?.endTime,
         groupName: groupStudentSchedule ? groupStudentSchedule : "",

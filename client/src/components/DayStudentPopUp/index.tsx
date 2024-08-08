@@ -49,11 +49,8 @@ const DayStudentPopUp = ({
 	groupId,
 }: IDayStudentPopUp) => {
 	const dispatch = useDispatch()
-	const _calendarNowPopupDay = useSelector(
+	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
-	)
-	const [calendarNowPopupDay, setCalendarNowPopupDay] = useState<string>(
-		_calendarNowPopupDay.replace(/^0+/, ''),
 	)
 	const calendarNowPopupMonth = useSelector(
 		(state: any) => state.calendarNowPopupMonth,
@@ -134,6 +131,61 @@ const DayStudentPopUp = ({
 		useState<IStudentPoints[]>()
 	const [classroomStudentsPoints, setClassroomStudentsPoints] =
 		useState<IStudentPoints[]>()
+
+	interface LessonHistory {
+		date: string
+		price: string
+		isDone: boolean
+		isPaid: boolean
+		itemName: string
+	}
+
+	interface StudentData {
+		prePayCost: string
+		prePayDate: string
+		history: {
+			historyLessons?: LessonHistory[]
+		}[]
+	}
+
+	function calculateRemainingPrePay(
+		studentData: StudentData,
+		currentDateString: string,
+	): number {
+		const currentDate = new Date(
+			calendarNowPopupYear,
+			calendarNowPopupMonth - 1,
+			calendarNowPopupDay,
+		)
+
+		console.log(currentDate, '--- currentDate')
+
+		const prePayCost = parseFloat(studentData.prePayCost)
+		const prePayDate = new Date(studentData.prePayDate)
+
+		let remainingPrePay = prePayCost
+
+		studentData.history?.forEach((history) => {
+			history.historyLessons?.forEach((lesson) => {
+				const lessonDate = new Date(lesson.date)
+				const lessonPrice = parseFloat(lesson.price)
+
+				// Если урок уже прошел, он выполнен и он оплачен
+				if (lessonDate >= prePayDate && lessonDate <= currentDate) {
+					console.log(
+						'lessonDate >= prePayDate',
+						lessonDate >= prePayDate,
+						lessonDate,
+					)
+					remainingPrePay -= lessonPrice
+				}
+			})
+		})
+
+		console.log('remainingPrePay', remainingPrePay)
+
+		return Math.max(remainingPrePay, 0) // Остаток не может быть меньше 0
+	}
 
 	const handleAddHomeFile = (e: any) => {
 		const fileToAdd = e.target.files[0]
@@ -279,7 +331,7 @@ const DayStudentPopUp = ({
 			currentOpenedStudent,
 		)
 		socket.emit('getStudentsByDate', {
-			day: calendarNowPopupDay.replace(/^0+/, ''),
+			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
@@ -323,7 +375,7 @@ const DayStudentPopUp = ({
 
 	useEffect(() => {
 		socket.emit('getStudentsByDate', {
-			day: calendarNowPopupDay.replace(/^0+/, ''),
+			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
@@ -360,7 +412,7 @@ const DayStudentPopUp = ({
 
 			socket.emit('updateStudentSchedule', {
 				id: currentScheduleDay,
-				day: calendarNowPopupDay.replace(/^0+/, ''),
+				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
 				token: token,
@@ -414,7 +466,10 @@ const DayStudentPopUp = ({
 					<div className={s.MainHeader}>
 						<div className={s.IconHeader}>
 							<img src={icon} alt="icon" />
-							<p>{student?.nameStudent}</p>
+							<div className={s.HeaderCol}>
+								<p>{student?.nameStudent}</p>
+								<p>{student?.itemName}</p>
+							</div>
 						</div>
 						<div className={s.Devider}></div>
 						<div className={s.AddressHeader}>
@@ -618,10 +673,18 @@ const DayStudentPopUp = ({
 								}
 							/>
 						)}
-						{/* <div className={s.PrePay}>
-							<p>{!hiddenNum && <>0</>} ₽</p>
+						<div className={s.PrePay}>
+							<p>
+								{student && (
+									<>
+										{student.prePayCost} - (Остаток:{' '}
+										{student && calculateRemainingPrePay(student, date)} )
+									</>
+								)}{' '}
+								₽
+							</p>
 							<CheckBox size="16px" />
-						</div> */}
+						</div>
 					</div>
 				</div>
 			</div>
