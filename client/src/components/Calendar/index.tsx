@@ -14,8 +14,20 @@ import DayCalendarPopUp from '../DayCalendarPopUp/index'
 import DayStudentPopUp from '../DayStudentPopUp/index'
 import DataSlidePicker from '../DataSlidePicker'
 import DayClientPopUp from '../DayClientPopUp/index'
-import {format} from 'date-fns'
 import DayGroupPopUp from '../DayGroupPopUp'
+import {
+	format,
+	startOfWeek,
+	endOfWeek,
+	isBefore,
+	isAfter,
+	addDays,
+	isSameMonth,
+	isToday,
+	startOfMonth,
+	endOfMonth,
+	getDay,
+} from 'date-fns'
 
 const daysInMonth = (date: Date) => {
 	const res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
@@ -118,6 +130,21 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	// useEffect(() => {}, [currentMonth])
 
+	const isWeekPastOrCurrent = (weekIndex: number) => {
+		const firstDayOfMonth = new Date(currentYear, currentMonth, 1)
+		const startOfCurrentWeek = startOfWeek(new Date(), {weekStartsOn: 1})
+		const startOfWeekDate = startOfWeek(
+			addDays(firstDayOfMonth, weekIndex * 7),
+			{weekStartsOn: 1},
+		)
+		const endOfWeekDate = endOfWeek(startOfWeekDate, {weekStartsOn: 1})
+
+		return (
+			isBefore(endOfWeekDate, startOfCurrentWeek) ||
+			isAfter(startOfWeekDate, new Date())
+		)
+	}
+
 	socket.once('getMonth', (data) => {
 		setCurrentCells(data)
 		// console.log(data)
@@ -129,10 +156,84 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	// Ваш импорт и код до возвращения компонента
 
+	const isDateFuture = (day, month, year) => {
+		const today = new Date()
+		const cellDate = new Date(year, month - 1, day)
+		return cellDate > today || isToday(cellDate)
+	}
+
+	const isWeekContainsFutureDays = (weekIndex: number) => {
+		const firstDayOfMonth = new Date(currentYear, currentMonth, 1)
+		const startOfWeekDate = startOfWeek(
+			addDays(firstDayOfMonth, weekIndex * 7),
+			{weekStartsOn: 1},
+		)
+		const endOfWeekDate = endOfWeek(startOfWeekDate, {weekStartsOn: 1})
+
+		if (weekIndex === 5) {
+			// if previous month return false, if next month return true
+
+			if (calendarNowPopupMonth < currentMonth) {
+				return false
+			}
+			return true
+		}
+		for (
+			let day = startOfWeekDate;
+			day <= endOfWeekDate;
+			day = addDays(day, 1)
+		) {
+			if (
+				isSameMonth(day, new Date(currentYear, currentMonth)) &&
+				isDateFuture(day.getDate(), day.getMonth() + 1, day.getFullYear())
+			) {
+				return true
+			}
+		}
+		return false
+	}
+
 	const isDatePast = (day, month, year) => {
 		const today = new Date()
 		const cellDate = new Date(year, month - 1, day)
 		return cellDate < today
+	}
+
+	const isWeekContainsPastDays = (weekIndex: number) => {
+		const firstDayOfMonth = new Date(currentYear, currentMonth, 1)
+		const startOfWeekDate = startOfWeek(
+			addDays(firstDayOfMonth, weekIndex * 7),
+			{weekStartsOn: 1},
+		)
+		const endOfWeekDate = endOfWeek(startOfWeekDate, {weekStartsOn: 1})
+
+		for (
+			let day = startOfWeekDate;
+			day <= endOfWeekDate;
+			day = addDays(day, 1)
+		) {
+			if (
+				isSameMonth(day, new Date(currentYear, currentMonth)) &&
+				isDatePast(day.getDate(), day.getMonth() + 1, day.getFullYear())
+			) {
+				return true
+			}
+		}
+		return false
+	}
+
+	const getDaysInMonth = (year: number, month: number) => {
+		const start = startOfWeek(startOfMonth(new Date(year, month)), {
+			weekStartsOn: 1,
+		})
+		const end = endOfWeek(endOfMonth(new Date(year, month)), {weekStartsOn: 1})
+		let date = start
+		const days = []
+		while (date <= end) {
+			days.push(new Date(date))
+			date = addDays(date, 1)
+		}
+		return days
 	}
 
 	const isDateToday = (day, month, year) => {
@@ -196,7 +297,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			dispatch({
 				type: 'SET_CALENDAR_NOW_POPUP',
 				payload: {
-					day: String(format(new Date(), 'dd')),
+					day: String(new Date(Date.now()).getDate()),
 					month: String(
 						(currentPartOfMonth == 1
 							? currentMonth + 1
@@ -381,7 +482,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 									return (
 										<td
-											className={s.td}
+											className={s.td + ' ' + (isToday ? s.today : '')}
 											onClick={() => {
 												// console.log(
 												// 	'calendar-day',
@@ -421,7 +522,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
                         ${!isToday ? (isPastDate ? s.pastDay : s.futureDay) : ''}
 						${!isPastDate && isWeekend ? s.futureWeekendData : ''}
                       `}>
-													<p className={`${isToday ? s.today : ''}`}>{day}</p>
+													<p className={`}`}>{day}</p>
 												</p>
 												{/* {cell && ( */}
 
@@ -564,7 +665,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 						{sumParamsOfWeeks.map((item, index) => (
 							<>
 								<tr className={s.tr}>
-									<td className={s.td}>
+									<td
+										className={`${s.td} ${isWeekContainsFutureDays(index) ? s.grey : ''}`}>
 										<div className={s.content}>
 											<p id="day" className={s.dayIndex}>
 												За неделю

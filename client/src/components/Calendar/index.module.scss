@@ -695,10 +695,10 @@
 }
 
 .today {
-	background-color: #179417;
+	outline: 3px dashed #179417;
 	border-radius: 2px;
 	width: 12px;
 	display: flex;
 	justify-content: center;
-	color: #fff;
+	// color: #fff;
 }

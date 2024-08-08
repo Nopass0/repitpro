@@ -1330,7 +1330,11 @@ const MainPage = () => {
 																						<div
 																							style={{marginLeft: '50px'}}
 																							className={s.ListWrapper}>
-																							<button className={s.btn}>
+																							<button
+																								onClick={() =>
+																									handleOpenCard(student.id)
+																								}
+																								className={s.btn}>
 																								<img src={Home} alt="Home" />
 																							</button>
 																							<p style={{width: '150px'}}>
@@ -1355,7 +1359,11 @@ const MainPage = () => {
 																					<div
 																						style={{marginLeft: '50px'}}
 																						className={s.ListWrapper}>
-																						<button className={s.btn}>
+																						<button
+																							onClick={() =>
+																								handleOpenCard(student.id)
+																							}
+																							className={s.btn}>
 																							<img src={Home} alt="Home" />
 																						</button>
 																						<p style={{width: '150px'}}>
