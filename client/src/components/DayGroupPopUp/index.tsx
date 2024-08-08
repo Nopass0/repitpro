@@ -362,7 +362,10 @@ const DayGroupPopUp = ({
 							<div className={s.MainHeader}>
 								<div className={s.IconHeader}>
 									<img src={icon} alt="icon" />
-									<p>{student?.nameStudent}</p>
+									<div className={s.HeaderCol}>
+										<p>{student?.groupName || student?.nameStudent}</p>
+										<p>{student?.itemName}</p>
+									</div>
 								</div>
 								<div className={s.Devider}></div>
 								<div className={s.AddressHeader}>
