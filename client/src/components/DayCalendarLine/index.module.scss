@@ -6,6 +6,37 @@ input {
 	outline: none;
 }
 
+.cancelStamp {
+	background-color: rgb(228, 122, 122);
+	color: white;
+	padding: 2px 5px;
+	border-radius: 4px;
+	width: 200px;
+	height: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.cancleWrapper {
+	background-color: rgb(228, 122, 122);
+}
+
+.BtnCancel {
+	background-color: #ff4d4f;
+	color: white;
+	border: none;
+	padding: 5px 10px;
+	border-radius: 4px;
+	cursor: pointer;
+
+	&:hover {
+		background-color: #ff7875;
+	}
+}
+
 .wrapper {
 	width: 700px;
 	height: 40px;
@@ -17,7 +48,11 @@ input {
 
 	white-space: nowrap;
 	font-size: 16px;
-	
+
+	&.cancelled {
+		opacity: 0.6;
+	}
+
 	.InputCstm {
 		input {
 			font-size: 16px;
@@ -60,7 +95,6 @@ input {
 			justify-content: flex-end;
 		}
 	}
-	
 
 	.Checkbox {
 		margin-right: 10px;
@@ -142,5 +176,5 @@ input {
 }
 .PopUp {
 	position: relative;
-	Left: 350px;
+	left: 350px;
 }

@@ -121,6 +121,10 @@ const DayCalendarPopUp = ({
 			console.log('Received students data:', data)
 			if (mountedRef.current) {
 				setStudents(data)
+				console.log(
+					'\n------------------------stud-line-data----------------------\n',
+					data,
+				)
 				setIsLoading(false)
 				clearTimeout(timeoutId)
 				retryCountRef.current = 0 // Reset retry count on successful fetch
@@ -315,6 +319,12 @@ const DayCalendarPopUp = ({
 		fetchData()
 	}
 
+	const fetchDataForDate = (day, month, year) => {
+		setIsLoading(true)
+		socket.emit('getStudentsByDate', {day, month, year, token})
+		socket.emit('getClientsByDate', {day, month, year, token})
+	}
+
 	const handleAddDay = () => {
 		//get calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear (Ex: '1', '1', "2023") and remake it to Date and add 1 day
 		const newDate = new Date(
@@ -330,6 +340,8 @@ const DayCalendarPopUp = ({
 		const newYear = String(newDate.getFullYear())
 
 		debouncedOnUpdate(newDay, newMonth, newYear)
+
+		fetchDataForDate(newDay, newMonth, newYear)
 	}
 
 	const handlePrevDay = () => {
@@ -347,6 +359,8 @@ const DayCalendarPopUp = ({
 		const newYear = String(newDate.getFullYear())
 
 		debouncedOnUpdate(newDay, newMonth, newYear)
+
+		fetchDataForDate(newDay, newMonth, newYear)
 	}
 
 	const handeleAddStudentDay = () => {
@@ -495,6 +509,7 @@ const DayCalendarPopUp = ({
 									LineClick={LineClick}
 									iconClick={iconClick}
 									icon={student.type == 'group' ? 3 : student.typeLesson}
+									isCancel={student.isCancel}
 									editMode={editMode}
 									timeStart={
 										timeNormalize(student.startTime.hour) +

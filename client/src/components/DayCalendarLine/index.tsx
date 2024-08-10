@@ -11,7 +11,7 @@ import {Select, MenuItem} from '@mui/material'
 import InputMask from 'react-input-mask'
 import {useEffect, useState} from 'react'
 import {debounce} from 'lodash'
-
+import CancelIcon from '@mui/icons-material/Cancel'
 import {Input} from '@mui/base'
 import {useDispatch, useSelector} from 'react-redux'
 import {ECurrentDayPopUp, ELeftMenuPage} from '../../types'
@@ -23,6 +23,7 @@ enum PagePopup {
 	Exit,
 	PrePay,
 	None,
+	Cancel,
 }
 
 export const UPDATE_STUDENTS = 'UPDATE_STUDENTS'
@@ -49,6 +50,7 @@ interface IDayCalendarLine {
 	groupId?: string
 	students?: any
 	type?: string
+	isCancel: boolean
 	place?: string
 
 	iconClick?: () => void
@@ -84,6 +86,7 @@ const DayCalendarLine = ({
 	iconClick,
 	LineClick,
 	onUpdate,
+	isCancel: initialIsCancel,
 	type,
 }: IDayCalendarLine) => {
 	const [editIcon, setEditIcon] = useState<string>(icon)
@@ -91,6 +94,7 @@ const DayCalendarLine = ({
 	const [editTime, setEditTime] = useState<string>(`${timeStart}-${timeEnd}`)
 	const [editPrevpay, setEditPrevpay] = useState<boolean>(prevpay || false)
 	const [isDelete, setIsDelete] = useState<boolean>(false)
+	const [isCancel, setIsCancel] = useState<boolean>(initialIsCancel)
 
 	const [editTimeStart, setEditTimeStart] = useState<string>(timeStart)
 	const [editTimeEnd, setEditTimeEnd] = useState<string>(timeEnd)
@@ -113,6 +117,24 @@ const DayCalendarLine = ({
 			window.removeEventListener('resize', handleResize)
 		}
 	}, [])
+
+	useEffect(() => {
+		const handleLessonCanceled = (data: any) => {
+			if (data.success && data.updatedSchedule.id === id) {
+				setIsCancel(true)
+			} else if (!data.success) {
+				console.error('Failed to cancel lesson:', data.error)
+				// Здесь можно добавить обработку ошибки, например, показать уведомление пользователю
+			}
+		}
+
+		socket.on('lessonCanceled', handleLessonCanceled)
+
+		return () => {
+			socket.off('lessonCanceled', handleLessonCanceled)
+		}
+	}, [id])
+
 	const dispatch = useDispatch()
 
 	const user = useSelector((state: any) => state.user)
@@ -252,14 +274,26 @@ const DayCalendarLine = ({
 		}
 	}
 
+	const handleCancel = () => {
+		setPagePopup(PagePopup.Cancel)
+	}
+
+	const confirmCancel = () => {
+		socket.emit('cancelLesson', {id, token})
+		setPagePopup(PagePopup.None)
+	}
+
 	const handleOpenDayPopUp = () => {
 		setIsDetailsShow(true)
 	}
 
 	return (
 		<>
-			<div style={{display: isDelete ? 'none' : 'block'}}>
-				<div className={s.wrapper}>
+			<div
+				className={`${isCancel ? s.cancelled : ''}`}
+				style={{display: isDelete ? 'none' : 'block'}}>
+				{isCancel && <div className={s.cancelStamp}>Отменено</div>}
+				<div className={`${s.wrapper} ${isCancel && s.cancleWrapper}`}>
 					<button
 						onClick={() => {
 							if (!editMode && type === 'student') {
@@ -277,12 +311,12 @@ const DayCalendarLine = ({
 									editIcon === 1
 										? Home
 										: editIcon === 2
-										? HomeStudent
-										: editIcon === 3
-										? Group
-										: editIcon === 4
-										? Online
-										: GroupOnline
+											? HomeStudent
+											: editIcon === 3
+												? Group
+												: editIcon === 4
+													? Online
+													: GroupOnline
 								}
 								alt={editIcon}
 							/>
@@ -430,11 +464,10 @@ const DayCalendarLine = ({
 						size={isMobile ? '12px' : '20px'}
 					/>
 					<button
-						onClick={() => {
-							setPagePopup(PagePopup.Exit)
-						}}
-						className={s.BtnDelete}>
-						<DeleteOutlineIcon />
+						onClick={handleCancel}
+						className={s.BtnCancel}
+						style={{display: isCancel ? 'none' : 'block'}}>
+						<CancelIcon />
 					</button>
 				</div>
 
@@ -463,6 +496,16 @@ const DayCalendarLine = ({
 						/>
 					</div>
 				</>
+			)}
+			{pagePopup === PagePopup.Cancel && (
+				<div className={s.PopUp__wrapper}>
+					<ExitPopUp
+						className={s.PopUp}
+						title="Вы действительно хотите отменить занятие?"
+						yes={confirmCancel}
+						no={() => setPagePopup(PagePopup.None)}
+					/>
+				</div>
 			)}
 			{pagePopup === PagePopup.PrePay && (
 				<>

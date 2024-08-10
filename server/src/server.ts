@@ -12,6 +12,7 @@ import {
 } from "./calendar/calendar";
 import {
   addStudent,
+  cancelLesson,
   createStudentSchedule,
   deleteAudio,
   deleteStudent,
@@ -136,6 +137,8 @@ io.on("connection", (socket) => {
   socket.on("getLinkById", (data) => getLinkById(data, socket));
   socket.on("getLinksByUser", (token) => getLinksByUser(token, socket));
   socket.on("getLinksByLinkedId", (data) => getLinksByLinkedId(data, socket));
+
+  socket.on("cancelLesson", (data) => cancelLesson(data, socket));
 
   // socket.on("updateStudents", (data) => updateStudents(data, socket));
   socket.on("updateStudentAndItems", (data) =>

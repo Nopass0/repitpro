@@ -148,6 +148,7 @@ model Student {
   isArchived      Boolean @default(false)
   group           Group    @relation(fields: [groupId], references: [id])
   groupId         String
+  isCancel       Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -187,9 +188,11 @@ model StudentSchedule {
   year         String
   item         Item     @relation(fields: [itemId], references: [id])
   itemId       String
+  isCancel       Boolean @default(false)
 
 
   workStages  Json?
+  
 }
 
 // ... (остальные модели)

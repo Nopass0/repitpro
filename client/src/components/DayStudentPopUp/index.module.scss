@@ -6,6 +6,24 @@ input {
 	outline: none;
 }
 
+.cancleWrapper {
+	background-color: rgb(228, 122, 122);
+}
+
+.cancelStamp {
+	background-color: rgb(228, 122, 122);
+	color: white;
+	padding: 2px 5px;
+	border-radius: 4px;
+	width: 200px;
+	height: 20px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 12px;
+	font-weight: bold;
+}
+
 .wrapper {
 	height: fit-content;
 

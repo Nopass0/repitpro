@@ -382,6 +382,7 @@ const DayStudentPopUp = ({
 		})
 		socket.once('getStudentsByDate', (data) => {
 			setStudents(data)
+			console.log('getStudentsByDate', data)
 		})
 	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 
@@ -460,8 +461,14 @@ const DayStudentPopUp = ({
 	])
 
 	return (
-		<div style={style} className={s.wrapper}>
+		<div
+			style={style}
+			className={`${s.wrapper} ${students.length > 0 && students[0].isCancel == true && s.cancleWrapper}`}>
 			<div className={s.InfoBlock}>
+				{students.length > 0 && students[0].isCancel && (
+					<p className={s.cancelStamp}>Отменено</p>
+				)}
+
 				<div className={s.Header}>
 					<div className={s.MainHeader}>
 						<div className={s.IconHeader}>
