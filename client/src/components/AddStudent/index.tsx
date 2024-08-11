@@ -4,7 +4,7 @@ import {styled} from '@mui/material/styles'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import Plus from '../../assets/ItemPlus.svg'
 import CheckBox from '../CheckBox'
@@ -38,6 +38,7 @@ import MiniCalendar from '../MiniCalendar'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import {TailSpin} from 'react-loader-spinner'
 import {Button} from '@/ui/button'
+import useOnMount from '@/hooks/useOnMount'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -72,7 +73,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const navigate = useNavigate()
 	const [audios, setAudios] = useState<any>([])
-
+	const [isTriggerData, setIsTriggerData] = useState<boolean>(false)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -967,8 +968,14 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [data])
 
 	useEffect(() => {
+		setTimeout(() => {
+			dispatch({type: 'SET_EDITED_CARDS', payload: false})
+		}, 1000)
+		
+	},[])
+	useEffect(() => {
 		console.log(editedCards, 'editedCards')
-	}, [editedCards])
+	}, [data, editedCards])
 
 	return (
 		<>
@@ -996,7 +1003,12 @@ const AddStudent = ({}: IAddStudent) => {
 						<div className={s.Header}>
 							<div className={s.HeaderAddStudent}>
 								<div className={s.dataSlidePicker}>
-									<button onClick={prevStud} style={{backgroundColor: currentStudPosition === 0 && '#eee'}} className={s.btn}>
+									<button
+										onClick={prevStud}
+										style={{
+											backgroundColor: currentStudPosition === 0 && '#eee',
+										}}
+										className={s.btn}>
 										<span>
 											<Arrow direction={ArrowType.left} />
 										</span>
@@ -1007,7 +1019,14 @@ const AddStudent = ({}: IAddStudent) => {
 											? `${currentStudPosition + 1}/${allIdStudent.length}`
 											: `${allIdStudent.length + 1}/${allIdStudent.length + 1}`}
 									</p>
-									<button onClick={nextStud} style={{backgroundColor: currentStudPosition === allIdStudent.length - 1 && '#eee'}} className={s.btn}>
+									<button
+										onClick={nextStud}
+										style={{
+											backgroundColor:
+												currentStudPosition === allIdStudent.length - 1 &&
+												'#eee',
+										}}
+										className={s.btn}>
 										<span>
 											<Arrow direction={ArrowType.right} />
 										</span>
@@ -1175,19 +1194,6 @@ const AddStudent = ({}: IAddStudent) => {
 																		}}></div>
 																	{formatDate(lesson.date)}
 																</p>
-																<p
-																	style={{
-																		fontWeight: '300',
-																		fontSize: '14px',
-																		width: '95px',
-																		minWidth: '95px',
-																		maxWidth: '95px',
-																		whiteSpace: 'nowrap',
-																		overflow: 'hidden',
-																		textOverflow: 'ellipsis',
-																	}}>
-																	{lesson.itemName}
-																</p>
 																<CheckBox
 																	onChange={() =>
 																		setHistoryLessonIsDone(
@@ -1198,6 +1204,20 @@ const AddStudent = ({}: IAddStudent) => {
 																	size="16px"
 																	checked={lesson.isDone}
 																/>
+																<p
+																	style={{
+																		fontWeight: '300',
+																		fontSize: '16px',
+																		width: '95px',
+																		minWidth: '95px',
+																		maxWidth: '95px',
+																		whiteSpace: 'nowrap',
+																		overflow: 'hidden',
+																		textOverflow: 'ellipsis',
+																	}}>
+																	{lesson.itemName}
+																</p>
+																
 																<p
 																	style={{
 																		fontSize: '14px',
@@ -1251,7 +1271,7 @@ const AddStudent = ({}: IAddStudent) => {
 																<p
 																	style={{
 																		fontWeight: '300',
-																		fontSize: '14px',
+																		fontSize: '16px',
 																		width: '95px',
 																		minWidth: '95px',
 																		maxWidth: '95px',
@@ -1259,7 +1279,7 @@ const AddStudent = ({}: IAddStudent) => {
 																		overflow: 'hidden',
 																		textOverflow: 'ellipsis',
 																	}}>
-																	Преодплата
+																	Преодоплата
 																</p>
 
 																<p

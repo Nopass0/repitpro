@@ -878,19 +878,6 @@ const AddGroup = ({className}: IAddGroup) => {
 									}}></div>
 								{formatDate(lesson.date)}
 							</p>
-							<p
-								style={{
-									fontWeight: '300',
-									fontSize: '14px',
-									width: '95px',
-									minWidth: '95px',
-									maxWidth: '95px',
-									whiteSpace: 'nowrap',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
-								}}>
-								{lesson.itemName}
-							</p>
 							<CheckBox
 								checked={lesson.isDone}
 								size="16px"
@@ -902,6 +889,20 @@ const AddGroup = ({className}: IAddGroup) => {
 									)
 								}
 							/>
+							<p
+								style={{
+									fontWeight: '300',
+									fontSize: '16px',
+									width: '95px',
+									minWidth: '95px',
+									maxWidth: '95px',
+									whiteSpace: 'nowrap',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+								}}>
+								{lesson.itemName}
+							</p>
+
 							<p
 								style={{
 									width: '100px',
@@ -1291,7 +1292,11 @@ const AddGroup = ({className}: IAddGroup) => {
 			dispatch({type: 'SET_EDITED_CARDS', payload: true})
 		}
 	}, [items, students, groupName])
-
+	useEffect(() => {
+		setTimeout(() => {
+			dispatch({type: 'SET_EDITED_CARDS', payload: false})
+		}, 1000)
+	}, [])
 	return (
 		<>
 			<button
@@ -1317,7 +1322,10 @@ const AddGroup = ({className}: IAddGroup) => {
 						<div className={s.Header}>
 							<div className={s.HeaderAddGroup}>
 								<div className={s.dataSlidePicker}>
-									<button className={s.btn} style={{backgroundColor: currentGroupIndex === 0 && '#eee'}} onClick={() => prevGroup()}>
+									<button
+										className={s.btn}
+										style={{backgroundColor: currentGroupIndex === 0 && '#eee'}}
+										onClick={() => prevGroup()}>
 										<span>
 											<Arrow direction={ArrowType.left} />
 										</span>
@@ -1328,7 +1336,14 @@ const AddGroup = ({className}: IAddGroup) => {
 											? `${currentGroupIndex + 1} / ${groupsIndexes.length}`
 											: `${groupsIndexes.length + 1} / ${groupsIndexes.length + 1}`}
 									</p>
-									<button className={s.btn} style={{backgroundColor: currentGroupIndex === groupsIndexes.length - 1 && '#eee'}} onClick={() => nextGroup()}>
+									<button
+										className={s.btn}
+										style={{
+											backgroundColor:
+												currentGroupIndex === groupsIndexes.length - 1 &&
+												'#eee',
+										}}
+										onClick={() => nextGroup()}>
 										<span>
 											<Arrow direction={ArrowType.right} />
 										</span>
@@ -2186,18 +2201,17 @@ const AddGroup = ({className}: IAddGroup) => {
 
 											<Line width="100%" className={s.Line} />
 
-											
 											<TextAreaInputBlock
 												title="Цель занятий:"
 												disabled={isEditMode}
 												value={student.targetLessonStudent}
-													onChange={(e) =>
-														changeStudentValue(
-															index,
-															'targetLessonStudent',
-															e.target.value,
-														)
-													}
+												onChange={(e) =>
+													changeStudentValue(
+														index,
+														'targetLessonStudent',
+														e.target.value,
+													)
+												}
 												textIndent="110px"
 											/>
 											<Line width="100%" className={s.Line} />
