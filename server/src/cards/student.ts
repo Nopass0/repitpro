@@ -1730,273 +1730,113 @@ export async function getGroupByStudentId(data: any, socket: any) {
 
 // import { addDays, differenceInDays, getDay } from "date-fns";
 
-// export async function updateStudentAndItems(data: any, socket: any) {
-//   const { id, items, audios, files, token } = data;
-
-//   try {
-//     const token_ = await db.token.findFirst({
-//       where: {
-//         token,
-//       },
-//     });
-
-//     if (!token_) {
-//       throw new Error("Invalid token");
-//     }
-
-//     const userId = token_.userId;
-
-//     const existingStudent = await db.student.findUnique({
-//       where: {
-//         id,
-//       },
-//       select: {
-//         files: true,
-//         groupId: true,
-//       },
-//     });
-
-//     if (!existingStudent) {
-//       throw new Error("Student not found");
-//     }
-
-//     const existFilesIds = existingStudent.files;
-
-//     // Upload new files and audios
-//     let justFilesIds = [];
-//     if (files && files.length > 0) {
-//       justFilesIds = await upload(
-//         files,
-//         userId,
-//         "student/file",
-//         (paths: string[]) => {
-//           justFilesIds = paths;
-//         }
-//       );
-//     }
-
-//     let justAudiosIds = [];
-//     if (audios && audios.length > 0) {
-//       justAudiosIds = await upload(
-//         audios,
-//         userId,
-//         "student/audio",
-//         (paths: string[]) => {
-//           justAudiosIds = paths;
-//         }
-//       );
-//     }
-
-//     const AllFiles = [
-//       ...new Set([...justFilesIds, ...justAudiosIds, ...existFilesIds]),
-//     ];
-
-//     const updatedStudent = await db.student.update({
-//       where: {
-//         id,
-//       },
-//       data: {
-//         commentStudent: data.commentStudent,
-//         prePayCost: data.prePayCost,
-//         prePayDate: data.prePayDate ? new Date(data.prePayDate) : null,
-//         costOneLesson: data.costOneLesson,
-//         linkStudent: data.linkStudent,
-//         files: AllFiles,
-//         costStudent: data.costStudent,
-//         phoneNumber: data.phoneNumber,
-//         contactFace: data.contactFace,
-//         email: data.email,
-//         nameStudent: data.nameStudent,
-//       },
-//     });
-
-//     const group = await db.group.findUnique({
-//       where: {
-//         id: updatedStudent.groupId,
-//       },
-//     });
-
-//     if (!group) {
-//       throw new Error("Group not found");
-//     }
-
-//     await db.group.update({
-//       where: {
-//         id: group.id,
-//       },
-//       data: {
-//         historyLessons: data.historyLessons,
-//       },
-//     });
-
-//     // Delete old studentSchedule records
-//     await db.studentSchedule.deleteMany({
-//       where: {
-//         studentId: id,
-//       },
-//     });
-
-//     // Create new studentSchedule records
-//     for (const itemData of items) {
-//       const startDate = new Date(itemData.startLesson);
-//       const endDate = new Date(itemData.endLesson);
-//       const daysToAdd = differenceInDays(endDate, startDate);
-//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-//         addDays(startDate, i)
-//       );
-
-//       for (const date of dateRange) {
-//         const dayOfWeek = getDay(date);
-//         const scheduleForDay = itemData.timeLinesArray[dayOfWeek];
-
-//         if (!scheduleForDay) {
-//           console.warn(
-//             `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
-//           );
-//           continue;
-//         }
-
-//         const cond =
-//           scheduleForDay.startTime.hour === 0 &&
-//           scheduleForDay.startTime.minute === 0 &&
-//           scheduleForDay.endTime.hour === 0 &&
-//           scheduleForDay.endTime.minute === 0;
-
-//         if (!cond) {
-//           await db.studentSchedule.create({
-//             data: {
-//               day: date.getDate().toString(),
-//               groupId: group.id,
-//               workCount: 0,
-//               lessonsCount: 1,
-//               lessonsPrice: Number(itemData.costOneLesson),
-//               workPrice: 0,
-//               month: (date.getMonth() + 1).toString(),
-//               timeLinesArray: itemData.timeLinesArray,
-//               isChecked: false,
-//               itemName: itemData.itemName,
-//               studentName: updatedStudent.nameStudent,
-//               typeLesson: itemData.typeLesson,
-//               year: date.getFullYear().toString(),
-//               itemId: itemData.id,
-//               userId,
-//             },
-//           });
-//         }
-//       }
-//     }
-
-//     socket.emit("updateStudentAndItems", updatedStudent);
-
-//     return updatedStudent;
-//   } catch (error) {
-//     console.error("Error updating student and items:", error);
-//     socket.emit("updateStudentAndItems", { error: error.message });
-//   }
-// }
-
 export async function updateStudentAndItems(data: any, socket: any) {
-  const { id, items, audios, files, token, historyLessons, ...studentData } =
-    data;
+  const { id, items, audios, files, token } = data;
 
   try {
-    const token_ = await db.token.findFirst({ where: { token } });
-    if (!token_) throw new Error("Invalid token");
-    const userId = token_.userId;
-
-    const existingStudent = await db.student.findUnique({
-      where: { id },
-      include: { group: true },
-    });
-    if (!existingStudent) throw new Error("Student not found");
-
-    // Process files and audios
-    const existingFiles = existingStudent.files || [];
-    let newFiles = [...existingFiles];
-    if (files?.length > 0) {
-      const uploadedFiles = await upload(files, userId, "student/file");
-      newFiles = [...newFiles, ...uploadedFiles];
-    }
-    if (audios?.length > 0) {
-      const uploadedAudios = await upload(audios, userId, "student/audio");
-      newFiles = [...newFiles, ...uploadedAudios];
-    }
-
-    // Update student
-    const updatedStudent = await db.student.update({
-      where: { id },
-      data: {
-        ...studentData,
-        files: newFiles,
-        userId,
-        nameStudent: studentData.nameStudent, // Explicitly update student name
+    const token_ = await db.token.findFirst({
+      where: {
+        token,
       },
     });
 
-    // Update group's name and historyLessons
-    if (existingStudent.group) {
-      const groupStudents = await db.student.count({
-        where: { groupId: existingStudent.group.id },
-      });
-
-      let groupUpdateData: any = {};
-
-      if (groupStudents === 1) {
-        groupUpdateData.groupName = studentData.nameStudent;
-      }
-
-      // Update history lessons
-      if (historyLessons) {
-        const isGroupHistory = Array.isArray(historyLessons[0]);
-
-        const updateHistoryLesson = (lesson: any) => ({
-          ...lesson,
-          price:
-            items.find((item: any) => item.itemName === lesson.itemName)
-              ?.costOneLesson || lesson.price,
-          itemName:
-            items.find((item: any) => item.itemName === lesson.itemName)
-              ?.itemName || lesson.itemName,
-        });
-
-        const updatedHistoryLessons = isGroupHistory
-          ? historyLessons.map((subArray: any[]) =>
-              subArray.map(updateHistoryLesson)
-            )
-          : historyLessons.map(updateHistoryLesson);
-
-        groupUpdateData.historyLessons = updatedHistoryLessons;
-      }
-
-      await db.group.update({
-        where: { id: existingStudent.group.id },
-        data: groupUpdateData,
-      });
+    if (!token_) {
+      throw new Error("Invalid token");
     }
 
-    // Update or create items
-    for (const itemData of items) {
-      if (itemData.id) {
-        await db.item.update({
-          where: { id: itemData.id },
-          data: {
-            ...itemData,
-            userId,
-            groupId: existingStudent.groupId,
-          },
-        });
-      } else {
-        await db.item.create({
-          data: {
-            ...itemData,
-            userId,
-            groupId: existingStudent.groupId,
-          },
-        });
-      }
+    const userId = token_.userId;
+
+    const existingStudent = await db.student.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        files: true,
+        groupId: true,
+      },
+    });
+
+    if (!existingStudent) {
+      throw new Error("Student not found");
     }
 
-    // Update student schedules
+    const existFilesIds = existingStudent.files;
+
+    // Upload new files and audios
+    let justFilesIds = [];
+    if (files && files.length > 0) {
+      justFilesIds = await upload(
+        files,
+        userId,
+        "student/file",
+        (paths: string[]) => {
+          justFilesIds = paths;
+        }
+      );
+    }
+
+    let justAudiosIds = [];
+    if (audios && audios.length > 0) {
+      justAudiosIds = await upload(
+        audios,
+        userId,
+        "student/audio",
+        (paths: string[]) => {
+          justAudiosIds = paths;
+        }
+      );
+    }
+
+    const AllFiles = [
+      ...new Set([...justFilesIds, ...justAudiosIds, ...existFilesIds]),
+    ];
+
+    const updatedStudent = await db.student.update({
+      where: {
+        id,
+      },
+      data: {
+        commentStudent: data.commentStudent,
+        prePayCost: data.prePayCost,
+        prePayDate: data.prePayDate ? new Date(data.prePayDate) : null,
+        costOneLesson: data.costOneLesson,
+        linkStudent: data.linkStudent,
+        files: AllFiles,
+        costStudent: data.costStudent,
+        phoneNumber: data.phoneNumber,
+        contactFace: data.contactFace,
+        email: data.email,
+        nameStudent: data.nameStudent,
+      },
+    });
+
+    const group = await db.group.findUnique({
+      where: {
+        id: updatedStudent.groupId,
+      },
+    });
+
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    await db.group.update({
+      where: {
+        id: group.id,
+      },
+      data: {
+        historyLessons: data.historyLessons,
+      },
+    });
+
+    // Delete old studentSchedule records
+    await db.studentSchedule.deleteMany({
+      where: {
+        studentId: id,
+      },
+    });
+
+    // Create new studentSchedule records
     for (const itemData of items) {
       const startDate = new Date(itemData.startLesson);
       const endDate = new Date(itemData.endLesson);
@@ -2009,70 +1849,230 @@ export async function updateStudentAndItems(data: any, socket: any) {
         const dayOfWeek = getDay(date);
         const scheduleForDay = itemData.timeLinesArray[dayOfWeek];
 
-        if (scheduleForDay) {
-          const day = date.getDate().toString();
-          const month = (date.getMonth() + 1).toString();
-          const year = date.getFullYear().toString();
+        if (!scheduleForDay) {
+          console.warn(
+            `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+          );
+          continue;
+        }
 
-          const scheduleData = {
-            itemName: itemData.itemName,
-            lessonsPrice: Number(itemData.costOneLesson),
-            typeLesson: itemData.typeLesson,
-            timeLinesArray: itemData.timeLinesArray,
-            studentName: updatedStudent.nameStudent,
-          };
+        const cond =
+          scheduleForDay.startTime.hour === 0 &&
+          scheduleForDay.startTime.minute === 0 &&
+          scheduleForDay.endTime.hour === 0 &&
+          scheduleForDay.endTime.minute === 0;
 
-          const existingSchedule = await db.studentSchedule.findFirst({
-            where: {
-              studentId: updatedStudent.id,
-              day,
-              month,
-              year,
+        if (!cond) {
+          await db.studentSchedule.create({
+            data: {
+              day: date.getDate().toString(),
+              groupId: group.id,
+              workCount: 0,
+              lessonsCount: 1,
+              lessonsPrice: Number(itemData.costOneLesson),
+              workPrice: 0,
+              month: (date.getMonth() + 1).toString(),
+              timeLinesArray: itemData.timeLinesArray,
+              isChecked: false,
+              itemName: itemData.itemName,
+              studentName: updatedStudent.nameStudent,
+              typeLesson: itemData.typeLesson,
+              year: date.getFullYear().toString(),
               itemId: itemData.id,
+              userId,
             },
           });
-
-          if (existingSchedule) {
-            await db.studentSchedule.update({
-              where: { id: existingSchedule.id },
-              data: scheduleData,
-            });
-          } else {
-            await db.studentSchedule.create({
-              data: {
-                ...scheduleData,
-                studentId: updatedStudent.id,
-                day,
-                month,
-                year,
-                groupId: existingStudent.groupId,
-                itemId: itemData.id,
-                userId,
-                workCount: 0,
-                lessonsCount: 1,
-                workPrice: 0,
-                isChecked: false,
-              },
-            });
-          }
         }
       }
     }
 
-    socket.emit("updateStudentAndItems", {
-      success: true,
-      data: updatedStudent,
-    });
+    socket.emit("updateStudentAndItems", updatedStudent);
+
     return updatedStudent;
   } catch (error) {
     console.error("Error updating student and items:", error);
-    socket.emit("updateStudentAndItems", {
-      success: false,
-      error: error.message,
-    });
-    return null;
+    socket.emit("updateStudentAndItems", { error: error.message });
   }
 }
+
+// export async function updateStudentAndItems(data: any, socket: any) {
+//   const { id, items, audios, files, token, historyLessons, ...studentData } =
+//     data;
+
+//   try {
+//     const token_ = await db.token.findFirst({ where: { token } });
+//     if (!token_) throw new Error("Invalid token");
+//     const userId = token_.userId;
+
+//     const existingStudent = await db.student.findUnique({
+//       where: { id },
+//       include: { group: true },
+//     });
+//     if (!existingStudent) throw new Error("Student not found");
+
+//     // Process files and audios
+//     const existingFiles = existingStudent.files || [];
+//     let newFiles = [...existingFiles];
+//     if (files?.length > 0) {
+//       const uploadedFiles = await upload(files, userId, "student/file");
+//       newFiles = [...newFiles, ...uploadedFiles];
+//     }
+//     if (audios?.length > 0) {
+//       const uploadedAudios = await upload(audios, userId, "student/audio");
+//       newFiles = [...newFiles, ...uploadedAudios];
+//     }
+
+//     // Update student
+//     const updatedStudent = await db.student.update({
+//       where: { id },
+//       data: {
+//         ...studentData,
+//         files: newFiles,
+//         userId,
+//         nameStudent: studentData.nameStudent, // Explicitly update student name
+//       },
+//     });
+
+//     // Update group's name and historyLessons
+//     if (existingStudent.group) {
+//       const groupStudents = await db.student.count({
+//         where: { groupId: existingStudent.group.id },
+//       });
+
+//       let groupUpdateData: any = {};
+
+//       if (groupStudents === 1) {
+//         groupUpdateData.groupName = studentData.nameStudent;
+//       }
+
+//       // Update history lessons
+//       if (historyLessons) {
+//         const isGroupHistory = Array.isArray(historyLessons[0]);
+
+//         const updateHistoryLesson = (lesson: any) => ({
+//           ...lesson,
+//           price:
+//             items.find((item: any) => item.itemName === lesson.itemName)
+//               ?.costOneLesson || lesson.price,
+//           itemName:
+//             items.find((item: any) => item.itemName === lesson.itemName)
+//               ?.itemName || lesson.itemName,
+//         });
+
+//         const updatedHistoryLessons = isGroupHistory
+//           ? historyLessons.map((subArray: any[]) =>
+//               subArray.map(updateHistoryLesson)
+//             )
+//           : historyLessons.map(updateHistoryLesson);
+
+//         groupUpdateData.historyLessons = updatedHistoryLessons;
+//       }
+
+//       await db.group.update({
+//         where: { id: existingStudent.group.id },
+//         data: groupUpdateData,
+//       });
+//     }
+
+//     // Update or create items
+//     for (const itemData of items) {
+//       if (itemData.id) {
+//         await db.item.update({
+//           where: { id: itemData.id },
+//           data: {
+//             ...itemData,
+//             userId,
+//             groupId: existingStudent.groupId,
+//           },
+//         });
+//       } else {
+//         await db.item.create({
+//           data: {
+//             ...itemData,
+//             userId,
+//             groupId: existingStudent.groupId,
+//           },
+//         });
+//       }
+//     }
+
+//     // Update student schedules
+//     for (const itemData of items) {
+//       const startDate = new Date(itemData.startLesson);
+//       const endDate = new Date(itemData.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = itemData.timeLinesArray[dayOfWeek];
+
+//         if (scheduleForDay) {
+//           const day = date.getDate().toString();
+//           const month = (date.getMonth() + 1).toString();
+//           const year = date.getFullYear().toString();
+
+//           const scheduleData = {
+//             itemName: itemData.itemName,
+//             lessonsPrice: Number(itemData.costOneLesson),
+//             typeLesson: itemData.typeLesson,
+//             timeLinesArray: itemData.timeLinesArray,
+//             studentName: updatedStudent.nameStudent,
+//           };
+
+//           const existingSchedule = await db.studentSchedule.findFirst({
+//             where: {
+//               studentId: updatedStudent.id,
+//               day,
+//               month,
+//               year,
+//               itemId: itemData.id,
+//             },
+//           });
+
+//           if (existingSchedule) {
+//             await db.studentSchedule.update({
+//               where: { id: existingSchedule.id },
+//               data: scheduleData,
+//             });
+//           } else {
+//             await db.studentSchedule.create({
+//               data: {
+//                 ...scheduleData,
+//                 studentId: updatedStudent.id,
+//                 day,
+//                 month,
+//                 year,
+//                 groupId: existingStudent.groupId,
+//                 itemId: itemData.id,
+//                 userId,
+//                 workCount: 0,
+//                 lessonsCount: 1,
+//                 workPrice: 0,
+//                 isChecked: false,
+//               },
+//             });
+//           }
+//         }
+//       }
+//     }
+
+//     socket.emit("updateStudentAndItems", {
+//       success: true,
+//       data: updatedStudent,
+//     });
+//     return updatedStudent;
+//   } catch (error) {
+//     console.error("Error updating student and items:", error);
+//     socket.emit("updateStudentAndItems", {
+//       success: false,
+//       error: error.message,
+//     });
+//     return null;
+//   }
+// }
 
 export async function getAllIdStudents(data: any, socket: any) {
   const { token } = data;
