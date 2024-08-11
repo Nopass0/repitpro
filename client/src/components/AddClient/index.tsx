@@ -511,7 +511,11 @@ const AddClient = ({}: IAddClient) => {
 			dispatch({type: 'SET_EDITED_CARDS', payload: true})
 		}
 	}, [nameStudent, phoneNumber, email, costStudent, commentClient, jobs])
-
+	useEffect(() => {
+		setTimeout(() => {
+			dispatch({type: 'SET_EDITED_CARDS', payload: false})
+		}, 1000)
+	}, [])
 	return (
 		<>
 			<button
