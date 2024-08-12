@@ -1,0 +1,24 @@
+.ListObject {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+
+	margin-bottom: 2px;
+
+	// background-color: rgb(255, 0, 0, 0.2);
+	background-color: white;
+	border: 1px dotted #eee;
+	border-radius: 8px;
+
+	.ButtonEdit {
+		border: none;
+		background: none;
+		margin-right: 10px;
+	}
+}
+.PrePayCostInput {
+	width: 50px !important;
+	margin: 0 2px;
+
+	border-bottom: 1px solid #e2e2e9 !important;
+}

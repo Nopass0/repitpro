@@ -14,6 +14,8 @@ interface IInput {
 	width?: string
 	maxWidth?: string
 	minWidth?: string
+	defaultValue?: string
+	onKeyDown?: (e: any) => void
 }
 
 const Input: React.FC<IInput> = ({
@@ -29,6 +31,8 @@ const Input: React.FC<IInput> = ({
 	width = '100%',
 	maxWidth = '181px',
 	minWidth,
+	defaultValue,
+	onKeyDown,
 }: IInput) => {
 	const onlyNumbers = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const regex = /[^0-9]/g
@@ -40,6 +44,7 @@ const Input: React.FC<IInput> = ({
 
 	return (
 		<input
+			defaultValue={defaultValue}
 			style={{...style, width: width, maxWidth: maxWidth, minWidth: '2ch'}}
 			className={`${s.input} ${className}`}
 			type={type ? type : 'text'}
@@ -52,6 +57,8 @@ const Input: React.FC<IInput> = ({
 				}
 				onChange(e)
 			}}
+			onClick={onClick}
+			onKeyDown={onKeyDown}
 		/>
 	)
 }

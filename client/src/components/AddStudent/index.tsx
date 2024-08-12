@@ -22,6 +22,7 @@ import {
 	EPagePopUpExit,
 	IItemCard,
 	IlinksArray,
+	IPrePayList,
 	ITimeLine,
 } from '../../types'
 import socket from '../../socket'
@@ -38,8 +39,8 @@ import MiniCalendar from '../MiniCalendar'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import {TailSpin} from 'react-loader-spinner'
 import {Button} from '@/ui/button'
-import useOnMount from '@/hooks/useOnMount'
-
+import AddCircleIcon from '@mui/icons-material/AddCircle'
+import PrePayRow from '../PrePayRow'
 interface IAddStudent {}
 interface IScheduleTimer {
 	id: number
@@ -74,6 +75,8 @@ const AddStudent = ({}: IAddStudent) => {
 	const navigate = useNavigate()
 	const [audios, setAudios] = useState<any>([])
 	const [isTriggerData, setIsTriggerData] = useState<boolean>(false)
+	const [prePayList, setPrePayList] = useState<IPrePayList[]>([])
+	const [editId, setEditId] = useState<number | null>(null)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -81,8 +84,47 @@ const AddStudent = ({}: IAddStudent) => {
 		size: number,
 	) => {
 		setAudios([...audios, {file: file, name: name, type: type, size: size}])
+	}
 
-		console.log('\n--------audio--------\n', audios, '\n--------\n')
+	// Pre Pay Functions
+	function addPrePayList(
+		prePayCost: string,
+		prePayDate: Date,
+		prePayId: number,
+	) {
+		if (prePayCost !== '') {
+			setPrePayList((prevList) => [
+				...prevList,
+				{cost: prePayCost, date: prePayDate, id: prePayId},
+			])
+			setPrePayCost('')
+			setPrePayDate(new Date(Date.now()))
+			console.log(prePayList, 'prePayList')
+		}
+	}
+
+	function handlePrePayDelete(id: number) {
+		setPrePayList((prevList) => prevList.filter((item) => item.id !== id))
+
+		console.log(prePayList, 'handleDelete')
+	}
+
+	function handlePrePayEdit(id: number, newDate: Date, newCost: string) {
+		setPrePayList((prevList) =>
+			prevList.map((item) =>
+				item.id === id ? {...item, date: newDate, cost: newCost} : item,
+			),
+		)
+		setEditId(null)
+		console.log(prePayList, 'handleEdit')
+	}
+
+	const startEditing = (id: number) => {
+		setEditId(id)
+	}
+
+	const finishEditing = () => {
+		setEditId(null)
 	}
 
 	useEffect(() => {
@@ -93,21 +135,12 @@ const AddStudent = ({}: IAddStudent) => {
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
-			console.log(
-				arr,
-				csp,
-				currentStudPosition,
-				currentOpenedStudent,
-				'arr, csp, currentStudPosition',
-				'currentOpenedStudent',
-			)
 		})
 
 		socket.on('getGroupByStudentId', (data: any) => {
 			setData(data.group)
 		})
 	}, [])
-	console.log(currentStudPosition, 'currentStudPosition')
 
 	const nextStud = () => {
 		if (Number(currentStudPosition) < allIdStudent.length - 1) {
@@ -675,18 +708,11 @@ const AddStudent = ({}: IAddStudent) => {
 			const lessonCount = historyLessons_.filter((i) => i.isPaid).length
 			const costOneLessonItems =
 				items.find((item) => item.costOneLesson)?.costOneLesson || 0
-			console.log(
-				'Зашёл',
-				Number(prePayCost),
-				Number(costOneLessonItems),
-				Math.floor(Number(prePayCost) / Number(costOneLessonItems)),
-				lessonCount,
-			)
+
 			if (
 				Math.floor(Number(prePayCost) / Number(costOneLessonItems)) >
 				lessonCount
 			) {
-				console.log('Зашёл 2')
 				const updatedHistoryLesson = historyLessons_.map((lesson) => {
 					const lessonDate = new Date(lesson.date)
 					console.log(lesson)
@@ -703,10 +729,7 @@ const AddStudent = ({}: IAddStudent) => {
 
 				setHistoryLesson(updatedHistoryLesson)
 			}
-
-			console.log('Вышел')
 		}
-		console.log('Не зашёл')
 	}
 
 	// useEffect(() => {
@@ -971,8 +994,7 @@ const AddStudent = ({}: IAddStudent) => {
 		setTimeout(() => {
 			dispatch({type: 'SET_EDITED_CARDS', payload: false})
 		}, 1000)
-		
-	},[])
+	}, [])
 	useEffect(() => {
 		console.log(editedCards, 'editedCards')
 	}, [data, editedCards])
@@ -1139,11 +1161,24 @@ const AddStudent = ({}: IAddStudent) => {
 										type="text"
 										value={prePayCost}
 										disabled={isEditMode}
-										onChange={(e) => setPrePayCost(e.target.value)}
+										onChange={(e) => {
+											setPrePayCost(e.target.value)
+										}}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter' && prePayCost !== '') {
+												addPrePayList(prePayCost, prePayDate, prePayList.length)
+											}
+										}}
 									/>
 
 									<p>₽</p>
-									<Button variant="outline">Добавить</Button>
+									<button
+										onClick={() =>
+											addPrePayList(prePayCost, prePayDate, prePayList.length)
+										}
+										style={{marginLeft: '10px'}}>
+										<AddCircleIcon />
+									</button>
 								</div>
 
 								<Line width="100%" className={s.Line} />
@@ -1217,7 +1252,7 @@ const AddStudent = ({}: IAddStudent) => {
 																	}}>
 																	{lesson.itemName}
 																</p>
-																
+
 																<p
 																	style={{
 																		fontSize: '14px',
@@ -1245,59 +1280,32 @@ const AddStudent = ({}: IAddStudent) => {
 															</div>
 														))}
 													<Line width="100%" className={s.Line} />
-													{prePayCost && (
+													{prePayList.length > 0 && (
 														<>
-															<div className={s.ListObject}>
-																<p
-																	style={{
-																		fontWeight: '500',
-																		fontSize: '14px',
-																		marginRight: '5px',
-																		display: 'flex',
-																		flexDirection: 'row',
-																		alignItems: 'center',
-																	}}>
-																	<div
-																		style={{
-																			width: '10px',
-																			height: '35px',
-																			borderTopLeftRadius: '8px',
-																			borderBottomLeftRadius: '8px',
-																			marginRight: '5px',
-																		}}></div>
-																	{prePayDate &&
-																		formatDate(new Date(prePayDate))}
-																</p>
-																<p
-																	style={{
-																		fontWeight: '300',
-																		fontSize: '16px',
-																		width: '95px',
-																		minWidth: '95px',
-																		maxWidth: '95px',
-																		whiteSpace: 'nowrap',
-																		overflow: 'hidden',
-																		textOverflow: 'ellipsis',
-																	}}>
-																	Преодоплата
-																</p>
-
-																<p
-																	style={{
-																		fontSize: '14px',
-																		width: '100px',
-																		textAlign: 'end',
-																	}}>
-																	{prePayCost}₽
-																</p>
-																{/* <CheckBox
-															onChange={() =>
-																setHistoryLessonIsPaid(index, !lesson.isPaid)
-															}
-															size="16px"
-															checked={lesson.isPaid}
-														/> */}
-															</div>
+															{prePayList.map(
+																(data: IPrePayList, index: number) => (
+																	<>
+																		<PrePayRow
+																			id={data.id}
+																			cost={data.cost}
+																			date={data.date}
+																			isEditing={editId === data.id}
+																			onEdit={() => startEditing(data.id)}
+																			onEditDone={(newDate, newCost) =>
+																				handlePrePayEdit(
+																					data.id,
+																					newDate,
+																					newCost,
+																				)
+																			}
+																			onDelete={() =>
+																				handlePrePayDelete(data.id)
+																			}
+																			finishEditing={finishEditing}
+																		/>
+																	</>
+																),
+															)}
 														</>
 													)}
 												</>

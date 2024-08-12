@@ -180,3 +180,9 @@ export interface IFile {
 	type: string
 	size: number
 }
+
+export interface IPrePayList {
+	id: number
+	date: Date
+	cost: string
+}
