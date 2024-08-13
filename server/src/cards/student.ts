@@ -313,6 +313,48 @@ const days = [
 //   }
 // }
 
+function checkTimeConflicts(schedules) {
+  const conflicts = [];
+
+  for (let i = 0; i < schedules.length; i++) {
+    for (let j = i + 1; j < schedules.length; j++) {
+      if (schedules[i].day === schedules[j].day) {
+        const startA = timeToMinutes(schedules[i].startTime);
+        const endA = timeToMinutes(schedules[i].endTime);
+        const startB = timeToMinutes(schedules[j].startTime);
+        const endB = timeToMinutes(schedules[j].endTime);
+
+        if (
+          (startA < endB && endA > startB) ||
+          (startB < endA && endB > startA)
+        ) {
+          conflicts.push({
+            day: schedules[i].day,
+            conflictA: `${formatTime(schedules[i].startTime)}-${formatTime(
+              schedules[i].endTime
+            )}`,
+            conflictB: `${formatTime(schedules[j].startTime)}-${formatTime(
+              schedules[j].endTime
+            )}`,
+          });
+        }
+      }
+    }
+  }
+
+  return conflicts;
+}
+
+function timeToMinutes(time) {
+  return time.hour * 60 + time.minute;
+}
+
+function formatTime(time) {
+  return `${time.hour.toString().padStart(2, "0")}:${time.minute
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 export async function addStudent(data, socket: any) {
   try {
     const {
@@ -373,19 +415,20 @@ export async function addStudent(data, socket: any) {
         const cacheKey = `${userId}-${dayOfMonth}-${
           date.getMonth() + 1
         }-${date.getFullYear()}`;
-        let existingSchedules = cache.get(cacheKey);
+        let existingSchedules;
+        // let existingSchedules = cache.get(cacheKey);
 
-        if (!existingSchedules) {
-          existingSchedules = await db.studentSchedule.findMany({
-            where: {
-              day: dayOfMonth.toString(),
-              month: (date.getMonth() + 1).toString(),
-              year: date.getFullYear().toString(),
-              userId,
-            },
-          });
-          cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
-        }
+        // if (!existingSchedules) {
+        existingSchedules = await db.studentSchedule.findMany({
+          where: {
+            day: dayOfMonth.toString(),
+            month: (date.getMonth() + 1).toString(),
+            year: date.getFullYear().toString(),
+            userId,
+          },
+        });
+        // cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
+        // }
 
         const conflictingSchedules = existingSchedules.filter((schedule) => {
           const scheduleStartTime =
@@ -601,6 +644,163 @@ export async function addStudent(data, socket: any) {
     socket.emit("addStudent", { error: error.message, ok: false });
   }
 }
+
+// export async function addStudent(data, socket: any) {
+//   try {
+//     const {
+//       nameStudent,
+//       phoneNumber,
+//       contactFace,
+//       email,
+//       prePayCost,
+//       prePayDate,
+//       costOneLesson,
+//       commentStudent,
+//       prePay,
+//       linkStudent,
+//       costStudent,
+//       audios,
+//       cost,
+//       historyLessons,
+//       files,
+//       items,
+//       token,
+//     } = data;
+
+//     const token_ = await db.token.findFirst({ where: { token } });
+
+//     if (!token_) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = token_.userId;
+
+//     if (!userId) {
+//       throw new Error("Invalid token");
+//     }
+
+//     function timeToMinutes(time) {
+//       return time.hour * 60 + time.minute;
+//     }
+
+//     function formatTime(time) {
+//       return `${time.hour.toString().padStart(2, "0")}:${time.minute
+//         .toString()
+//         .padStart(2, "0")}`;
+//     }
+
+//     const conflicts = [];
+//     const freeSlots = {};
+
+//     for (const item of items) {
+//       const startDate = new Date(item.startLesson);
+//       const endDate = new Date(item.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+
+//         if (
+//           !scheduleForDay ||
+//           (scheduleForDay.startTime.hour === 0 &&
+//             scheduleForDay.startTime.minute === 0 &&
+//             scheduleForDay.endTime.hour === 0 &&
+//             scheduleForDay.endTime.minute === 0)
+//         ) {
+//           continue;
+//         }
+
+//         const dayOfMonth = date.getDate();
+//         const month = (date.getMonth() + 1).toString();
+//         const year = date.getFullYear().toString();
+
+//         const existingSchedules = await db.studentSchedule.findMany({
+//           where: {
+//             day: dayOfMonth.toString(),
+//             month: month,
+//             year: year,
+//             userId,
+//           },
+//         });
+
+//         const newStartTime = timeToMinutes(scheduleForDay.startTime);
+//         const newEndTime = timeToMinutes(scheduleForDay.endTime);
+
+//         const conflictingSchedules = existingSchedules.filter((schedule) => {
+//           const scheduleStartTime =
+//             schedule.timeLinesArray[dayOfWeek]?.startTime;
+//           const scheduleEndTime = schedule.timeLinesArray[dayOfWeek]?.endTime;
+
+//           if (!scheduleStartTime || !scheduleEndTime) {
+//             return false;
+//           }
+
+//           const existingStartTime = timeToMinutes(scheduleStartTime);
+//           const existingEndTime = timeToMinutes(scheduleEndTime);
+
+//           return (
+//             newStartTime < existingEndTime && newEndTime > existingStartTime
+//           );
+//         });
+
+//         if (conflictingSchedules.length > 0) {
+//           const daysOfWeek = [
+//             "Понедельник",
+//             "Вторник",
+//             "Среда",
+//             "Четверг",
+//             "Пятница",
+//             "Суббота",
+//             "Воскресенье",
+//           ];
+//           const dayName = daysOfWeek[dayOfWeek];
+
+//           conflictingSchedules.forEach((schedule) => {
+//             const conflictStartTime =
+//               schedule.timeLinesArray[dayOfWeek].startTime;
+//             const conflictEndTime = schedule.timeLinesArray[dayOfWeek].endTime;
+//             conflicts.push({
+//               day: dayName,
+//               timeLines: [
+//                 {
+//                   time: `${formatTime(conflictStartTime)}-${formatTime(
+//                     conflictEndTime
+//                   )}`,
+//                 },
+//               ],
+//             });
+//           });
+//         } else {
+//           const freeSlot = {
+//             startTime: formatTime(scheduleForDay.startTime),
+//             endTime: formatTime(scheduleForDay.endTime),
+//           };
+//           if (!freeSlots[dayOfWeek]) {
+//             freeSlots[dayOfWeek] = [];
+//           }
+//           freeSlots[dayOfWeek].push(freeSlot);
+//         }
+//       }
+//     }
+
+//     if (conflicts.length > 0) {
+//       socket.emit("addStudent", { error: conflicts, freeSlots, ok: false });
+//       return;
+//     }
+
+//     // Остальной код функции остается без изменений
+//     // ...
+
+//     socket.emit("addStudent", { ok: true });
+//   } catch (error) {
+//     console.error("Error creating group:", error);
+//     socket.emit("addStudent", { error: error.message, ok: false });
+//   }
+// }
 
 export async function getStudentList(token, socket: any) {
   try {

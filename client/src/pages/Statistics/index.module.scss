@@ -2,6 +2,11 @@
 	color: #25991c;
 }
 
+.subjectCheckboxes {
+	display: flex;
+	flex-direction: column;
+}
+
 .wrapper {
 	margin-top: 20px;
 	width: 100%; //  я это поменал - это было закоменчено

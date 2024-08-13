@@ -9,7 +9,7 @@ import Group from '../../assets/4.svg'
 import Home from '../../assets/5.svg'
 import {Select, MenuItem} from '@mui/material'
 import InputMask from 'react-input-mask'
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import {debounce} from 'lodash'
 import CancelIcon from '@mui/icons-material/Cancel'
 import {Input} from '@mui/base'
@@ -231,7 +231,35 @@ const DayCalendarLine = ({
 		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup})
 	}
 
-	const debouncedOnUpdate = debounce(onUpdate, 500)
+	// Create a debounced version of onUpdate
+	const debouncedOnUpdate = useCallback(
+		debounce((updatedPrice: string) => {
+			if (onUpdate) {
+				onUpdate(
+					id,
+					editIcon,
+					editName,
+					editTimeStart,
+					editTimeEnd,
+					editItem,
+					updatedPrice,
+					isDelete,
+					studentId,
+				)
+			}
+		}, 300),
+		[
+			id,
+			editIcon,
+			editName,
+			editTimeStart,
+			editTimeEnd,
+			editItem,
+			isDelete,
+			studentId,
+			onUpdate,
+		],
+	)
 
 	const [isDetailsShow, setIsDetailsShow] = useState<boolean>(false)
 
@@ -285,6 +313,13 @@ const DayCalendarLine = ({
 
 	const handleOpenDayPopUp = () => {
 		setIsDetailsShow(true)
+	}
+
+	// Handle price change
+	const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const newPrice = e.target.value
+		setEditPrice(newPrice)
+		debouncedOnUpdate(newPrice)
 	}
 
 	return (
@@ -440,10 +475,7 @@ const DayCalendarLine = ({
 									<Input
 										className={s.InputCstm}
 										style={{width: '50px'}}
-										onChange={(e: any) => {
-											setEditPrice(e.target.value)
-											handleUpdate()
-										}}
+										onChange={handlePriceChange}
 										value={editPrice}
 										type="number"
 										placeholder="Цена"
