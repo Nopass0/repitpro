@@ -10,14 +10,13 @@
 	border: 1px dotted #eee;
 	border-radius: 8px;
 
-	.ButtonEdit {
-		border: none;
-		background: none;
-		margin-right: 10px;
+	input:first-child {
+		width: 70px !important;
 	}
+
 }
 .PrePayCostInput {
-	width: 50px !important;
+	width: 30px !important;
 	margin: 0 2px;
 
 	border-bottom: 1px solid #e2e2e9 !important;

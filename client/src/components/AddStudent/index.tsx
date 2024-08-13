@@ -38,7 +38,6 @@ import IconsPhone from '../IconsPhone/index'
 import MiniCalendar from '../MiniCalendar'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import {TailSpin} from 'react-loader-spinner'
-import {Button} from '@/ui/button'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import PrePayRow from '../PrePayRow'
 interface IAddStudent {}
@@ -74,7 +73,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [loading, setLoading] = useState<boolean>(false)
 	const navigate = useNavigate()
 	const [audios, setAudios] = useState<any>([])
-	const [isTriggerData, setIsTriggerData] = useState<boolean>(false)
 	const [prePayList, setPrePayList] = useState<IPrePayList[]>([])
 	const [editId, setEditId] = useState<number | null>(null)
 	const handleAddAudio = (
@@ -97,7 +95,7 @@ const AddStudent = ({}: IAddStudent) => {
 				...prevList,
 				{cost: prePayCost, date: prePayDate, id: prePayId},
 			])
-			setPrePayCost('')
+			setPrePayCostValue('')
 			setPrePayDate(new Date(Date.now()))
 			console.log(prePayList, 'prePayList')
 		}
@@ -204,6 +202,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [costStudent, setCostStudent] = useState<string>('')
 	const [commentStudent, setCommentStudent] = useState<string>('')
 	const [prePayCost, setPrePayCost] = useState<string>('')
+	const [prePayCostValue, setPrePayCostValue] = useState<string>('')
 	const [prePayDate, setPrePayDate] = useState<any>(new Date(Date.now()))
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
 
@@ -397,8 +396,7 @@ const AddStudent = ({}: IAddStudent) => {
 				linkStudent,
 				costStudent,
 				commentStudent,
-				prePayCost,
-				prePayDate,
+
 				costOneLesson,
 				files,
 				audios,
@@ -407,6 +405,7 @@ const AddStudent = ({}: IAddStudent) => {
 				items,
 				token,
 				phoneNumber,
+				prePay: prePayList,
 			})
 
 			socket.emit('createLink', {
@@ -425,14 +424,14 @@ const AddStudent = ({}: IAddStudent) => {
 				historyLessons: historyLesson,
 				costStudent,
 				commentStudent,
-				prePayCost,
-				prePayDate,
+
 				files,
 				audios,
 				costOneLesson,
 				items,
 				token,
 				phoneNumber,
+				prePay: prePayList,
 			})
 
 			socket.emit('createLink', {
@@ -971,8 +970,8 @@ const AddStudent = ({}: IAddStudent) => {
 		if (data) {
 			setNameStudent(data.students[0].nameStudent)
 			setCostOneLesson(data.students[0].costOneLesson)
-			setPrePayCost(data.students[0].prePayCost)
-			setPrePayDate(data.students[0].prePayDate)
+			// setPrePayCost(data.students[0].prePayCost)
+			// setPrePayDate(data.students[0].prePayDate)
 			setContactFace(data.students[0].contactFace)
 			setPhoneNumber(data.students[0].phoneNumber)
 			setEmail(data.students[0].email)
@@ -985,6 +984,7 @@ const AddStudent = ({}: IAddStudent) => {
 			let dateHistory = data.historyLessons.map((i) => {
 				return {...i, date: new Date(i.date)}
 			})
+			setPrePayList(data.students[0].prePay || [])
 			setHistoryLesson(dateHistory)
 			console.log('dataHistory', data)
 		}
@@ -998,6 +998,15 @@ const AddStudent = ({}: IAddStudent) => {
 	useEffect(() => {
 		console.log(editedCards, 'editedCards')
 	}, [data, editedCards])
+
+	useEffect(() => {
+		if (!!prePayList) {
+			let sum = prePayList.reduce((acc, item) => {
+				return acc + Number(item.cost)
+			}, 0)
+			setPrePayCost(sum.toString())
+		}
+	}, [prePayList])
 
 	return (
 		<>
@@ -1159,14 +1168,18 @@ const AddStudent = ({}: IAddStudent) => {
 										num
 										className={s.PrePayCostInput}
 										type="text"
-										value={prePayCost}
+										value={prePayCostValue}
 										disabled={isEditMode}
 										onChange={(e) => {
-											setPrePayCost(e.target.value)
+											setPrePayCostValue(e.target.value)
 										}}
 										onKeyDown={(e) => {
 											if (e.key === 'Enter' && prePayCost !== '') {
-												addPrePayList(prePayCost, prePayDate, prePayList.length)
+												addPrePayList(
+													prePayCostValue,
+													prePayDate,
+													prePayList.length ,
+												)
 											}
 										}}
 									/>
@@ -1272,11 +1285,7 @@ const AddStudent = ({}: IAddStudent) => {
 																	size="16px"
 																	checked={lesson.isPaid}
 																/>
-																<button className={s.ButtonEdit}>
-																	<CreateIcon
-																		style={{width: '18px', height: '18px'}}
-																	/>
-																</button>
+																
 															</div>
 														))}
 													<Line width="100%" className={s.Line} />

@@ -23,6 +23,7 @@ import {
 	EPagePopUpExit,
 	IGroupHistoryLessons,
 	IItemCard,
+	IPrePayList,
 	IStudent,
 	ITimeLine,
 } from '../../types'
@@ -40,6 +41,8 @@ import TextAreaInputBlock from '../TextAreaInputBlock'
 import MiniCalendar from '../MiniCalendar'
 import {TailSpin} from 'react-loader-spinner'
 import {preview} from 'vite'
+import PrePayRow from '../PrePayRow'
+import AddCircleIcon from '@mui/icons-material/AddCircle'
 
 interface IAddGroup {
 	className?: string
@@ -83,6 +86,9 @@ const AddGroup = ({className}: IAddGroup) => {
 	const [groupsIndexes, setGroupsIndexes] = useState<number[]>([])
 	const [currentGroupIndex, setCurrentGroupIndex] = useState<number>(0)
 
+	const [prePayListValue, setPrePayListValue] = useState<IPrePayList[]>([])
+	const [editId, setEditId] = useState<number | null>(null)
+
 	const [data, setData] = useState<any>()
 
 	// Block item
@@ -122,6 +128,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			costStudent: '',
 			commentStudent: '',
 			prePayCost: '',
+			prePayCostValue: '',
 			prePayDate: new Date(Date.now()),
 			selectedDate: null,
 			files: [],
@@ -132,6 +139,8 @@ const AddGroup = ({className}: IAddGroup) => {
 			todayProgramStudent: '',
 			startLesson: new Date(Date.now()),
 			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
+			nowLevel: 0,
+			prePayList: [],
 		},
 	])
 
@@ -326,10 +335,10 @@ const AddGroup = ({className}: IAddGroup) => {
 	const changeStudentValue = (
 		studentIndex: number,
 		name: string,
-		value: string | boolean | number | Date | null,
+		value: string | boolean | number | Date | IPrePayList[] | null,
 	) => {
-		setStudents(
-			students.map((student, index) =>
+		setStudents((prevStudents) =>
+			prevStudents.map((student, index) =>
 				index === studentIndex ? {...student, [name]: value} : student,
 			),
 		)
@@ -721,6 +730,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					costStudent: '',
 					commentStudent: '',
 					prePayCost: '',
+					prePayCostValue: '',
 					prePayDate: new Date(Date.now()),
 					selectedDate: null,
 					storyLesson: '',
@@ -733,6 +743,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					startLesson: new Date(Date.now()),
 					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 					files: [],
+					prePayList: [],
 				},
 			])
 			setCurrentStudentIndex(currentStudentIndex + 1)
@@ -1297,6 +1308,77 @@ const AddGroup = ({className}: IAddGroup) => {
 			dispatch({type: 'SET_EDITED_CARDS', payload: false})
 		}, 1000)
 	}, [])
+
+	// Pre Pay Functions
+
+	function addPrePayList(cost: string, date: Date, id: number, index: number) {
+		if (cost !== '') {
+			setPrePayListValue((prevList) => {
+				const updateList = [...prevList, {cost, date, id}]
+				changeStudentValue(currentStudentIndex, 'prePayList', updateList)
+				changeStudentValue(index, 'prePayCostValue', '')
+				changeStudentValue(index, 'prePayDate', new Date(Date.now()))
+				console.log(updateList, 'UpdateList')
+				return updateList
+			})
+			console.log(
+				prePayListValue,
+				'addPrePayList',
+				cost,
+				date,
+				id,
+				index,
+				students[index],
+			)
+		}
+	}
+
+	function handlePrePayDelete(id: number) {
+		setPrePayListValue((prevList) => {
+			const updatedList = prevList.filter((item) => item.id !== id)
+			changeStudentValue(currentStudentIndex, 'prePayList', updatedList)
+			return updatedList
+		})
+	}
+
+	function handlePrePayEdit(id: number, newDate: Date, newCost: string) {
+		setPrePayListValue((prevList) => {
+			const updatedList = prevList.map((item) =>
+				item.id === id ? {...item, date: newDate, cost: newCost} : item,
+			)
+			changeStudentValue(currentStudentIndex, 'prePayList', updatedList)
+			return updatedList
+		})
+		setEditId(null)
+	}
+
+	const startEditing = (id: number) => {
+		setEditId(id)
+	}
+
+	const finishEditing = () => {
+		setEditId(null)
+	}
+
+	useEffect(() => {
+		// Сравниваем текущее значение prePayListValue со значением в students
+		if (
+			students[currentStudentIndex].prePayList &&
+			students[currentStudentIndex].prePayList !== prePayListValue
+		) {
+			setPrePayListValue(students[currentStudentIndex].prePayList)
+		}
+	}, [currentStudentIndex])
+
+	useEffect(() => {
+		if (prePayListValue.length > 0) {
+			const sum = prePayListValue.reduce(
+				(acc, item) => acc + Number(item.cost),
+				0,
+			)
+			changeStudentValue(currentStudentIndex, 'prePayCost', sum.toString())
+		}
+	}, [prePayListValue])
 	return (
 		<>
 			<button
@@ -2122,17 +2204,42 @@ const AddGroup = ({className}: IAddGroup) => {
 													num
 													className={s.PrePayCostInput}
 													type="text"
-													value={student.prePayCost}
+													value={student.prePayCostValue}
 													onChange={(e) => {
 														changeStudentValue(
 															index,
-															'prePayCost',
+															'prePayCostValue',
 															e.target.value,
 														)
+													}}
+													onKeyDown={(e) => {
+														if (
+															e.key === 'Enter' &&
+															student.prePayCostValue !== ''
+														) {
+															addPrePayList(
+																student.prePayCostValue,
+																student.prePayDate,
+																student.prePayList.length,
+																index,
+															)
+														}
 													}}
 												/>
 
 												<p>₽</p>
+												<button
+													onClick={() =>
+														addPrePayList(
+															student.prePayCostValue,
+															student.prePayDate,
+															student.prePayList.length,
+															index,
+														)
+													}
+													style={{marginLeft: '10px'}}>
+													<AddCircleIcon />
+												</button>
 											</div>
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCardCheckBox}>
@@ -2395,6 +2502,34 @@ const AddGroup = ({className}: IAddGroup) => {
 																<div className={s.ListNoInfo}>
 																	<p>Информации нет</p>
 																</div>
+															</>
+														)}
+														{student.prePayList.length > 0 && (
+															<>
+																{student.prePayList.map(
+																	(data: IPrePayList, index: number) => (
+																		<>
+																			<PrePayRow
+																				id={data.id}
+																				cost={data.cost}
+																				date={data.date}
+																				isEditing={editId === data.id}
+																				onEdit={() => startEditing(data.id)}
+																				onEditDone={(newDate, newCost) =>
+																					handlePrePayEdit(
+																						data.id,
+																						newDate,
+																						newCost,
+																					)
+																				}
+																				onDelete={() =>
+																					handlePrePayDelete(data.id)
+																				}
+																				finishEditing={finishEditing}
+																			/>
+																		</>
+																	),
+																)}
 															</>
 														)}
 													</div>
