@@ -34,329 +34,10 @@ const days = [
   "Воскресенье",
 ];
 
-// export async function addStudent(data, socket: any) {
-//   try {
-//     // console.log(data, "Schedule", data.items[0].timeLinesArray[0]?.startTime); // Safe access with ?
-
-//     const {
-//       nameStudent,
-//       phoneNumber,
-//       contactFace,
-//       email,
-//       prePayCost,
-//       prePayDate,
-//       costOneLesson,
-//       commentStudent,
-//       linkStudent,
-//       costStudent,
-//       audios,
-//       cost,
-//       historyLessons,
-//       files,
-//       items,
-//       token,
-//     } = data;
-
-//     const token_ = await db.token.findFirst({ where: { token } });
-
-//     if (!token_) {
-//       throw new Error("Invalid token");
-//     }
-
-//     const userId = token_.userId;
-
-//     if (!userId) {
-//       throw new Error("Invalid token");
-//     }
-
-//     const conflicts = [];
-
-//     for (const item of items) {
-//       const startDate = new Date(item.startLesson);
-//       const endDate = new Date(item.endLesson);
-//       const daysToAdd = differenceInDays(endDate, startDate);
-//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-//         addDays(startDate, i)
-//       );
-
-//       for (const date of dateRange) {
-//         const dayOfWeek = getDay(date);
-//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
-
-//         if (!scheduleForDay) {
-//           console.warn(
-//             `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
-//           );
-//           continue; // Skip this iteration if no schedule is defined for the day
-//         }
-
-//         const dayOfMonth = date.getDate();
-//         const cacheKey = `${userId}-${dayOfMonth}-${
-//           date.getMonth() + 1
-//         }-${date.getFullYear()}`;
-//         let existingSchedules = cache.get(cacheKey);
-
-//         if (!existingSchedules) {
-//           existingSchedules = await db.studentSchedule.findMany({
-//             where: {
-//               day: dayOfMonth.toString(),
-//               month: (date.getMonth() + 1).toString(),
-//               year: date.getFullYear().toString(),
-//               userId,
-//             },
-//           });
-//           cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
-//         }
-
-//         const conflictingSchedules = existingSchedules.filter((schedule) => {
-//           const scheduleStartTime =
-//             schedule.timeLinesArray[dayOfWeek]?.startTime;
-//           const scheduleEndTime = schedule.timeLinesArray[dayOfWeek]?.endTime;
-
-//           if (!scheduleStartTime || !scheduleEndTime) {
-//             console.warn(
-//               `Incomplete schedule found for day of week: ${dayOfWeek} in existing schedules`
-//             );
-//             return false;
-//           }
-
-//           const newStartTime = scheduleForDay.startTime;
-//           const newEndTime = scheduleForDay.endTime;
-
-//           return (
-//             (newStartTime.hour < scheduleEndTime.hour ||
-//               (newStartTime.hour === scheduleEndTime.hour &&
-//                 newStartTime.minute <= scheduleEndTime.minute)) &&
-//             (newEndTime.hour > scheduleStartTime.hour ||
-//               (newEndTime.hour === scheduleStartTime.hour &&
-//                 newEndTime.minute >= scheduleStartTime.minute))
-//           );
-//         });
-
-//         if (conflictingSchedules.length > 0) {
-//           const daysOfWeek = [
-//             "Понедельник",
-//             "Вторник",
-//             "Среда",
-//             "Четверг",
-//             "Пятница",
-//             "Суббота",
-//             "Воскресенье",
-//           ];
-//           const dayName = daysOfWeek[dayOfWeek];
-//           const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
-//           const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
-
-//           let conflict = {
-//             day: dayName,
-//             timeLines: conflictingSchedules.map((schedule) => {
-//               const scheduleStartTime =
-//                 schedule.timeLinesArray[dayOfWeek]?.startTime;
-//               const scheduleEndTime =
-//                 schedule.timeLinesArray[dayOfWeek]?.endTime;
-//               return {
-//                 time: `${scheduleStartTime.hour}:${scheduleStartTime.minute}-${scheduleEndTime.hour}:${scheduleEndTime.minute}`,
-//               };
-//             }),
-//           };
-
-//           conflicts.push(conflict);
-//         }
-//       }
-//     }
-
-//     if (conflicts.length > 0) {
-//       socket.emit("addStudent", { error: conflicts, ok: false });
-//       return;
-//     }
-
-//     const createdGroup = await db.group.create({
-//       data: {
-//         groupName: "",
-//         userId,
-//         historyLessons: JSON.parse(JSON.stringify(historyLessons)),
-//         items: {
-//           create: items.map((item) => ({
-//             itemName: item.itemName,
-//             tryLessonCheck: item.tryLessonCheck || false,
-//             tryLessonCost: item.tryLessonCost || "",
-//             todayProgramStudent: item.todayProgramStudent || "",
-//             targetLesson: item.targetLesson || "",
-//             programLesson: item.programLesson || "",
-//             typeLesson: Number(item.typeLesson) || 1,
-//             placeLesson: item.placeLesson || "",
-//             timeLesson: item.timeLesson || "",
-//             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
-//             startLesson: item.startLesson ? new Date(item.startLesson) : null,
-//             endLesson: item.endLesson ? new Date(item.endLesson) : null,
-//             nowLevel: item.nowLevel || 0,
-//             costOneLesson: item.costOneLesson || "",
-//             lessonDuration: item.lessonDuration || null,
-//             timeLinesArray: item.timeLinesArray || {},
-//             userId,
-//           })),
-//         },
-//         students: {
-//           create: [
-//             {
-//               nameStudent,
-//               contactFace,
-//               phoneNumber,
-//               email,
-//               address: "",
-//               linkStudent: linkStudent || "",
-//               costStudent: costStudent || "",
-//               commentStudent,
-//               prePayCost,
-//               prePayDate: prePayDate ? new Date(prePayDate) : null,
-//               selectedDate: null,
-//               storyLesson: "",
-//               costOneLesson,
-//               targetLessonStudent: "",
-//               todayProgramStudent: "",
-//               userId,
-//             },
-//           ],
-//         },
-//       },
-//       select: {
-//         id: true,
-//         _count: true,
-//         isArchived: true,
-//         groupName: true,
-//         students: true,
-//         userId: true,
-//         items: true,
-//       },
-//     });
-
-//     for (const item of createdGroup.items) {
-//       const startDate = new Date(item.startLesson);
-//       const endDate = new Date(item.endLesson);
-//       const daysToAdd = differenceInDays(endDate, startDate);
-//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-//         addDays(startDate, i)
-//       );
-
-//       for (const date of dateRange) {
-//         const dayOfWeek = getDay(date);
-//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
-
-//         if (!scheduleForDay) {
-//           console.warn(
-//             `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
-//           );
-//           continue;
-//         }
-
-//         const cond =
-//           scheduleForDay.startTime.hour === 0 &&
-//           scheduleForDay.startTime.minute === 0 &&
-//           scheduleForDay.endTime.hour === 0 &&
-//           scheduleForDay.endTime.minute === 0;
-
-//         if (!cond) {
-//           await db.studentSchedule.create({
-//             data: {
-//               day: date.getDate().toString(),
-//               groupId: createdGroup.id,
-//               workCount: 0,
-//               lessonsCount: 1,
-//               lessonsPrice: Number(item.costOneLesson),
-//               workPrice: 0,
-//               month: (date.getMonth() + 1).toString(),
-//               timeLinesArray: item.timeLinesArray,
-//               isChecked: false,
-//               itemName: item.itemName,
-//               studentName: nameStudent,
-//               typeLesson: item.typeLesson,
-//               year: date.getFullYear().toString(),
-//               itemId: item.id,
-//               userId,
-//             },
-//           });
-//         }
-//       }
-//     }
-
-//     let filePaths = [];
-
-//     if (files.length > 0) {
-//       filePaths = await upload(files, userId, "", (ids) => {
-//         filePaths = ids;
-//       });
-//     }
-
-//     let audiosIds = [];
-
-//     if (audios.length > 0) {
-//       audiosIds = await upload(audios, userId, "student/audio", (ids) => {
-//         audiosIds = ids;
-//       });
-//     }
-
-//     filePaths = [...filePaths, ...audiosIds];
-
-//     await db.student.update({
-//       where: {
-//         id: createdGroup.students[0].id,
-//       },
-//       data: {
-//         files: filePaths,
-//       },
-//     });
-
-//     socket.emit("addStudent", { ok: true });
-//   } catch (error) {
-//     console.error("Error creating group:", error);
-//     socket.emit("addStudent", { error: error.message, ok: false });
-//   }
-// }
-
-function checkTimeConflicts(schedules) {
-  const conflicts = [];
-
-  for (let i = 0; i < schedules.length; i++) {
-    for (let j = i + 1; j < schedules.length; j++) {
-      if (schedules[i].day === schedules[j].day) {
-        const startA = timeToMinutes(schedules[i].startTime);
-        const endA = timeToMinutes(schedules[i].endTime);
-        const startB = timeToMinutes(schedules[j].startTime);
-        const endB = timeToMinutes(schedules[j].endTime);
-
-        if (
-          (startA < endB && endA > startB) ||
-          (startB < endA && endB > startA)
-        ) {
-          conflicts.push({
-            day: schedules[i].day,
-            conflictA: `${formatTime(schedules[i].startTime)}-${formatTime(
-              schedules[i].endTime
-            )}`,
-            conflictB: `${formatTime(schedules[j].startTime)}-${formatTime(
-              schedules[j].endTime
-            )}`,
-          });
-        }
-      }
-    }
-  }
-
-  return conflicts;
-}
-
-function timeToMinutes(time) {
-  return time.hour * 60 + time.minute;
-}
-
-function formatTime(time) {
-  return `${time.hour.toString().padStart(2, "0")}:${time.minute
-    .toString()
-    .padStart(2, "0")}`;
-}
-
 export async function addStudent(data, socket: any) {
   try {
+    // console.log(data, "Schedule", data.items[0].timeLinesArray[0]?.startTime); // Safe access with ?
+
     const {
       nameStudent,
       phoneNumber,
@@ -366,7 +47,6 @@ export async function addStudent(data, socket: any) {
       prePayDate,
       costOneLesson,
       commentStudent,
-      prePay,
       linkStudent,
       costStudent,
       audios,
@@ -390,7 +70,6 @@ export async function addStudent(data, socket: any) {
     }
 
     const conflicts = [];
-    const freeSlots = {};
 
     for (const item of items) {
       const startDate = new Date(item.startLesson);
@@ -415,20 +94,19 @@ export async function addStudent(data, socket: any) {
         const cacheKey = `${userId}-${dayOfMonth}-${
           date.getMonth() + 1
         }-${date.getFullYear()}`;
-        let existingSchedules;
-        // let existingSchedules = cache.get(cacheKey);
+        let existingSchedules = cache.get(cacheKey);
 
-        // if (!existingSchedules) {
-        existingSchedules = await db.studentSchedule.findMany({
-          where: {
-            day: dayOfMonth.toString(),
-            month: (date.getMonth() + 1).toString(),
-            year: date.getFullYear().toString(),
-            userId,
-          },
-        });
-        // cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
-        // }
+        if (!existingSchedules) {
+          existingSchedules = await db.studentSchedule.findMany({
+            where: {
+              day: dayOfMonth.toString(),
+              month: (date.getMonth() + 1).toString(),
+              year: date.getFullYear().toString(),
+              userId,
+            },
+          });
+          cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
+        }
 
         const conflictingSchedules = existingSchedules.filter((schedule) => {
           const scheduleStartTime =
@@ -483,21 +161,12 @@ export async function addStudent(data, socket: any) {
           };
 
           conflicts.push(conflict);
-        } else {
-          const freeSlot = {
-            startTime: `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`,
-            endTime: `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`,
-          };
-          if (!freeSlots[dayOfWeek]) {
-            freeSlots[dayOfWeek] = [];
-          }
-          freeSlots[dayOfWeek].push(freeSlot);
         }
       }
     }
 
     if (conflicts.length > 0) {
-      socket.emit("addStudent", { error: conflicts, freeSlots, ok: false });
+      socket.emit("addStudent", { error: conflicts, ok: false });
       return;
     }
 
@@ -534,7 +203,6 @@ export async function addStudent(data, socket: any) {
               contactFace,
               phoneNumber,
               email,
-              prePay: prePay || [],
               address: "",
               linkStudent: linkStudent || "",
               costStudent: costStudent || "",
@@ -644,6 +312,338 @@ export async function addStudent(data, socket: any) {
     socket.emit("addStudent", { error: error.message, ok: false });
   }
 }
+
+function checkTimeConflicts(schedules) {
+  const conflicts = [];
+
+  for (let i = 0; i < schedules.length; i++) {
+    for (let j = i + 1; j < schedules.length; j++) {
+      if (schedules[i].day === schedules[j].day) {
+        const startA = timeToMinutes(schedules[i].startTime);
+        const endA = timeToMinutes(schedules[i].endTime);
+        const startB = timeToMinutes(schedules[j].startTime);
+        const endB = timeToMinutes(schedules[j].endTime);
+
+        if (
+          (startA < endB && endA > startB) ||
+          (startB < endA && endB > startA)
+        ) {
+          conflicts.push({
+            day: schedules[i].day,
+            conflictA: `${formatTime(schedules[i].startTime)}-${formatTime(
+              schedules[i].endTime
+            )}`,
+            conflictB: `${formatTime(schedules[j].startTime)}-${formatTime(
+              schedules[j].endTime
+            )}`,
+          });
+        }
+      }
+    }
+  }
+
+  return conflicts;
+}
+
+function timeToMinutes(time) {
+  return time.hour * 60 + time.minute;
+}
+
+function formatTime(time) {
+  return `${time.hour.toString().padStart(2, "0")}:${time.minute
+    .toString()
+    .padStart(2, "0")}`;
+}
+
+// export async function addStudent(data, socket: any) {
+//   try {
+//     const {
+//       nameStudent,
+//       phoneNumber,
+//       contactFace,
+//       email,
+//       prePayCost,
+//       prePayDate,
+//       costOneLesson,
+//       commentStudent,
+//       prePay,
+//       linkStudent,
+//       costStudent,
+//       audios,
+//       cost,
+//       historyLessons,
+//       files,
+//       items,
+//       token,
+//     } = data;
+
+//     const token_ = await db.token.findFirst({ where: { token } });
+
+//     if (!token_) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = token_.userId;
+
+//     if (!userId) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const conflicts = [];
+//     const freeSlots = {};
+
+//     for (const item of items) {
+//       const startDate = new Date(item.startLesson);
+//       const endDate = new Date(item.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+
+//         if (!scheduleForDay) {
+//           console.warn(
+//             `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+//           );
+//           continue; // Skip this iteration if no schedule is defined for the day
+//         }
+
+//         const dayOfMonth = date.getDate();
+//         const cacheKey = `${userId}-${dayOfMonth}-${
+//           date.getMonth() + 1
+//         }-${date.getFullYear()}`;
+//         let existingSchedules;
+//         // let existingSchedules = cache.get(cacheKey);
+
+//         // if (!existingSchedules) {
+//         existingSchedules = await db.studentSchedule.findMany({
+//           where: {
+//             day: dayOfMonth.toString(),
+//             month: (date.getMonth() + 1).toString(),
+//             year: date.getFullYear().toString(),
+//             userId,
+//           },
+//         });
+//         // cache.set(cacheKey, existingSchedules, 3600000); // 1 hour TTL
+//         // }
+
+//         const conflictingSchedules = existingSchedules.filter((schedule) => {
+//           const scheduleStartTime =
+//             schedule.timeLinesArray[dayOfWeek]?.startTime;
+//           const scheduleEndTime = schedule.timeLinesArray[dayOfWeek]?.endTime;
+
+//           if (!scheduleStartTime || !scheduleEndTime) {
+//             console.warn(
+//               `Incomplete schedule found for day of week: ${dayOfWeek} in existing schedules`
+//             );
+//             return false;
+//           }
+
+//           const newStartTime = scheduleForDay.startTime;
+//           const newEndTime = scheduleForDay.endTime;
+
+//           return (
+//             (newStartTime.hour < scheduleEndTime.hour ||
+//               (newStartTime.hour === scheduleEndTime.hour &&
+//                 newStartTime.minute <= scheduleEndTime.minute)) &&
+//             (newEndTime.hour > scheduleStartTime.hour ||
+//               (newEndTime.hour === scheduleStartTime.hour &&
+//                 newEndTime.minute >= scheduleStartTime.minute))
+//           );
+//         });
+
+//         if (conflictingSchedules.length > 0) {
+//           const daysOfWeek = [
+//             "Понедельник",
+//             "Вторник",
+//             "Среда",
+//             "Четверг",
+//             "Пятница",
+//             "Суббота",
+//             "Воскресенье",
+//           ];
+//           const dayName = daysOfWeek[dayOfWeek];
+//           const startTime = `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`;
+//           const endTime = `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`;
+
+//           let conflict = {
+//             day: dayName,
+//             timeLines: conflictingSchedules.map((schedule) => {
+//               const scheduleStartTime =
+//                 schedule.timeLinesArray[dayOfWeek]?.startTime;
+//               const scheduleEndTime =
+//                 schedule.timeLinesArray[dayOfWeek]?.endTime;
+//               return {
+//                 time: `${scheduleStartTime.hour}:${scheduleStartTime.minute}-${scheduleEndTime.hour}:${scheduleEndTime.minute}`,
+//               };
+//             }),
+//           };
+
+//           conflicts.push(conflict);
+//         } else {
+//           const freeSlot = {
+//             startTime: `${scheduleForDay.startTime.hour}:${scheduleForDay.startTime.minute}`,
+//             endTime: `${scheduleForDay.endTime.hour}:${scheduleForDay.endTime.minute}`,
+//           };
+//           if (!freeSlots[dayOfWeek]) {
+//             freeSlots[dayOfWeek] = [];
+//           }
+//           freeSlots[dayOfWeek].push(freeSlot);
+//         }
+//       }
+//     }
+
+//     if (conflicts.length > 0) {
+//       socket.emit("addStudent", { error: conflicts, freeSlots, ok: false });
+//       return;
+//     }
+
+//     const createdGroup = await db.group.create({
+//       data: {
+//         groupName: "",
+//         userId,
+//         historyLessons: JSON.parse(JSON.stringify(historyLessons)),
+//         items: {
+//           create: items.map((item) => ({
+//             itemName: item.itemName,
+//             tryLessonCheck: item.tryLessonCheck || false,
+//             tryLessonCost: item.tryLessonCost || "",
+//             todayProgramStudent: item.todayProgramStudent || "",
+//             targetLesson: item.targetLesson || "",
+//             programLesson: item.programLesson || "",
+//             typeLesson: Number(item.typeLesson) || 1,
+//             placeLesson: item.placeLesson || "",
+//             timeLesson: item.timeLesson || "",
+//             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
+//             startLesson: item.startLesson ? new Date(item.startLesson) : null,
+//             endLesson: item.endLesson ? new Date(item.endLesson) : null,
+//             nowLevel: item.nowLevel || 0,
+//             costOneLesson: item.costOneLesson || "",
+//             lessonDuration: item.lessonDuration || null,
+//             timeLinesArray: item.timeLinesArray || {},
+//             userId,
+//           })),
+//         },
+//         students: {
+//           create: [
+//             {
+//               nameStudent,
+//               contactFace,
+//               phoneNumber,
+//               email,
+//               prePay: prePay || [],
+//               address: "",
+//               linkStudent: linkStudent || "",
+//               costStudent: costStudent || "",
+//               commentStudent,
+//               prePayCost,
+//               prePayDate: prePayDate ? new Date(prePayDate) : null,
+//               selectedDate: null,
+//               storyLesson: "",
+//               costOneLesson,
+//               targetLessonStudent: "",
+//               todayProgramStudent: "",
+//               userId,
+//             },
+//           ],
+//         },
+//       },
+//       select: {
+//         id: true,
+//         _count: true,
+//         isArchived: true,
+//         groupName: true,
+//         students: true,
+//         userId: true,
+//         items: true,
+//       },
+//     });
+
+//     for (const item of createdGroup.items) {
+//       const startDate = new Date(item.startLesson);
+//       const endDate = new Date(item.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+
+//         if (!scheduleForDay) {
+//           console.warn(
+//             `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+//           );
+//           continue;
+//         }
+
+//         const cond =
+//           scheduleForDay.startTime.hour === 0 &&
+//           scheduleForDay.startTime.minute === 0 &&
+//           scheduleForDay.endTime.hour === 0 &&
+//           scheduleForDay.endTime.minute === 0;
+
+//         if (!cond) {
+//           await db.studentSchedule.create({
+//             data: {
+//               day: date.getDate().toString(),
+//               groupId: createdGroup.id,
+//               workCount: 0,
+//               lessonsCount: 1,
+//               lessonsPrice: Number(item.costOneLesson),
+//               workPrice: 0,
+//               month: (date.getMonth() + 1).toString(),
+//               timeLinesArray: item.timeLinesArray,
+//               isChecked: false,
+//               itemName: item.itemName,
+//               studentName: nameStudent,
+//               typeLesson: item.typeLesson,
+//               year: date.getFullYear().toString(),
+//               itemId: item.id,
+//               userId,
+//             },
+//           });
+//         }
+//       }
+//     }
+
+//     let filePaths = [];
+
+//     if (files.length > 0) {
+//       filePaths = await upload(files, userId, "", (ids) => {
+//         filePaths = ids;
+//       });
+//     }
+
+//     let audiosIds = [];
+
+//     if (audios.length > 0) {
+//       audiosIds = await upload(audios, userId, "student/audio", (ids) => {
+//         audiosIds = ids;
+//       });
+//     }
+
+//     filePaths = [...filePaths, ...audiosIds];
+
+//     await db.student.update({
+//       where: {
+//         id: createdGroup.students[0].id,
+//       },
+//       data: {
+//         files: filePaths,
+//       },
+//     });
+
+//     socket.emit("addStudent", { ok: true });
+//   } catch (error) {
+//     console.error("Error creating group:", error);
+//     socket.emit("addStudent", { error: error.message, ok: false });
+//   }
+// }
 
 // export async function addStudent(data, socket: any) {
 //   try {
