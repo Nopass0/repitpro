@@ -1,11 +1,8 @@
-import { IStudentCardResponse, ITimeLine, IItemCard } from "../types";
+import { differenceInDays, isWithinInterval, format, parse } from "date-fns";
+import { ru } from "date-fns/locale";
 import db from "../db";
-import io from "../socket";
-import { differenceInDays, isWithinInterval } from "date-fns";
-import { format } from "date-fns/locale/ru";
 
-// Function to hash a string using a custom hash function
-const hashString = (str: string) => {
+const hashString = (str: string): number => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -15,15 +12,10 @@ const hashString = (str: string) => {
   return Math.abs(hash); // Ensure positive integer
 };
 
-// Function to convert a hash value to a hexadecimal color code with fixed saturation and brightness
-const hashToColor = (hash: number) => {
-  const saturation = 0.6; // Fixed saturation
-  const brightness = 0.7; // Fixed brightness
-
-  // Vary hue based on hash
+const hashToColor = (hash: number): string => {
+  const saturation = 0.6;
+  const brightness = 0.7;
   const hue = hash % 360;
-
-  // Convert HSB to RGB
   const h = hue / 60;
   const c = brightness * saturation;
   const x = c * (1 - Math.abs((h % 2) - 1));
@@ -42,31 +34,43 @@ const hashToColor = (hash: number) => {
   } else {
     [r, g, b] = [c, 0, x];
   }
-
-  // Convert RGB to hexadecimal color code
   const rgb = [(r + m) * 255, (g + m) * 255, (b + m) * 255];
-  const hexColor = rgb
+  return `#${rgb
     .map((value) => Math.round(value).toString(16).padStart(2, "0"))
-    .join("");
-  return `#${hexColor}`;
+    .join("")}`;
 };
 
-const formatDate = (date: Date, startDate: Date, endDate: Date) => {
+const formatDate = (date: Date, startDate: Date, endDate: Date): string => {
   const dayDiff = differenceInDays(endDate, startDate);
   if (dayDiff > 365) {
-    return date.getFullYear().toString(); // year
+    return date.getFullYear().toString();
   } else if (dayDiff > 30) {
-    return date.toLocaleDateString("ru-RU", { month: "long", year: "numeric" }); // month-year
+    return format(date, "MMMM yyyy", { locale: ru });
   } else {
-    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }); // day-month
+    return format(date, "d MMM", { locale: ru });
   }
 };
 
-const parseDateFromSchedule = (day: string, month: string, year: string) => {
+const parseDateFromSchedule = (
+  day: string,
+  month: string,
+  year: string
+): Date => {
   return new Date(Number(year), Number(month) - 1, Number(day));
 };
 
-// Функция для получения данных для графика "Ученики-Финансы"
+const getUserId = async (token: string): Promise<string> => {
+  const token_ = await db.token.findFirst({
+    where: { token },
+  });
+
+  if (!token_) {
+    throw new Error("Invalid token");
+  }
+
+  return token_.userId;
+};
+
 export async function getStudentFinanceData(
   data: {
     startDate: Date;
@@ -77,32 +81,11 @@ export async function getStudentFinanceData(
   socket: any
 ) {
   let { startDate, endDate, subjectIds, token } = data;
-
   startDate = new Date(startDate);
   endDate = new Date(endDate);
 
   try {
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    console.log(
-      "\n------------infostatistics------------\n",
-      startDate,
-      endDate,
-      subjectIds,
-      token,
-      "\n------------\n"
-    );
-
-    if (!token_) {
-      console.error("Invalid token");
-      return;
-    }
-
-    const userId = token_.userId;
+    const userId = await getUserId(token);
 
     const whereClause = {
       userId: userId,
@@ -114,7 +97,6 @@ export async function getStudentFinanceData(
     const data_ = await db.studentSchedule.findMany({
       where: whereClause,
       select: {
-        createdAt: true,
         lessonsPrice: true,
         lessonsCount: true,
         itemName: true,
@@ -124,54 +106,36 @@ export async function getStudentFinanceData(
       },
     });
 
-    // Сортировка по day, month, year как строки
-    data_.sort((a: any, b: any) => {
+    data_.sort((a, b) => {
       const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
       const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
+      return dateA.getTime() - dateB.getTime();
     });
 
-    // Создадим объект, где ключом будет комбинация года, месяца и дня
-    const combinedData: {
-      [date: string]: {
-        lessonsPrice: { [itemName: string]: number };
-        lessonsCount: number[];
-      };
-    } = {};
+    const combinedData: { [key: string]: { [key: string]: number } } = {};
 
-    // Обходим полученные данные
     for (const item of data_) {
       const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
 
       if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
         continue;
 
-      // Формируем строку, представляющую комбинацию года, месяца и дня
       const dateKey = `${item.year}-${item.month}-${item.day}`;
 
-      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значения lessonsPrice и lessonsCount
       if (!combinedData[dateKey]) {
-        combinedData[dateKey] = {
-          lessonsPrice: {},
-          lessonsCount: [],
-        };
+        combinedData[dateKey] = {};
       }
 
-      // Если itemName еще не добавлен в объект lessonsPrice, добавляем его со значением 0
-      if (!combinedData[dateKey].lessonsPrice[item.itemName]) {
-        combinedData[dateKey].lessonsPrice[item.itemName] = 0;
+      if (!combinedData[dateKey][item.itemName]) {
+        combinedData[dateKey][item.itemName] = 0;
       }
 
-      // Увеличиваем значение lessonsPrice для соответствующего itemName и добавляем значение lessonsCount в массив
-      combinedData[dateKey].lessonsPrice[item.itemName] += item.lessonsPrice;
-      combinedData[dateKey].lessonsCount.push(item.lessonsCount);
+      combinedData[dateKey][item.itemName] += item.lessonsPrice;
     }
 
-    // Преобразуем объединенные данные в массив объектов
     const combinedDataArray = Object.keys(combinedData).map((dateKey) => ({
       date: new Date(dateKey),
-      lessonsPrice: combinedData[dateKey].lessonsPrice,
-      lessonsCount: combinedData[dateKey].lessonsCount,
+      ...combinedData[dateKey],
     }));
 
     if (combinedDataArray.length === 0) {
@@ -187,27 +151,21 @@ export async function getStudentFinanceData(
 
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: combinedDataArray.map((item) => item.lessonsPrice[itemName] || 0),
+      data: combinedDataArray.map((item) => item[itemName] || 0),
       fill: false,
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
-    console.log(labels, datasets);
+    const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    if (labels.length === 0 || datasets.length === 0) {
-      console.log("No data available for the chart.");
-      return;
-    }
-
-    socket.emit("getStudentFinanceData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getStudentFinanceData", { labels, datasets, maxValue });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching student finance data:", error);
   }
 }
 
-// Функция для получения данных для графика "Ученики-Количество"
 export async function getStudentCountData(
   data: {
     startDate: Date;
@@ -220,125 +178,47 @@ export async function getStudentCountData(
   let { startDate, endDate, subjectIds, token } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
+
   try {
-    const token_ = await db.token.findFirst({
+    const userId = await getUserId(token);
+
+    const students = await db.student.findMany({
       where: {
-        token,
+        userId: userId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
 
-    if (!token_) {
-      console.error("Invalid token");
-      return;
-    }
-
-    const userId = token_.userId;
-
-    const whereClause = {
-      userId: userId,
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-      ...(subjectIds.length > 0 && {
-        itemId: { in: subjectIds },
-      }),
-    };
-
-    const data_ = await db.studentSchedule.findMany({
-      where: whereClause,
-      select: {
-        createdAt: true,
-        lessonsCount: true,
-        day: true,
-        month: true,
-        year: true,
-        itemName: true,
-      },
-    });
-
-    // Сортировка по day, month, year как строки
-    data_.sort((a: any, b: any) => {
-      const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
-      const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
-    });
-
-    // Создадим объект, где ключом будет комбинация года, месяца и дня
-    const combinedData: {
-      [date: string]: {
-        lessonsCount: { [itemName: string]: number[] };
-      };
-    } = {};
-
-    // Обходим полученные данные
-    for (const item of data_) {
-      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
-
-      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
-        continue;
-
-      // Формируем строку, представляющую комбинацию года, месяца и дня
-      const dateKey = `${item.year}-${item.month}-${item.day}`;
-
-      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значение lessonsCount
-      if (!combinedData[dateKey]) {
-        combinedData[dateKey] = {
-          lessonsCount: {},
-        };
-      }
-
-      // Если itemName еще не добавлен в объект lessonsCount, добавляем его с пустым массивом
-      if (!combinedData[dateKey].lessonsCount[item.itemName]) {
-        combinedData[dateKey].lessonsCount[item.itemName] = [];
-      }
-
-      // Добавляем значение lessonsCount в массив для соответствующего itemName
-      combinedData[dateKey].lessonsCount[item.itemName].push(item.lessonsCount);
-    }
-
-    // Преобразуем объединенные данные в массив объектов
-    const combinedDataArray = Object.keys(combinedData).map((dateKey) => ({
-      date: new Date(dateKey),
-      lessonsCount: combinedData[dateKey].lessonsCount,
-    }));
-
-    if (combinedDataArray.length === 0) {
-      console.log("No data found for the given date range and subject IDs.");
-      return;
-    }
-
-    const labels = combinedDataArray.map((item) =>
-      formatDate(item.date, startDate, endDate)
+    const labels = students.map((student) =>
+      formatDate(student.createdAt, startDate, endDate)
     );
+    const data = students.map((_, index) => index + 1);
 
-    const uniqueItemNames = [...new Set(data_.map((item) => item.itemName))];
+    const datasets = [
+      {
+        label: "Количество учеников",
+        data: data,
+        fill: false,
+        backgroundColor: hashToColor(hashString("students")),
+        borderColor: hashToColor(hashString("students")),
+      },
+    ];
 
-    const datasets = uniqueItemNames.map((itemName) => ({
-      label: itemName,
-      data: combinedDataArray.map(
-        (item) => item.lessonsCount[itemName]?.reduce((a, b) => a + b, 0) || 0
-      ),
-      fill: false,
-      backgroundColor: hashToColor(hashString(itemName)),
-      borderColor: hashToColor(hashString(itemName)),
-    }));
+    const maxValue = Math.max(...data);
 
-    console.log(labels, datasets);
-
-    if (labels.length === 0 || datasets.length === 0) {
-      console.log("No data available for the chart.");
-      return;
-    }
-
-    socket.emit("getStudentCountData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getStudentCountData", { labels, datasets, maxValue });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching student count data:", error);
   }
 }
 
-// Функция для получения данных для графика "Ученики-Занятия"
 export async function getStudentLessonsData(
   data: {
     startDate: Date;
@@ -349,90 +229,66 @@ export async function getStudentLessonsData(
   socket: any
 ) {
   let { startDate, endDate, subjectIds, token } = data;
-
   startDate = new Date(startDate);
   endDate = new Date(endDate);
+
   try {
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    if (!token_) {
-      console.error("Invalid token");
-      return;
-    }
-
-    const userId = token_.userId;
+    const userId = await getUserId(token);
 
     const whereClause = {
       userId: userId,
       ...(subjectIds.length > 0 && {
         itemId: { in: subjectIds },
       }),
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
     };
 
     const data_ = await db.studentSchedule.findMany({
       where: whereClause,
       select: {
-        createdAt: true,
         lessonsCount: true,
+        itemName: true,
         day: true,
         month: true,
         year: true,
-        itemName: true,
+        student: {
+          select: {
+            id: true,
+            nameStudent: true,
+          },
+        },
       },
     });
 
-    // Сортировка по day, month, year как строки
-    data_.sort((a: any, b: any) => {
+    data_.sort((a, b) => {
       const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
       const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
+      return dateA.getTime() - dateB.getTime();
     });
 
-    // Создадим объект, где ключом будет комбинация года, месяца и дня
-    const combinedData: {
-      [date: string]: {
-        lessonsCount: { [itemName: string]: number[] };
-      };
-    } = {};
+    const combinedData: { [key: string]: { [key: string]: number } } = {};
 
-    // Обходим полученные данные
     for (const item of data_) {
       const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
 
       if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
         continue;
 
-      // Формируем строку, представляющую комбинацию года, месяца и дня
-      const dateKey = `${item.year}-${item.month}-${item.day}`;
+      const dateKey = `${item.year}-${item.month}-${a.day}`;
 
-      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значение lessonsCount
       if (!combinedData[dateKey]) {
-        combinedData[dateKey] = {
-          lessonsCount: {},
-        };
+        combinedData[dateKey] = {};
       }
 
-      // Если itemName еще не добавлен в объект lessonsCount, добавляем его с пустым массивом
-      if (!combinedData[dateKey].lessonsCount[item.itemName]) {
-        combinedData[dateKey].lessonsCount[item.itemName] = [];
+      if (!combinedData[dateKey][item.itemName]) {
+        combinedData[dateKey][item.itemName] = 0;
       }
 
-      // Добавляем значение lessonsCount в массив для соответствующего itemName
-      combinedData[dateKey].lessonsCount[item.itemName].push(item.lessonsCount);
+      combinedData[dateKey][item.itemName] += item.lessonsCount;
     }
 
-    // Преобразуем объединенные данные в массив объектов
     const combinedDataArray = Object.keys(combinedData).map((dateKey) => ({
       date: new Date(dateKey),
-      lessonsCount: combinedData[dateKey].lessonsCount,
+      ...combinedData[dateKey],
     }));
 
     if (combinedDataArray.length === 0) {
@@ -448,29 +304,21 @@ export async function getStudentLessonsData(
 
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: combinedDataArray.map(
-        (item) => item.lessonsCount[itemName]?.reduce((a, b) => a + b, 0) || 0
-      ),
+      data: combinedDataArray.map((item) => item[itemName] || 0),
       fill: false,
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
-    console.log(labels, datasets);
+    const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    if (labels.length === 0 || datasets.length === 0) {
-      console.log("No data available for the chart.");
-      return;
-    }
-
-    socket.emit("getStudentLessonsData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getStudentLessonsData", { labels, datasets, maxValue });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching student lessons data:", error);
   }
 }
 
-// Функция для получения данных для графика "Заказчики-Финансы"
 export async function getClientFinanceData(
   data: {
     startDate: Date;
@@ -482,19 +330,9 @@ export async function getClientFinanceData(
   let { startDate, endDate, token } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
+
   try {
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    if (!token_) {
-      console.error("Invalid token");
-      return;
-    }
-
-    const userId = token_.userId;
+    const userId = await getUserId(token);
 
     const whereClause = {
       userId: userId,
@@ -507,7 +345,6 @@ export async function getClientFinanceData(
     const data_ = await db.studentSchedule.findMany({
       where: whereClause,
       select: {
-        createdAt: true,
         workPrice: true,
         day: true,
         month: true,
@@ -517,43 +354,33 @@ export async function getClientFinanceData(
       },
     });
 
-    // Сортировка по day, month, year как строки
-    data_.sort((a: any, b: any) => {
+    data_.sort((a, b) => {
       const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
       const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
+      return dateA.getTime() - dateB.getTime();
     });
 
-    // Создадим объект, где ключом будет clientId
-    const combinedData: {
-      [clientId: string]: {
-        workPrice: number;
-      };
-    } = {};
+    const combinedData: { [key: string]: number } = {};
 
-    // Обходим полученные данные
     for (const item of data_) {
       const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
 
       if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
         continue;
 
-      // Если clientId еще нет в объекте, добавляем его и инициализируем значение workPrice
       if (!combinedData[item.clientId]) {
-        combinedData[item.clientId] = {
-          workPrice: 0,
-        };
+        combinedData[item.clientId] = 0;
       }
 
-      // Увеличиваем значение workPrice для соответствующего clientId
-      combinedData[item.clientId].workPrice += item.workPrice;
+      combinedData[item.clientId] += item.workPrice;
     }
 
-    // Преобразуем объединенные данные в массив объектов
-    const combinedDataArray = Object.keys(combinedData).map((clientId) => ({
-      clientId,
-      workPrice: combinedData[clientId].workPrice,
-    }));
+    const combinedDataArray = Object.entries(combinedData).map(
+      ([clientId, workPrice]) => ({
+        clientId,
+        workPrice,
+      })
+    );
 
     if (combinedDataArray.length === 0) {
       console.log("No data found for the given date range.");
@@ -567,12 +394,16 @@ export async function getClientFinanceData(
         },
       },
       select: {
+        id: true,
         nameStudent: true,
       },
     });
-    const labels = combinedDataArray.map((item, index) => {
-      return `Клиент ${clients[index].nameStudent}`;
+
+    const labels = combinedDataArray.map((item) => {
+      const client = clients.find((c) => c.id === item.clientId);
+      return `Клиент ${client ? client.nameStudent : "Unknown"}`;
     });
+
     const datasets = [
       {
         label: "Цена работ",
@@ -583,21 +414,15 @@ export async function getClientFinanceData(
       },
     ];
 
-    console.log(labels, datasets);
+    const maxValue = Math.max(...datasets[0].data);
 
-    if (labels.length === 0 || datasets.length === 0) {
-      console.log("No data available for the chart.");
-      return;
-    }
-
-    socket.emit("getClientFinanceData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getClientFinanceData", { labels, datasets, maxValue });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching client finance data:", error);
   }
 }
 
-// Функция для получения данных для графика "Заказчики-Количество"
 export async function getClientCountData(
   data: {
     startDate: Date;
@@ -609,19 +434,9 @@ export async function getClientCountData(
   let { startDate, endDate, token } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
+
   try {
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    if (!token_) {
-      console.error("Invalid token");
-      return;
-    }
-
-    const userId = token_.userId;
+    const userId = await getUserId(token);
 
     const whereClause = {
       userId: userId,
@@ -629,16 +444,11 @@ export async function getClientCountData(
         not: null,
       },
       isArchived: false,
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
     };
 
     const data_ = await db.studentSchedule.findMany({
       where: whereClause,
       select: {
-        createdAt: true,
         workCount: true,
         day: true,
         month: true,
@@ -647,43 +457,33 @@ export async function getClientCountData(
       },
     });
 
-    // Сортировка по day, month, year как строки
-    data_.sort((a: any, b: any) => {
+    data_.sort((a, b) => {
       const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
       const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
+      return dateA.getTime() - dateB.getTime();
     });
 
-    // Создадим объект, где ключом будет clientId
-    const combinedData: {
-      [clientId: string]: {
-        workCount: number;
-      };
-    } = {};
+    const combinedData: { [key: string]: number } = {};
 
-    // Обходим полученные данные
     for (const item of data_) {
       const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
 
       if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
         continue;
 
-      // Если clientId еще нет в объекте, добавляем его и инициализируем значение workCount
       if (!combinedData[item.clientId]) {
-        combinedData[item.clientId] = {
-          workCount: 0,
-        };
+        combinedData[item.clientId] = 0;
       }
 
-      // Увеличиваем значение workCount для соответствующего clientId
-      combinedData[item.clientId].workCount += item.workCount;
+      combinedData[item.clientId] += item.workCount;
     }
 
-    // Преобразуем объединенные данные в массив объектов
-    const combinedDataArray = Object.keys(combinedData).map((clientId) => ({
-      clientId,
-      workCount: combinedData[clientId].workCount,
-    }));
+    const combinedDataArray = Object.entries(combinedData).map(
+      ([clientId, workCount]) => ({
+        clientId,
+        workCount,
+      })
+    );
 
     if (combinedDataArray.length === 0) {
       console.log("No data found for the given date range.");
@@ -697,12 +497,16 @@ export async function getClientCountData(
         },
       },
       select: {
+        id: true,
         nameStudent: true,
       },
     });
-    const labels = combinedDataArray.map((item, index) => {
-      return `Клиент ${clients[index].nameStudent}`;
+
+    const labels = combinedDataArray.map((item) => {
+      const client = clients.find((c) => c.id === item.clientId);
+      return `Клиент ${client ? client.nameStudent : "Unknown"}`;
     });
+
     const datasets = [
       {
         label: "Количество работ",
@@ -713,21 +517,15 @@ export async function getClientCountData(
       },
     ];
 
-    console.log(labels, datasets);
+    const maxValue = Math.max(...datasets[0].data);
 
-    if (labels.length === 0 || datasets.length === 0) {
-      console.log("No data available for the chart.");
-      return;
-    }
-
-    socket.emit("getClientCountData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getClientCountData", { labels, datasets, maxValue });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching client count data:", error);
   }
 }
 
-// Функция для получения данных для графика "Заказчики-Работы"
 export async function getClientWorksData(
   data: {
     startDate: Date;
@@ -739,19 +537,9 @@ export async function getClientWorksData(
   let { startDate, endDate, token } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
+
   try {
-    const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
-    });
-
-    if (!token_) {
-      console.error("Invalid token");
-      return;
-    }
-
-    const userId = token_.userId;
+    const userId = await getUserId(token);
 
     const whereClause = {
       userId: userId,
@@ -764,7 +552,6 @@ export async function getClientWorksData(
     const data_ = await db.studentSchedule.findMany({
       where: whereClause,
       select: {
-        createdAt: true,
         itemName: true,
         studentName: true,
         day: true,
@@ -774,86 +561,81 @@ export async function getClientWorksData(
       },
     });
 
-    // Сортировка по day, month, year как строки
-    data_.sort((a: any, b: any) => {
+    data_.sort((a, b) => {
       const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
       const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
+      return dateA.getTime() - dateB.getTime();
     });
 
-    // Создадим объект, где ключом будет комбинация clientId и itemName
-    const combinedData: {
-      [key: string]: {
-        studentNames: string[];
-      };
-    } = {};
+    const combinedData: { [key: string]: { [key: string]: string[] } } = {};
 
-    // Обходим полученные данные
     for (const item of data_) {
       const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
 
       if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
         continue;
 
-      const key = `${item.clientId}-${item.itemName}`;
-
-      // Если такая комбинация еще нет в объекте, добавляем ее и инициализируем массив studentNames
-      if (!combinedData[key]) {
-        combinedData[key] = {
-          studentNames: [],
-        };
+      if (!combinedData[item.clientId]) {
+        combinedData[item.clientId] = {};
       }
 
-      // Добавляем studentName в массив studentNames для соответствующей комбинации clientId и itemName
-      combinedData[key].studentNames.push(item.studentName);
+      if (!combinedData[item.clientId][item.itemName]) {
+        combinedData[item.clientId][item.itemName] = [];
+      }
+
+      combinedData[item.clientId][item.itemName].push(item.studentName);
     }
 
-    // Преобразуем объединенные данные в массив объектов
-    const combinedDataArray = Object.keys(combinedData).map((key) => ({
-      clientId: key.split("-")[0],
-      itemName: key.split("-")[1],
-      studentNames: combinedData[key].studentNames,
-    }));
+    const combinedDataArray = Object.entries(combinedData).map(
+      ([clientId, items]) => ({
+        clientId,
+        items,
+      })
+    );
 
     if (combinedDataArray.length === 0) {
       console.log("No data found for the given date range.");
       return;
     }
 
-    const labels = Array.from(
-      new Set(combinedDataArray.map((item) => `Клиент ${item.clientId}`))
-    );
-    const datasets = Array.from(
-      new Set(combinedDataArray.map((item) => item.itemName))
-    ).map((itemName) => ({
+    let clients = await db.client.findMany({
+      where: {
+        id: {
+          in: combinedDataArray.map((item) => item.clientId),
+        },
+      },
+      select: {
+        id: true,
+        nameStudent: true,
+      },
+    });
+
+    const labels = combinedDataArray.map((item) => {
+      const client = clients.find((c) => c.id === item.clientId);
+      return `Клиент ${client ? client.nameStudent : "Unknown"}`;
+    });
+
+    const uniqueItemNames = [...new Set(data_.map((item) => item.itemName))];
+
+    const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((label) => {
-        const clientId = label.split(" ")[1];
-        const data = combinedDataArray.find(
-          (item) => item.clientId === clientId && item.itemName === itemName
-        );
-        return data ? data.studentNames.length : 0;
-      }),
+      data: combinedDataArray.map((item) =>
+        item.items[itemName] ? item.items[itemName].length : 0
+      ),
       fill: false,
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
-    console.log(labels, datasets);
+    const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    if (labels.length === 0 || datasets.length === 0) {
-      console.log("No data available for the chart.");
-      return;
-    }
-
-    socket.emit("getClientWorksData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getClientWorksData", { labels, datasets, maxValue });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching client works data:", error);
   }
 }
 
-// Функция для получения данных для графика "Ученики - Заказчики сравнительный график"
 export async function getStudentClientComparisonData(
   data: {
     startDate: Date;
@@ -865,38 +647,21 @@ export async function getStudentClientComparisonData(
   let { startDate, endDate, token } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  if (!token_) {
-    console.error("Invalid token");
-    return;
-  }
-
-  const userId = token_.userId;
 
   try {
+    const userId = await getUserId(token);
+
     const studentData = await db.studentSchedule.findMany({
       where: {
         clientId: null,
         isArchived: false,
         userId: userId,
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
       },
       select: {
-        createdAt: true,
         lessonsCount: true,
-        lessonsPrice: true,
         day: true,
         month: true,
         year: true,
-        itemName: true,
       },
     });
 
@@ -907,151 +672,84 @@ export async function getStudentClientComparisonData(
         },
         userId: userId,
         isArchived: false,
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
       },
       select: {
-        createdAt: true,
         workCount: true,
-        workPrice: true,
-        lessonsCount: true,
-        lessonsPrice: true,
         day: true,
         month: true,
         year: true,
-        itemName: true,
       },
     });
 
     const combinedData = [...studentData, ...clientData];
 
-    // Сортировка по day, month, year как строки
-    combinedData.sort((a: any, b: any) => {
+    combinedData.sort((a, b) => {
       const dateA = new Date(`${a.year}-${a.month}-${a.day}`);
       const dateB = new Date(`${b.year}-${b.month}-${b.day}`);
-      return dateA - dateB;
+      return dateA.getTime() - dateB.getTime();
     });
 
-    // Создадим объект, где ключом будет комбинация года, месяца и дня
     const groupedData: {
-      [date: string]: {
-        studentData: {
-          lessonsCount: number;
-          lessonsPrice: number;
-          itemName: string;
-        }[];
-        clientData: {
-          workCount: number;
-          workPrice: number;
-          itemName: string;
-        }[];
-      };
+      [key: string]: { students: number; clients: number };
     } = {};
 
-    // Обходим полученные данные
     for (const item of combinedData) {
       const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
 
       if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
         continue;
 
-      // Формируем строку, представляющую комбинацию года, месяца и дня
       const dateKey = `${item.year}-${item.month}-${item.day}`;
 
-      // Если такой комбинации еще нет в объекте, добавляем ее и инициализируем значения
       if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {
-          studentData: [],
-          clientData: [],
-        };
+        groupedData[dateKey] = { students: 0, clients: 0 };
       }
 
-      // Обновляем значения для студентов и клиентов
-      if (item.clientId === null) {
-        groupedData[dateKey].studentData.push({
-          lessonsCount: item.lessonsCount || 0,
-          lessonsPrice: item.lessonsPrice || 0,
-          itemName: item.itemName,
-        });
-      } else {
-        groupedData[dateKey].clientData.push({
-          workCount: item.workCount || 0,
-          workPrice: item.workPrice || 0,
-          itemName: item.itemName,
-        });
+      if ("lessonsCount" in item) {
+        groupedData[dateKey].students += item.lessonsCount;
+      } else if ("workCount" in item) {
+        groupedData[dateKey].clients += item.workCount;
       }
     }
 
-    // Удалим все записи с нулевыми значениями
-    const nonZeroData = Object.entries(groupedData).filter(
-      ([_, value]) =>
-        value.studentData.length > 0 || value.clientData.length > 0
-    );
-
-    if (nonZeroData.length === 0) {
-      console.log("No non-zero data available for the chart.");
-      return;
-    }
-
-    // Преобразуем объединенные данные в массивы
-    const labels = nonZeroData.map(([dateKey]) =>
+    const labels = Object.keys(groupedData).map((dateKey) =>
       formatDate(new Date(dateKey), startDate, endDate)
     );
 
     const datasets = [
       {
         label: "Ученики",
-        data: labels.map((_, index) => {
-          const [dateKey, value] = nonZeroData[index];
-          const lessonsCount = value.studentData.reduce(
-            (total, item) => total + item.lessonsCount,
-            0
-          );
-          return isNaN(lessonsCount) || lessonsCount === null
-            ? 0
-            : lessonsCount;
-        }),
+        data: Object.values(groupedData).map((item) => item.students),
         fill: false,
         backgroundColor: "rgba(75, 192, 192, 0.4)",
         borderColor: "rgba(75, 192, 192, 1)",
       },
       {
         label: "Заказчики",
-        data: labels.map((_, index) => {
-          const [dateKey, value] = nonZeroData[index];
-          const workCount = value.clientData.reduce(
-            (total, item) => total + item.workCount,
-            0
-          );
-          return isNaN(workCount) || workCount === null ? 0 : workCount;
-        }),
+        data: Object.values(groupedData).map((item) => item.clients),
         fill: false,
         backgroundColor: "rgba(255, 99, 132, 0.4)",
         borderColor: "rgba(255, 99, 132, 1)",
       },
     ];
 
-    console.log(labels, datasets);
+    const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    socket.emit("getStudentClientComparisonData", { labels, datasets });
-    return { labels, datasets };
+    socket.emit("getStudentClientComparisonData", {
+      labels,
+      datasets,
+      maxValue,
+    });
+    return { labels, datasets, maxValue };
   } catch (error) {
     console.error("Error fetching student-client comparison data:", error);
   }
 }
 
 export async function getAllItemsIdsAndNames(token: string, socket: any) {
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  const userId = token_.userId;
-
   try {
+    const userId = await getUserId(token);
+
     const items = await db.item.findMany({
       where: {
         userId: userId,
@@ -1062,9 +760,44 @@ export async function getAllItemsIdsAndNames(token: string, socket: any) {
       },
     });
 
-    socket.emit("getAllItemsIdsAndNames", items);
-    return items;
+    const filteredItems = items.filter(
+      (item) => item.itemName && item.itemName.toLowerCase() !== "void"
+    );
+
+    const groupedItems = filteredItems.reduce((acc, item) => {
+      const lowerCaseName = item.itemName.toLowerCase();
+      if (!acc[lowerCaseName]) {
+        acc[lowerCaseName] = [];
+      }
+      acc[lowerCaseName].push(item);
+      return acc;
+    }, {} as { [key: string]: typeof items });
+
+    const result = Object.values(groupedItems).map((group) => {
+      if (group.length === 1) {
+        return group[0];
+      } else {
+        return {
+          id: group.map((item) => item.id),
+          itemName: group[0].itemName,
+        };
+      }
+    });
+
+    socket.emit("getAllItemsIdsAndNames", result);
+    return result;
   } catch (error) {
     console.error("Error fetching items:", error);
   }
 }
+
+export default {
+  getStudentFinanceData,
+  getStudentCountData,
+  getStudentLessonsData,
+  getClientFinanceData,
+  getClientCountData,
+  getClientWorksData,
+  getStudentClientComparisonData,
+  getAllItemsIdsAndNames,
+};

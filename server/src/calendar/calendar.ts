@@ -172,7 +172,7 @@ export const getByClientScheduleId = async (data, socket) => {
     clientScheduleJSON.sort((a, b) => {
       return a.date.getTime() - b.date.getTime();
     });
-    console.log(clientScheduleJSON, "clientScheduleJSON");
+    // console.log(clientScheduleJSON, "clientScheduleJSON");
     socket.emit("getByClientScheduleId", clientScheduleJSON);
   } catch (error) {
     console.log("ERROR");
@@ -210,7 +210,7 @@ export const getByGroupScheduleId = async (data, socket) => {
     groupScheduleJSON.sort((a, b) => {
       return a.date.getTime() - b.date.getTime();
     });
-    console.log(groupScheduleJSON, "groupScheduleJSON");
+    // console.log(groupScheduleJSON, "groupScheduleJSON");
     socket.emit("getByGroupScheduleId", groupScheduleJSON);
   } catch (error) {
     console.log("ERROR");

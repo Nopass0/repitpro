@@ -131,6 +131,7 @@ model Student {
   linkStudent     String
   costStudent     String
   commentStudent  String
+  prePay          Json?
   prePayCost      String
   prePayDate      DateTime?
   selectedDate    DateTime?

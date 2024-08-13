@@ -4,15 +4,180 @@
 
 .wrapper {
 	margin-top: 20px;
-	width: 100%; //  я это поменал - это было закоменчено
+	width: 100%;
 	max-width: 1450px;
 	height: 100%;
 	max-height: 820px;
 	padding: 20px;
-	border: 1px solid #d4d4d4;
+	border: 1px solid #8b8b8b;
 	border-radius: 20px;
 	background-color: #fff;
-
 	overflow-y: scroll;
 	overflow-x: hidden;
+
+	.Header {
+		position: sticky;
+		top: 0;
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+
+		.CloseIcon {
+			color: red;
+			margin-left: 20px;
+		}
+
+		.Icon:first-child {
+			margin-right: 10px;
+		}
+
+		.Icon,
+		.CloseIcon {
+			width: 28px;
+			height: 28px;
+		}
+	}
+
+	.MainBlock {
+		display: flex;
+		flex-direction: column;
+		min-width: 1000px;
+
+		.GraphicBlock {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+
+			.MenuForGraphic {
+				display: flex;
+				flex-direction: column;
+				width: 270px;
+				margin-right: 20px;
+
+				.muiSelect {
+					background: none;
+					border: none !important;
+					cursor: pointer;
+					outline: none;
+					color: black;
+					display: flex;
+					flex-direction: row;
+					white-space: nowrap;
+					height: 26px;
+				}
+
+				.Dates {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					margin-bottom: 20px;
+
+					.DatePicker {
+						border: 1px solid #8b8b8b;
+						border-radius: 8px;
+						padding: 4px 0;
+						align-items: center;
+					}
+
+					.LineDate {
+						margin: 0 5px !important;
+					}
+				}
+			}
+
+			.ChartWrap {
+				width: 100%;
+				max-width: 1450px;
+
+				p {
+					font-weight: 500;
+					font-size: 14px;
+					margin-bottom: 20px;
+					text-align: center;
+				}
+
+				.chart_container {
+					max-width: 1450px;
+					width: calc(100% - 40px);
+					height: 360px;
+					margin: 0 auto;
+				}
+			}
+		}
+	}
+}
+
+.checkboxContainer {
+	max-height: 200px;
+	overflow-y: auto;
+	margin-top: 20px;
+	border: 1px solid #8b8b8b;
+	border-radius: 8px;
+	padding: 10px;
+}
+
+.checkboxGroup {
+	display: flex;
+	flex-direction: column;
+}
+
+.loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 300px;
+
+	.loader {
+		width: 48px;
+		height: 48px;
+		color: #25991c;
+		animation: spin 1s linear infinite;
+	}
+
+	p {
+		margin-top: 1rem;
+		font-size: 1rem;
+		color: #333;
+	}
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@media screen and (max-width: 1024px) {
+	.wrapper {
+		-webkit-overflow-scrolling: touch;
+		overflow-x: auto;
+		margin-bottom: 150px;
+
+		.Header {
+			min-width: 1000px;
+		}
+
+		.Line {
+			min-width: 1000px;
+		}
+
+		.GraphicBlock {
+			min-width: 1000px;
+			overflow-x: scroll;
+		}
+
+		.Graphic {
+			width: 100%;
+			overflow-x: scroll;
+		}
+	}
+}
+
+@media screen and (max-width: 678px) {
+	// Add mobile-specific styles here if needed
 }
