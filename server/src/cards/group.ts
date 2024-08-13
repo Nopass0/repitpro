@@ -992,7 +992,7 @@ export async function getGroupList(token, socket: any) {
 
     const groupsWithName = groups.filter((group) => group.groupName !== "");
 
-    console.log(groups);
+    // console.log(groups);
     socket.emit("getGroupList", groupsWithName);
     return groups;
   } catch (error) {
@@ -1075,7 +1075,7 @@ export async function deleteGroup(data: any, socket: any) {
       },
     });
 
-    console.log("Group deleted:", group);
+    // console.log("Group deleted:", group);
   } catch (error) {
     console.error("Error deleting group:", error);
   }
@@ -1205,7 +1205,7 @@ export async function getGroupById(data: any, socket: any) {
       },
     });
 
-    console.log(files, "files");
+    // console.log(files, "files");
 
     //with extra type 'group/files'
     const etFiles = files.filter((file) => file.extraType === "group/files");
@@ -1361,11 +1361,11 @@ export async function updateGroup(data, socket: any) {
       const existingStudent = existingGroup.students.find(
         (student) => student.id === newStudent.id
       );
-      console.log(
-        "----------newStudent, existingStudent--------",
-        newStudent,
-        existingStudent
-      );
+      // console.log(
+      //   "----------newStudent, existingStudent--------",
+      //   newStudent,
+      //   existingStudent
+      // );
       if (existingStudent) {
         // Update existing student
         await db.student.update({
@@ -1489,11 +1489,11 @@ export async function updateGroup(data, socket: any) {
     });
 
     const existingFiles = JSON.parse(JSON.stringify(groupExt)).files;
-    console.log(
-      "\n-----------------existing-files--------------------\n",
-      groupExt,
-      "\n--------------------------\n"
-    );
+    // console.log(
+    //   "\n-----------------existing-files--------------------\n",
+    //   groupExt,
+    //   "\n--------------------------\n"
+    // );
     // Combine all uploaded files and update group
     const allUploadedFiles = [
       ...uploadedFiles,

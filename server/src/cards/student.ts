@@ -674,11 +674,11 @@ export async function getStudentsByDate(
   const token_ = await db.token.findFirst({ where: { token } });
   const userId = token_?.userId;
 
-  console.log(
-    "getStudentsByDate-------------------------",
-    data,
-    "------------------------------------------------------------"
-  );
+  // console.log(
+  //   "getStudentsByDate-------------------------",
+  //   data,
+  //   "------------------------------------------------------------"
+  // );
 
   if (!userId) {
     socket.emit("getStudentsByDate", { error: "Invalid token" });
@@ -743,10 +743,10 @@ export async function getStudentsByDate(
     },
   });
 
-  console.log("This is isGroup", isGroup);
+  // console.log("This is isGroup", isGroup);
   if (isGroup) {
     const groupsData = [];
-    console.log("This is GROUP");
+    // console.log("This is GROUP");
     let totalPrice = 0;
     for (const schedule of studentSchedules) {
       const { item } = schedule;
@@ -840,17 +840,17 @@ export async function getStudentsByDate(
     }
 
     groupsData.push({ totalPrice });
-    console.log(groupsData, "\n-----groupsData");
+    // console.log(groupsData, "\n-----groupsData");
     socket.emit("getStudentsByDate", groupsData);
   } else {
     const dataToEmit = [];
 
     for (const schedule of studentSchedules) {
       const { item } = schedule;
-      console.log("This is studentId", studentId, schedule);
+      // console.log("This is studentId", studentId, schedule);
       const student = item.group.students[0];
 
-      console.log(student, "\n-----student", studentId);
+      // console.log(student, "\n-----student", studentId);
       const timeLinesArray = schedule.timeLinesArray;
       const daySchedule = timeLinesArray[dayOfWeekIndex];
       const homeFiles = await db.file.findMany({
@@ -947,7 +947,7 @@ export async function getStudentsByDate(
       dataToEmit.push(scheduleData);
     }
 
-    console.log("tihs is popup day", dataToEmit, "dataToEmit");
+    // console.log("tihs is popup day", dataToEmit, "dataToEmit");
     socket.emit("getStudentsByDate", dataToEmit);
   }
 }
@@ -1354,11 +1354,11 @@ export async function updateStudentSchedule(data, socket: any) {
       console.error("Error updating historyLesson:", historyError);
     }
 
-    console.log(
-      "\n----------------student-schedule---------------------\n",
-      updatedSchedule,
-      "\n--------------------------------------\n"
-    );
+    // console.log(
+    //   "\n----------------student-schedule---------------------\n",
+    //   updatedSchedule,
+    //   "\n--------------------------------------\n"
+    // );
     return updatedSchedule;
   } catch (error) {
     console.error("Error in updateStudentSchedule:", error);
@@ -1425,7 +1425,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
       },
     });
 
-    console.log(files, "files");
+    // console.log(files, "files");
     //group to object
     const group_ = JSON.parse(JSON.stringify(group));
     group_.group.students[0].filesData = files;
@@ -1438,7 +1438,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
       }
     );
 
-    console.log(audiosBuffers, "audiosBuffers");
+    // console.log(audiosBuffers, "audiosBuffers");
 
     //add audios buffers to every audio object
 
@@ -2096,7 +2096,7 @@ export async function getAllIdStudents(data: any, socket: any) {
   });
 
   socket.emit("getAllIdStudents", students);
-  console.log(students, "students");
+  // console.log(students, "students");
 
   return students;
 }
@@ -2275,10 +2275,10 @@ export async function studentToArhive(
       token,
     },
   });
-  console.log(
-    data,
-    "------------------------------------------------------------------------------------------------"
-  );
+  // console.log(
+  //   data,
+  //   "------------------------------------------------------------------------------------------------"
+  // );
 
   const userId = token_.userId;
 
@@ -2442,11 +2442,11 @@ export async function deleteAudio(
 ) {
   try {
     const { token, id, type } = data; // token is the user's token. id is the file's id
-    console.log(
-      `\n-----------------------delete-Audio-----------------\n${JSON.stringify(
-        data
-      )}\n------------------------------------\n`
-    );
+    // console.log(
+    //   `\n-----------------------delete-Audio-----------------\n${JSON.stringify(
+    //     data
+    //   )}\n------------------------------------\n`
+    // );
     const token_ = await db.token.findFirst({
       where: {
         token,
@@ -2496,7 +2496,7 @@ export async function deleteAudio(
     socket.emit("deleteAudio", {
       message: "Audio deleted successfully",
     });
-    console.log("Audio deleted successfully");
+    // console.log("Audio deleted successfully");
   } catch (error) {
     socket.emit("deleteAudio", {
       message: "Error deleting audio",

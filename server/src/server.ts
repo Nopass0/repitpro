@@ -50,6 +50,7 @@ import {
 } from "./cards/client";
 import {
   getAllItemsIdsAndNames,
+  getAllStatisticsData,
   getClientCountData,
   getClientFinanceData,
   getClientWorksData,
@@ -139,6 +140,10 @@ io.on("connection", (socket) => {
   socket.on("getLinksByLinkedId", (data) => getLinksByLinkedId(data, socket));
 
   socket.on("cancelLesson", (data) => cancelLesson(data, socket));
+
+  // socket.on("getAllStatisticsData", (data) =>
+  //   getAllStatisticsData(data, socket)
+  // );
 
   // socket.on("updateStudents", (data) => updateStudents(data, socket));
   socket.on("updateStudentAndItems", (data) =>
