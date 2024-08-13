@@ -324,6 +324,7 @@ export async function addStudent(data, socket: any) {
       prePayDate,
       costOneLesson,
       commentStudent,
+      prePay,
       linkStudent,
       costStudent,
       audios,
@@ -490,6 +491,7 @@ export async function addStudent(data, socket: any) {
               contactFace,
               phoneNumber,
               email,
+              prePay: prePay || [],
               address: "",
               linkStudent: linkStudent || "",
               costStudent: costStudent || "",
@@ -621,6 +623,7 @@ export async function getStudentList(token, socket: any) {
         phoneNumber: true,
         isArchived: true,
         email: true,
+        prePay: true,
         contactFace: true,
       },
     });
@@ -704,6 +707,7 @@ export async function getStudentsByDate(
       lessonsCount: true,
       homeWork: true,
       classWork: true,
+
       isCancel: true,
       homeStudentsPoints: true,
       classStudentsPoints: true,
@@ -729,6 +733,7 @@ export async function getStudentsByDate(
                   nameStudent: true,
                   costOneLesson: true,
                   tryLessonCheck: true,
+                  prePay: true,
                   prePayCost: true,
                   prePayDate: true,
                   tryLessonCost: true,
@@ -831,6 +836,7 @@ export async function getStudentsByDate(
           id: student.id,
           nameStudent: student.nameStudent,
           costOneLesson: student.costOneLesson,
+          prePay: student.prePay,
           targetLessonStudent: student.targetLessonStudent,
           todayProgramStudent: student.todayProgramStudent,
         })),
@@ -936,6 +942,7 @@ export async function getStudentsByDate(
         isCancel: schedule.isCancel,
         tryLessonCheck: item.tryLessonCheck,
         tryLessonCost: item.tryLessonCost,
+        prePay: student ? student.prePay : [],
         history: History || null,
         startTime: daySchedule?.startTime,
         endTime: daySchedule?.endTime,
@@ -1160,6 +1167,7 @@ export async function updateStudentSchedule(data, socket: any) {
     isChecked,
     isCancel,
     studentName,
+    prePay,
     startTime,
     endTime,
   } = data;
@@ -1210,6 +1218,8 @@ export async function updateStudentSchedule(data, socket: any) {
     if (classAudiosPaths.length > 0)
       updatedFields.classAudios = classAudiosPaths;
     if (isCancel !== undefined) updatedFields.isCancel = isCancel;
+
+    if (prePay !== undefined) updatedFields.prePay = prePay;
 
     if (homeStudentsPoints !== undefined) {
       const studentIds = homeStudentsPoints.map((obj) => obj.studentId);
@@ -1803,6 +1813,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
         linkStudent: data.linkStudent,
         files: AllFiles,
         costStudent: data.costStudent,
+        prePay: data.prePay || [],
         phoneNumber: data.phoneNumber,
         contactFace: data.contactFace,
         email: data.email,
