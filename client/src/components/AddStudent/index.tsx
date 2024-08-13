@@ -396,7 +396,8 @@ const AddStudent = ({}: IAddStudent) => {
 				linkStudent,
 				costStudent,
 				commentStudent,
-
+				prePayCost,
+				prePayDate,
 				costOneLesson,
 				files,
 				audios,
@@ -424,7 +425,8 @@ const AddStudent = ({}: IAddStudent) => {
 				historyLessons: historyLesson,
 				costStudent,
 				commentStudent,
-
+				prePayCost,
+				prePayDate,
 				files,
 				audios,
 				costOneLesson,
@@ -970,8 +972,8 @@ const AddStudent = ({}: IAddStudent) => {
 		if (data) {
 			setNameStudent(data.students[0].nameStudent)
 			setCostOneLesson(data.students[0].costOneLesson)
-			// setPrePayCost(data.students[0].prePayCost)
-			// setPrePayDate(data.students[0].prePayDate)
+			setPrePayCost(data.students[0].prePayCost)
+			setPrePayDate(data.students[0].prePayDate)
 			setContactFace(data.students[0].contactFace)
 			setPhoneNumber(data.students[0].phoneNumber)
 			setEmail(data.students[0].email)
@@ -1178,7 +1180,7 @@ const AddStudent = ({}: IAddStudent) => {
 												addPrePayList(
 													prePayCostValue,
 													prePayDate,
-													prePayList.length ,
+													prePayList.length,
 												)
 											}
 										}}
@@ -1285,7 +1287,6 @@ const AddStudent = ({}: IAddStudent) => {
 																	size="16px"
 																	checked={lesson.isPaid}
 																/>
-																
 															</div>
 														))}
 													<Line width="100%" className={s.Line} />

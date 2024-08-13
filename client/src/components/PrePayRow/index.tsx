@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import Input from '../Input'
 import MiniCalendar from '../MiniCalendar'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import CancelIcon from '@mui/icons-material/Cancel';
+import CancelIcon from '@mui/icons-material/Cancel'
 interface IPrePayRow {
 	id: number
 	cost: string
@@ -15,8 +15,7 @@ interface IPrePayRow {
 	onEdit: () => void
 	isEditing: boolean
 	onEditDone: (newDate: Date, newCost: string) => void
-	finishEditing: () => void;
-
+	finishEditing: () => void
 }
 
 const PrePayRow: React.FC<IPrePayRow> = ({
@@ -27,14 +26,25 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 	onEdit,
 	isEditing,
 	onEditDone,
-	finishEditing
+	finishEditing,
 }) => {
 	const [prePayCost, setPrePayCost] = useState<string>(cost)
 	const [prePayDate, setPrePayDate] = useState<any>(new Date(Date.now()))
-	const formatDate = (date: Date) => {
+	const formatDate = (date: any) => {
+		// Проверка, является ли date объектом Date
+		if (!(date instanceof Date)) {
+			// Преобразуем в объект Date, если это строка или число
+			date = new Date(date)
+		}
+
+		// Если преобразование не удалось и дата все еще является Invalid Date
+		if (isNaN(date.getTime())) {
+			return 'Invalid Date' // Или можно вернуть пустую строку или другой дефолтный формат
+		}
+
 		const day = String(date.getDate()).padStart(2, '0')
 		const month = String(date.getMonth() + 1).padStart(2, '0')
-		const year = String(date.getFullYear()).slice(-2) // Take last 2 digits of the year
+		const year = String(date.getFullYear()).slice(-2) // Берем последние 2 цифры года
 
 		return `${day}.${month}.${year}`
 	}
