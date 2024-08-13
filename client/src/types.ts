@@ -93,6 +93,7 @@ export interface IStudent {
 	commentStudent: string
 	prePayCost: string
 	prePayDate: Date
+	prePayCostValue: string
 	selectedDate: null
 	nowLevel: number
 	tryLessonCheck: boolean
@@ -103,6 +104,7 @@ export interface IStudent {
 	todayProgramStudent: string
 	startLesson: Date | null
 	endLesson: Date | null
+	prePayList: IPrePayList[]
 }
 
 export interface IHistoryLessons {
