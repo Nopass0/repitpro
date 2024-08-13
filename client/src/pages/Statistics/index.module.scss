@@ -4,7 +4,7 @@
 
 .wrapper {
 	margin-top: 20px;
-	width: 100%;
+	width: 100%; //  я это поменал - это было закоменчено
 	max-width: 1450px;
 	height: 100%;
 	max-height: 820px;
@@ -12,6 +12,7 @@
 	border: 1px solid #8b8b8b;
 	border-radius: 20px;
 	background-color: #fff;
+
 	overflow-y: scroll;
 	overflow-x: hidden;
 
@@ -43,60 +44,70 @@
 		display: flex;
 		flex-direction: column;
 		min-width: 1000px;
-
 		.GraphicBlock {
 			display: flex;
 			flex-direction: row;
-			width: 100%;
 
 			.MenuForGraphic {
 				display: flex;
 				flex-direction: column;
+
 				width: 270px;
 				margin-right: 20px;
-
 				.muiSelect {
 					background: none;
 					border: none !important;
 					cursor: pointer;
 					outline: none;
 					color: black;
+
 					display: flex;
 					flex-direction: row;
 					white-space: nowrap;
+
 					height: 26px;
 				}
 
-				.Dates {
-					display: flex;
-					flex-direction: row;
-					align-items: center;
+				.TitleTable {
+					font-weight: 500;
 					margin-bottom: 20px;
-
-					.DatePicker {
-						border: 1px solid #8b8b8b;
-						border-radius: 8px;
-						padding: 4px 0;
-						align-items: center;
-					}
-
-					.LineDate {
-						margin: 0 5px !important;
-					}
 				}
 			}
 
+			.Dates {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				margin-bottom: 100px;
+				.DatePicker {
+					border: 1px solid #8b8b8b;
+					border-radius: 8px;
+					padding: 4px 0;
+
+					align-items: center;
+				}
+
+				.LineDate {
+					margin: 0 5px !important;
+				}
+			}
+
+			.DataBlock {
+				display: grid;
+				grid-template-columns: 20px 120px 70px 42px;
+				grid-template-rows: repeat(2, 20px);
+				grid-column-gap: 5px;
+				grid-row-gap: 8px;
+			}
 			.ChartWrap {
 				width: 100%;
 				max-width: 1450px;
-
 				p {
 					font-weight: 500;
 					font-size: 14px;
 					margin-bottom: 20px;
 					text-align: center;
 				}
-
 				.chart_container {
 					max-width: 1450px;
 					width: calc(100% - 40px);
@@ -104,51 +115,88 @@
 					margin: 0 auto;
 				}
 			}
+
+			.TableWrap {
+				width: 100%;
+				max-width: 1450px;
+				height: fit-content;
+				overflow-y: auto;
+				max-height: 500px;
+				p {
+					font-weight: 500;
+					font-size: 14px;
+					margin-bottom: 20px;
+					text-align: center;
+				}
+				border: 1px solid #8b8b8b;
+				border-radius: 20px;
+
+				.Table {
+					width: 100%;
+					height: 500px;
+					overflow-y: auto;
+					border-collapse: collapse;
+
+					border-top-left-radius: 20px;
+					border-bottom-left-radius: 20px;
+					table-layout: fixed;
+					.Thead {
+						position: sticky;
+						top: 0;
+						background-color: #fff;
+						border-bottom: 1px solid #8b8b8b;
+						.Th {
+							font-size: 14px;
+							font-weight: 400;
+							// width: 189px;
+							height: 60px;
+
+							&:hover {
+								background-color: #eee;
+								cursor: pointer;
+							}
+						}
+
+						.Th:not(:last-child) {
+							border-right: 1px solid #8b8b8b;
+						}
+					}
+
+					.Tbody {
+						border-top: none;
+
+						.Tr {
+							.Td {
+								height: 40px;
+								// border-right: 1px solid #e2e2e9;
+								padding: 0;
+								margin: 0;
+								display: table-cell;
+								cursor: pointer;
+								transition: all;
+								transition-duration: 200ms;
+								p {
+									padding: 0;
+									margin: 0;
+									font-size: 14px;
+									font-weight: 400;
+								}
+							}
+							.Td:not(:last-child) {
+								border-right: 1px solid #8b8b8b;
+								border-radius: 20px;
+							}
+						}
+						.Tr:not(:last-child) {
+							.Td {
+								border-bottom: 1px solid #8b8b8b;
+								border-radius: 20px;
+							}
+						}
+					}
+				}
+			}
 		}
-	}
-}
-
-.checkboxContainer {
-	max-height: 200px;
-	overflow-y: auto;
-	margin-top: 20px;
-	border: 1px solid #8b8b8b;
-	border-radius: 8px;
-	padding: 10px;
-}
-
-.checkboxGroup {
-	display: flex;
-	flex-direction: column;
-}
-
-.loading {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 300px;
-
-	.loader {
-		width: 48px;
-		height: 48px;
-		color: #25991c;
-		animation: spin 1s linear infinite;
-	}
-
-	p {
-		margin-top: 1rem;
-		font-size: 1rem;
-		color: #333;
-	}
-}
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
 	}
 }
 
@@ -157,20 +205,16 @@
 		-webkit-overflow-scrolling: touch;
 		overflow-x: auto;
 		margin-bottom: 150px;
-
 		.Header {
 			min-width: 1000px;
 		}
-
 		.Line {
 			min-width: 1000px;
 		}
-
 		.GraphicBlock {
 			min-width: 1000px;
 			overflow-x: scroll;
 		}
-
 		.Graphic {
 			width: 100%;
 			overflow-x: scroll;
@@ -179,5 +223,4 @@
 }
 
 @media screen and (max-width: 678px) {
-	// Add mobile-specific styles here if needed
 }

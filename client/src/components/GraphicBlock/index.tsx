@@ -58,6 +58,7 @@ interface IGraphicBlock {
 	OnChangeDateStart?: (e: any) => void
 	OnChangeDateEnd?: (e: any) => void
 	StyledPickersLayout?: any
+	yScaleName?: string
 	renderCheckboxes?: () => React.ReactNode
 }
 
@@ -74,6 +75,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 	chooseGraphic,
 	OnChangeDate,
 	OnChangeDateStart,
+	yScaleName,
 	OnChangeDateEnd,
 	title,
 	StyledPickersLayout,
@@ -120,7 +122,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 			maintainAspectRatio: false,
 			aspectRatio: 2,
 			plugins: {
-				legend: {display: true},
+				legend: {display: false},
 				title: {display: false},
 				tooltip: {enabled: true},
 			},
@@ -138,11 +140,19 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 				y: {
 					type: 'linear', // Use 'linear' for numerical data on y-axis
 					stacked: false,
-					ticks: {display: true},
+					beginAtZero: true,
+					ticks: {
+						stepSize: 1,
+						callback: function (value) {
+							if (Math.floor(value) === value) {
+								return value
+							}
+						},
+					},
 					grid: {display: true},
 					title: {
 						display: true,
-						text: 'Значение',
+						text: yScaleName ? yScaleName : 'Значение',
 					},
 				},
 			},
@@ -213,7 +223,12 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						/>
 					</div>
 				</div>
-				{renderCheckboxes && renderCheckboxes()}
+				{renderCheckboxes && (
+					<div className={s.CheckboxColumn}>
+						<h4 className={s.CheckboxTitle}>Выберите предметы:</h4>
+						{renderCheckboxes()}
+					</div>
+				)}
 			</div>
 			<div className={s.ChartWrap}>
 				<p>{title}</p>
