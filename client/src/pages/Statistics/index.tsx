@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useCallback} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {useSelector} from 'react-redux'
-import {MenuItem, Select, styled} from '@mui/material'
+import {Checkbox, MenuItem, Select, styled} from '@mui/material'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import CloseIcon from '@mui/icons-material/Close'
@@ -232,6 +232,11 @@ const Statistics = () => {
 	useEffect(() => {
 		socket.emit('getAllItemsIdsAndNames', user.token)
 		socket.on('getAllItemsIdsAndNames', (data) => {
+			console.log(
+				'\n---------------ids--------------\n',
+				data,
+				'\n-------------------------\n',
+			)
 			setSubjects(data)
 			setStudFinSubjects(data)
 			setStudAmSubjects(data)
@@ -354,8 +359,9 @@ const Statistics = () => {
 		<div className={s.subjectCheckboxes}>
 			{subjects.map((subject) => (
 				<label key={subject.id}>
-					<input
-						type="checkbox"
+					<Checkbox
+						// type="checkbox"
+
 						checked={selectedSubjects.some((s) => s.id === subject.id)}
 						onChange={(e) => {
 							if (e.target.checked) {
