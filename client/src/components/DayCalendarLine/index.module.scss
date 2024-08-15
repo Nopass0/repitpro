@@ -7,34 +7,41 @@ input {
 }
 
 .cancelStamp {
-	background-color: rgb(228, 122, 122);
-	color: white;
-	padding: 2px 5px;
-	border-radius: 4px;
-	width: 200px;
-	height: 20px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: 12px;
-	font-weight: bold;
+	position: relative;
+	left: 50%;
+	transform: translate(-50%, 0%) rotate(0deg); /* Centers and rotates the stamp */
+	width: 100%;
+	text-align: center;
+	font-size: 24px; /* Adjust font size as needed */
+	color: red; /* Stamp color */
+	opacity: 0.9; /* Slight transparency */
+	z-index: 10; /* Ensure it appears above other elements */
+	pointer-events: none;
+	
 }
 
-.cancleWrapper {
-	background-color: rgb(228, 122, 122);
+.cancelStamp p {
+	position: absolute;
+	// content: 'Отменено';
+	opacity: 0.6;
+	top: 30px;
+	display: block;
+	width: 100%;
+	height: 50px;
+	font-weight: bold;
+	letter-spacing: 25px; /* Adjust letter spacing for the stamp effect */
+
+	// background-image: url('../../assets/stampCanceled.svg');
+	// background: no-repeat center;
 }
 
 .BtnCancel {
-	background-color: #ff4d4f;
-	color: white;
+	// background-color: #ff4d4f;
+	color: red;
 	border: none;
 	padding: 5px 10px;
 	border-radius: 4px;
 	cursor: pointer;
-
-	&:hover {
-		background-color: #ff7875;
-	}
 }
 
 .wrapper {
@@ -48,10 +55,6 @@ input {
 
 	white-space: nowrap;
 	font-size: 16px;
-
-	&.cancelled {
-		opacity: 0.6;
-	}
 
 	.InputCstm {
 		input {
@@ -171,10 +174,15 @@ input {
 }
 
 .PopUp__wrapper {
+	width: 100%;
+	height: 100%;
 	position: absolute;
 	z-index: 100;
 }
 .PopUp {
+	max-width: 350px;
 	position: relative;
-	left: 350px;
+	top: 20%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }

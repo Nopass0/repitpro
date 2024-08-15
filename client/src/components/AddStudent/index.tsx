@@ -40,6 +40,8 @@ import TextAreaInputBlock from '../TextAreaInputBlock'
 import {TailSpin} from 'react-loader-spinner'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import PrePayRow from '../PrePayRow'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+
 interface IAddStudent {}
 interface IScheduleTimer {
 	id: number
@@ -75,6 +77,8 @@ const AddStudent = ({}: IAddStudent) => {
 	const [audios, setAudios] = useState<any>([])
 	const [prePayList, setPrePayList] = useState<IPrePayList[]>([])
 	const [editId, setEditId] = useState<number | null>(null)
+	const [deletedId, setDeletedId] = useState<number | null>(null)
+
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -123,6 +127,13 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const finishEditing = () => {
 		setEditId(null)
+	}
+
+	const startDelete = (id: number) => {
+		setDeletedId(id)
+	}
+	const finishDelete = () => {
+		setDeletedId(null)
 	}
 
 	useEffect(() => {
@@ -1192,7 +1203,7 @@ const AddStudent = ({}: IAddStudent) => {
 											addPrePayList(prePayCost, prePayDate, prePayList.length)
 										}
 										style={{marginLeft: '10px'}}>
-										<AddCircleIcon />
+										<CheckCircleIcon color='success' />
 									</button>
 								</div>
 
@@ -1312,6 +1323,9 @@ const AddStudent = ({}: IAddStudent) => {
 																				handlePrePayDelete(data.id)
 																			}
 																			finishEditing={finishEditing}
+																			onAcceptDelete={() => startDelete(data.id)}
+																			finishDelete={finishDelete}
+																			isDeleted={deletedId === data.id}
 																		/>
 																	</>
 																),

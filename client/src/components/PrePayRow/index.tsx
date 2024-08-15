@@ -16,6 +16,9 @@ interface IPrePayRow {
 	isEditing: boolean
 	onEditDone: (newDate: Date, newCost: string) => void
 	finishEditing: () => void
+	onAcceptDelete: () => void
+	isDeleted: boolean
+	finishDelete: () => void
 }
 
 const PrePayRow: React.FC<IPrePayRow> = ({
@@ -27,6 +30,9 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 	isEditing,
 	onEditDone,
 	finishEditing,
+	onAcceptDelete,
+	isDeleted,
+	finishDelete,
 }) => {
 	const [prePayCost, setPrePayCost] = useState<string>(cost)
 	const [prePayDate, setPrePayDate] = useState<any>(new Date(Date.now()))
@@ -100,12 +106,25 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 								}}>
 								{cost}₽
 							</p>
-							<button onClick={onEdit}>
-								<EditIcon />
-							</button>
-							<button onClick={onDelete}>
-								<DeleteIcon />
-							</button>
+							{!isDeleted ? (
+								<>
+									<button onClick={onEdit}>
+										<EditIcon />
+									</button>
+									<button onClick={onAcceptDelete}>
+										<DeleteIcon color="error" />
+									</button>
+								</>
+							) : (
+								<>
+									<button onClick={onDelete}>
+										<CheckCircleIcon color="success" />
+									</button>
+									<button onClick={finishDelete}>
+										<CancelIcon color="error" />
+									</button>
+								</>
+							)}
 						</>
 					) : (
 						<div className={s.ListObject}>
@@ -113,6 +132,7 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 								value={prePayDate}
 								onChange={(newDate) => handlePrePayDate(newDate)}
 								calendarId={`prePayId-${id}`}
+								NeedCalendarMonthIcon={false}
 							/>
 							<p
 								style={{
@@ -136,11 +156,11 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 								defaultValue={cost}
 							/>
 							<p>₽</p>
-							<button onClick={handleSave}>
-								<CheckCircleIcon />
+							<button style={{marginLeft: '5px'}} onClick={handleSave}>
+								<CheckCircleIcon color="success" />
 							</button>
 							<button onClick={finishEditing}>
-								<CancelIcon />
+								<CancelIcon color="error" />
 							</button>
 						</div>
 					)}

@@ -10,11 +10,12 @@ interface CalendarProps {
 	onChange: (value: Date) => void
 	calendarId?: string
 	disabled?: boolean
+	NeedCalendarMonthIcon?: boolean
 }
 
 const handleCalendarChange = (onChange, setIsOpen) => (newDate) => {
-	onChange(newDate);
-	setIsOpen(false);
+	onChange(newDate)
+	setIsOpen(false)
 }
 
 const MiniCalendar: React.FC<CalendarProps> = ({
@@ -22,6 +23,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 	onChange,
 	calendarId,
 	disabled,
+	NeedCalendarMonthIcon = true,
 }) => {
 	const [date, setDate] = useState()
 	const inputStart = useRef()
@@ -119,7 +121,6 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 		setTempYear((prevYear) => (prevMonth === 11 ? prevYear + 1 : prevYear))
 	}
 
-
 	const handleDateClick = (day: number) => {
 		if (selectedDate) {
 			const newDate = new Date(selectedDate)
@@ -192,7 +193,9 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 					ref={inputRef}
 					id={`minicalendar__input-id-${calendarId}`}
 				/>
-				<label htmlFor={`minicalendar__input-id-${calendarId}`}>
+				<label
+					style={{display: !NeedCalendarMonthIcon && 'none'}}
+					htmlFor={`minicalendar__input-id-${calendarId}`}>
 					<CalendarMonthIcon />
 				</label>
 			</div>

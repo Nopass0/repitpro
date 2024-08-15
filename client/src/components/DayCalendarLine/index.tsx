@@ -327,8 +327,12 @@ const DayCalendarLine = ({
 			<div
 				className={`${isCancel ? s.cancelled : ''}`}
 				style={{display: isDelete ? 'none' : 'block'}}>
-				{isCancel && <div className={s.cancelStamp}>Отменено</div>}
-				<div className={`${s.wrapper} ${isCancel && s.cancleWrapper}`}>
+				{isCancel && (
+					<div className={s.cancelStamp}>
+						<p>Отменено</p>
+					</div>
+				)}
+				<div className={`${s.wrapper} ${isCancel && s.cancelWrapper}`}>
 					<button
 						onClick={() => {
 							if (!editMode && type === 'student') {
@@ -499,7 +503,7 @@ const DayCalendarLine = ({
 						onClick={handleCancel}
 						className={s.BtnCancel}
 						style={{display: isCancel ? 'none' : 'block'}}>
-						<CancelIcon />
+						<DeleteOutlineIcon />
 					</button>
 				</div>
 

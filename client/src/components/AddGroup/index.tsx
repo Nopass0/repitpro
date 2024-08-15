@@ -43,6 +43,7 @@ import {TailSpin} from 'react-loader-spinner'
 import {preview} from 'vite'
 import PrePayRow from '../PrePayRow'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 interface IAddGroup {
 	className?: string
@@ -1332,7 +1333,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			)
 		}
 	}
-
+	const [deletedId, setDeletedId] = useState<number | null>(null)
 	function handlePrePayDelete(id: number) {
 		setPrePayListValue((prevList) => {
 			const updatedList = prevList.filter((item) => item.id !== id)
@@ -1358,6 +1359,13 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	const finishEditing = () => {
 		setEditId(null)
+	}
+	
+	const startDelete = (id: number) => {
+		setDeletedId(id)
+	}
+	const finishDelete = () => {
+		setDeletedId(null)
 	}
 
 	useEffect(() => {
@@ -2238,7 +2246,7 @@ const AddGroup = ({className}: IAddGroup) => {
 														)
 													}
 													style={{marginLeft: '10px'}}>
-													<AddCircleIcon />
+													<CheckCircleIcon color='success' />
 												</button>
 											</div>
 											<Line width="100%" className={s.Line} />
@@ -2526,6 +2534,9 @@ const AddGroup = ({className}: IAddGroup) => {
 																					handlePrePayDelete(data.id)
 																				}
 																				finishEditing={finishEditing}
+																				onAcceptDelete={() => startDelete(data.id)}
+																				finishDelete={finishDelete}
+																				isDeleted={deletedId === data.id}
 																			/>
 																		</>
 																	),

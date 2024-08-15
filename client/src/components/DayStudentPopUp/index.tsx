@@ -461,12 +461,12 @@ const DayStudentPopUp = ({
 	])
 
 	return (
-		<div
-			style={style}
-			className={`${s.wrapper} ${students.length > 0 && students[0].isCancel == true && s.cancleWrapper}`}>
+		<div style={style} className={`${s.wrapper} `}>
 			<div className={s.InfoBlock}>
 				{students.length > 0 && students[0].isCancel && (
-					<p className={s.cancelStamp}>Отменено</p>
+					<div className={s.cancelStamp}>
+						<p>Отменено</p>
+					</div>
 				)}
 
 				<div className={s.Header}>

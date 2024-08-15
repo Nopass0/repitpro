@@ -6,22 +6,32 @@ input {
 	outline: none;
 }
 
-.cancleWrapper {
-	background-color: rgb(228, 122, 122);
+.cancelStamp {
+	position: relative;
+	left: 50%;
+	transform: translate(-50%, 0%) rotate(0deg); /* Centers and rotates the stamp */
+	width: 100%;
+	text-align: center;
+	font-size: 24px; /* Adjust font size as needed */
+	color: red; /* Stamp color */
+	opacity: 0.9; /* Slight transparency */
+	z-index: 10; /* Ensure it appears above other elements */
+	pointer-events: none;
 }
 
-.cancelStamp {
-	background-color: rgb(228, 122, 122);
-	color: white;
-	padding: 2px 5px;
-	border-radius: 4px;
-	width: 200px;
-	height: 20px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: 12px;
+.cancelStamp p {
+	position: absolute;
+	font-size: 80px;
+	opacity: 0.8;
+	top: 100px;
+	display: block;
+	width: 100%;
+	height: 50px;
 	font-weight: bold;
+	letter-spacing: 25px; /* Adjust letter spacing for the stamp effect */
+
+	// background-image: url('../../assets/stampCanceled.svg');
+	// background: no-repeat center;
 }
 
 .wrapper {
