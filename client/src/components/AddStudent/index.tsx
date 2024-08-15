@@ -1200,7 +1200,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>₽</p>
 									<button
 										onClick={() =>
-											addPrePayList(prePayCost, prePayDate, prePayList.length)
+											addPrePayList(prePayCostValue, prePayDate, prePayList.length)
 										}
 										style={{marginLeft: '10px'}}>
 										<CheckCircleIcon color='success' />
