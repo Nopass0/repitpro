@@ -84,38 +84,6 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 }) => {
 	const [dataSet, setDataSet] = useState<any>(null)
 
-	const formatXAxisLabels = (value: string, index: number, values: any[]) => {
-		if (!DateStartState || !DateEndState || !value) return ''
-
-		const days = differenceInDays(DateEndState, DateStartState)
-		const months = differenceInMonths(DateEndState, DateStartState)
-		const years = differenceInYears(DateEndState, DateStartState)
-
-		let date
-		try {
-			date =
-				typeof value === 'number'
-					? new Date(value)
-					: parse(value, 'yyyy-MM-dd', new Date())
-		} catch (error) {
-			console.error('Error parsing date:', error)
-			return ''
-		}
-
-		if (isNaN(date.getTime())) {
-			console.error('Invalid date:', value)
-			return ''
-		}
-
-		if (days <= 31) {
-			return format(date, 'd MMM')
-		} else if (months <= 12) {
-			return format(date, 'MMM yyyy')
-		} else {
-			return format(date, 'yyyy')
-		}
-	}
-
 	const memoizedOptions = useMemo(
 		() => ({
 			responsive: true,
@@ -162,6 +130,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 
 	useEffect(() => {
 		if (data) {
+			console.log('Graph: ', data)
 			const formattedData = {
 				...data,
 				labels: data.labels.map((label: string | number) => {

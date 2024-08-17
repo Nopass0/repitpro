@@ -355,29 +355,59 @@ const Statistics = () => {
 		studRelatDateEnd,
 	])
 
-	const renderSubjectCheckboxes = (selectedSubjects, setSelectedSubjects) => (
-		<div className={s.subjectCheckboxes}>
-			{subjects.map((subject) => (
-				<label key={subject.id}>
-					<Checkbox
-						// type="checkbox"
+	const renderSubjectCheckboxes = (
+		selectedSubjects,
+		setSelectedSubjects,
+		data,
+	) => {
+		// Создаем объект с уникальными названиями предметов
+		const uniqueSubjects = subjects.reduce((acc, subject) => {
+			if (!acc[subject.itemName]) {
+				acc[subject.itemName] = subject
+			}
+			return acc
+		}, {})
 
-						checked={selectedSubjects.some((s) => s.id === subject.id)}
-						onChange={(e) => {
-							if (e.target.checked) {
-								setSelectedSubjects((prev) => [...prev, subject])
-							} else {
-								setSelectedSubjects((prev) =>
-									prev.filter((s) => s.id !== subject.id),
-								)
-							}
-						}}
-					/>
-					{subject.itemName}
-				</label>
-			))}
-		</div>
-	)
+		const handleCheckboxChange = (subjectName, isChecked) => {
+			if (isChecked) {
+				// Добавляем все предметы с данным названием
+				const subjectsToAdd = subjects.filter((s) => s.itemName === subjectName)
+				setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
+			} else {
+				// Удаляем все предметы с данным названием
+				setSelectedSubjects((prev) =>
+					prev.filter((s) => s.itemName !== subjectName),
+				)
+			}
+		}
+
+		return (
+			<div className={s.subjectCheckboxes}>
+				{Object.values(uniqueSubjects).map((subject) => {
+					const dataset = data.datasets.find(
+						(ds) => ds.label === subject.itemName,
+					)
+					const color = dataset?.backgroundColor || '#25991c'
+					const isChecked = selectedSubjects.some(
+						(s) => s.itemName === subject.itemName,
+					)
+
+					return (
+						<label key={subject.itemName}>
+							<Checkbox
+								style={{color}}
+								checked={isChecked}
+								onChange={(e) =>
+									handleCheckboxChange(subject.itemName, e.target.checked)
+								}
+							/>
+							{subject.itemName}
+						</label>
+					)
+				})}
+			</div>
+		)
+	}
 
 	return (
 		<div className={s.wrapper}>
@@ -421,7 +451,11 @@ const Statistics = () => {
 					optionsBar={optionsBar}
 					title="Ученики-Финансы"
 					renderCheckboxes={() =>
-						renderSubjectCheckboxes(studFinSubjects, setStudFinSubjects)
+						renderSubjectCheckboxes(
+							studFinSubjects,
+							setStudFinSubjects,
+							financeData,
+						)
 					}
 				/>
 				<Line width="100%" className={s.Line} />
@@ -477,7 +511,11 @@ const Statistics = () => {
 					optionsBar={optionsBar}
 					title="Ученики-Занятия"
 					renderCheckboxes={() =>
-						renderSubjectCheckboxes(studLesSubjects, setStudLesSubjects)
+						renderSubjectCheckboxes(
+							studLesSubjects,
+							setStudLesSubjects,
+							studentCountItemsData,
+						)
 					}
 				/>
 				<Line width="100%" className={s.Line} />

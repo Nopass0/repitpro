@@ -1021,6 +1021,32 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [prePayList])
 
+	useEffect(() => {
+		if (open && listRef.current) {
+			const nearestDateElement = findNearestDateElement()
+			if (nearestDateElement) {
+				nearestDateElement.scrollIntoView({behavior: 'smooth', block: 'center'})
+			}
+		}
+	}, [open])
+
+	const findNearestDateElement = () => {
+		const today = new Date()
+		let nearestDateDiff = Infinity
+		let nearestDateElement = null
+
+		historyLesson.forEach((lesson, index) => {
+			const lessonDate = new Date(lesson.date)
+			const diff = Math.abs(today.getTime() - lessonDate.getTime())
+			if (diff < nearestDateDiff) {
+				nearestDateDiff = diff
+				nearestDateElement = document.getElementById(`history-lesson-${index}`)
+			}
+		})
+
+		return nearestDateElement
+	}
+
 	return (
 		<>
 			<button
@@ -1203,7 +1229,7 @@ const AddStudent = ({}: IAddStudent) => {
 											addPrePayList(prePayCost, prePayDate, prePayList.length)
 										}
 										style={{marginLeft: '10px'}}>
-										<CheckCircleIcon color='success' />
+										<CheckCircleIcon color="success" />
 									</button>
 								</div>
 
@@ -1232,7 +1258,10 @@ const AddStudent = ({}: IAddStudent) => {
 													{historyLesson
 														.sort((a, b) => new Date(b.date) - new Date(a.date))
 														.map((lesson: any, index: number) => (
-															<div key={index} className={s.ListObject}>
+															<div
+																id={`history-lesson-${index}`}
+																key={index}
+																className={s.ListObject}>
 																<p
 																	style={{
 																		fontWeight: '500',
@@ -1323,7 +1352,9 @@ const AddStudent = ({}: IAddStudent) => {
 																				handlePrePayDelete(data.id)
 																			}
 																			finishEditing={finishEditing}
-																			onAcceptDelete={() => startDelete(data.id)}
+																			onAcceptDelete={() =>
+																				startDelete(data.id)
+																			}
 																			finishDelete={finishDelete}
 																			isDeleted={deletedId === data.id}
 																		/>
