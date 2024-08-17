@@ -1021,6 +1021,53 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [prePayList])
 
+	// useEffect(() => {
+	// 	if (open && listRef.current) {
+	// 		const nearestDateElement = findNearestDateElement()
+	// 		if (nearestDateElement) {
+	// 			nearestDateElement.scrollIntoView({behavior: 'smooth', block: 'center'})
+	// 		}
+	// 	}
+	// }, [open])
+
+	// const findNearestDateElement = () => {
+	// 	const today = new Date()
+	// 	let nearestDateDiff = Infinity
+	// 	let nearestDateElement = null
+
+	// 	historyLesson.forEach((lesson, index) => {
+	// 		const lessonDate = new Date(lesson.date)
+	// 		const diff = Math.abs(today.getTime() - lessonDate.getTime())
+	// 		if (diff < nearestDateDiff) {
+	// 			nearestDateDiff = diff
+	// 			nearestDateElement = document.getElementById(`history-lesson-${index}`)
+	// 		}
+	// 	})
+
+	// 	return nearestDateElement
+	// }
+
+	const [combinedHistory, setCombinedHistory] = useState([])
+	// const listRef = useRef(null)
+
+	useEffect(() => {
+		const combined = [
+			...historyLesson.map((lesson) => ({
+				...lesson,
+				type: 'lesson',
+				date: new Date(lesson.date),
+			})),
+			...prePayList.map((prepay) => ({
+				...prepay,
+				type: 'prepayment',
+				date: new Date(prepay.date),
+			})),
+		]
+
+		const sorted = combined.sort((a, b) => b.date - a.date)
+		setCombinedHistory(sorted)
+	}, [historyLesson, prePayList])
+
 	useEffect(() => {
 		if (open && listRef.current) {
 			const nearestDateElement = findNearestDateElement()
@@ -1028,19 +1075,19 @@ const AddStudent = ({}: IAddStudent) => {
 				nearestDateElement.scrollIntoView({behavior: 'smooth', block: 'center'})
 			}
 		}
-	}, [open])
+	}, [open, combinedHistory])
 
 	const findNearestDateElement = () => {
 		const today = new Date()
 		let nearestDateDiff = Infinity
 		let nearestDateElement = null
 
-		historyLesson.forEach((lesson, index) => {
-			const lessonDate = new Date(lesson.date)
-			const diff = Math.abs(today.getTime() - lessonDate.getTime())
+		combinedHistory.forEach((item, index) => {
+			const itemDate = new Date(item.date)
+			const diff = Math.abs(today.getTime() - itemDate.getTime())
 			if (diff < nearestDateDiff) {
 				nearestDateDiff = diff
-				nearestDateElement = document.getElementById(`history-lesson-${index}`)
+				nearestDateElement = document.getElementById(`history-item-${index}`)
 			}
 		})
 
@@ -1226,7 +1273,11 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>₽</p>
 									<button
 										onClick={() =>
-											addPrePayList(prePayCostValue, prePayDate, prePayList.length)
+											addPrePayList(
+												prePayCostValue,
+												prePayDate,
+												prePayList.length,
+											)
 										}
 										style={{marginLeft: '10px'}}>
 										<CheckCircleIcon color="success" />
@@ -1252,124 +1303,124 @@ const AddStudent = ({}: IAddStudent) => {
 										disablePadding
 										ref={collapseRef}>
 										<div className={s.ListObjectWrapper}>
-											{(historyLesson ?? historyLesson.length !== 0) ||
-											prePayCost !== '' ? (
+											{combinedHistory.length > 0 ? (
 												<>
-													{historyLesson
-														.sort((a, b) => new Date(b.date) - new Date(a.date))
-														.map((lesson: any, index: number) => (
-															<div
-																id={`history-lesson-${index}`}
-																key={index}
-																className={s.ListObject}>
-																<p
+													{combinedHistory.map((item, index) => (
+														<div
+															id={`history-item-${index}`}
+															key={index}
+															className={s.ListObject}>
+															<p
+																style={{
+																	fontWeight: '500',
+																	fontSize: '14px',
+																	marginRight: '5px',
+																	display: 'flex',
+																	flexDirection: 'row',
+																	alignItems: 'center',
+																}}>
+																<div
 																	style={{
-																		fontWeight: '500',
-																		fontSize: '14px',
+																		backgroundColor:
+																			item.type === 'lesson'
+																				? hashToColor(
+																						hashString(item.itemName || ''),
+																					)
+																				: '#4CAF50', // Зеленый цвет для предоплат
+																		width: '10px',
+																		height: '35px',
+																		borderTopLeftRadius: '8px',
+																		borderBottomLeftRadius: '8px',
 																		marginRight: '5px',
-																		display: 'flex',
-																		flexDirection: 'row',
-																		alignItems: 'center',
-																	}}>
-																	<div
+																	}}></div>
+																{formatDate(item.date)}
+															</p>
+															{item.type === 'lesson' ? (
+																<>
+																	<CheckBox
+																		onChange={() =>
+																			setHistoryLessonIsDone(
+																				historyLesson.findIndex(
+																					(lesson) =>
+																						lesson.date.getTime() ===
+																						item.date.getTime(),
+																				),
+																				!item.isDone,
+																			)
+																		}
+																		size="16px"
+																		checked={item.isDone}
+																	/>
+																	<p
 																		style={{
-																			backgroundColor: hashToColor(
-																				hashString(lesson.itemName || ''),
-																			),
-																			width: '10px',
-																			height: '35px',
-																			borderTopLeftRadius: '8px',
-																			borderBottomLeftRadius: '8px',
-																			marginRight: '5px',
-																		}}></div>
-																	{formatDate(lesson.date)}
-																</p>
-																<CheckBox
-																	onChange={() =>
-																		setHistoryLessonIsDone(
-																			index,
-																			!lesson.isDone,
-																		)
-																	}
-																	size="16px"
-																	checked={lesson.isDone}
-																/>
-																<p
-																	style={{
-																		fontWeight: '300',
-																		fontSize: '16px',
-																		width: '95px',
-																		minWidth: '95px',
-																		maxWidth: '95px',
-																		whiteSpace: 'nowrap',
-																		overflow: 'hidden',
-																		textOverflow: 'ellipsis',
-																	}}>
-																	{lesson.itemName}
-																</p>
-
-																<p
-																	style={{
-																		fontSize: '14px',
-																		width: '100px',
-																		textAlign: 'end',
-																		textOverflow: 'ellipsis',
-																	}}>
-																	{lesson.price}₽
-																</p>
-																<CheckBox
-																	onChange={() =>
-																		setHistoryLessonIsPaid(
-																			index,
-																			!lesson.isPaid,
-																		)
-																	}
-																	size="16px"
-																	checked={lesson.isPaid}
-																/>
-															</div>
-														))}
-													<Line width="100%" className={s.Line} />
-													{prePayList.length > 0 && (
-														<>
-															{prePayList.map(
-																(data: IPrePayList, index: number) => (
-																	<>
-																		<PrePayRow
-																			id={data.id}
-																			cost={data.cost}
-																			date={data.date}
-																			isEditing={editId === data.id}
-																			onEdit={() => startEditing(data.id)}
-																			onEditDone={(newDate, newCost) =>
-																				handlePrePayEdit(
-																					data.id,
-																					newDate,
-																					newCost,
-																				)
-																			}
-																			onDelete={() =>
-																				handlePrePayDelete(data.id)
-																			}
-																			finishEditing={finishEditing}
-																			onAcceptDelete={() =>
-																				startDelete(data.id)
-																			}
-																			finishDelete={finishDelete}
-																			isDeleted={deletedId === data.id}
-																		/>
-																	</>
-																),
+																			fontWeight: '300',
+																			fontSize: '16px',
+																			width: '95px',
+																			minWidth: '95px',
+																			maxWidth: '95px',
+																			whiteSpace: 'nowrap',
+																			overflow: 'hidden',
+																			textOverflow: 'ellipsis',
+																		}}>
+																		{item.itemName}
+																	</p>
+																	<p
+																		style={{
+																			fontSize: '14px',
+																			width: '100px',
+																			textAlign: 'end',
+																			textOverflow: 'ellipsis',
+																		}}>
+																		{item.price}₽
+																	</p>
+																	<CheckBox
+																		onChange={() =>
+																			setHistoryLessonIsPaid(
+																				historyLesson.findIndex(
+																					(lesson) =>
+																						lesson.date.getTime() ===
+																						item.date.getTime(),
+																				),
+																				!item.isPaid,
+																			)
+																		}
+																		size="16px"
+																		checked={item.isPaid}
+																	/>
+																</>
+															) : (
+																<>
+																	<p
+																		style={{
+																			fontWeight: '300',
+																			fontSize: '16px',
+																			width: '95px',
+																			minWidth: '95px',
+																			maxWidth: '95px',
+																			whiteSpace: 'nowrap',
+																			overflow: 'hidden',
+																			textOverflow: 'ellipsis',
+																		}}>
+																		Предоплата
+																	</p>
+																	<p
+																		style={{
+																			fontSize: '14px',
+																			width: '100px',
+																			textAlign: 'end',
+																			textOverflow: 'ellipsis',
+																		}}>
+																		{item.cost}₽
+																	</p>
+																</>
 															)}
-														</>
-													)}
+														</div>
+													))}
 												</>
 											) : (
-												<>
-													<div className={s.ListNoInfo}>
-														<p>Информации нет</p>
-													</div>
-												</>
+												<div className={s.ListNoInfo}>
+													<p>Информации нет</p>
+												</div>
 											)}
 										</div>
 									</mui.List>
