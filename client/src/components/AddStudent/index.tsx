@@ -1021,34 +1021,33 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [prePayList])
 
-	// useEffect(() => {
-	// 	if (open && listRef.current) {
-	// 		const nearestDateElement = findNearestDateElement()
-	// 		if (nearestDateElement) {
-	// 			nearestDateElement.scrollIntoView({behavior: 'smooth', block: 'center'})
-	// 		}
-	// 	}
-	// }, [open])
+	useEffect(() => {
+		if (open && listRef.current) {
+			const nearestDateElement = findNearestDateElement()
+			if (nearestDateElement) {
+				nearestDateElement.scrollIntoView({behavior: 'smooth', block: 'center'})
+			}
+		}
+	}, [open])
 
-	// const findNearestDateElement = () => {
-	// 	const today = new Date()
-	// 	let nearestDateDiff = Infinity
-	// 	let nearestDateElement = null
+	const findNearestDateElement = () => {
+		const today = new Date()
+		let nearestDateDiff = Infinity
+		let nearestDateElement = null
 
-	// 	historyLesson.forEach((lesson, index) => {
-	// 		const lessonDate = new Date(lesson.date)
-	// 		const diff = Math.abs(today.getTime() - lessonDate.getTime())
-	// 		if (diff < nearestDateDiff) {
-	// 			nearestDateDiff = diff
-	// 			nearestDateElement = document.getElementById(`history-lesson-${index}`)
-	// 		}
-	// 	})
+		historyLesson.forEach((lesson, index) => {
+			const lessonDate = new Date(lesson.date)
+			const diff = Math.abs(today.getTime() - lessonDate.getTime())
+			if (diff < nearestDateDiff) {
+				nearestDateDiff = diff
+				nearestDateElement = document.getElementById(`history-lesson-${index}`)
+			}
+		})
 
-	// 	return nearestDateElement
-	// }
+		return nearestDateElement
+	}
 
 	const [combinedHistory, setCombinedHistory] = useState([])
-	// const listRef = useRef(null)
 
 	useEffect(() => {
 		const combined = [
@@ -1067,32 +1066,6 @@ const AddStudent = ({}: IAddStudent) => {
 		const sorted = combined.sort((a, b) => b.date - a.date)
 		setCombinedHistory(sorted)
 	}, [historyLesson, prePayList])
-
-	useEffect(() => {
-		if (open && listRef.current) {
-			const nearestDateElement = findNearestDateElement()
-			if (nearestDateElement) {
-				nearestDateElement.scrollIntoView({behavior: 'smooth', block: 'center'})
-			}
-		}
-	}, [open, combinedHistory])
-
-	const findNearestDateElement = () => {
-		const today = new Date()
-		let nearestDateDiff = Infinity
-		let nearestDateElement = null
-
-		combinedHistory.forEach((item, index) => {
-			const itemDate = new Date(item.date)
-			const diff = Math.abs(today.getTime() - itemDate.getTime())
-			if (diff < nearestDateDiff) {
-				nearestDateDiff = diff
-				nearestDateElement = document.getElementById(`history-item-${index}`)
-			}
-		})
-
-		return nearestDateElement
-	}
 
 	return (
 		<>
