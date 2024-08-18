@@ -507,6 +507,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [open, setOpen] = useState(false)
 
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
+	
 	const [lessonDuration, setLessonDuration] = useState()
 
 	const handleClick_delete = (itemIndex: number, id: number) => {
@@ -1930,6 +1931,7 @@ const AddStudent = ({}: IAddStudent) => {
 																			{timeline.active &&
 																				!timeline.editingEnd && (
 																					<TimePicker
+																					addBlock
 																						title="Начало занятий"
 																						onExit={() =>
 																							closeTimePicker(
