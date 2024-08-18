@@ -11,12 +11,17 @@ import {useSelector} from 'react-redux'
 
 interface IFileNLinks {
 	className?: string
-	alreadyUploaded?: {file: any; name: string; size: number; type: string}[]
+	alreadyUploaded?: {
+		id?: string
+		name: string
+		size?: number
+		type: string
+		isLink?: boolean
+	}[]
 	callback?: (file: any, name: string, size: number, type: string) => void
 	typeCard?: string
-	submitLinks?: () => void
-	deleteLink?: (link: string, index: number) => void
-	linksArray?: string[]
+	submitLinks?: (links: string[]) => void
+	deleteItem?: (item: any, index: number) => void
 	fileInputId?: string
 }
 
@@ -26,25 +31,18 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	callback,
 	typeCard = 'student',
 	submitLinks,
-	linksArray,
-	deleteLink,
+	deleteItem,
 	fileInputId,
 }: IFileNLinks) => {
 	const [open, setOpen] = useState<boolean>(false)
-	const [files, setFiles] = useState<any>([])
-	const [links, setLinks] = useState<string[]>([])
+	const [items, setItems] = useState<any[]>([])
 	const [contextMenu, setContextMenu] = useState<{
 		mouseX: number
 		mouseY: number
-	}>({mouseX: 0, mouseY: 0})
-	const [pasteLinkModalOpen, setPasteLinkModalOpen] = useState<boolean>(false)
-	const [linkValue, setLinkValue] = useState<string>('')
+	} | null>(null)
 
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
-
-	const modalRef = useRef(null)
-	const inputRef = useRef<HTMLInputElement>(null)
 
 	const handleClick = () => {
 		setOpen(!open)
@@ -58,19 +56,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		})
 	}
 
-	const handleClickOutside = (event: MouseEvent) => {
-		if (modalRef.current && !modalRef.current.contains(event.target)) {
-			setContextMenu({mouseX: 0, mouseY: 0})
-		}
-	}
-
-	useEffect(() => {
-		document.addEventListener('mousedown', handleClickOutside)
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside)
-		}
-	}, [])
-
 	const getFileLinkById = (id: string) => {
 		const baseLinkToThisSite = `${window.location.origin}:3000`
 		window.open(`${baseLinkToThisSite}/files/${id}`, '_blank')
@@ -81,33 +66,33 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		window.open(url, '')
 	}
 
-	const handlePaste = (event: ClipboardEvent) => {
-		const pastedText = event.clipboardData?.getData('Text')
-		if (pastedText) {
-			setLinkValue(pastedText)
+	const handleAddLink = async () => {
+		try {
+			const text = await navigator.clipboard.readText()
+			if (text && text.trim() !== '') {
+				const newItem = {name: text, isLink: true, type: 'link'}
+				setItems((prevItems) => [...prevItems, newItem])
+				submitLinks &&
+					submitLinks([
+						...items.filter((item) => item.isLink).map((item) => item.name),
+						text,
+					])
+			} else {
+				alert('Буфер обмена пуст или не содержит текст.')
+			}
+		} catch (err) {
+			console.error('Failed to read clipboard contents: ', err)
+			alert('Не удалось прочитать содержимое буфера обмена.')
 		}
-	}
-
-	const handleSubmit = () => {
-		setLinks((prevLinks) => [...prevLinks, linkValue])
-		submitLinks && submitLinks([...links, linkValue])
-		setLinkValue('')
-		setPasteLinkModalOpen(false)
+		setContextMenu(null)
 	}
 
 	useEffect(() => {
-		linksArray && setLinks(linksArray)
-	}, [linksArray])
-
-	useEffect(() => {
-		console.log(
-			'\n------------alreadyUploaded----------------\n',
-			alreadyUploaded,
-			'\n------------alreadyUploaded----------------\n',
-		)
-		setFiles(alreadyUploaded)
-		console.log(files)
+		if (alreadyUploaded) {
+			setItems(alreadyUploaded)
+		}
 	}, [alreadyUploaded])
+
 	return (
 		<>
 			<ListItemButton
@@ -125,16 +110,16 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					style={{display: 'none'}}
 					onChange={(e) => {
 						const DefFiles = Array.from(e.target.files)
-
-						DefFiles.forEach((file) => {
+						DefFiles.forEach((file: any) => {
 							callback && callback(file, file.name, file.type, file.size)
-							setFiles((prevFiles: any) => [
-								...prevFiles,
+							setItems((prevItems) => [
+								...prevItems,
 								{
 									name: file.name,
 									type: file.type,
 									size: file.size,
 									file: file,
+									isLink: false,
 								},
 							])
 						})
@@ -164,88 +149,53 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					component="div"
 					disablePadding>
 					<Line width="100%" className={s.Line} />
-					<div className={s.FileList}>
-						{files.length ? (
-							files.map((file: any, index: number) => (
-								<>
+					<div className={s.ItemList}>
+						{items.length ? (
+							items.map((item: any, index: number) => (
+								<React.Fragment key={index}>
 									<div
-										key={index}
-										className={s.FileItem}
+										className={s.Item}
 										onClick={() => {
-											if (file.id) {
-												getFileLinkById(file.id)
+											if (item.isLink) {
+												window.open(item.name, '_blank')
+											} else if (item.id) {
+												getFileLinkById(item.id)
 											} else {
-												openLocalFile(file.file)
+												openLocalFile(item.file)
 											}
 										}}>
 										<p>
-											{file.name.length > 20
-												? `${file.name.slice(0, 20)}...`
-												: file.name}
+											{item.name.length > 20
+												? `${item.name.slice(0, 20)}...`
+												: item.name}
 										</p>
 										<button
-											onClick={() => {
-												setFiles((prevFiles) =>
-													prevFiles.filter((_, i) => i !== index),
+											onClick={(e) => {
+												e.stopPropagation()
+												setItems((prevItems) =>
+													prevItems.filter((_, i) => i !== index),
 												)
-												sendDelete(file.id)
+												if (item.id) sendDelete(item.id)
+												deleteItem && deleteItem(item, index)
 											}}>
 											<DeleteOutlineIcon />
 										</button>
 									</div>
-									{index === files.length - 1 && (
-										<Line width="100%" className={s.FileLine} />
+									{index !== items.length - 1 && (
+										<Line width="100%" className={s.ItemLine} />
 									)}
-								</>
+								</React.Fragment>
 							))
 						) : (
-							<>
-								<p style={{textAlign: 'center', width: '100%'}}>
-									Список файлов пока пуст
-								</p>
-							</>
-						)}
-					</div>
-					<Line width="100%" className={s.Line} />
-					<div className={s.LinkList}>
-						{links.length ? (
-							links.map((link: string, index: number) => (
-								<>
-									<div key={index} className={s.LinkItem}>
-										<a href={link} target="_blank" rel="noopener noreferrer">
-											{link}
-										</a>
-										<button
-											onClick={() => {
-												setLinks((prevLinks) =>
-													prevLinks.filter((_, i) => i !== index),
-												)
-												deleteLink && deleteLink(link, index)
-											}}>
-											<DeleteOutlineIcon />
-										</button>
-									</div>
-									{index === links.length - 1 && (
-										<Line width="100%" className={s.FileLine} />
-									)}
-								</>
-							))
-						) : (
-							<>
-								<p style={{textAlign: 'center', width: '100%'}}>
-									Список ссылок пока пуст
-								</p>
-							</>
+							<p style={{textAlign: 'center', width: '100%'}}>
+								Список файлов и ссылок пока пуст
+							</p>
 						)}
 					</div>
 				</List>
 			</Collapse>
-			<button onClick={() => setPasteLinkModalOpen(true)}>
-				Вставить ссылку из буфера
-			</button>
-			{contextMenu.mouseX !== 0 && contextMenu.mouseY !== 0 && (
+			{contextMenu && (
 				<div
-					ref={modalRef}
 					style={{
 						position: 'absolute',
 						left: contextMenu.mouseX,
@@ -255,21 +205,13 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 						border: '1px solid gray',
 						boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
 					}}>
-					<input
-						ref={inputRef}
-						type="text"
-						value={linkValue}
-						onChange={(e) => setLinkValue(e.target.value)}
-						onPaste={handlePaste}
-						placeholder="Вставьте ссылку..."
-					/>
-					<button onClick={handleSubmit} style={{marginRight: '10px'}}>
-						Отправить
+					<p>Вставить ссылку из буфера обмена?</p>
+					<button onClick={handleAddLink} style={{marginRight: '10px'}}>
+						Да
 					</button>
-					<button onClick={() => setPasteLinkModalOpen(false)}>Отменить</button>
+					<button onClick={() => setContextMenu(null)}>Нет</button>
 				</div>
 			)}
-			<input type="file" style={{display: 'none'}} />
 		</>
 	)
 }
