@@ -251,7 +251,7 @@ const DayCalendarPopUp = ({
 				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
-				lessonsPrice: students[i].costOneLesson,
+				lessonsPrice: students[i].costOneLesson || 0,
 				studentName: students[i].nameStudent,
 				itemName: students[i].itemName,
 				typeLesson: students[i].typeLesson,
@@ -378,7 +378,7 @@ const DayCalendarPopUp = ({
 					{
 						id: data.created,
 						nameStudent: '',
-						costOneLesson: '',
+						costOneLesson: '0',
 						itemName: '',
 						studentId: '',
 						typeLesson: '1',

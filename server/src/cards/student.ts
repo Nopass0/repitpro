@@ -2983,6 +2983,7 @@ export async function createStudentSchedule(data: any, socket: any) {
         todayProgramStudent: "",
         targetLesson: "",
         programLesson: "",
+
         typeLesson: 0,
         placeLesson: "",
         timeLesson: "",
