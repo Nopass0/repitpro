@@ -78,7 +78,9 @@ const AddStudent = ({}: IAddStudent) => {
 	const [prePayList, setPrePayList] = useState<IPrePayList[]>([])
 	const [editId, setEditId] = useState<number | null>(null)
 	const [deletedId, setDeletedId] = useState<number | null>(null)
-
+	const addStudentExit = useSelector((state: any) => state.addStudentExit)
+	const addGroupExit = useSelector((state: any) => state.addGroupExit)
+	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -1068,6 +1070,87 @@ const AddStudent = ({}: IAddStudent) => {
 		setCombinedHistory(sorted)
 	}, [historyLesson, prePayList])
 
+	const handleAddStudentExit = () => {
+		dispatch({
+			type: 'SET_CURRENT_OPENED_STUDENT',
+			payload: '',
+		})
+
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		socket.emit('getGroupByStudentId', {
+			token: token,
+			studentId: '',
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddStudent,
+			})
+		}, 10)
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_STUDENT_EXIT',
+			payload: false,
+		})
+	}
+
+	const handleAddGroupExit = () => {
+		dispatch({
+			type: 'SET_CURRENT_OPENED_GROUP',
+			payload: '',
+		})
+		socket.emit('getGroupById', {token: token, groupId: ''})
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddGroup,
+			})
+		}, 10)
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+	}
+
+	const handleAddClientExit = () => {
+		dispatch({
+			type: 'SET_CURRENT_OPENED_CLIENT',
+			payload: '',
+		})
+		socket.emit('getClientById', {token: token, clientId: ''})
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddClient,
+			})
+		}, 10)
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
+	}
 	return (
 		<>
 			<button
@@ -1284,33 +1367,33 @@ const AddStudent = ({}: IAddStudent) => {
 															id={`history-item-${index}`}
 															key={index}
 															className={s.ListObject}>
-															<p
-																style={{
-																	fontWeight: '500',
-																	fontSize: '14px',
-																	marginRight: '5px',
-																	display: 'flex',
-																	flexDirection: 'row',
-																	alignItems: 'center',
-																}}>
-																<div
-																	style={{
-																		backgroundColor:
-																			item.type === 'lesson'
-																				? hashToColor(
-																						hashString(item.itemName || ''),
-																					)
-																				: '#4CAF50', // Зеленый цвет для предоплат
-																		width: '10px',
-																		height: '35px',
-																		borderTopLeftRadius: '8px',
-																		borderBottomLeftRadius: '8px',
-																		marginRight: '5px',
-																	}}></div>
-																{formatDate(item.date)}
-															</p>
 															{item.type === 'lesson' ? (
 																<>
+																	<p
+																		style={{
+																			fontWeight: '500',
+																			fontSize: '14px',
+																			marginRight: '5px',
+																			display: 'flex',
+																			flexDirection: 'row',
+																			alignItems: 'center',
+																		}}>
+																		<div
+																			style={{
+																				backgroundColor:
+																					item.type === 'lesson'
+																						? hashToColor(
+																								hashString(item.itemName || ''),
+																							)
+																						: '#4CAF50', // Зеленый цвет для предоплат
+																				width: '10px',
+																				height: '35px',
+																				borderTopLeftRadius: '8px',
+																				borderBottomLeftRadius: '8px',
+																				marginRight: '5px',
+																			}}></div>
+																		{formatDate(item.date)}
+																	</p>
 																	<CheckBox
 																		onChange={() =>
 																			setHistoryLessonIsDone(
@@ -1364,28 +1447,25 @@ const AddStudent = ({}: IAddStudent) => {
 																</>
 															) : (
 																<>
-																	<p
-																		style={{
-																			fontWeight: '300',
-																			fontSize: '16px',
-																			width: '95px',
-																			minWidth: '95px',
-																			maxWidth: '95px',
-																			whiteSpace: 'nowrap',
-																			overflow: 'hidden',
-																			textOverflow: 'ellipsis',
-																		}}>
-																		Предоплата
-																	</p>
-																	<p
-																		style={{
-																			fontSize: '14px',
-																			width: '100px',
-																			textAlign: 'end',
-																			textOverflow: 'ellipsis',
-																		}}>
-																		{item.cost}₽
-																	</p>
+																	<PrePayRow
+																		id={item.id}
+																		cost={item.cost}
+																		date={item.date}
+																		isEditing={editId === item.id}
+																		onEdit={() => startEditing(item.id)}
+																		onEditDone={(newDate, newCost) =>
+																			handlePrePayEdit(
+																				item.id,
+																				newDate,
+																				newCost,
+																			)
+																		}
+																		onDelete={() => handlePrePayDelete(item.id)}
+																		finishEditing={finishEditing}
+																		onAcceptDelete={() => startDelete(item.id)}
+																		finishDelete={finishDelete}
+																		isDeleted={deletedId === item.id}
+																	/>
 																</>
 															)}
 														</div>
@@ -2125,16 +2205,28 @@ const AddStudent = ({}: IAddStudent) => {
 						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
-							dispatch({type: 'SET_EDITED_CARDS', payload: false})
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.MainPage,
-							})
-							dispatch({
-								type: 'SET_PAGE_POPUP_EXIT',
-								payload: EPagePopUpExit.None,
-							})
-							navigate('../')
+							if (!addStudentExit && !addGroupExit && !addClientExit) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.MainPage,
+								})
+								dispatch({
+									type: 'SET_PAGE_POPUP_EXIT',
+									payload: EPagePopUpExit.None,
+								})
+								navigate('../')
+							}
+
+							if (addStudentExit) {
+								handleAddStudentExit()
+							}
+							if (addGroupExit) {
+								handleAddGroupExit()
+							}
+							if (addClientExit) {
+								handleAddClientExit()
+							}
 						}}
 						no={() =>
 							dispatch({

@@ -1,4 +1,4 @@
-import { SelectOption} from '@mui/base'
+import {SelectOption} from '@mui/base'
 import * as mui from '@mui/material'
 import s from './index.module.scss'
 import logo from '../../assets/Logo.svg'
@@ -7,7 +7,7 @@ import DataSlidePicker from '../DataSlidePicker'
 import Exit from '../../assets/exit'
 import {Link, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {ELeftMenuPage, EPagePopUpExit} from '../../types'
 import mobileLogo from '../../assets/mobileLogo.svg'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -43,7 +43,6 @@ const Header = ({}: IHeader) => {
 			type: 'SET_LEFT_MENU_PAGE',
 			payload: ELeftMenuPage.MainPage,
 		})
-
 		socket.emit('getGroupByStudentId', {
 			token: token,
 			studentId: '',
@@ -158,7 +157,22 @@ const Header = ({}: IHeader) => {
 								selected: s.muiMenuItemSelected,
 							}}
 							onClick={() => {
-								addStudent()
+								if (
+									ELeftMenuPage.MainPage !== EleftMenu &&
+									ELeftMenuPage.MyCabinet !== EleftMenu &&
+									editedCards
+								) {
+									dispatch({
+										type: 'SET_ADD_STUDENT_EXIT',
+										payload: true,
+									})
+									dispatch({
+										type: 'SET_PAGE_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
+									})
+								} else {
+									addStudent()
+								}
 							}}
 							value={1}>
 							Ученика
@@ -169,7 +183,22 @@ const Header = ({}: IHeader) => {
 								selected: s.muiMenuItemSelected,
 							}}
 							onClick={() => {
-								addGroup()
+								if (
+									ELeftMenuPage.MainPage !== EleftMenu &&
+									ELeftMenuPage.MyCabinet !== EleftMenu &&
+									editedCards
+								) {
+									dispatch({
+										type: 'SET_ADD_GROUP_EXIT',
+										payload: true,
+									})
+									dispatch({
+										type: 'SET_PAGE_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
+									})
+								} else {
+									addGroup()
+								}
 							}}
 							value={2}>
 							Группу
@@ -180,7 +209,22 @@ const Header = ({}: IHeader) => {
 								selected: s.muiMenuItemSelected,
 							}}
 							onClick={() => {
-								addClient()
+								if (
+									ELeftMenuPage.MainPage !== EleftMenu &&
+									ELeftMenuPage.MyCabinet !== EleftMenu &&
+									editedCards
+								) {
+									dispatch({
+										type: 'SET_ADD_CLIENT_EXIT',
+										payload: true,
+									})
+									dispatch({
+										type: 'SET_PAGE_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
+									})
+								} else {
+									addClient()
+								}
 							}}
 							value={3}>
 							Заказчика

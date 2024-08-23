@@ -1214,7 +1214,7 @@ export async function getStudentsByDate(
           id: student.id,
           nameStudent: student.nameStudent,
           costOneLesson: student.costOneLesson,
-          prePay: student.prePay,
+          prePay: student.prePay || [],
           targetLessonStudent: student.targetLessonStudent,
           todayProgramStudent: student.todayProgramStudent,
         })),

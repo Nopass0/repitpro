@@ -42,6 +42,9 @@ const defaultState = {
 	currentPopUpType: ECurrentDayPopUp.None,
 	dayStudents: [],
 	editedCards: false,
+	addStudentExit: false,
+	addGroupExit: false,
+	addClientExit: false,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -131,6 +134,12 @@ const reducer = (state = defaultState, action: any) => {
 
 		case 'SET_EDITED_CARDS':
 			return {...state, editedCards: action.payload}
+		case 'SET_ADD_STUDENT_EXIT':
+			return {...state, addStudentExit: action.payload}
+		case 'SET_ADD_GROUP_EXIT':
+			return {...state, addGroupExit: action.payload}
+		case 'SET_ADD_CLIENT_EXIT':
+			return {...state, addClientExit: action.payload}
 		default:
 			return state
 	}

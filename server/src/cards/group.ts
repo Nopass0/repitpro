@@ -811,6 +811,7 @@ export async function addGroup(data, socket) {
               ? new Date(student.prePayDate)
               : null,
             selectedDate: null,
+            prePay: student.prePay || [],
             storyLesson: student.storyLesson || "",
             costOneLesson: String(student.costOneLesson) || "",
             targetLessonStudent: student.targetLessonStudent || "",
@@ -1386,6 +1387,7 @@ export async function updateGroup(data, socket: any) {
               ? new Date(newStudent.prePayDate)
               : null,
             todayProgramStudent: newStudent.todayProgramStudent || "",
+            prePay: newStudent.prePay || [],
             startLesson: newStudent.startLesson
               ? new Date(newStudent.startLesson)
               : null,
@@ -1418,6 +1420,7 @@ export async function updateGroup(data, socket: any) {
             prePayDate: newStudent.prePayDate
               ? new Date(newStudent.prePayDate)
               : null,
+            prePay: newStudent.prePay || [],
             todayProgramStudent: newStudent.todayProgramStudent || "",
             startLesson: newStudent.startLesson
               ? new Date(newStudent.startLesson)

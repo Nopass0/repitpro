@@ -104,7 +104,7 @@ export interface IStudent {
 	todayProgramStudent: string
 	startLesson: Date | null
 	endLesson: Date | null
-	prePayList: IPrePayList[]
+	prePay: IPrePayList[]
 }
 
 export interface IHistoryLessons {

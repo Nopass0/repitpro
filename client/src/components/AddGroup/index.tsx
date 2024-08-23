@@ -141,7 +141,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			startLesson: new Date(Date.now()),
 			endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 			nowLevel: 0,
-			prePayList: [],
+			prePay: [],
 		},
 	])
 
@@ -241,6 +241,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			)
 			setLoading(false)
 			if (groupName && students.every((student) => student.nameStudent)) {
+				setLoading(true)
 				socket.emit('addGroup', {
 					groupName: groupName,
 					items: items,
@@ -744,7 +745,7 @@ const AddGroup = ({className}: IAddGroup) => {
 					startLesson: new Date(Date.now()),
 					endLesson: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 2),
 					files: [],
-					prePayList: [],
+					prePay: [],
 				},
 			])
 			setCurrentStudentIndex(currentStudentIndex + 1)
@@ -981,10 +982,8 @@ const AddGroup = ({className}: IAddGroup) => {
 	socket.once('getLinksByLinkedId', (data: any) => {
 		if (data.tag === 'addGroup') {
 			setLinks(data.links)
-			console.log(data, 'ADDGROUP')
 		} else if (data.tag === 'addGroupItems') {
 			setLinksItems(data.links)
-			console.log(data, 'ADDGROUPITEMS')
 		}
 	})
 
@@ -1021,6 +1020,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			console.log(dateHistory, 'DateHISTORY')
 			setStudentsHistoryLessons(dateHistory)
 			console.log(data.historyLessons, 'data.historyLessons ----')
+			console.log(data,'data GetGroupById')
 		})
 
 		socket.emit('getLinksByLinkedId', {
@@ -1183,6 +1183,7 @@ const AddGroup = ({className}: IAddGroup) => {
 				prePaymentDate,
 				remainingPrePayment,
 			},
+			students,
 		)
 		// ! DATES
 		const updatedHistoryLessons = newStudentsHistoryLessons.map(
@@ -1316,7 +1317,7 @@ const AddGroup = ({className}: IAddGroup) => {
 		if (cost !== '') {
 			setPrePayListValue((prevList) => {
 				const updateList = [...prevList, {cost, date, id}]
-				changeStudentValue(currentStudentIndex, 'prePayList', updateList)
+				changeStudentValue(currentStudentIndex, 'prePay', updateList)
 				changeStudentValue(index, 'prePayCostValue', '')
 				changeStudentValue(index, 'prePayDate', new Date(Date.now()))
 				console.log(updateList, 'UpdateList')
@@ -1337,7 +1338,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	function handlePrePayDelete(id: number) {
 		setPrePayListValue((prevList) => {
 			const updatedList = prevList.filter((item) => item.id !== id)
-			changeStudentValue(currentStudentIndex, 'prePayList', updatedList)
+			changeStudentValue(currentStudentIndex, 'prePay', updatedList)
 			return updatedList
 		})
 	}
@@ -1347,7 +1348,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			const updatedList = prevList.map((item) =>
 				item.id === id ? {...item, date: newDate, cost: newCost} : item,
 			)
-			changeStudentValue(currentStudentIndex, 'prePayList', updatedList)
+			changeStudentValue(currentStudentIndex, 'prePay', updatedList)
 			return updatedList
 		})
 		setEditId(null)
@@ -1360,7 +1361,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	const finishEditing = () => {
 		setEditId(null)
 	}
-	
+
 	const startDelete = (id: number) => {
 		setDeletedId(id)
 	}
@@ -1371,11 +1372,15 @@ const AddGroup = ({className}: IAddGroup) => {
 	useEffect(() => {
 		// Сравниваем текущее значение prePayListValue со значением в students
 		if (
-			students[currentStudentIndex].prePayList &&
-			students[currentStudentIndex].prePayList !== prePayListValue
+			students[currentStudentIndex].prePay &&
+			students[currentStudentIndex].prePay !== prePayListValue
 		) {
-			setPrePayListValue(students[currentStudentIndex].prePayList)
+			setPrePayListValue(students[currentStudentIndex].prePay)
 		}
+		console.log(
+			students[currentStudentIndex].prePay.length,
+			'students[currentStudentIndex].prePay',
+		)
 	}, [currentStudentIndex])
 
 	useEffect(() => {
@@ -2228,7 +2233,7 @@ const AddGroup = ({className}: IAddGroup) => {
 															addPrePayList(
 																student.prePayCostValue,
 																student.prePayDate,
-																student.prePayList.length,
+																student.prePay.length,
 																index,
 															)
 														}
@@ -2241,12 +2246,12 @@ const AddGroup = ({className}: IAddGroup) => {
 														addPrePayList(
 															student.prePayCostValue,
 															student.prePayDate,
-															student.prePayList.length,
+															student.prePay.length,
 															index,
 														)
 													}
 													style={{marginLeft: '10px'}}>
-													<CheckCircleIcon color='success' />
+													<CheckCircleIcon color="success" />
 												</button>
 											</div>
 											<Line width="100%" className={s.Line} />
@@ -2512,9 +2517,10 @@ const AddGroup = ({className}: IAddGroup) => {
 																</div>
 															</>
 														)}
-														{student.prePayList.length > 0 && (
+														{students[currentStudentIndex].prePay.length >
+															0 && (
 															<>
-																{student.prePayList.map(
+																{students[currentStudentIndex].prePay.map(
 																	(data: IPrePayList, index: number) => (
 																		<>
 																			<PrePayRow
@@ -2534,7 +2540,9 @@ const AddGroup = ({className}: IAddGroup) => {
 																					handlePrePayDelete(data.id)
 																				}
 																				finishEditing={finishEditing}
-																				onAcceptDelete={() => startDelete(data.id)}
+																				onAcceptDelete={() =>
+																					startDelete(data.id)
+																				}
 																				finishDelete={finishDelete}
 																				isDeleted={deletedId === data.id}
 																			/>
