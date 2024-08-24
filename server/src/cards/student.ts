@@ -2353,7 +2353,8 @@ export async function updateStudentAndItems(data: any, socket: any) {
       id,
       updatedGroup.items,
       userId,
-      updatedStudent.nameStudent
+      updatedStudent.nameStudent,
+      existingStudent.group.id
     );
 
     // Fetch the final updated student with all related data
@@ -2469,13 +2470,23 @@ async function updateStudentSchedules(
   studentId: string,
   items: any[],
   userId: string,
-  studentName: string
+  studentName: string,
+  groupId: string
 ) {
+  console.log(
+    "\n----------------updateStudentSchedules--------------------\n",
+    studentId,
+    items,
+    userId,
+    studentName,
+    groupId
+  );
   // Delete old studentSchedule records
   await db.studentSchedule.deleteMany({
-    where: { studentId: studentId },
+    where: {
+      OR: [{ studentId: studentId }, { groupId: groupId }],
+    },
   });
-
   // Create new studentSchedule records
   for (const itemData of items) {
     const startDate = new Date(itemData.startLesson);
