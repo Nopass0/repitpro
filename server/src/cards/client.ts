@@ -643,62 +643,103 @@ export async function getClientsByDate(data: any, socket: any) {
 
 export async function getClientTableData(data: any, socket: any) {
   const { token, dateRange } = data;
-  const token_ = await db.token.findFirst({ where: { token } });
-  const userId = token_.userId;
 
   try {
+    const token_ = await db.token.findFirst({ where: { token } });
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+    const userId = token_.userId;
+
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+
+    console.log(
+      `Date range: ${startDate.toISOString()} - ${endDate.toISOString()}`
+    );
+
     // Fetch clients for the user
     const clients = await db.client.findMany({
       where: { userId },
       include: { jobs: { include: { stages: true } } },
     });
 
+    console.log(`Found ${clients.length} clients`);
+
     // Fetch client job schedules for the date range
     const clientSchedules = await db.studentSchedule.findMany({
       where: {
         userId,
-        day: {
-          gte: new Date(dateRange.start).getDate().toString(),
-          lte: new Date(dateRange.end).getDate().toString(),
-        },
-        month: (new Date(dateRange.start).getMonth() + 1).toString(),
-        year: new Date(dateRange.start).getFullYear().toString(),
         clientId: { not: null },
+        OR: [
+          {
+            year: {
+              gte: startDate.getFullYear().toString(),
+              lte: endDate.getFullYear().toString(),
+            },
+            month: {
+              gte: (startDate.getMonth() + 1).toString(),
+              lte: (endDate.getMonth() + 1).toString(),
+            },
+            day: {
+              gte: startDate.getDate().toString(),
+              lte: endDate.getDate().toString(),
+            },
+          },
+          {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
       },
     });
 
+    console.log(`Found ${clientSchedules.length} client schedules`);
+
     const clientTableData = clients.flatMap((client) => {
-      const clientJobs = client.jobs;
-      return clientJobs.flatMap((job) => {
-        const jobStages = job.stages;
+      console.log(`Processing client: ${client.nameStudent}`);
+
+      return client.jobs.map((job) => {
+        console.log(`Processing job: ${job.jobName}`);
+
         const jobSchedules = clientSchedules.filter(
           (schedule) => schedule.itemId === job.id
         );
 
+        console.log(`Found ${jobSchedules.length} schedules for this job`);
+
         const lessons = jobSchedules.reduce(
-          (count, schedule) => count + schedule.workCount,
+          (count, schedule) => count + (schedule.workCount || 0),
           0
         );
-        const canceledLessons = jobSchedules.reduce(
-          (count, schedule) =>
-            count + (schedule.isChecked ? 0 : schedule.workCount),
-          0
-        );
+        const canceledLessons = jobSchedules.filter(
+          (schedule) => schedule.isCancel || !schedule.isChecked
+        ).length;
         const income = jobSchedules.reduce(
-          (sum, schedule) => sum + schedule.workPrice,
+          (sum, schedule) => sum + (schedule.workPrice || 0),
           0
         );
         const consumption = 0; // Assume no consumption for clients
-        const debt = jobStages.reduce(
-          (sum, stage) => sum + stage.cost - (stage.payed ? stage.payment : 0),
+        const debt = job.stages.reduce(
+          (sum, stage) =>
+            sum + (stage.cost || 0) - (stage.payed ? stage.payment || 0 : 0),
           0
+        );
+
+        const avgCost =
+          lessons > 0 ? (income / lessons).toFixed(2) : job.cost.toString();
+
+        console.log(
+          `\n-----------\n${client.nameStudent} - ${job.jobName}\nLessons: ${lessons}\nAvg Cost: ${avgCost}\nCanceled: ${canceledLessons}\nIncome: ${income}\nDebt: ${debt}\n----------\n`
         );
 
         return {
           name: client.nameStudent,
           job: job.jobName,
           lessons,
-          avgCost: job.cost,
+          avgCost,
           cancel: canceledLessons,
           income,
           consumption,
@@ -712,7 +753,7 @@ export async function getClientTableData(data: any, socket: any) {
     return clientTableData;
   } catch (error) {
     console.error("Error fetching client table data:", error);
-    throw error;
+    socket.emit("error", { message: "Failed to fetch client table data" });
   }
 }
 

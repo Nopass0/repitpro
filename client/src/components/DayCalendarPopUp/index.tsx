@@ -13,6 +13,7 @@ import {debounce} from 'lodash'
 
 import Arrow, {ArrowType} from '../../assets/arrow'
 import DayCalendarLineClient from '../DayCalendarLineClient'
+
 interface IDayCalendarPopUp {
 	style?: React.CSSProperties
 	onExit?: () => void
@@ -20,6 +21,7 @@ interface IDayCalendarPopUp {
 	LineClick?: () => void
 	className?: string
 }
+
 const DayCalendarPopUp = ({
 	style,
 	onExit,
@@ -49,7 +51,7 @@ const DayCalendarPopUp = ({
 		'Февраль',
 		'Март',
 		'Апрель',
-		'Май',
+		'Май',
 		'Июнь',
 		'Июль',
 		'Август',
@@ -121,10 +123,6 @@ const DayCalendarPopUp = ({
 			console.log('Received students data:', data)
 			if (mountedRef.current) {
 				setStudents(data)
-				console.log(
-					'\n------------------------stud-line-data----------------------\n',
-					data,
-				)
 				setIsLoading(false)
 				clearTimeout(timeoutId)
 				retryCountRef.current = 0 // Reset retry count on successful fetch
@@ -177,8 +175,6 @@ const DayCalendarPopUp = ({
 	const timeNormalize = (time: number) => {
 		return time < 10 ? '0' + time : time
 	}
-
-	console.log(students)
 
 	const onUpdate = (
 		id: string,
@@ -263,27 +259,6 @@ const DayCalendarPopUp = ({
 		}
 	}
 
-	// Function to manually trigger data fetch
-	const refreshData = () => {
-		// Re-fetch data
-		socket.emit('getStudentsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			token: token,
-		})
-		socket.emit('getClientsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			token: token,
-		})
-	}
-
-	// useEffect(() => {
-	// 	console.log('Students upd: ', students)
-	// }, [students])
-
 	const updData = (day: string, month: string, year: string) => {
 		//remove leading 0
 		day = day.replace(/^0+/, '')
@@ -314,11 +289,6 @@ const DayCalendarPopUp = ({
 
 	const debouncedOnUpdate = debounce(updData, 2)
 
-	const manualRefresh = () => {
-		retryCountRef.current = 0 // Reset retry count
-		fetchData()
-	}
-
 	const fetchDataForDate = (day, month, year) => {
 		setIsLoading(true)
 		socket.emit('getStudentsByDate', {day, month, year, token})
@@ -326,7 +296,6 @@ const DayCalendarPopUp = ({
 	}
 
 	const handleAddDay = () => {
-		//get calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear (Ex: '1', '1', "2023") and remake it to Date and add 1 day
 		const newDate = new Date(
 			calendarNowPopupYear,
 			Number(calendarNowPopupMonth) - 1,
@@ -334,7 +303,6 @@ const DayCalendarPopUp = ({
 		)
 		newDate.setDate(newDate.getDate() + 1)
 
-		//get new day, month, year as string (Ex: '1', '1', "2023") and set it to calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear
 		const newDay = String(newDate.getDate()).padStart(2, '0')
 		const newMonth = String(newDate.getMonth() + 1).padStart(2, '0')
 		const newYear = String(newDate.getFullYear())
@@ -345,7 +313,6 @@ const DayCalendarPopUp = ({
 	}
 
 	const handlePrevDay = () => {
-		//get calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear (Ex: '1', '1', "2023") and remake it to Date and subtract 1 day
 		const newDate = new Date(
 			calendarNowPopupYear,
 			Number(calendarNowPopupMonth) - 1,
@@ -353,7 +320,6 @@ const DayCalendarPopUp = ({
 		)
 		newDate.setDate(newDate.getDate() - 1)
 
-		//get new day, month, year as string (Ex: '1', '1', "2023") and set it to calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear
 		const newDay = String(newDate.getDate()).padStart(2, '0')
 		const newMonth = String(newDate.getMonth() + 1).padStart(2, '0')
 		const newYear = String(newDate.getFullYear())
@@ -394,6 +360,18 @@ const DayCalendarPopUp = ({
 		})
 	}
 
+	// Функция для сортировки студентов по времени начала занятия
+	const sortStudentsByStartTime = (studentsToSort) => {
+		return [...studentsToSort].sort((a, b) => {
+			const aTime = a.startTime.hour * 60 + a.startTime.minute
+			const bTime = b.startTime.hour * 60 + b.startTime.minute
+			return aTime - bTime
+		})
+	}
+
+	// Отсортированный список студентов
+	const sortedStudents = sortStudentsByStartTime(students)
+
 	return (
 		<div
 			style={style}
@@ -401,7 +379,6 @@ const DayCalendarPopUp = ({
 			<div>
 				<header className={s.Header}>
 					<div className={s.HeaderItems}>
-						{/* <DataSlidePicker className={s.dataSlidePicker} dateMode /> */}
 						<div></div>
 						<div className={s.dataSlidePicker}>
 							<button
@@ -438,7 +415,6 @@ const DayCalendarPopUp = ({
 								</span>
 							</button>
 						</div>
-						{/* this */}
 						<button className={s.closeIconWrap} onClick={onExit}>
 							<CloseIcon className={s.closeIcon} />
 						</button>
@@ -448,7 +424,7 @@ const DayCalendarPopUp = ({
 					<Line width="700px" className={s.LineHeader} />
 					{clients &&
 						clients.map((client: any, index: number) => (
-							<>
+							<React.Fragment key={client.id}>
 								{client.clientId !== clients[index + 1]?.clientId && (
 									<>
 										<DayCalendarLineClient
@@ -465,25 +441,35 @@ const DayCalendarPopUp = ({
 													: client.workStages[0].firstPaymentPayed
 											}
 											procent={`
-											${Math.round((client.workPrice / client.totalWorkPrice) * 100)}`}
+                      ${Math.round((client.workPrice / client.totalWorkPrice) * 100)}`}
 										/>
 										<Line className={s.Line} width="700px" />
 									</>
 								)}
-							</>
+							</React.Fragment>
 						))}
 
-					{students &&
-						students.map((student: any) => (
-							<>
-								<DayCalendarLine
-									key={student._id}
-									id={student.id}
-									place={student.place}
-									studentId={student.studentId}
-									groupId={student.groupId}
-									students={students}
-									onUpdate={(
+					{sortedStudents.map((student: any) => (
+						<React.Fragment key={student._id || student.id}>
+							<DayCalendarLine
+								key={student._id || student.id}
+								id={student.id}
+								place={student.place}
+								studentId={student.studentId}
+								groupId={student.groupId}
+								students={students}
+								onUpdate={(
+									id,
+									editIcon,
+									editName,
+									editTimeStart,
+									editTimeEnd,
+									editItem,
+									editPrice,
+									isDelete,
+									studentId,
+								) =>
+									onUpdate(
 										id,
 										editIcon,
 										editName,
@@ -493,51 +479,41 @@ const DayCalendarPopUp = ({
 										editPrice,
 										isDelete,
 										studentId,
-									) =>
-										onUpdate(
-											id,
-											editIcon,
-											editName,
-											editTimeStart,
-											editTimeEnd,
-											editItem,
-											editPrice,
-											isDelete,
-											studentId,
-										)
-									}
-									LineClick={LineClick}
-									iconClick={iconClick}
-									icon={student.type == 'group' ? 3 : student.typeLesson}
-									isCancel={student.isCancel}
-									editMode={editMode}
-									timeStart={
-										timeNormalize(student.startTime.hour) +
-										':' +
-										timeNormalize(student.startTime.minute)
-									}
-									timeEnd={
-										timeNormalize(student.endTime.hour) +
-										':' +
-										timeNormalize(student.endTime.minute)
-									}
-									name={
-										student.type == 'student'
-											? student.nameStudent
-											: student.groupName
-									}
-									item={student.itemName}
-									price={student.costOneLesson}
-									prevpay={student.tryLessonCheck}
-									type={student.type}
-								/>
-							</>
-						))}
-					{Array.from({length: 8}).map((_, index: number) => (
-						<>
-							<div className={s.FakeBlock} key={index}></div>
+									)
+								}
+								LineClick={LineClick}
+								iconClick={iconClick}
+								icon={student.type == 'group' ? 3 : student.typeLesson}
+								isCancel={student.isCancel}
+								editMode={editMode}
+								timeStart={
+									timeNormalize(student.startTime.hour) +
+									':' +
+									timeNormalize(student.startTime.minute)
+								}
+								timeEnd={
+									timeNormalize(student.endTime.hour) +
+									':' +
+									timeNormalize(student.endTime.minute)
+								}
+								name={
+									student.type == 'student'
+										? student.nameStudent
+										: student.groupName
+								}
+								item={student.itemName}
+								price={student.costOneLesson}
+								prevpay={student.tryLessonCheck}
+								type={student.type}
+							/>
 							<Line className={s.Line} width="700px" />
-						</>
+						</React.Fragment>
+					))}
+					{Array.from({length: 8}).map((_, index: number) => (
+						<React.Fragment key={`fake-${index}`}>
+							<div className={s.FakeBlock}></div>
+							<Line className={s.Line} width="700px" />
+						</React.Fragment>
 					))}
 				</section>
 			</div>

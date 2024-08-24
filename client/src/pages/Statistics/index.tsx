@@ -84,52 +84,52 @@ const Statistics = () => {
 
 	const [studFinSubjects, setStudFinSubjects] = useState([])
 	const [studFinDate, setStudFinDate] = useState(0)
-	const [studFinDateStart, setStudFinDateStart] = useState(new Date())
-	const [studFinDateEnd, setStudFinDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+	const [studFinDateStart, setStudFinDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [studFinDateEnd, setStudFinDateEnd] = useState(new Date())
 
 	const [studAmSubjects, setStudAmSubjects] = useState([])
 	const [studAmDate, setStudAmDate] = useState(0)
-	const [studAmDateStart, setStudAmDateStart] = useState(new Date())
-	const [studAmDateEnd, setStudAmDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
+	const [studAmDateStart, setStudAmDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [studAmDateEnd, setStudAmDateEnd] = useState(new Date())
 
 	const [studLesSubjects, setStudLesSubjects] = useState([])
 	const [studLesDate, setStudLesDate] = useState(0)
-	const [studLesDateStart, setStudLesDateStart] = useState(new Date())
-	const [studLesDateEnd, setStudLesDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
+	const [studLesDateStart, setStudLesDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [studLesDateEnd, setStudLesDateEnd] = useState(new Date())
 
 	const [cliFinSubjects, setCliFinSubjects] = useState([])
 	const [cliFinDate, setCliFinDate] = useState(0)
-	const [cliFinDateStart, setCliFinDateStart] = useState(new Date())
-	const [cliFinDateEnd, setCliFinDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
+	const [cliFinDateStart, setCliFinDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [cliFinDateEnd, setCliFinDateEnd] = useState(new Date())
 
 	const [cliAmSubjects, setCliAmSubjects] = useState([])
 	const [cliAmDate, setCliAmDate] = useState(0)
-	const [cliAmDateStart, setCliAmDateStart] = useState(new Date())
-	const [cliAmDateEnd, setCliAmDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
+	const [cliAmDateStart, setCliAmDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [cliAmDateEnd, setCliAmDateEnd] = useState(new Date())
 
 	const [cliWorkSubjects, setCliWorkSubjects] = useState([])
 	const [cliWorkDate, setCliWorkDate] = useState(0)
-	const [cliWorkDateStart, setCliWorkDateStart] = useState(new Date())
-	const [cliWorkDateEnd, setCliWorkDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
+	const [cliWorkDateStart, setCliWorkDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [cliWorkDateEnd, setCliWorkDateEnd] = useState(new Date())
 
 	const [studRelatSubjects, setStudRelatSubjects] = useState([])
 	const [studRelatDate, setStudRelatDate] = useState(0)
-	const [studRelatDateStart, setStudRelatDateStart] = useState(new Date())
-	const [studRelatDateEnd, setStudRelatDateEnd] = useState(
-		new Date(Date.now() + 180 * 24 * 60 * 60 * 3000),
+	const [studRelatDateStart, setStudRelatDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
 	)
+	const [studRelatDateEnd, setStudRelatDateEnd] = useState(new Date())
 
 	const [financeData, setFinanceData] = useState({labels: [], datasets: []})
 	const [studentCountData, setStudentCountData] = useState({

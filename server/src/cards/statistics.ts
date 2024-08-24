@@ -584,7 +584,7 @@ export async function getClientWorksData(
 
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((date) => groupedData[dateKey][item.itemName] || 0),
+      data: labels.map((date) => groupedData[date][itemName] || 0),
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));

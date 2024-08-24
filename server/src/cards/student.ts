@@ -2747,96 +2747,126 @@ export async function getAllIdStudents(data: any, socket: any) {
 export async function getTableData(data, socket: any) {
   const { token, dateRange } = data;
 
-  const token_ = await db.token.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  const userId = token_.userId;
-
   try {
-    // Fetch groups for the user
-    const groups = await db.group.findMany({
-      where: {
-        userId,
-      },
+    const token_ = await db.token.findFirst({
+      where: { token },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+
+    console.log(
+      `Date range: ${startDate.toISOString()} - ${endDate.toISOString()}`
+    );
+
+    // Fetch all students for the user
+    const students = await db.student.findMany({
+      where: { userId },
       include: {
-        students: true,
-        items: true,
+        group: {
+          include: {
+            items: true,
+          },
+        },
       },
     });
 
-    // Fetch student schedules for the date range
+    console.log(`Found ${students.length} students`);
+
+    // Fetch relevant student schedules
     const studentSchedules = await db.studentSchedule.findMany({
       where: {
         userId,
-        day: {
-          gte: new Date(dateRange.start).getDate().toString(),
-          lte: new Date(dateRange.end).getDate().toString(),
-        },
-        month: (new Date(dateRange.start).getMonth() + 1).toString(),
-        year: new Date(dateRange.start).getFullYear().toString(),
+        OR: [
+          {
+            year: {
+              gte: startDate.getFullYear().toString(),
+              lte: endDate.getFullYear().toString(),
+            },
+            month: {
+              gte: (startDate.getMonth() + 1).toString(),
+              lte: (endDate.getMonth() + 1).toString(),
+            },
+            day: {
+              gte: startDate.getDate().toString(),
+              lte: endDate.getDate().toString(),
+            },
+          },
+          {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ],
       },
     });
 
-    const tableData = groups.flatMap((group) => {
-      const groupStudents = group.students;
-      const groupItems = group.items;
+    console.log(`Found ${studentSchedules.length} student schedules`);
 
-      return groupStudents.map((student) => {
-        const studentSchedules_ = studentSchedules.filter(
-          (schedule) =>
-            schedule.groupId === group.id &&
-            schedule.studentName === student.nameStudent
-        );
+    const tableData = students.map((student) => {
+      const studentSchedules_ = studentSchedules.filter(
+        (schedule) => schedule.groupId === student.groupId
+      );
 
-        const lessons = studentSchedules_.reduce(
-          (count, schedule) => count + schedule.lessonsCount,
-          0
-        );
-        const canceledLessons = studentSchedules_.reduce(
-          (count, schedule) =>
-            count + (schedule.isChecked ? 0 : schedule.lessonsCount),
-          0
-        );
-        const income = studentSchedules_.reduce(
-          (sum, schedule) =>
-            sum + schedule.lessonsPrice * schedule.lessonsCount,
-          0
-        );
-        const consumption = studentSchedules_.reduce(
-          (sum, schedule) => sum + schedule.workPrice,
-          0
-        );
-        const debt = studentSchedules_.reduce(
-          (sum, schedule) =>
-            sum +
-            groupItems.find((item) => item.id === schedule.itemId)
-              ?.lessonDuration *
-              schedule.lessonsCount *
-              Number(student.costOneLesson),
-          0
-        );
+      console.log(
+        `Found ${studentSchedules_.length} schedules for student ${student.nameStudent}`
+      );
 
-        return {
-          name: student.nameStudent,
-          lessons,
-          avgCost: student.costOneLesson,
-          cancel: canceledLessons,
-          income,
-          consumption,
-          duty: debt,
-          total: income - debt - consumption,
-        };
-      });
+      const lessons = studentSchedules_.reduce(
+        (sum, schedule) => sum + (schedule.lessonsCount || 0),
+        0
+      );
+      const canceledLessons = studentSchedules_.filter(
+        (schedule) => schedule.isCancel || !schedule.isChecked
+      ).length;
+      const income = studentSchedules_.reduce(
+        (sum, schedule) =>
+          sum + (schedule.lessonsPrice || 0) * (schedule.lessonsCount || 0),
+        0
+      );
+      const consumption = studentSchedules_.reduce(
+        (sum, schedule) => sum + (schedule.workPrice || 0),
+        0
+      );
+
+      // Calculate debt (assuming debt is the difference between expected income and actual income)
+      const expectedIncome = lessons * Number(student.costOneLesson || 0);
+      const debt = Math.max(0, expectedIncome - income);
+
+      // Calculate average cost
+      const avgCost =
+        lessons > 0
+          ? (income / lessons).toFixed(2)
+          : student.costOneLesson || "0";
+
+      console.log(
+        `\n-----------\n${student.nameStudent}\nLessons: ${lessons}\nAvg Cost: ${avgCost}\nCanceled: ${canceledLessons}\nIncome: ${income}\nConsumption: ${consumption}\nDebt: ${debt}\n----------\n`
+      );
+
+      return {
+        name: student.nameStudent,
+        lessons,
+        avgCost,
+        cancel: canceledLessons,
+        income,
+        consumption,
+        duty: debt,
+        total: income - consumption,
+      };
     });
 
     socket.emit("getTableData", tableData);
     return tableData;
   } catch (error) {
     console.error("Error fetching table data:", error);
-    console.log(error);
+    socket.emit("error", { message: "Failed to fetch table data" });
   }
 }
 
