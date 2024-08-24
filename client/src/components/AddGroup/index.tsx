@@ -326,7 +326,7 @@ const AddGroup = ({className}: IAddGroup) => {
 		name: string,
 		value: string | boolean | number | Date | null,
 	) => {
-		setItems(
+		setItems((items) =>
 			items.map((item, index) =>
 				index === itemIndex ? {...item, [name]: value} : item,
 			),
@@ -1020,7 +1020,7 @@ const AddGroup = ({className}: IAddGroup) => {
 			console.log(dateHistory, 'DateHISTORY')
 			setStudentsHistoryLessons(dateHistory)
 			console.log(data.historyLessons, 'data.historyLessons ----')
-			console.log(data,'data GetGroupById')
+			console.log(data, 'data GetGroupById')
 		})
 
 		socket.emit('getLinksByLinkedId', {
@@ -2283,6 +2283,7 @@ const AddGroup = ({className}: IAddGroup) => {
 															'tryLessonCost',
 															String(e.target.value),
 														)
+														changeStudentValue(index, 'tryLessonCheck', true)
 													}}
 												/>
 												<p>₽</p>

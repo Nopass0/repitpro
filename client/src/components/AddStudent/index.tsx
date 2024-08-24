@@ -372,7 +372,7 @@ const AddStudent = ({}: IAddStudent) => {
 		name: string,
 		value: string | boolean | number | Date | null,
 	) => {
-		setItems(
+		setItems((items: IItemCard[]) =>
 			items.map((item, index) =>
 				index === itemIndex ? {...item, [name]: value} : item,
 			),
@@ -1084,12 +1084,6 @@ const AddStudent = ({}: IAddStudent) => {
 			token: token,
 			studentId: '',
 		})
-		setTimeout(() => {
-			dispatch({
-				type: 'SET_LEFT_MENU_PAGE',
-				payload: ELeftMenuPage.AddStudent,
-			})
-		}, 10)
 		dispatch({
 			type: 'SET_PAGE_POPUP_EXIT',
 			payload: EPagePopUpExit.None,
@@ -1098,6 +1092,20 @@ const AddStudent = ({}: IAddStudent) => {
 			type: 'SET_ADD_STUDENT_EXIT',
 			payload: false,
 		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddStudent,
+			})
+		}, 10)
 	}
 
 	const handleAddGroupExit = () => {
@@ -1110,20 +1118,28 @@ const AddStudent = ({}: IAddStudent) => {
 			type: 'SET_LEFT_MENU_PAGE',
 			payload: ELeftMenuPage.MainPage,
 		})
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_STUDENT_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
 		setTimeout(() => {
 			dispatch({
 				type: 'SET_LEFT_MENU_PAGE',
 				payload: ELeftMenuPage.AddGroup,
 			})
 		}, 10)
-		dispatch({
-			type: 'SET_PAGE_POPUP_EXIT',
-			payload: EPagePopUpExit.None,
-		})
-		dispatch({
-			type: 'SET_ADD_GROUP_EXIT',
-			payload: false,
-		})
 	}
 
 	const handleAddClientExit = () => {
@@ -1136,21 +1152,30 @@ const AddStudent = ({}: IAddStudent) => {
 			type: 'SET_LEFT_MENU_PAGE',
 			payload: ELeftMenuPage.MainPage,
 		})
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_STUDENT_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
 		setTimeout(() => {
 			dispatch({
 				type: 'SET_LEFT_MENU_PAGE',
 				payload: ELeftMenuPage.AddClient,
 			})
 		}, 10)
-		dispatch({
-			type: 'SET_PAGE_POPUP_EXIT',
-			payload: EPagePopUpExit.None,
-		})
-		dispatch({
-			type: 'SET_ADD_CLIENT_EXIT',
-			payload: false,
-		})
 	}
+
 	return (
 		<>
 			<button
@@ -1590,13 +1615,16 @@ const AddStudent = ({}: IAddStudent) => {
 													type="text"
 													value={item.tryLessonCost!}
 													disabled={isEditMode}
-													onChange={(e) =>
+													onChange={(e) => {
+														changeItemValue(index, 'tryLessonCheck', true)
+
 														changeItemValue(
 															index,
 															'tryLessonCost',
 															e.target.value,
 														)
-													}
+														console.log(item.tryLessonCost, e.target.value)
+													}}
 												/>
 												<p>₽</p>
 											</div>

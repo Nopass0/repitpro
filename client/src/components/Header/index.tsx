@@ -91,59 +91,188 @@ const Header = ({}: IHeader) => {
 		}, 10)
 	}
 	return (
-		<header className={s.header}>
-			<div className={s.wrapperHeader}>
-				<div className={s.HeaderLeft}>
-					<button
-						className={s.LogoWrapper}
-						onClick={() => {
-							if (
-								ELeftMenuPage.MainPage !== EleftMenu &&
-								ELeftMenuPage.MyCabinet !== EleftMenu &&
-								editedCards
-							) {
-								dispatch({
-									type: 'SET_PAGE_POPUP_EXIT',
-									payload: EPagePopUpExit.Exit,
-								})
-							} else {
-								navigate('../')
+		<>
+			<header className={s.header}>
+				<div className={s.wrapperHeader}>
+					<div className={s.HeaderLeft}>
+						<button
+							className={s.LogoWrapper}
+							onClick={() => {
+								if (
+									ELeftMenuPage.MainPage !== EleftMenu &&
+									ELeftMenuPage.MyCabinet !== EleftMenu &&
+									editedCards
+								) {
+									dispatch({
+										type: 'SET_PAGE_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
+									})
+								} else {
+									navigate('../')
+									dispatch({
+										type: 'SET_LEFT_MENU_PAGE',
+										payload: ELeftMenuPage.MainPage,
+									})
+									dispatch({
+										type: 'SET_PAGE_POPUP_EXIT',
+										payload: EPagePopUpExit.None,
+									})
+									window.location.reload()
+								}
+							}}>
+							<img src={logo} alt="logo" className={s.logo} />
+							<img src={mobileLogo} alt="mobileLogo" className={s.mobileLogo} />
+						</button>
+						<button
+							className={s.BurgerMenu}
+							onClick={() => {
 								dispatch({
 									type: 'SET_LEFT_MENU_PAGE',
 									payload: ELeftMenuPage.MainPage,
 								})
 								dispatch({
-									type: 'SET_PAGE_POPUP_EXIT',
-									payload: EPagePopUpExit.None,
+									type: 'SET_MOBILE_LEFT',
+									payload: !mobileLeftSelector,
 								})
-								window.location.reload()
-							}
-						}}>
-						<img src={logo} alt="logo" className={s.logo} />
-						<img src={mobileLogo} alt="mobileLogo" className={s.mobileLogo} />
-					</button>
-					<button
-						className={s.BurgerMenu}
-						onClick={() => {
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.MainPage,
-							})
-							dispatch({type: 'SET_MOBILE_LEFT', payload: !mobileLeftSelector})
-						}}>
-						<MenuIcon />
-					</button>
-					{/* <Menu width={'200px'} className={s.BurgerMenu}  /> */}
+							}}>
+							<MenuIcon />
+						</button>
+						{/* <Menu width={'200px'} className={s.BurgerMenu}  /> */}
+						<mui.Select
+							className={s.muiSelect__menu}
+							renderValue={(option: SelectOption<number> | null) => {
+								return (
+									<>
+										<div className={s.selectContainer}>
+											<p className={s.selectText}>Добавить</p>
+										</div>
+										<div className={s.hiddenDivMuiSelect}></div>
+									</>
+								)
+							}}
+							variant={'standard'}
+							// @ts-ignore
+							defaultValue={1}
+							// value={valueMuiSelectArchive}
+						>
+							<mui.MenuItem
+								classes={{
+									root: s.muiMenuItemRoot,
+									selected: s.muiMenuItemSelected,
+								}}
+								onClick={() => {
+									if (
+										ELeftMenuPage.MainPage !== EleftMenu &&
+										ELeftMenuPage.MyCabinet !== EleftMenu &&
+										editedCards
+									) {
+										dispatch({
+											type: 'SET_ADD_STUDENT_EXIT',
+											payload: true,
+										})
+										dispatch({
+											type: 'SET_PAGE_POPUP_EXIT',
+											payload: EPagePopUpExit.Exit,
+										})
+									} else {
+										addStudent()
+									}
+								}}
+								value={1}>
+								Ученика
+							</mui.MenuItem>
+							<mui.MenuItem
+								classes={{
+									root: s.muiMenuItemRoot,
+									selected: s.muiMenuItemSelected,
+								}}
+								onClick={() => {
+									if (
+										ELeftMenuPage.MainPage !== EleftMenu &&
+										ELeftMenuPage.MyCabinet !== EleftMenu &&
+										editedCards
+									) {
+										dispatch({
+											type: 'SET_ADD_GROUP_EXIT',
+											payload: true,
+										})
+										dispatch({
+											type: 'SET_PAGE_POPUP_EXIT',
+											payload: EPagePopUpExit.Exit,
+										})
+									} else {
+										addGroup()
+									}
+								}}
+								value={2}>
+								Группу
+							</mui.MenuItem>
+							<mui.MenuItem
+								classes={{
+									root: s.muiMenuItemRoot,
+									selected: s.muiMenuItemSelected,
+								}}
+								onClick={() => {
+									if (
+										ELeftMenuPage.MainPage !== EleftMenu &&
+										ELeftMenuPage.MyCabinet !== EleftMenu &&
+										editedCards
+									) {
+										dispatch({
+											type: 'SET_ADD_CLIENT_EXIT',
+											payload: true,
+										})
+										dispatch({
+											type: 'SET_PAGE_POPUP_EXIT',
+											payload: EPagePopUpExit.Exit,
+										})
+									} else {
+										addClient()
+									}
+								}}
+								value={3}>
+								Заказчика
+							</mui.MenuItem>
+						</mui.Select>
+
+						<div className={s.calendarBtns}>
+							<button
+								style={{color: hiddenNum ? '#25991c' : ''}}
+								onClick={() => {
+									dispatch({
+										type: 'SET_HIDDEN_NUM',
+										payload: !hiddenNum,
+									})
+									console.log(hiddenNum)
+								}}
+								className={s.hideBtn + ' ' + s.HiddenBtn}>
+								<p className={s.btnText}>{hiddenNum ? 'Показать' : 'Скрыть'}</p>
+								<p className={s.rub}>₽</p>
+								{/* <Eye className={s.eye} /> */}
+							</button>
+
+							<button
+								onClick={() => {
+									dispatch({type: 'SET_DETAILS', payload: !details})
+									console.log(details)
+								}}
+								style={{color: details ? '#25991c' : ''}}
+								className={s.hideBtn + ' ' + s.DetailsBtn}>
+								<p className={s.btnText}>Подробно</p>
+								<Doc className={s.eyeNotMob} />
+							</button>
+						</div>
+					</div>
+
+					<DataSlidePicker className={s.dataSlidePicker} dateMode />
 					<mui.Select
-						className={s.muiSelect__menu}
+						className={`${s.muiSelect__Buttons}`}
+						IconComponent={''}
 						renderValue={(option: SelectOption<number> | null) => {
 							return (
-								<>
-									<div className={s.selectContainer}>
-										<p className={s.selectText}>Добавить</p>
-									</div>
-									<div className={s.hiddenDivMuiSelect}></div>
-								</>
+								<div className={s.Mui_AddIcon}>
+									<AddIcon />
+								</div>
 							)
 						}}
 						variant={'standard'}
@@ -152,101 +281,37 @@ const Header = ({}: IHeader) => {
 						// value={valueMuiSelectArchive}
 					>
 						<mui.MenuItem
-							classes={{
-								root: s.muiMenuItemRoot,
-								selected: s.muiMenuItemSelected,
-							}}
 							onClick={() => {
-								if (
-									ELeftMenuPage.MainPage !== EleftMenu &&
-									ELeftMenuPage.MyCabinet !== EleftMenu &&
-									editedCards
-								) {
-									dispatch({
-										type: 'SET_ADD_STUDENT_EXIT',
-										payload: true,
-									})
-									dispatch({
-										type: 'SET_PAGE_POPUP_EXIT',
-										payload: EPagePopUpExit.Exit,
-									})
-								} else {
-									addStudent()
-								}
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.AddStudent,
+								})
 							}}
 							value={1}>
 							Ученика
 						</mui.MenuItem>
 						<mui.MenuItem
-							classes={{
-								root: s.muiMenuItemRoot,
-								selected: s.muiMenuItemSelected,
-							}}
 							onClick={() => {
-								if (
-									ELeftMenuPage.MainPage !== EleftMenu &&
-									ELeftMenuPage.MyCabinet !== EleftMenu &&
-									editedCards
-								) {
-									dispatch({
-										type: 'SET_ADD_GROUP_EXIT',
-										payload: true,
-									})
-									dispatch({
-										type: 'SET_PAGE_POPUP_EXIT',
-										payload: EPagePopUpExit.Exit,
-									})
-								} else {
-									addGroup()
-								}
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.AddGroup,
+								})
 							}}
 							value={2}>
 							Группу
 						</mui.MenuItem>
 						<mui.MenuItem
-							classes={{
-								root: s.muiMenuItemRoot,
-								selected: s.muiMenuItemSelected,
-							}}
 							onClick={() => {
-								if (
-									ELeftMenuPage.MainPage !== EleftMenu &&
-									ELeftMenuPage.MyCabinet !== EleftMenu &&
-									editedCards
-								) {
-									dispatch({
-										type: 'SET_ADD_CLIENT_EXIT',
-										payload: true,
-									})
-									dispatch({
-										type: 'SET_PAGE_POPUP_EXIT',
-										payload: EPagePopUpExit.Exit,
-									})
-								} else {
-									addClient()
-								}
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.AddClient,
+								})
 							}}
 							value={3}>
 							Заказчика
 						</mui.MenuItem>
 					</mui.Select>
-
-					<div className={s.calendarBtns}>
-						<button
-							style={{color: hiddenNum ? '#25991c' : ''}}
-							onClick={() => {
-								dispatch({
-									type: 'SET_HIDDEN_NUM',
-									payload: !hiddenNum,
-								})
-								console.log(hiddenNum)
-							}}
-							className={s.hideBtn + ' ' + s.HiddenBtn}>
-							<p className={s.btnText}>{hiddenNum ? 'Показать' : 'Скрыть'}</p>
-							<p className={s.rub}>₽</p>
-							{/* <Eye className={s.eye} /> */}
-						</button>
-
+					<div className={s.Buttons}>
 						<button
 							onClick={() => {
 								dispatch({type: 'SET_DETAILS', payload: !details})
@@ -254,135 +319,75 @@ const Header = ({}: IHeader) => {
 							}}
 							style={{color: details ? '#25991c' : ''}}
 							className={s.hideBtn + ' ' + s.DetailsBtn}>
-							<p className={s.btnText}>Подробно</p>
-							<Doc className={s.eyeNotMob} />
+							<Doc className={s.eye} />
 						</button>
-					</div>
-				</div>
-
-				<DataSlidePicker className={s.dataSlidePicker} dateMode />
-				<mui.Select
-					className={`${s.muiSelect__Buttons}`}
-					IconComponent={''}
-					renderValue={(option: SelectOption<number> | null) => {
-						return (
-							<div className={s.Mui_AddIcon}>
-								<AddIcon />
-							</div>
-						)
-					}}
-					variant={'standard'}
-					// @ts-ignore
-					defaultValue={1}
-					// value={valueMuiSelectArchive}
-				>
-					<mui.MenuItem
-						onClick={() => {
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.AddStudent,
-							})
-						}}
-						value={1}>
-						Ученика
-					</mui.MenuItem>
-					<mui.MenuItem
-						onClick={() => {
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.AddGroup,
-							})
-						}}
-						value={2}>
-						Группу
-					</mui.MenuItem>
-					<mui.MenuItem
-						onClick={() => {
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.AddClient,
-							})
-						}}
-						value={3}>
-						Заказчика
-					</mui.MenuItem>
-				</mui.Select>
-				<div className={s.Buttons}>
-					<button
-						onClick={() => {
-							dispatch({type: 'SET_DETAILS', payload: !details})
-							console.log(details)
-						}}
-						style={{color: details ? '#25991c' : ''}}
-						className={s.hideBtn + ' ' + s.DetailsBtn}>
-						<Doc className={s.eye} />
-					</button>
-					<Link
-						to={'/statistics'}
-						className={s.greenBtn + ' ' + s.rightlyLastBtns}>
-						<p className={s.btnText}>Статистика</p>
-					</Link>
-					<Link to={'/'} className={s.greenBtn}>
-						<p
-							onClick={() => {
-								if (
-									EPagePopUpExit.None === pagePopUpExit &&
-									ELeftMenuPage.MainPage === EleftMenu &&
-									!editedCards
-								) {
-									dispatch({
-										type: 'SET_LEFT_MENU_PAGE',
-										payload: ELeftMenuPage.MyCabinet,
-									})
-								} else {
-									dispatch({
-										type: 'SET_PAGE_POPUP_EXIT',
-										payload: EPagePopUpExit.Exit,
-									})
-								}
-							}}
-							className={s.btnText}>
-							Личный кабинет
-						</p>
-					</Link>
-					<mui.Select
-						className={s.muiSelect__ButtonsStat}
-						IconComponent={''}
-						renderValue={(option: SelectOption<number> | null) => {
-							return <MoreVertIcon />
-						}}
-						variant={'standard'}
-						// @ts-ignore
-						defaultValue={1}
-						// value={valueMuiSelectArchive}
-					>
-						<mui.MenuItem value={1}>
-							<Link className={s.ItemTwoBtns} to={'/statistics'}>
-								<p className={s.btnText}>Статистика</p>
-							</Link>
-						</mui.MenuItem>
-						<mui.MenuItem value={2}>
-							<Link className={s.ItemTwoBtns} to={'/'}>
-								<p
-									onClick={() => {
+						<Link
+							to={'/statistics'}
+							className={s.greenBtn + ' ' + s.rightlyLastBtns}>
+							<p className={s.btnText}>Статистика</p>
+						</Link>
+						<Link to={'/'} className={s.greenBtn}>
+							<p
+								onClick={() => {
+									if (
+										EPagePopUpExit.None === pagePopUpExit &&
+										ELeftMenuPage.MainPage === EleftMenu &&
+										!editedCards
+									) {
 										dispatch({
 											type: 'SET_LEFT_MENU_PAGE',
 											payload: ELeftMenuPage.MyCabinet,
 										})
-									}}
-									className={s.btnText}>
-									Личный кабинет
-								</p>
-							</Link>
-						</mui.MenuItem>
-					</mui.Select>
-					<button onClick={handleLogout} className={s.exitBtn}>
-						<p className={s.btnText}>Выход</p>
-						<Exit />
-					</button>
+									} else {
+										dispatch({
+											type: 'SET_PAGE_POPUP_EXIT',
+											payload: EPagePopUpExit.Exit,
+										})
+									}
+								}}
+								className={s.btnText}>
+								Личный кабинет
+							</p>
+						</Link>
+						<mui.Select
+							className={s.muiSelect__ButtonsStat}
+							IconComponent={''}
+							renderValue={(option: SelectOption<number> | null) => {
+								return <MoreVertIcon />
+							}}
+							variant={'standard'}
+							// @ts-ignore
+							defaultValue={1}
+							// value={valueMuiSelectArchive}
+						>
+							<mui.MenuItem value={1}>
+								<Link className={s.ItemTwoBtns} to={'/statistics'}>
+									<p className={s.btnText}>Статистика</p>
+								</Link>
+							</mui.MenuItem>
+							<mui.MenuItem value={2}>
+								<Link className={s.ItemTwoBtns} to={'/'}>
+									<p
+										onClick={() => {
+											dispatch({
+												type: 'SET_LEFT_MENU_PAGE',
+												payload: ELeftMenuPage.MyCabinet,
+											})
+										}}
+										className={s.btnText}>
+										Личный кабинет
+									</p>
+								</Link>
+							</mui.MenuItem>
+						</mui.Select>
+						<button onClick={handleLogout} className={s.exitBtn}>
+							<p className={s.btnText}>Выход</p>
+							<Exit />
+						</button>
+					</div>
 				</div>
-			</div>
-		</header>
+			</header>
+		</>
 	)
 }
 

@@ -381,3 +381,13 @@
 		margin: 0 !important;
 	}
 }
+
+.ExitPopUpWrap {
+	position: absolute;
+	z-index: 100;
+}
+.ExitPopUp {
+	position: relative;
+	top: 30px;
+	right: 450px;
+}
