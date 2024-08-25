@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {ICell, ECurrentDayPopUp, ELeftMenuPage} from '../../types'
+import { ICell, ECurrentDayPopUp, ELeftMenuPage, EPagePopUpExit } from '../../types';
 import s from './index.module.scss'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
@@ -77,6 +77,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 	)
 	const currentLeftMenu = useSelector((state: any) => state.leftMenu)
 
+	const isEditDayPopUp = useSelector((state: any) => state.isEditDayPopUp)
 	const currentScheduleDay = useSelector(
 		(state: any) => state.currentScheduleDay,
 	)
@@ -492,24 +493,31 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												// 	'currentMonth',
 												// 	currentMonth,
 												// )
-												dispatch({
-													type: 'SET_CALENDAR_NOW_POPUP',
-													payload: {
-														day: String(day),
-														month: String(
-															// isUsed ? currentMonth + 2 : currentMonth + 1,
-															(currentPartOfMonth == 1
-																? currentMonth + 1
-																: currentPartOfMonth == 0
-																	? currentMonth - 1
-																	: currentPartOfMonth == 2
-																		? currentMonth + 2
-																		: currentMonth) - 1,
-														),
-														year: String(currentYear),
-													},
-												})
-												setPagePopup(PagePopup.DayCalendar)
+												if (!isEditDayPopUp) {
+													dispatch({
+														type: 'SET_CALENDAR_NOW_POPUP',
+														payload: {
+															day: String(day),
+															month: String(
+																// isUsed ? currentMonth + 2 : currentMonth + 1,
+																(currentPartOfMonth == 1
+																	? currentMonth + 1
+																	: currentPartOfMonth == 0
+																		? currentMonth - 1
+																		: currentPartOfMonth == 2
+																			? currentMonth + 2
+																			: currentMonth) - 1,
+															),
+															year: String(currentYear),
+														},
+													})
+													setPagePopup(PagePopup.DayCalendar)
+												} else {
+													dispatch({
+														type: 'SET_DAY_POPUP_EXIT',
+														payload: EPagePopUpExit.Exit,
+													})
+												}
 											}}
 											key={dayIndex}>
 											<div className={s.content}>

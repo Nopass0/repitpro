@@ -29,6 +29,7 @@ const Header = ({}: IHeader) => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const editedCards = useSelector((state: any) => state.editedCards)
 	const mobileLeftSelector = useSelector((state: any) => state.mobileLeft)
+	const isEditDayPopUp = useSelector((state: any) => state.isEditDayPopUp)
 	const handleLogout = () => {
 		dispatch({type: 'LOGOUT'})
 		navigate('/login')
@@ -323,6 +324,15 @@ const Header = ({}: IHeader) => {
 						</button>
 						<Link
 							to={'/statistics'}
+							onClick={(e) => {
+								if (isEditDayPopUp) {
+									dispatch({
+										type: 'SET_DAY_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
+									})
+									e.preventDefault()
+								}
+							}}
 							className={s.greenBtn + ' ' + s.rightlyLastBtns}>
 							<p className={s.btnText}>Статистика</p>
 						</Link>

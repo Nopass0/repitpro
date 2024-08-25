@@ -15,6 +15,7 @@ import Arrow, {ArrowType} from '../../assets/arrow'
 import DayCalendarLineClient from '../DayCalendarLineClient'
 import ExitPopUp from '../ExitPopUp'
 import ReactDOM from 'react-dom'
+import {EPagePopUpExit} from '@/types'
 
 interface IDayCalendarPopUp {
 	style?: React.CSSProperties
@@ -24,10 +25,6 @@ interface IDayCalendarPopUp {
 	className?: string
 }
 
-enum PagePopup {
-	Exit,
-	None,
-}
 const DayCalendarPopUp = ({
 	style,
 	onExit,
@@ -68,11 +65,12 @@ const DayCalendarPopUp = ({
 	]
 
 	const [editMode, setEditMode] = React.useState(false)
-	const [firstTimeExit, setFirstTimeExit] = useState<boolean>(true)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
-	const [pagePopup, setPagePopup] = useState<PagePopup>(PagePopup.None)
-
+	const [pagePopup, setPagePopup] = useState<EPagePopUpExit>(
+		EPagePopUpExit.None,
+	)
+	const dayPopUpExit = useSelector((state: any) => state.dayPopUpExit)
 	const [students, setStudents] = React.useState<
 		{
 			nameStudent: string
@@ -378,13 +376,6 @@ const DayCalendarPopUp = ({
 
 	// Отсортированный список студентов
 	const sortedStudents = sortStudentsByStartTime(students)
-	useEffect(() => {
-		console.log(editMode, firstTimeExit, 'useEffect')
-		if (editMode && !firstTimeExit) {
-			console.log(editMode, firstTimeExit, 'useEffect A')
-			setPagePopup(PagePopup.Exit)
-		}
-	}, [isEditDayPopUp])
 	return (
 		<>
 			<div
@@ -402,8 +393,8 @@ const DayCalendarPopUp = ({
 											handlePrevDay()
 										} else {
 											dispatch({
-												type: 'SET_IS_EDIT_DAY_POPUP',
-												payload: true,
+												type: 'SET_DAY_POPUP_EXIT',
+												payload: EPagePopUpExit.Exit,
 											})
 										}
 									}}>
@@ -433,8 +424,8 @@ const DayCalendarPopUp = ({
 											handleAddDay()
 										} else {
 											dispatch({
-												type: 'SET_IS_EDIT_DAY_POPUP',
-												payload: true,
+												type: 'SET_DAY_POPUP_EXIT',
+												payload: EPagePopUpExit.Exit,
 											})
 										}
 									}}>
@@ -451,11 +442,12 @@ const DayCalendarPopUp = ({
 									} else {
 										console.log(editMode, isEditDayPopUp, 'EXIT')
 										dispatch({
-											type: 'SET_IS_EDIT_DAY_POPUP',
-											payload: true,
+											type: 'SET_DAY_POPUP_EXIT',
+											payload: EPagePopUpExit.Exit,
 										})
 
-										console.log(editMode, isEditDayPopUp, 'EXIT2')
+										console.log('Exit Yes')
+										console.log(editMode, isEditDayPopUp, pagePopup, 'EXIT2')
 									}
 								}}>
 								<CloseIcon className={s.closeIcon} />
@@ -583,7 +575,12 @@ const DayCalendarPopUp = ({
 										payload: false,
 									})
 								}
-								console.log(isEditDayPopUp,'Saved version: ', students)
+								dispatch({
+									type: 'SET_DAY_POPUP_EXIT',
+									payload: EPagePopUpExit.Exit,
+								})
+
+								console.log(isEditDayPopUp, 'Saved version: ', students)
 								handleSend(students)
 							}}
 							className={`${s.SaveBtn} ${editMode && s.active}`}>
@@ -630,20 +627,27 @@ const DayCalendarPopUp = ({
 				</div>
 			</div>
 			{ReactDOM.createPortal(
-				pagePopup === PagePopup.Exit && editMode && (
+				dayPopUpExit === EPagePopUpExit.Exit && editMode && (
 					<>
 						<div className={s.PopUp__wrapper}>
 							<ExitPopUp
 								className={s.PopUp}
-								title="Вы действительно хотите выйти?"
+								title="Сохранить изменения?"
 								yes={() => {
-									students && handleSend(students)
+									handleSend(students)
 									setEditMode(false)
 									dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
-									setPagePopup(PagePopup.None)
-									setFirstTimeExit(false)
+									dispatch({
+										type: 'SET_DAY_POPUP_EXIT',
+										payload: EPagePopUpExit.None,
+									})
 								}}
-								no={() => setPagePopup(PagePopup.None)}
+								no={() => {
+									dispatch({
+										type: 'SET_DAY_POPUP_EXIT',
+										payload: EPagePopUpExit.None,
+									})
+								}}
 							/>
 						</div>
 					</>

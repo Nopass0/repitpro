@@ -46,6 +46,7 @@ const defaultState = {
 	addGroupExit: false,
 	addClientExit: false,
 	isEditDayPopUp: false,
+	dayPopUpExit: EPagePopUpExit.None,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -143,6 +144,8 @@ const reducer = (state = defaultState, action: any) => {
 			return {...state, addClientExit: action.payload}
 		case 'SET_IS_EDIT_DAY_POPUP':
 			return {...state, isEditDayPopUp: action.payload}
+		case 'SET_DAY_POPUP_EXIT':
+			return {...state, dayPopUpExit: action.payload}
 		default:
 			return state
 	}
