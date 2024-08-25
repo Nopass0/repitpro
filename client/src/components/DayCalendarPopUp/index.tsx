@@ -13,6 +13,8 @@ import {debounce} from 'lodash'
 
 import Arrow, {ArrowType} from '../../assets/arrow'
 import DayCalendarLineClient from '../DayCalendarLineClient'
+import ExitPopUp from '../ExitPopUp'
+import ReactDOM from 'react-dom'
 
 interface IDayCalendarPopUp {
 	style?: React.CSSProperties
@@ -22,6 +24,10 @@ interface IDayCalendarPopUp {
 	className?: string
 }
 
+enum PagePopup {
+	Exit,
+	None,
+}
 const DayCalendarPopUp = ({
 	style,
 	onExit,
@@ -42,7 +48,7 @@ const DayCalendarPopUp = ({
 	const currentMonth = useSelector((state: any) => state.currentMonth)
 	const currentYear = useSelector((state: any) => state.currentYear)
 	const details = useSelector((state: any) => state.details)
-
+	const isEditDayPopUp = useSelector((state: any) => state.isEditDayPopUp)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const dispath = useDispatch()
 	//for date mode
@@ -62,9 +68,10 @@ const DayCalendarPopUp = ({
 	]
 
 	const [editMode, setEditMode] = React.useState(false)
-
+	const [firstTimeExit, setFirstTimeExit] = useState<boolean>(true)
 	const user = useSelector((state: any) => state.user)
 	const token = user.token
+	const [pagePopup, setPagePopup] = useState<PagePopup>(PagePopup.None)
 
 	const [students, setStudents] = React.useState<
 		{
@@ -371,105 +378,129 @@ const DayCalendarPopUp = ({
 
 	// Отсортированный список студентов
 	const sortedStudents = sortStudentsByStartTime(students)
-
+	useEffect(() => {
+		console.log(editMode, firstTimeExit, 'useEffect')
+		if (editMode && !firstTimeExit) {
+			console.log(editMode, firstTimeExit, 'useEffect A')
+			setPagePopup(PagePopup.Exit)
+		}
+	}, [isEditDayPopUp])
 	return (
-		<div
-			style={style}
-			className={`${!details ? s.wrapper : s.wrapperNoDetails} ${className}`}>
-			<div>
-				<header className={s.Header}>
-					<div className={s.HeaderItems}>
-						<div></div>
-						<div className={s.dataSlidePicker}>
-							<button
-								className={s.btn}
-								onClick={() => {
-									handlePrevDay()
-								}}>
-								<span>
-									<Arrow direction={ArrowType.left} />
-								</span>
-							</button>
-							<mui.Select
-								className={s.muiSelect}
-								multiple={true}
-								renderValue={(option: mui.SelectOption<number> | null) => {
-									return (
-										<>
-											<p className={s.btnText}>
-												{calendarNowPopupDay}{' '}
-												{months[Number(calendarNowPopupMonth) - 1]}{' '}
-												{calendarNowPopupYear}г.
-											</p>
-										</>
-									)
-								}}></mui.Select>
+		<>
+			<div
+				style={style}
+				className={`${!details ? s.wrapper : s.wrapperNoDetails} ${className}`}>
+				<div>
+					<header className={s.Header}>
+						<div className={s.HeaderItems}>
+							<div></div>
+							<div className={s.dataSlidePicker}>
+								<button
+									className={s.btn}
+									onClick={() => {
+										if (!editMode) {
+											handlePrevDay()
+										} else {
+											dispatch({
+												type: 'SET_IS_EDIT_DAY_POPUP',
+												payload: true,
+											})
+										}
+									}}>
+									<span>
+										<Arrow direction={ArrowType.left} />
+									</span>
+								</button>
+								<mui.Select
+									className={s.muiSelect}
+									multiple={true}
+									renderValue={(option: mui.SelectOption<number> | null) => {
+										return (
+											<>
+												<p className={s.btnText}>
+													{calendarNowPopupDay}{' '}
+													{months[Number(calendarNowPopupMonth) - 1]}{' '}
+													{calendarNowPopupYear}г.
+												</p>
+											</>
+										)
+									}}></mui.Select>
 
+								<button
+									className={s.btn}
+									onClick={() => {
+										if (!editMode) {
+											handleAddDay()
+										} else {
+											dispatch({
+												type: 'SET_IS_EDIT_DAY_POPUP',
+												payload: true,
+											})
+										}
+									}}>
+									<span>
+										<Arrow direction={ArrowType.right} />
+									</span>
+								</button>
+							</div>
 							<button
-								className={s.btn}
+								className={s.closeIconWrap}
 								onClick={() => {
-									handleAddDay()
+									if (!editMode) {
+										onExit()
+									} else {
+										console.log(editMode, isEditDayPopUp, 'EXIT')
+										dispatch({
+											type: 'SET_IS_EDIT_DAY_POPUP',
+											payload: true,
+										})
+
+										console.log(editMode, isEditDayPopUp, 'EXIT2')
+									}
 								}}>
-								<span>
-									<Arrow direction={ArrowType.right} />
-								</span>
+								<CloseIcon className={s.closeIcon} />
 							</button>
 						</div>
-						<button className={s.closeIconWrap} onClick={onExit}>
-							<CloseIcon className={s.closeIcon} />
-						</button>
-					</div>
-				</header>
-				<section className={s.MainBlock}>
-					<Line width="700px" className={s.LineHeader} />
-					{clients &&
-						clients.map((client: any, index: number) => (
-							<React.Fragment key={client.id}>
-								{client.clientId !== clients[index + 1]?.clientId && (
-									<>
-										<DayCalendarLineClient
-											id={client.clientId}
-											key={client.id}
-											name={client.studentName}
-											price={client.workPrice}
-											studentId=""
-											item={client.itemName}
-											priceCheck={
-												client.workStages[0].endPaymentPrice ===
-												client.workPrice
-													? client.workStages[0].endPaymentPayed
-													: client.workStages[0].firstPaymentPayed
-											}
-											procent={`
+					</header>
+					<section className={s.MainBlock}>
+						<Line width="700px" className={s.LineHeader} />
+						{clients &&
+							clients.map((client: any, index: number) => (
+								<React.Fragment key={client.id}>
+									{client.clientId !== clients[index + 1]?.clientId && (
+										<>
+											<DayCalendarLineClient
+												id={client.clientId}
+												key={client.id}
+												name={client.studentName}
+												price={client.workPrice}
+												studentId=""
+												item={client.itemName}
+												priceCheck={
+													client.workStages[0].endPaymentPrice ===
+													client.workPrice
+														? client.workStages[0].endPaymentPayed
+														: client.workStages[0].firstPaymentPayed
+												}
+												procent={`
                       ${Math.round((client.workPrice / client.totalWorkPrice) * 100)}`}
-										/>
-										<Line className={s.Line} width="700px" />
-									</>
-								)}
-							</React.Fragment>
-						))}
+											/>
+											<Line className={s.Line} width="700px" />
+										</>
+									)}
+								</React.Fragment>
+							))}
 
-					{sortedStudents.map((student: any) => (
-						<React.Fragment key={student._id || student.id}>
-							<DayCalendarLine
-								key={student._id || student.id}
-								id={student.id}
-								place={student.place}
-								studentId={student.studentId}
-								groupId={student.groupId}
-								students={students}
-								onUpdate={(
-									id,
-									editIcon,
-									editName,
-									editTimeStart,
-									editTimeEnd,
-									editItem,
-									editPrice,
-									isDelete,
-									studentId,
-								) =>
-									onUpdate(
+						{sortedStudents.map((student: any) => (
+							<React.Fragment key={student._id || student.id}>
+								<DayCalendarLine
+									key={student._id || student.id}
+									id={student.id}
+									place={student.place}
+									studentId={student.studentId}
+									groupId={student.groupId}
+									students={students}
+									onUpdate={(
 										id,
 										editIcon,
 										editName,
@@ -479,100 +510,147 @@ const DayCalendarPopUp = ({
 										editPrice,
 										isDelete,
 										studentId,
-									)
+									) =>
+										onUpdate(
+											id,
+											editIcon,
+											editName,
+											editTimeStart,
+											editTimeEnd,
+											editItem,
+											editPrice,
+											isDelete,
+											studentId,
+										)
+									}
+									LineClick={LineClick}
+									iconClick={iconClick}
+									icon={student.type == 'group' ? 3 : student.typeLesson}
+									isCancel={student.isCancel}
+									editMode={editMode}
+									timeStart={
+										timeNormalize(student.startTime.hour) +
+										':' +
+										timeNormalize(student.startTime.minute)
+									}
+									timeEnd={
+										timeNormalize(student.endTime.hour) +
+										':' +
+										timeNormalize(student.endTime.minute)
+									}
+									name={
+										student.type == 'student'
+											? student.nameStudent
+											: student.groupName
+									}
+									item={student.itemName}
+									price={student.costOneLesson}
+									prevpay={student.tryLessonCheck}
+									type={student.type}
+								/>
+								<Line className={s.Line} width="700px" />
+							</React.Fragment>
+						))}
+						{Array.from({length: 8}).map((_, index: number) => (
+							<React.Fragment key={`fake-${index}`}>
+								<div className={s.FakeBlock}></div>
+								<Line className={s.Line} width="700px" />
+							</React.Fragment>
+						))}
+					</section>
+				</div>
+				<div>
+					<section className={s.ThreeBtnWrapper}>
+						<button
+							onClick={() => {
+								if (!editMode) {
+									setEditMode(!editMode)
+									dispatch({
+										type: 'SET_IS_EDIT_DAY_POPUP',
+										payload: true,
+									})
 								}
-								LineClick={LineClick}
-								iconClick={iconClick}
-								icon={student.type == 'group' ? 3 : student.typeLesson}
-								isCancel={student.isCancel}
-								editMode={editMode}
-								timeStart={
-									timeNormalize(student.startTime.hour) +
-									':' +
-									timeNormalize(student.startTime.minute)
+							}}
+							className={`${s.EditBtn} ${!editMode && s.active}`}>
+							Редактировать
+						</button>
+						<button
+							onClick={() => {
+								if (editMode) {
+									setEditMode(!editMode)
+									dispatch({
+										type: 'SET_IS_EDIT_DAY_POPUP',
+										payload: false,
+									})
 								}
-								timeEnd={
-									timeNormalize(student.endTime.hour) +
-									':' +
-									timeNormalize(student.endTime.minute)
-								}
-								name={
-									student.type == 'student'
-										? student.nameStudent
-										: student.groupName
-								}
-								item={student.itemName}
-								price={student.costOneLesson}
-								prevpay={student.tryLessonCheck}
-								type={student.type}
+								console.log(isEditDayPopUp,'Saved version: ', students)
+								handleSend(students)
+							}}
+							className={`${s.SaveBtn} ${editMode && s.active}`}>
+							Сохранить
+						</button>
+						<button
+							onClick={() => {
+								handeleAddStudentDay()
+							}}
+							className={s.PlusBtn}>
+							<img src={Plus} alt={Plus} />
+						</button>
+					</section>
+					<footer className={s.Footer}>
+						<div className={s.Left}>
+							<div className={s.Lessons}>
+								<p>
+									Занятий: <b>{students.length}</b>
+								</p>
+								{!hiddenNum && (
+									<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+								)}
+							</div>
+							<div className={s.works}>
+								<p>
+									Работ: <b>{clients && clients.length}</b>
+								</p>
+								{!hiddenNum && (
+									<b>
+										{clients && clients.reduce((a, b) => +a + +b.workPrice, 0)}₽
+									</b>
+								)}
+							</div>
+						</div>
+						<div className={s.income}>
+							{!hiddenNum && (
+								<p>
+									Доход:{' '}
+									<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+								</p>
+							)}
+						</div>
+					</footer>
+				</div>
+			</div>
+			{ReactDOM.createPortal(
+				pagePopup === PagePopup.Exit && editMode && (
+					<>
+						<div className={s.PopUp__wrapper}>
+							<ExitPopUp
+								className={s.PopUp}
+								title="Вы действительно хотите выйти?"
+								yes={() => {
+									students && handleSend(students)
+									setEditMode(false)
+									dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
+									setPagePopup(PagePopup.None)
+									setFirstTimeExit(false)
+								}}
+								no={() => setPagePopup(PagePopup.None)}
 							/>
-							<Line className={s.Line} width="700px" />
-						</React.Fragment>
-					))}
-					{Array.from({length: 8}).map((_, index: number) => (
-						<React.Fragment key={`fake-${index}`}>
-							<div className={s.FakeBlock}></div>
-							<Line className={s.Line} width="700px" />
-						</React.Fragment>
-					))}
-				</section>
-			</div>
-			<div>
-				<section className={s.ThreeBtnWrapper}>
-					<button
-						onClick={() => editMode === false && setEditMode(!editMode)}
-						className={`${s.EditBtn} ${!editMode && s.active}`}>
-						Редактировать
-					</button>
-					<button
-						onClick={() => {
-							editMode === true && setEditMode(!editMode)
-							console.log('Saved version: ', students)
-							handleSend(students)
-						}}
-						className={`${s.SaveBtn} ${editMode && s.active}`}>
-						Сохранить
-					</button>
-					<button
-						onClick={() => {
-							handeleAddStudentDay()
-						}}
-						className={s.PlusBtn}>
-						<img src={Plus} alt={Plus} />
-					</button>
-				</section>
-				<footer className={s.Footer}>
-					<div className={s.Left}>
-						<div className={s.Lessons}>
-							<p>
-								Занятий: <b>{students.length}</b>
-							</p>
-							{!hiddenNum && (
-								<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
-							)}
 						</div>
-						<div className={s.works}>
-							<p>
-								Работ: <b>{clients && clients.length}</b>
-							</p>
-							{!hiddenNum && (
-								<b>
-									{clients && clients.reduce((a, b) => +a + +b.workPrice, 0)}₽
-								</b>
-							)}
-						</div>
-					</div>
-					<div className={s.income}>
-						{!hiddenNum && (
-							<p>
-								Доход:{' '}
-								<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
-							</p>
-						)}
-					</div>
-				</footer>
-			</div>
-		</div>
+					</>
+				),
+				document.body,
+			)}
+		</>
 	)
 }
 

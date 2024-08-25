@@ -18,6 +18,7 @@ import {ECurrentDayPopUp, ELeftMenuPage} from '../../types'
 import socket from '../../socket'
 import DayStudentPopUp from '../DayStudentPopUp'
 import ExitPopUp from '../ExitPopUp/index'
+import ReactDOM from 'react-dom'
 
 enum PagePopup {
 	Exit,
@@ -517,47 +518,39 @@ const DayCalendarLine = ({
 					price={editPrice}
 				/>
 			)}
-			{pagePopup === PagePopup.Exit && (
-				<>
+
+			{ReactDOM.createPortal(
+				pagePopup === PagePopup.Cancel && (
 					<div className={s.PopUp__wrapper}>
 						<ExitPopUp
 							className={s.PopUp}
-							title="Вы действительно хотите удалить?"
-							yes={() => {
-								setIsDelete(true)
-								handleUpdate()
-								setPagePopup(PagePopup.None)
-							}}
+							title="Вы действительно хотите отменить занятие?"
+							yes={confirmCancel}
 							no={() => setPagePopup(PagePopup.None)}
 						/>
 					</div>
-				</>
+				),
+				document.body,
 			)}
-			{pagePopup === PagePopup.Cancel && (
-				<div className={s.PopUp__wrapper}>
-					<ExitPopUp
-						className={s.PopUp}
-						title="Вы действительно хотите отменить занятие?"
-						yes={confirmCancel}
-						no={() => setPagePopup(PagePopup.None)}
-					/>
-				</div>
-			)}
-			{pagePopup === PagePopup.PrePay && (
-				<>
-					<div className={s.PopUp__wrapper}>
-						<ExitPopUp
-							className={s.PopUp}
-							title="Подтвердите действие"
-							yes={() => {
-								setEditPrevpay(!editPrevpay)
-								handleUpdate()
-								setPagePopup(PagePopup.None)
-							}}
-							no={() => setPagePopup(PagePopup.None)}
-						/>
-					</div>
-				</>
+
+			{ReactDOM.createPortal(
+				pagePopup === PagePopup.PrePay && (
+					<>
+						<div className={s.PopUp__wrapper}>
+							<ExitPopUp
+								className={s.PopUp}
+								title="Подтвердите действие"
+								yes={() => {
+									setEditPrevpay(!editPrevpay)
+									handleUpdate()
+									setPagePopup(PagePopup.None)
+								}}
+								no={() => setPagePopup(PagePopup.None)}
+							/>
+						</div>
+					</>
+				),
+				document.body,
 			)}
 		</>
 	)

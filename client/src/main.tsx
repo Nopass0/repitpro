@@ -45,6 +45,7 @@ const defaultState = {
 	addStudentExit: false,
 	addGroupExit: false,
 	addClientExit: false,
+	isEditDayPopUp: false,
 }
 socket.emit('getMonth', {
 	currentMonth: defaultState.currentMonth,
@@ -140,6 +141,8 @@ const reducer = (state = defaultState, action: any) => {
 			return {...state, addGroupExit: action.payload}
 		case 'SET_ADD_CLIENT_EXIT':
 			return {...state, addClientExit: action.payload}
+		case 'SET_IS_EDIT_DAY_POPUP':
+			return {...state, isEditDayPopUp: action.payload}
 		default:
 			return state
 	}

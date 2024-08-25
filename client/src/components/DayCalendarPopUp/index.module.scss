@@ -291,12 +291,24 @@ input {
 }
 
 .PopUp__wrapper {
-	position: absolute;
+	// position: absolute;
+	// z-index: 100;
 	z-index: 100;
-	max-width: 200px !important;
+	position: absolute;
+	top: 200px;
+	bottom: 0;
+	left: 150px;
+	right: 0;
+	// max-width: 200px !important;
 }
 .PopUp {
+	// position: relative;
+	// left: 350px;
+	// z-index: 100;
+	width: 200px;
+	max-width: 350px;
 	position: relative;
-	left: 350px;
-	z-index: 100;
+	top: 20%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
