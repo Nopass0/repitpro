@@ -1071,6 +1071,7 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
+		console.log('addStudent')
 		dispatch({
 			type: 'SET_CURRENT_OPENED_STUDENT',
 			payload: '',
@@ -1109,6 +1110,7 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	const handleAddGroupExit = () => {
+		console.log('addGroup')
 		dispatch({
 			type: 'SET_CURRENT_OPENED_GROUP',
 			payload: '',
@@ -1143,6 +1145,7 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	const handleAddClientExit = () => {
+		console.log('addClient')
 		dispatch({
 			type: 'SET_CURRENT_OPENED_CLIENT',
 			payload: '',
@@ -2233,7 +2236,21 @@ const AddStudent = ({}: IAddStudent) => {
 						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
+							console.log('Click Yes')
+							if (addStudentExit) {
+								console.log('if addStud')
+								handleAddStudentExit()
+							}
+							if (addGroupExit) {
+								console.log('if addGroup')
+								handleAddGroupExit()
+							}
+							if (addClientExit) {
+								console.log('if addClient')
+								handleAddClientExit()
+							}
 							if (!addStudentExit && !addGroupExit && !addClientExit) {
+								console.log('not if')
 								dispatch({type: 'SET_EDITED_CARDS', payload: false})
 								dispatch({
 									type: 'SET_LEFT_MENU_PAGE',
@@ -2244,16 +2261,6 @@ const AddStudent = ({}: IAddStudent) => {
 									payload: EPagePopUpExit.None,
 								})
 								navigate('../')
-							}
-
-							if (addStudentExit) {
-								handleAddStudentExit()
-							}
-							if (addGroupExit) {
-								handleAddGroupExit()
-							}
-							if (addClientExit) {
-								handleAddClientExit()
 							}
 						}}
 						no={() =>

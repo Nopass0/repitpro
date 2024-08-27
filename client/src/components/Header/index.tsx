@@ -167,6 +167,7 @@ const Header = ({}: IHeader) => {
 										ELeftMenuPage.MyCabinet !== EleftMenu &&
 										editedCards
 									) {
+										console.log('addStudentExit')
 										dispatch({
 											type: 'SET_ADD_STUDENT_EXIT',
 											payload: true,
@@ -193,6 +194,7 @@ const Header = ({}: IHeader) => {
 										ELeftMenuPage.MyCabinet !== EleftMenu &&
 										editedCards
 									) {
+										console.log('addGroupExit')
 										dispatch({
 											type: 'SET_ADD_GROUP_EXIT',
 											payload: true,
@@ -219,6 +221,7 @@ const Header = ({}: IHeader) => {
 										ELeftMenuPage.MyCabinet !== EleftMenu &&
 										editedCards
 									) {
+										console.log('addClientExit')
 										dispatch({
 											type: 'SET_ADD_CLIENT_EXIT',
 											payload: true,

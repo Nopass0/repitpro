@@ -460,7 +460,117 @@ const AddClient = ({}: IAddClient) => {
 		})
 		window.location.reload()
 	}
+	const addStudentExit = useSelector((state: any) => state.addStudentExit)
+	const addGroupExit = useSelector((state: any) => state.addGroupExit)
+	const addClientExit = useSelector((state: any) => state.addClientExit)
+	const handleAddStudentExit = () => {
+		console.log('addStudent')
+		dispatch({
+			type: 'SET_CURRENT_OPENED_STUDENT',
+			payload: '',
+		})
 
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		socket.emit('getGroupByStudentId', {
+			token: token,
+			studentId: '',
+		})
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_STUDENT_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddStudent,
+			})
+		}, 10)
+	}
+
+	const handleAddGroupExit = () => {
+		console.log('addGroup')
+		dispatch({
+			type: 'SET_CURRENT_OPENED_GROUP',
+			payload: '',
+		})
+		socket.emit('getGroupById', {token: token, groupId: ''})
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_STUDENT_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddGroup,
+			})
+		}, 10)
+	}
+
+	const handleAddClientExit = () => {
+		console.log('addClient')
+		dispatch({
+			type: 'SET_CURRENT_OPENED_CLIENT',
+			payload: '',
+		})
+		socket.emit('getClientById', {token: token, clientId: ''})
+		dispatch({
+			type: 'SET_LEFT_MENU_PAGE',
+			payload: ELeftMenuPage.MainPage,
+		})
+		dispatch({
+			type: 'SET_PAGE_POPUP_EXIT',
+			payload: EPagePopUpExit.None,
+		})
+		dispatch({
+			type: 'SET_ADD_STUDENT_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_GROUP_EXIT',
+			payload: false,
+		})
+		dispatch({
+			type: 'SET_ADD_CLIENT_EXIT',
+			payload: false,
+		})
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_LEFT_MENU_PAGE',
+				payload: ELeftMenuPage.AddClient,
+			})
+		}, 10)
+	}
 	const handleToArchive = () => {
 		socket.emit('clientToArhive', {
 			token: token,
@@ -1907,16 +2017,31 @@ const AddClient = ({}: IAddClient) => {
 						className={s.ExitPopUp}
 						title="Закрыть без сохранения?"
 						yes={() => {
-							dispatch({type: 'SET_EDITED_CARDS', payload: false})
-							dispatch({
-								type: 'SET_LEFT_MENU_PAGE',
-								payload: ELeftMenuPage.MainPage,
-							})
-							dispatch({
-								type: 'SET_PAGE_POPUP_EXIT',
-								payload: EPagePopUpExit.None,
-							})
-							navigate('../')
+							if (addStudentExit) {
+								console.log('if addStud')
+								handleAddStudentExit()
+							}
+							if (addGroupExit) {
+								console.log('if addGroup')
+								handleAddGroupExit()
+							}
+							if (addClientExit) {
+								console.log('if addClient')
+								handleAddClientExit()
+							}
+							if (!addStudentExit && !addGroupExit && !addClientExit) {
+								console.log('not if')
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								dispatch({
+									type: 'SET_LEFT_MENU_PAGE',
+									payload: ELeftMenuPage.MainPage,
+								})
+								dispatch({
+									type: 'SET_PAGE_POPUP_EXIT',
+									payload: EPagePopUpExit.None,
+								})
+								navigate('../')
+							}
 						}}
 						no={() =>
 							dispatch({
