@@ -2283,7 +2283,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
 
 export async function updateStudentAndItems(data: any, socket: any) {
   const { id, items, audios, files, token } = data;
-
+  console.log(data.historyLessons, 'DataHistory');
   try {
     const token_ = await db.token.findFirst({
       where: { token },
@@ -2370,6 +2370,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
     });
 
     socket.emit("updateStudentAndItems", finalUpdatedStudent);
+
     return finalUpdatedStudent;
   } catch (error) {
     console.error("Error updating student and items:", error);

@@ -35,7 +35,7 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 	finishDelete,
 }) => {
 	const [prePayCost, setPrePayCost] = useState<string>(cost)
-	const [prePayDate, setPrePayDate] = useState<any>(new Date(Date.now()))
+	const [prePayDate, setPrePayDate] = useState<Date>(new Date(Date.now()))
 	const formatDate = (date: any) => {
 		// Проверка, является ли date объектом Date
 		if (!(date instanceof Date)) {

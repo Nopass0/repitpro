@@ -81,6 +81,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const addStudentExit = useSelector((state: any) => state.addStudentExit)
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
+	const [combinedHistory, setCombinedHistory] = useState([])
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -114,6 +115,7 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	function handlePrePayEdit(id: number, newDate: Date, newCost: string) {
+		console.log(newDate, 'NewDate')
 		setPrePayList((prevList) =>
 			prevList.map((item) =>
 				item.id === id ? {...item, date: newDate, cost: newCost} : item,
@@ -901,10 +903,10 @@ const AddStudent = ({}: IAddStudent) => {
 		// Обновляем состояние
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		if (!historyLessonsFirst) {
-			setHistoryLesson(historyLessons_)
-			handlePrePayment(historyLessons_)
-		}
+		// if (!historyLessonsFirst) {
+		setHistoryLesson(historyLessons_)
+		handlePrePayment(historyLessons_)
+		// }
 		console.log(historyLesson, 'historyLesson___2')
 	}, [items, prePayCost, prePayDate])
 
@@ -1024,6 +1026,30 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [prePayList])
 
+	const findNearestDateElement = () => {
+		const todayFormat = formatDate(new Date(Date.now()))
+		const today = new Date()
+		let nearestDateDiff = Infinity
+		let nearestDateElement = null
+
+		combinedHistory.forEach((lesson, index) => {
+			const lessonDate = new Date(lesson.date)
+			const diff = Math.abs(today.getTime() - lessonDate.getTime())
+			const lessonDateFormat = formatDate(lesson.date)
+			if (lessonDateFormat === todayFormat) {
+				nearestDateElement = document.getElementById(
+					`history-data-${lessonDateFormat}`,
+				)
+			} else if (diff < nearestDateDiff) {
+				nearestDateDiff = diff
+				nearestDateElement = document.getElementById(
+					`history-data-${lessonDateFormat}`,
+				)
+			}
+		})
+
+		return nearestDateElement
+	}
 	useEffect(() => {
 		if (open && listRef.current) {
 			const nearestDateElement = findNearestDateElement()
@@ -1032,25 +1058,6 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 		}
 	}, [open])
-
-	const findNearestDateElement = () => {
-		const today = new Date()
-		let nearestDateDiff = Infinity
-		let nearestDateElement = null
-
-		historyLesson.forEach((lesson, index) => {
-			const lessonDate = new Date(lesson.date)
-			const diff = Math.abs(today.getTime() - lessonDate.getTime())
-			if (diff < nearestDateDiff) {
-				nearestDateDiff = diff
-				nearestDateElement = document.getElementById(`history-lesson-${index}`)
-			}
-		})
-
-		return nearestDateElement
-	}
-
-	const [combinedHistory, setCombinedHistory] = useState([])
 
 	useEffect(() => {
 		const combined = [
@@ -1068,7 +1075,17 @@ const AddStudent = ({}: IAddStudent) => {
 
 		const sorted = combined.sort((a, b) => b.date - a.date)
 		setCombinedHistory(sorted)
-	}, [historyLesson, prePayList])
+		console.log(
+			combinedHistory,
+			'combinedHistory',
+			historyLesson,
+			'historyLesson',
+			prePayList,
+			'prePayList',
+			historyLessonsFirst,
+			'historyLessonsFirst',
+		)
+	}, [historyLesson, prePayList, open])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
@@ -1392,7 +1409,7 @@ const AddStudent = ({}: IAddStudent) => {
 												<>
 													{combinedHistory.map((item, index) => (
 														<div
-															id={`history-item-${index}`}
+															id={`history-data-${formatDate(item.date)}`}
 															key={index}
 															className={s.ListObject}>
 															{item.type === 'lesson' ? (
