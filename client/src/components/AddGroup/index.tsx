@@ -1453,7 +1453,7 @@ const AddGroup = ({className}: IAddGroup) => {
 		})
 	}
 
-	function handlePrePayEdit(id: number, newDate: Date, newCost: string) {
+	function  handlePrePayEdit(id: number, newDate: Date, newCost: string) {
 		setPrePayListValue((prevList) => {
 			const updatedList = prevList.map((item) =>
 				item.id === id ? {...item, date: newDate, cost: newCost} : item,

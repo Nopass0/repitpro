@@ -110,19 +110,15 @@ const AddStudent = ({}: IAddStudent) => {
 
 	function handlePrePayDelete(id: number) {
 		setPrePayList((prevList) => prevList.filter((item) => item.id !== id))
-
-		console.log(prePayList, 'handleDelete')
 	}
 
 	function handlePrePayEdit(id: number, newDate: Date, newCost: string) {
-		console.log(newDate, 'NewDate')
 		setPrePayList((prevList) =>
 			prevList.map((item) =>
 				item.id === id ? {...item, date: newDate, cost: newCost} : item,
 			),
 		)
 		setEditId(null)
-		console.log(prePayList, 'handleEdit')
 	}
 
 	const startEditing = (id: number) => {
@@ -1075,16 +1071,6 @@ const AddStudent = ({}: IAddStudent) => {
 
 		const sorted = combined.sort((a, b) => b.date - a.date)
 		setCombinedHistory(sorted)
-		console.log(
-			combinedHistory,
-			'combinedHistory',
-			historyLesson,
-			'historyLesson',
-			prePayList,
-			'prePayList',
-			historyLessonsFirst,
-			'historyLessonsFirst',
-		)
 	}, [historyLesson, prePayList, open])
 
 	const handleAddStudentExit = () => {
@@ -1497,7 +1483,9 @@ const AddStudent = ({}: IAddStudent) => {
 																		cost={item.cost}
 																		date={item.date}
 																		isEditing={editId === item.id}
-																		onEdit={() => startEditing(item.id)}
+																		onEdit={() => {
+																			startEditing(item.id)
+																		}}
 																		onEditDone={(newDate, newCost) =>
 																			handlePrePayEdit(
 																				item.id,
