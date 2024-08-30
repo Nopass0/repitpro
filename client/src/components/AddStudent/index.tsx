@@ -721,7 +721,6 @@ const AddStudent = ({}: IAddStudent) => {
 			const lessonCount = historyLessons_.filter((i) => i.isPaid).length
 			const costOneLessonItems =
 				items.find((item) => item.costOneLesson)?.costOneLesson || 0
-
 			if (
 				Math.floor(Number(prePayCost) / Number(costOneLessonItems)) >
 				lessonCount
@@ -739,7 +738,6 @@ const AddStudent = ({}: IAddStudent) => {
 						return {...lesson}
 					}
 				})
-
 				setHistoryLesson(updatedHistoryLesson)
 			}
 		}
@@ -1069,9 +1067,37 @@ const AddStudent = ({}: IAddStudent) => {
 			})),
 		]
 
-		const sorted = combined.sort((a, b) => b.date - a.date)
+		const sorted = combined.sort((a, b) => {
+			// Сравниваем даты, игнорируя время
+			const dateA = new Date(
+				a.date.getFullYear(),
+				a.date.getMonth(),
+				a.date.getDate(),
+			)
+			const dateB = new Date(
+				b.date.getFullYear(),
+				b.date.getMonth(),
+				b.date.getDate(),
+			)
+
+			const dateComparison = dateB.getTime() - dateA.getTime()
+
+			// Если даты равны, сортируем по типу
+			if (dateComparison === 0) {
+				// Если типы разные, 'lesson' всегда должен быть выше 'prepayment'
+				if (a.type !== b.type) {
+					return a.type === 'lesson' ? -1 : 1
+				}
+				// Если типы одинаковые, сохраняем исходный порядок
+				return 0
+			}
+
+			// Если даты разные, возвращаем результат сравнения дат
+			return dateComparison
+		})
+
 		setCombinedHistory(sorted)
-	}, [historyLesson, prePayList, open])
+	}, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
