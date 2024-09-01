@@ -44,6 +44,8 @@ import {preview} from 'vite'
 import PrePayRow from '../PrePayRow'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import axios from 'axios'
+import React from 'react'
 
 interface IAddGroup {
 	className?: string
@@ -378,79 +380,43 @@ const AddGroup = ({className}: IAddGroup) => {
 									? {
 											...timeline,
 											active: !timeline.active,
-											editingStart: !timeline.active,
-											editingEnd: false,
 										}
-									: {
-											...timeline,
-											active: false,
-											editingStart: false,
-											editingEnd: false,
-										},
+									: timeline,
 							),
 						}
 					: item,
 			),
 		)
-		setShowEndTimePicker(-1)
 	}
 
-	const handleStartTimeChange = (
+	const handleTimeChange = (
 		itemIndex: number,
 		id: number,
-		hour: number,
-		minute: number,
+		startHours: number,
+		startMinutes: number,
+		endHours: number,
+		endMinutes: number,
 	) => {
-		console.log('start', itemIndex, id, hour, minute)
 		setItems((prevItems) =>
 			prevItems.map((item, index) =>
 				index === itemIndex
 					? {
 							...item,
-							timeLinesArray: item.timeLinesArray.map(
-								(timeline) =>
-									timeline.id === id
-										? {
-												...timeline,
-												startTime: {hour, minute},
-												editingEnd: item.lessonDuration! > 0 ? false : true,
-												editingStart: false,
-												active: false, // Закрываем окно выбора начала занятий
-											}
-										: {...timeline, active: false}, // Закрываем окно выбора начала занятий для других строк
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											startTime: {hour: startHours, minute: startMinutes},
+											endTime: {hour: endHours, minute: endMinutes},
+											active: false,
+										}
+									: timeline,
 							),
 						}
 					: item,
 			),
 		)
-
-		if (items[itemIndex].lessonDuration! > 0) {
-			const endHour = hour + Math.floor(items[itemIndex].lessonDuration! / 60)
-			const endMinute = (minute + (items[itemIndex].lessonDuration! % 60)) % 60
-			setItems((prevItems) =>
-				prevItems.map((item, index) =>
-					index === itemIndex
-						? {
-								...item,
-								timeLinesArray: item.timeLinesArray.map((timeline) =>
-									timeline.id === id
-										? {
-												...timeline,
-												endTime: {hour: endHour, minute: endMinute},
-												editingEnd: false,
-											}
-										: timeline,
-								),
-							}
-						: item,
-				),
-			)
-			setShowEndTimePicker(-1)
-		} else {
-			setShowEndTimePicker(id)
-		}
 	}
-
 	const handleEndTimeChange = (
 		itemIndex: number,
 		id: number,
@@ -859,7 +825,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	// 		),
 	// 	)
 	// 	return filteredLessons
-	// }	
+	// }
 	const addStudentExit = useSelector((state: any) => state.addStudentExit)
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
@@ -1096,6 +1062,30 @@ const AddGroup = ({className}: IAddGroup) => {
 			setLinksItems(data.links)
 		}
 	})
+
+	const [freeSlots, setFreeSlots] = useState([])
+
+	useEffect(() => {
+		if (items[currentItemIndex]) {
+			axios
+				.get('http://localhost:3000/check-free-slots', {
+					params: {
+						token: token,
+						startDate: items[currentItemIndex].startLesson,
+						endDate: items[currentItemIndex].endLesson,
+					},
+				})
+				.then((response) => {
+					setFreeSlots(response.data.freeSlots)
+					console.log(
+						`\ncheck-free-slots\n${JSON.stringify(response.data, null, 2)}\n`,
+					)
+				})
+				.catch((error) => {
+					console.error('Error fetching free slots:', error)
+				})
+		}
+	}, [items, currentItemIndex, token])
 
 	useEffect(() => {
 		socket.emit('getGroupById', {
@@ -1453,7 +1443,7 @@ const AddGroup = ({className}: IAddGroup) => {
 		})
 	}
 
-	function  handlePrePayEdit(id: number, newDate: Date, newCost: string) {
+	function handlePrePayEdit(id: number, newDate: Date, newCost: string) {
 		setPrePayListValue((prevList) => {
 			const updatedList = prevList.map((item) =>
 				item.id === id ? {...item, date: newDate, cost: newCost} : item,
@@ -1851,19 +1841,17 @@ const AddGroup = ({className}: IAddGroup) => {
 												<div className={s.Schedule}>
 													{items[currentItemIndex].timeLinesArray.map(
 														(timeline, index) => (
-															<>
+															<React.Fragment key={timeline.id}>
 																<div
 																	id={String(timeline.id)}
-																	key={timeline.id}
-																	className={
-																		s.ScheduleItem +
-																		' ' +
-																		((timeline.startTime.hour !== 0 ||
-																			timeline.startTime.minute !== 0 ||
-																			timeline.endTime.hour !== 0 ||
-																			timeline.endTime.minute !== 0) &&
-																			s.active_s)
-																	}>
+																	className={`${s.ScheduleItem} ${
+																		timeline.startTime.hour !== 0 ||
+																		timeline.startTime.minute !== 0 ||
+																		timeline.endTime.hour !== 0 ||
+																		timeline.endTime.minute !== 0
+																			? s.active_s
+																			: ''
+																	}`}>
 																	<div
 																		style={{
 																			width: '200px',
@@ -1893,26 +1881,8 @@ const AddGroup = ({className}: IAddGroup) => {
 																					marginLeft: '10px',
 																					fontWeight: '400',
 																				}}>
-																				{`${timeline.startTime.hour
-																					.toString()
-																					.padStart(
-																						2,
-																						'0',
-																					)}:${timeline.startTime.minute
-																					.toString()
-																					.padStart(2, '0')} - ${
-																					timeline.endTime.hour ||
-																					timeline.endTime.minute !== 0
-																						? `${timeline.endTime.hour
-																								.toString()
-																								.padStart(
-																									2,
-																									'0',
-																								)}:${timeline.endTime.minute
-																								.toString()
-																								.padStart(2, '0')}`
-																						: '' // Display only start time if end time is not set
-																				}`}
+																				{`${timeline.startTime.hour.toString().padStart(2, '0')}:${timeline.startTime.minute.toString().padStart(2, '0')} - 
+                       ${timeline.endTime.hour.toString().padStart(2, '0')}:${timeline.endTime.minute.toString().padStart(2, '0')}`}
 																			</p>
 																		)}
 																	</div>
@@ -1940,69 +1910,56 @@ const AddGroup = ({className}: IAddGroup) => {
 																			</button>
 																		</>
 																	)}
-
-																	{(timeline.active ||
-																		timeline.id === showEndTimePicker) && (
-																		<div
-																			className={s.timePickerWrapper}
-																			style={{
-																				...(window.innerWidth >= 1024
-																					? {
-																							transform: `translateY(${
-																								index * 40
-																							}px) translateX(-50%)`,
-																						}
-																					: {}),
-																			}}>
-																			{timeline.active &&
-																				!timeline.editingEnd && (
-																					<TimePicker
-																						title="Начало занятий"
-																						onTimeChange={(hour, minute) =>
-																							handleStartTimeChange(
-																								currentItemIndex,
-																								timeline.id,
-																								hour,
-																								minute,
-																							)
-																						}
-																						onExit={() =>
-																							closeTimePicker(
-																								currentItemIndex,
-																								timeline.id,
-																							)
-																						}
-																					/>
-																				)}
-																			{timeline.editingEnd && (
-																				<TimePicker
-																					title="Конец занятий"
-																					onTimeChange={(hour, minute) =>
-																						handleEndTimeChange(
-																							currentItemIndex,
-																							timeline.id,
-																							hour,
-																							minute,
-																						)
-																					}
-																					onExit={() =>
-																						closeTimePicker(
-																							currentItemIndex,
-																							timeline.id,
-																						)
-																					}
-																				/>
-																			)}
+																	{timeline.active && (
+																		<div className={s.timePickerWrapper}>
+																			<TimePicker
+																				title="Выбор времени занятия"
+																				onTimeChange={(
+																					startHours,
+																					startMinutes,
+																					endHours,
+																					endMinutes,
+																				) =>
+																					handleTimeChange(
+																						currentItemIndex,
+																						timeline.id,
+																						startHours,
+																						startMinutes,
+																						endHours,
+																						endMinutes,
+																					)
+																				}
+																				onExit={() =>
+																					handleClick_dp(
+																						currentItemIndex,
+																						timeline.id,
+																					)
+																				}
+																				freeSlots={freeSlots}
+																				currentDay={timeline.day}
+																				lessonDuration={
+																					items[currentItemIndex].lessonDuration
+																				}
+																				addBlock={true}
+																				initialStartTime={timeline.startTime}
+																				initialEndTime={timeline.endTime}
+																			/>
 																		</div>
 																	)}
 																</div>
+																{index <
+																	items[currentItemIndex].timeLinesArray
+																		.length -
+																		1 && (
+																	<Line width="324px" className={s.Line} />
+																)}
 
 																{items[currentItemIndex].timeLinesArray.length -
 																	1 !==
 																	index && (
 																	<Line width="324px" className={s.Line} />
 																)}
-															</>
+															</React.Fragment>
 														),
 													)}
 												</div>

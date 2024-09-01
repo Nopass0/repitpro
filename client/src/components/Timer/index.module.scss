@@ -1,4 +1,88 @@
 // TimePicker.module.scss
+
+.freeSlotContainer {
+	background-color: #ffffff;
+	border-radius: 20px;
+	padding: 20px;
+	box-shadow: 0 8px 80px 0 rgba(31, 33, 51, 0.32);
+}
+
+.freeSlotTitle {
+	font-size: 16px;
+	font-weight: 500;
+	margin-bottom: 15px;
+	//truncate text
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.freeSlotList {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.Title {
+	font-size: 18px;
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+
+.errorMessage {
+	color: red;
+	margin-top: 10px;
+	font-size: 14px;
+}
+
+.freeSlot {
+	background-color: rgba(37, 153, 28, 0.1);
+	border-radius: 10px;
+	padding: 8px 12px;
+	font-size: 14px;
+	color: #25991c;
+}
+
+.freeSlot:hover {
+	background-color: rgba(37, 153, 28, 0.2);
+	cursor: pointer;
+
+	//animation duration
+	transition: background-color 0.3s ease;
+}
+
+.selectTimeButtons {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.selectTimeButton {
+	background-color: #f0f0f0;
+	border: none;
+	border-radius: 5px;
+	padding: 8px 12px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+
+	&.active {
+		background-color: #25991c;
+		color: #ffffff;
+	}
+}
+
+.timeColumn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	h3 {
+		font-size: 14px;
+		margin-bottom: 10px;
+	}
+}
 .wrapper {
 	display: grid;
 	grid-template-columns: 1fr 1fr;

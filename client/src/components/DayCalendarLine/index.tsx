@@ -302,6 +302,15 @@ const DayCalendarLine = ({
 			)
 		}
 	}
+	const calendarNowPopupDay = useSelector(
+		(state: any) => state.calendarNowPopupDay,
+	)
+	const calendarNowPopupMonth = useSelector(
+		(state: any) => state.calendarNowPopupMonth,
+	)
+	const calendarNowPopupYear = useSelector(
+		(state: any) => state.calendarNowPopupYear,
+	)
 
 	const handleCancel = () => {
 		setPagePopup(PagePopup.Cancel)
@@ -310,6 +319,13 @@ const DayCalendarLine = ({
 	const confirmCancel = () => {
 		socket.emit('cancelLesson', {id, token})
 		setPagePopup(PagePopup.None)
+
+		socket.emit('getStudentsByDate', {
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
 	}
 
 	const handleOpenDayPopUp = () => {

@@ -1030,14 +1030,104 @@ export async function getStudentWithItems(studentId: string, socket: any) {
       },
     });
 
-    socket.emit("getStudentWithItems", student);
-    return student;
+    if (student) {
+      const currentDate = new Date();
+      const remainingPrePay = calculateRemainingPrePay(student, currentDate);
+
+      // Находим последнюю предоплату
+      const lastPrePay = student.prePay.reduce(
+        (latest, current) => {
+          return new Date(current.date) > new Date(latest.date)
+            ? current
+            : latest;
+        },
+        { date: new Date(0), cost: "0" }
+      );
+
+      const enrichedStudent = {
+        ...student,
+        remainingPrePay,
+        prePayCost: lastPrePay.cost,
+        formattedPrePay: `${
+          lastPrePay.cost
+        } - (Остаток: ${remainingPrePay.toFixed(0)}) ₽`,
+        historyLessons:
+          student.group.historyLessons[0]?.map((lesson) => ({
+            ...lesson,
+            isPaid:
+              new Date(lesson.date) <= currentDate &&
+              parseFloat(lesson.price) <= remainingPrePay,
+          })) || [],
+      };
+
+      socket.emit("getStudentWithItems", enrichedStudent);
+      return enrichedStudent;
+    } else {
+      socket.emit("getStudentWithItems", { error: "Student not found" });
+    }
   } catch (error) {
     console.error("Error fetching student with items:", error);
     socket.emit("getStudentWithItems", {
       error: "Error fetching student with items",
     });
   }
+}
+
+function calculateRemainingPrePay(student: any, currentDate: Date): number {
+  let remainingPrePay = 0;
+  let lastPrePayDate = new Date(0);
+
+  // Находим последнюю предоплату перед или равную текущей дате
+  const sortedPrePay = student.prePay.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  for (const pay of sortedPrePay) {
+    const payDate = new Date(pay.date);
+    if (payDate <= currentDate) {
+      remainingPrePay = parseFloat(pay.cost);
+      lastPrePayDate = payDate;
+      break;
+    }
+  }
+
+  // Вычитаем стоимость уроков между последней предоплатой и текущей датой
+  const historyLessons = student.group.historyLessons[0];
+  for (const lesson of historyLessons) {
+    const lessonDate = new Date(lesson.date);
+    if (lessonDate > lastPrePayDate && lessonDate <= currentDate) {
+      remainingPrePay -= parseFloat(lesson.price);
+    }
+  }
+
+  return Math.max(remainingPrePay, 0);
+}
+function calculateRemainingPrePay(student: any, currentDate: Date): number {
+  let remainingPrePay = 0;
+  let lastPrePayDate = new Date(0);
+
+  // Находим последнюю предоплату перед или равную текущей дате
+  const sortedPrePay = student.prePay.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  for (const pay of sortedPrePay) {
+    const payDate = new Date(pay.date);
+    if (payDate <= currentDate) {
+      remainingPrePay = parseFloat(pay.cost);
+      lastPrePayDate = payDate;
+      break;
+    }
+  }
+
+  // Вычитаем стоимость уроков между последней предоплатой и текущей датой
+  const historyLessons = student.group.historyLessons[0];
+  for (const lesson of historyLessons) {
+    const lessonDate = new Date(lesson.date);
+    if (lessonDate > lastPrePayDate && lessonDate <= currentDate) {
+      remainingPrePay -= parseFloat(lesson.price);
+    }
+  }
+
+  return Math.max(remainingPrePay, 0);
 }
 
 export async function getStudentsByDate(
@@ -2206,14 +2296,14 @@ export async function getGroupByStudentId(data: any, socket: any) {
 //       throw new Error("Group not found");
 //     }
 
-//     await db.group.update({
-//       where: {
-//         id: group.id,
-//       },
-//       data: {
-//         historyLessons: data.historyLessons,
-//       },
-//     });
+// await db.group.update({
+//   where: {
+//     id: group.id,
+//   },
+//   data: {
+//     historyLessons: data.historyLessons,
+//   },
+// });
 
 //     // Delete old studentSchedule records
 //     await db.studentSchedule.deleteMany({
@@ -2283,7 +2373,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
 
 export async function updateStudentAndItems(data: any, socket: any) {
   const { id, items, audios, files, token } = data;
-  console.log(data.historyLessons, 'DataHistory');
+  console.log(data.historyLessons, "DataHistory");
   try {
     const token_ = await db.token.findFirst({
       where: { token },
@@ -2347,6 +2437,15 @@ export async function updateStudentAndItems(data: any, socket: any) {
       items,
       userId
     );
+
+    await db.group.update({
+      where: {
+        id: existingStudent.group.id,
+      },
+      data: {
+        historyLessons: data.historyLessons,
+      },
+    });
 
     // Update student schedules
     await updateStudentSchedules(
@@ -3198,6 +3297,8 @@ export async function cancelLesson(
       where: { id, userId },
       data: { isCancel: true },
     });
+
+    //TODO: cancel in history
 
     socket.emit("lessonCanceled", { success: true, updatedSchedule });
   } catch (error) {

@@ -1,13 +1,21 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import s from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import CloseIcon from '@mui/icons-material/Close'
-import TimePickerBlock from '../TimePickerBlock'
+
 interface TimePickerProps {
-	onTimeChange: (hours: number, minutes: number) => void
+	onTimeChange: (
+		startHours: number,
+		startMinutes: number,
+		endHours: number,
+		endMinutes: number,
+	) => void
 	title: string
 	onExit?: () => void
 	addBlock?: boolean
+	freeSlots: any
+	currentDay: string
+	lessonDuration?: number
 }
 
 const TimePicker: React.FC<TimePickerProps> = ({
@@ -15,29 +23,184 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	title,
 	onExit,
 	addBlock,
-}: TimePickerProps) => {
+	freeSlots,
+	currentDay,
+	lessonDuration,
+}) => {
 	const [selectedHours, setSelectedHours] = useState<number>(8)
 	const [selectedMinutes, setSelectedMinutes] = useState<number>(0)
+	const [endHours, setEndHours] = useState<number>(9)
+	const [endMinutes, setEndMinutes] = useState<number>(0)
+	const [isSelectingEndTime, setIsSelectingEndTime] = useState<boolean>(false)
+	const [errorMessage, setErrorMessage] = useState<string>('')
 
-	const handleHourChange = (increment: number) => {
-		setSelectedHours((prevHours) => {
-			const newHours = (prevHours + increment + 24) % 24
-			// onTimeChange(newHours, selectedMinutes)
-			return newHours
+	const currentDaySlots =
+		freeSlots.find((slot) => slot.day === currentDay)?.freeTime || []
+
+	const isIntervalAvailable = (
+		startHours: number,
+		startMinutes: number,
+		endHours: number,
+		endMinutes: number,
+	): boolean => {
+		const startTime = startHours * 60 + startMinutes
+		const endTime = endHours * 60 + endMinutes
+		return currentDaySlots.some((slot) => {
+			const slotStartTime = slot.start.hour * 60 + slot.start.minute
+			const slotEndTime = slot.end.hour * 60 + slot.end.minute
+			return (
+				startTime >= slotStartTime &&
+				endTime <= slotEndTime &&
+				startTime < endTime
+			)
 		})
 	}
 
-	const handleMinuteChange = (increment: number) => {
-		setSelectedMinutes((prevMinutes) => {
-			const newMinutes = (prevMinutes + increment + 60) % 60
-			// onTimeChange(selectedHours, newMinutes)
-			return newMinutes
-		})
+	const findNextAvailableTime = (
+		hours: number,
+		minutes: number,
+		increment: number,
+	): [number, number] => {
+		let newHours = hours
+		let newMinutes = minutes
+		while (
+			!isIntervalAvailable(
+				newHours,
+				newMinutes,
+				(newHours + 1) % 24,
+				newMinutes,
+			)
+		) {
+			newMinutes += increment
+			if (newMinutes >= 60) {
+				newHours = (newHours + 1) % 24
+				newMinutes = 0
+			} else if (newMinutes < 0) {
+				newHours = (newHours - 1 + 24) % 24
+				newMinutes = 55
+			}
+		}
+		return [newHours, newMinutes]
 	}
 
-	const renderTimeOption = (value: number) => {
-		const newValue = (value + 24) % 24
-		return <div className={s.timeOption}>{newValue}</div>
+	const calculateEndTime = (
+		startHours: number,
+		startMinutes: number,
+	): [number, number] => {
+		if (!lessonDuration) return [(startHours + 1) % 24, startMinutes]
+		let endMinutes = startMinutes + lessonDuration
+		let endHours = (startHours + Math.floor(endMinutes / 60)) % 24
+		endMinutes = endMinutes % 60
+		return [endHours, endMinutes]
+	}
+
+	const handleTimeChange = (
+		hoursIncrement: number,
+		minutesIncrement: number,
+	) => {
+		if (isSelectingEndTime) {
+			let newEndHours = (endHours + hoursIncrement + 24) % 24
+			let newEndMinutes = (endMinutes + minutesIncrement + 60) % 60
+			const startTime = selectedHours * 60 + selectedMinutes
+			const newEndTime = newEndHours * 60 + newEndMinutes
+
+			if (newEndTime <= startTime) {
+				setErrorMessage('Время окончания должно быть больше времени начала')
+				return
+			}
+
+			if (
+				isIntervalAvailable(
+					selectedHours,
+					selectedMinutes,
+					newEndHours,
+					newEndMinutes,
+				)
+			) {
+				setEndHours(newEndHours)
+				setEndMinutes(newEndMinutes)
+				setErrorMessage('')
+			} else {
+				setErrorMessage('Выбранный интервал недоступен')
+			}
+		} else {
+			let newHours = (selectedHours + hoursIncrement + 24) % 24
+			let newMinutes = (selectedMinutes + minutesIncrement + 60) % 60
+			;[newHours, newMinutes] = findNextAvailableTime(
+				newHours,
+				newMinutes,
+				minutesIncrement || 5,
+			)
+			const [newEndHours, newEndMinutes] = calculateEndTime(
+				newHours,
+				newMinutes,
+			)
+			if (
+				isIntervalAvailable(newHours, newMinutes, newEndHours, newEndMinutes)
+			) {
+				setSelectedHours(newHours)
+				setSelectedMinutes(newMinutes)
+				setEndHours(newEndHours)
+				setEndMinutes(newEndMinutes)
+				setErrorMessage('')
+			} else {
+				setErrorMessage('Выбранный интервал недоступен')
+			}
+		}
+	}
+
+	useEffect(() => {
+		const [startHours, startMinutes] = findNextAvailableTime(8, 0, 5)
+		const [endHours, endMinutes] = calculateEndTime(startHours, startMinutes)
+		setSelectedHours(startHours)
+		setSelectedMinutes(startMinutes)
+		setEndHours(endHours)
+		setEndMinutes(endMinutes)
+	}, [currentDay, freeSlots, lessonDuration])
+
+	const handleSave = () => {
+		if (isSelectingEndTime) {
+			if (
+				isIntervalAvailable(
+					selectedHours,
+					selectedMinutes,
+					endHours,
+					endMinutes,
+				)
+			) {
+				onTimeChange(selectedHours, selectedMinutes, endHours, endMinutes)
+				onExit && onExit()
+			} else {
+				setErrorMessage('Выбранный интервал недоступен')
+			}
+		} else {
+			setIsSelectingEndTime(true)
+		}
+	}
+
+	const handleSlotClick = (slot) => {
+		const newStartHours = slot.start.hour
+		const newStartMinutes = slot.start.minute
+		const [newEndHours, newEndMinutes] = calculateEndTime(
+			newStartHours,
+			newStartMinutes,
+		)
+		if (
+			isIntervalAvailable(
+				newStartHours,
+				newStartMinutes,
+				newEndHours,
+				newEndMinutes,
+			)
+		) {
+			setSelectedHours(newStartHours)
+			setSelectedMinutes(newStartMinutes)
+			setEndHours(newEndHours)
+			setEndMinutes(newEndMinutes)
+			setErrorMessage('')
+		} else {
+			setErrorMessage('Выбранный интервал недоступен')
+		}
 	}
 
 	return (
@@ -45,7 +208,11 @@ const TimePicker: React.FC<TimePickerProps> = ({
 			<div className={s.timePicker}>
 				<div
 					style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-					<h1 className={s.Title}>{title}</h1>
+					<h1 className={s.Title}>
+						{isSelectingEndTime
+							? 'Время окончания занятия'
+							: 'Время начала занятия'}
+					</h1>
 					<button onClick={onExit} style={{position: 'relative', left: '10px'}}>
 						<CloseIcon style={{color: 'red'}} />
 					</button>
@@ -54,32 +221,17 @@ const TimePicker: React.FC<TimePickerProps> = ({
 					<div className={s.hourPicker}>
 						<button
 							className={s.arrowButton}
-							onClick={() => handleHourChange(-1)}>
-							{/* SVG for up arrow */}
+							onClick={() => handleTimeChange(-1, 0)}>
 							<Arrow direction={ArrowType.up} />
 						</button>
-						<button
-							onClick={() => handleHourChange(-1)}
-							className={s.PrevNextTime}>
-							{selectedHours - 1 < 0
-								? 23
-								: (selectedHours - 1).toString().padStart(2, '0')}
-						</button>
 						<div className={s.timeDisplay}>
-							{selectedHours.toString().padStart(2, '0')}
+							{(isSelectingEndTime ? endHours : selectedHours)
+								.toString()
+								.padStart(2, '0')}
 						</div>
 						<button
-							onClick={() => handleHourChange(1)}
-							className={s.PrevNextTime}>
-							{selectedHours + 1 > 23
-								? '00'
-								: (selectedHours + 1).toString().padStart(2, '0')}
-						</button>
-
-						<button
 							className={s.arrowButton}
-							onClick={() => handleHourChange(1)}>
-							{/* SVG for down arrow */}
+							onClick={() => handleTimeChange(1, 0)}>
 							<Arrow direction={ArrowType.down} />
 						</button>
 					</div>
@@ -89,56 +241,46 @@ const TimePicker: React.FC<TimePickerProps> = ({
 					<div className={s.minutePicker}>
 						<button
 							className={s.arrowButton}
-							onClick={() => handleMinuteChange(-5)}>
-							{/* SVG for up arrow */}
+							onClick={() => handleTimeChange(0, -5)}>
 							<Arrow direction={ArrowType.up} />
 						</button>
-
-						<button
-							onClick={() => handleMinuteChange(-5)}
-							className={s.PrevNextTime}>
-							{selectedMinutes === 0
-								? 55
-								: selectedMinutes === 5
-									? '00'
-									: selectedMinutes === 10
-										? '05'
-										: selectedMinutes - 5}
-						</button>
 						<div className={s.timeDisplay}>
-							{selectedMinutes === 0
-								? '00'
-								: selectedMinutes === 5
-									? '05'
-									: selectedMinutes}
+							{(isSelectingEndTime ? endMinutes : selectedMinutes)
+								.toString()
+								.padStart(2, '0')}
 						</div>
 						<button
-							onClick={() => handleMinuteChange(5)}
-							className={s.PrevNextTime}>
-							{selectedMinutes === 0
-								? '05'
-								: selectedMinutes === 55
-									? '00'
-									: selectedMinutes + 5}
-						</button>
-
-						<button
 							className={s.arrowButton}
-							onClick={() => handleMinuteChange(5)}>
-							{/* SVG for down arrow */}
+							onClick={() => handleTimeChange(0, 5)}>
 							<Arrow direction={ArrowType.down} />
 						</button>
 					</div>
 				</div>
-				<button
-					className={s.SaveBtn}
-					onClick={() => {
-						onTimeChange(selectedHours, selectedMinutes)
-					}}>
-					Сохранить
+				{errorMessage && <div className={s.errorMessage}>{errorMessage}</div>}
+				<button className={s.SaveBtn} onClick={handleSave}>
+					{isSelectingEndTime ? 'Сохранить' : 'Далее'}
 				</button>
 			</div>
-			{addBlock && <TimePickerBlock />}
+			{addBlock && (
+				<div className={s.freeSlotContainer}>
+					<h2 className={s.freeSlotTitle}>Свободные слоты на {currentDay}:</h2>
+					<div className={s.freeSlotList}>
+						{currentDaySlots.map((slot, index) => (
+							<div
+								key={index}
+								className={s.freeSlot}
+								onClick={() => handleSlotClick(slot)}>
+								{`${slot.start.hour.toString().padStart(2, '0')}:${slot.start.minute
+									.toString()
+									.padStart(2, '0')} - 
+                 ${slot.end.hour.toString().padStart(2, '0')}:${slot.end.minute
+										.toString()
+										.padStart(2, '0')}`}
+							</div>
+						))}
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

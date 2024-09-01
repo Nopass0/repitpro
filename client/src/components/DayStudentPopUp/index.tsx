@@ -682,15 +682,23 @@ const DayStudentPopUp = ({
 						)}
 						<div className={s.PrePay}>
 							<p>
-								{student && (
+								{student?.prePayCost && (
 									<>
 										{student.prePayCost} - (Остаток:{' '}
-										{student && calculateRemainingPrePay(student, date)} )
+										{student.remainingPrePay?.toFixed(0) || 0}) ₽
 									</>
-								)}{' '}
-								₽
+								)}
 							</p>
-							<CheckBox size="16px" />
+							<CheckBox
+								size="16px"
+								checked={
+									student?.historyLessons?.some(
+										(lesson) =>
+											new Date(lesson.date).toDateString() ===
+												new Date().toDateString() && lesson.isPaid,
+									) || false
+								}
+							/>
 						</div>
 					</div>
 				</div>

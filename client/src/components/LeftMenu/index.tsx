@@ -106,7 +106,18 @@ const MainPage = () => {
 					id: studentId,
 					isArchived: false,
 				})
-				window.location.reload()
+				// window.location.reload()
+				socket.emit('getGroupByStudentId', {
+					token: token,
+					studentId: studentId,
+				})
+
+				dispatch({type: 'SET_DAY_STUDENTS', payload: students})
+				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: studentId})
+				dispatch({
+					type: 'SET_LEFT_MENU_PAGE',
+					payload: ELeftMenuPage.AddStudent,
+				})
 				break
 
 			case 'group':
@@ -584,7 +595,7 @@ const MainPage = () => {
 																					className={s.ListWrapper}>
 																					<button
 																						onClick={() =>
-																							handleOpenCard(student.id)
+																							handleOpenGroup(item.id)
 																						}
 																						className={s.btn}>
 																						<img src={Home} alt="Home" />

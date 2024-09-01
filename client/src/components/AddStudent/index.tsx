@@ -41,6 +41,7 @@ import {TailSpin} from 'react-loader-spinner'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import PrePayRow from '../PrePayRow'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import axios from 'axios'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -311,6 +312,21 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const [files, setFiles] = useState<{}[]>([])
 
+	const [freeSlots, setFreeSlots] = useState([])
+	useEffect(() => {
+		axios
+			.get('http://localhost:3000/check-free-slots', {
+				params: {
+					token: token,
+					startDate: items[currentItemIndex].startLesson,
+					endDate: items[currentItemIndex].endLesson,
+				},
+			})
+			.then((data) => {
+				setFreeSlots(data.data.freeSlots)
+			})
+	}, [items])
+
 	const handleFileNLinks = (
 		file: any,
 		name: string,
@@ -565,65 +581,65 @@ const AddStudent = ({}: IAddStudent) => {
 	const handleStartTimeChange = (
 		itemIndex: number,
 		id: number,
-		hour: number,
-		minute: number,
+		startHour: number,
+		startMinute: number,
+		endHour: number,
+		endMinute: number,
 	) => {
-		console.log('start', itemIndex, id, hour, minute)
 		setItems((prevItems) =>
 			prevItems.map((item, index) =>
 				index === itemIndex
 					? {
 							...item,
-							timeLinesArray: item.timeLinesArray.map(
-								(timeline) =>
-									timeline.id === id
-										? {
-												...timeline,
-												startTime: {hour, minute},
-												editingEnd: item.lessonDuration! > 0 ? false : true,
-												editingStart: false,
-												active: false, // Закрываем окно выбора начала занятий
-											}
-										: {...timeline, active: false}, // Закрываем окно выбора начала занятий для других строк
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											startTime: {hour: startHour, minute: startMinute},
+											endTime: {hour: endHour, minute: endMinute},
+											editingStart: false,
+											active: false,
+										}
+									: timeline,
 							),
 						}
 					: item,
 			),
 		)
+	}
 
-		if (items[itemIndex].lessonDuration! > 0) {
-			const endHour = hour + Math.floor(items[itemIndex].lessonDuration! / 60)
-			const endMinute = (minute + (items[itemIndex].lessonDuration! % 60)) % 60
-			setItems((prevItems) =>
-				prevItems.map((item, index) =>
-					index === itemIndex
-						? {
-								...item,
-								timeLinesArray: item.timeLinesArray.map((timeline) =>
-									timeline.id === id
-										? {
-												...timeline,
-												endTime: {hour: endHour, minute: endMinute},
-												editingEnd: false,
-											}
-										: timeline,
-								),
-							}
-						: item,
-				),
-			)
-			setShowEndTimePicker(-1)
-		} else {
-			setShowEndTimePicker(id)
-		}
+	const handleTimeChange = (
+		itemIndex: number,
+		id: number,
+		startHour: number,
+		startMinute: number,
+		endHour: number,
+		endMinute: number,
+	) => {
+		setItems((prevItems) =>
+			prevItems.map((item, index) =>
+				index === itemIndex
+					? {
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											startTime: {hour: startHour, minute: startMinute},
+											endTime: {hour: endHour, minute: endMinute},
+											editingStart: false,
+											active: false,
+										}
+									: timeline,
+							),
+						}
+					: item,
+			),
+		)
+		setShowEndTimePicker(-1)
 	}
 
 	const closeTimePicker = (index: number, id: number) => {
-		//get timeline
-		const timelineToUpdate = items[index].timeLinesArray.find(
-			(timeline) => timeline.id === id,
-		)
-
 		setItems((prevItems) =>
 			prevItems.map((item, itemIndex) =>
 				itemIndex === index
@@ -635,26 +651,6 @@ const AddStudent = ({}: IAddStudent) => {
 											...timeline,
 											editingEnd: false,
 											active: false,
-											startTime: {
-												hour:
-													timelineToUpdate?.startTime.hour &&
-													!timelineToUpdate?.endTime.hour
-														? 0
-														: timelineToUpdate?.startTime.hour!,
-												minute:
-													timelineToUpdate?.startTime.minute &&
-													!timelineToUpdate?.endTime.minute
-														? 0
-														: timelineToUpdate?.startTime.minute!,
-											},
-											endTime: {
-												hour: timelineToUpdate?.endTime.hour
-													? timelineToUpdate?.endTime.hour
-													: 0,
-												minute: timelineToUpdate?.endTime.minute
-													? timelineToUpdate?.endTime.minute
-													: 0,
-											}, // Reset endTime when closing without saving
 										}
 									: timeline,
 							),
@@ -662,9 +658,46 @@ const AddStudent = ({}: IAddStudent) => {
 					: item,
 			),
 		)
-
-		console.log('close', index, id)
 		setShowEndTimePicker(-1)
+	}
+
+	const handleEndTimeChange = (
+		itemIndex: number,
+		id: number,
+		hour: number,
+		minute: number,
+	) => {
+		setItems((prevItems) =>
+			prevItems.map((item, index) =>
+				index === itemIndex
+					? {
+							...item,
+							timeLinesArray: item.timeLinesArray.map((timeline) =>
+								timeline.id === id
+									? {
+											...timeline,
+											endTime: {hour, minute},
+											editingEnd: false,
+										}
+									: timeline,
+							),
+						}
+					: item,
+			),
+		)
+		setShowEndTimePicker(-1)
+	}
+
+	const calculateEndTime = (
+		startHour: number,
+		startMinute: number,
+		duration: number | null,
+	) => {
+		if (!duration) return {hour: startHour, minute: startMinute}
+		let endMinutes = startMinute + duration
+		let endHours = (startHour + Math.floor(endMinutes / 60)) % 24
+		endMinutes = endMinutes % 60
+		return {hour: endHours, minute: endMinutes}
 	}
 
 	// Function to hash a string using a custom hash function
@@ -751,42 +784,6 @@ const AddStudent = ({}: IAddStudent) => {
 	// Function to compare dates for sorting
 	const compareDates = (a, b) => {
 		return a.date - b.date
-	}
-
-	const handleEndTimeChange = (
-		itemIndex: number,
-		id: number,
-		hour: number,
-		minute: number,
-	) => {
-		const timelineToUpdate = items[itemIndex].timeLinesArray.find(
-			(timeline) => timeline.id === id,
-		)
-		if (
-			timelineToUpdate &&
-			(hour > timelineToUpdate.startTime.hour ||
-				(hour === timelineToUpdate.startTime.hour &&
-					minute > timelineToUpdate.startTime.minute))
-		) {
-			setItems((prevItems) =>
-				prevItems.map((item, index) =>
-					index === itemIndex
-						? {
-								...item,
-								timeLinesArray: item.timeLinesArray.map((timeline) =>
-									timeline.id === id
-										? {...timeline, endTime: {hour, minute}, editingEnd: false}
-										: timeline,
-								),
-							}
-						: item,
-				),
-			)
-			console.log('close', index, id)
-			setShowEndTimePicker(-1)
-		} else {
-			console.log('End time must be greater than start time')
-		}
 	}
 
 	// Function to get the total sum of paid prices
@@ -2073,40 +2070,67 @@ const AddStudent = ({}: IAddStudent) => {
 																			{timeline.active &&
 																				!timeline.editingEnd && (
 																					<TimePicker
-																						addBlock
-																						title="Начало занятий"
+																						title={`Запланировать занятие #${timeline.id}`}
+																						onTimeChange={(
+																							startHour,
+																							startMinute,
+																							endHour,
+																							endMinute,
+																						) =>
+																							handleTimeChange(
+																								currentItemIndex,
+																								timeline.id,
+																								startHour,
+																								startMinute,
+																								endHour,
+																								endMinute,
+																							)
+																						}
 																						onExit={() =>
 																							closeTimePicker(
 																								currentItemIndex,
 																								timeline.id,
 																							)
 																						}
-																						onTimeChange={(hour, minute) =>
-																							handleStartTimeChange(
-																								currentItemIndex,
-																								timeline.id,
-																								hour,
-																								minute,
-																							)
+																						addBlock={true}
+																						freeSlots={freeSlots}
+																						currentDay={timeline.day}
+																						lessonDuration={
+																							items[currentItemIndex]
+																								.lessonDuration || undefined
 																						}
 																					/>
 																				)}
 																			{timeline.editingEnd && (
 																				<TimePicker
-																					title="Конец занятий"
+																					title={`Запланировать занятие #${timeline.id}`}
+																					onTimeChange={(
+																						startHour,
+																						startMinute,
+																						endHour,
+																						endMinute,
+																					) =>
+																						handleTimeChange(
+																							currentItemIndex,
+																							timeline.id,
+																							startHour,
+																							startMinute,
+																							endHour,
+																							endMinute,
+																						)
+																					}
 																					onExit={() =>
 																						closeTimePicker(
 																							currentItemIndex,
 																							timeline.id,
 																						)
 																					}
-																					onTimeChange={(hour, minute) =>
-																						handleEndTimeChange(
-																							currentItemIndex,
-																							timeline.id,
-																							hour,
-																							minute,
-																						)
+																					addBlock={true}
+																					freeSlots={freeSlots}
+																					currentDay={timeline.day}
+																					lessonDuration={
+																						items[currentItemIndex]
+																							.lessonDuration || undefined
 																					}
 																				/>
 																			)}

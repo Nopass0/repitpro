@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useLayoutEffect} from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.scss'
 import {createStore} from 'redux'
@@ -14,6 +14,7 @@ import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
 import Statistics from './pages/Statistics/index'
 import {ELeftMenuPage, ECurrentDayPopUp} from './types.ts'
+import axios from 'axios'
 
 socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
@@ -61,6 +62,24 @@ if (defaultState.user.token !== '') {
 		}
 	})
 }
+
+// useLayoutEffect(() => {
+// 	// socket.emit('checkAccount', defaultState.user.token, (data: any) => {
+// 	// 	if (data.status !== 'ok') {
+// 	// 		localStorage.removeItem('token')
+// 	// 		defaultState.user.token = ''
+// 	// 	}
+// 	// })
+// axios
+// 	.get('http://localhost:3000/check-occupied-slots', {
+// 		params: {token: defaultState.user.token},
+// 	})
+// 	.then((data) => {
+// 		console.log(
+// 			`\ncheck-occupied-slots\n${JSON.stringify(data.data, null, 2)}\n`,
+// 		)
+// 	})
+// }, [])
 
 const reducer = (state = defaultState, action: any) => {
 	switch (action.type) {

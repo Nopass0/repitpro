@@ -540,7 +540,7 @@ const DayCalendarPopUp = ({
 									prevpay={student.tryLessonCheck}
 									type={student.type}
 								/>
-								<Line className={s.Line} width="700px" />
+								{/* <Line className={s.Line} width="700px" /> */}
 							</React.Fragment>
 						))}
 						{Array.from({length: 8}).map((_, index: number) => (

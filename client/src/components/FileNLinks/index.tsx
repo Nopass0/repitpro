@@ -87,6 +87,30 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		setContextMenu(null)
 	}
 
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const DefFiles = Array.from(e.target.files || [])
+		DefFiles.forEach((file: File) => {
+			callback && callback(file, file.name, file.size, file.type)
+			setItems((prevItems) => [
+				...prevItems,
+				{
+					name: file.name,
+					type: file.type,
+					size: file.size,
+					file: file,
+					isLink: false,
+				},
+			])
+		})
+
+		// Обновляем ссылки после добавления файлов
+		const updatedLinks = [
+			...items.filter((item) => item.isLink).map((item) => item.name),
+			...DefFiles.map((file) => file.name),
+		]
+		submitLinks && submitLinks(updatedLinks)
+	}
+
 	useEffect(() => {
 		if (alreadyUploaded) {
 			setItems(alreadyUploaded)
@@ -108,22 +132,25 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					id={`fileInput__${fileInputId}`}
 					multiple
 					style={{display: 'none'}}
-					onChange={(e) => {
-						const DefFiles = Array.from(e.target.files)
-						DefFiles.forEach((file: any) => {
-							callback && callback(file, file.name, file.type, file.size)
-							setItems((prevItems) => [
-								...prevItems,
-								{
-									name: file.name,
-									type: file.type,
-									size: file.size,
-									file: file,
-									isLink: false,
-								},
-							])
-						})
-					}}
+					onChange={
+						handleFileChange
+						// 	(e) => {
+						// 	const DefFiles = Array.from(e.target.files)
+						// 	DefFiles.forEach((file: any) => {
+						// 		callback && callback(file, file.name, file.type, file.size)
+						// 		setItems((prevItems) => [
+						// 			...prevItems,
+						// 			{
+						// 				name: file.name,
+						// 				type: file.type,
+						// 				size: file.size,
+						// 				file: file,
+						// 				isLink: false,
+						// 			},
+						// 		])
+						// 	})
+						// }
+					}
 				/>
 				<label
 					htmlFor={`fileInput__${fileInputId}`}
