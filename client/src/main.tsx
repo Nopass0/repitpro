@@ -54,11 +54,13 @@ socket.emit('getMonth', {
 	currentYear: defaultState.currentYear,
 	token: defaultState.user.token,
 })
-if (defaultState.user.token !== '') {
+if (localStorage.getItem('token') !== '') {
 	socket.emit('checkAccount', defaultState.user.token, (data: any) => {
 		if (data.status !== 'ok') {
 			localStorage.removeItem('token')
 			defaultState.user.token = ''
+			//redirect to login page
+			window.location.href = '/login'
 		}
 	})
 }

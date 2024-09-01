@@ -105,8 +105,6 @@
 			input[type='email'] {
 				font-size: 16px;
 			}
-
-			
 		}
 	}
 	.wrapperMenu {
@@ -345,7 +343,7 @@
 			}
 
 			.SaveWhite {
-				background: #FFF !important;
+				background: #fff !important;
 				color: #000 !important;
 			}
 
@@ -466,6 +464,21 @@
 		.ListObjectWrapper {
 			display: flex;
 			flex-direction: column;
+
+			&.canceled {
+				background-color: #ffeeee;
+				border: 1px dotted #ffaaaa;
+
+				p {
+					text-decoration: line-through;
+					color: #888;
+				}
+			}
+
+			.cancelIcon {
+				margin-left: 5px;
+				color: #ff4444;
+			}
 
 			.ListObject {
 				display: flex;

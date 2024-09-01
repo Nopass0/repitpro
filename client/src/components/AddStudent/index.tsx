@@ -849,10 +849,64 @@ const AddStudent = ({}: IAddStudent) => {
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
 
+	// ! Работает, но без математики по окончанию занятия
+	// useEffect(() => {
+	// 	let countLessons = 0
+	// 	let countLessonsPrice = 0
+	// 	const historyLessons_ = []
+
+	// 	for (let i = 0; i < items.length; i++) {
+	// 		const differenceDays = differenceInDays(
+	// 			items[i].endLesson,
+	// 			items[i].startLesson,
+	// 		)
+	// 		const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+	// 			addDays(items[i].startLesson, j),
+	// 		)
+
+	// 		for (const date of dateRange) {
+	// 			const dayOfWeek = getDay(date)
+	// 			const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
+
+	// 			const cond =
+	// 				scheduleForDay.startTime.hour === 0 &&
+	// 				scheduleForDay.startTime.minute === 0 &&
+	// 				scheduleForDay.endTime.hour === 0 &&
+	// 				scheduleForDay.endTime.minute === 0
+
+	// 			if (!cond) {
+	// 				const hl = {
+	// 					date: date,
+	// 					itemName: items[i].itemName,
+	// 					isDone: date <= new Date(Date.now()) ? true : false,
+	// 					price: items[i].costOneLesson,
+	// 					isPaid: false,
+	// 				}
+
+	// 				historyLessons_.push(hl)
+
+	// 				countLessons++
+	// 				countLessonsPrice = countLessons * Number(items[i].costOneLesson)
+	// 			}
+	// 		}
+	// 	}
+	// 	console.log(historyLessons_, 'historyLesson___')
+
+	// 	// Обновляем состояние
+	// 	setAllLessons(countLessons)
+	// 	setAllLessonsPrice(countLessonsPrice)
+	// 	// if (!historyLessonsFirst) {
+	// 	setHistoryLesson(historyLessons_)
+	// 	handlePrePayment(historyLessons_)
+	// 	// }
+	// 	console.log(historyLesson, 'historyLesson___2')
+	// }, [items, prePayCost, prePayDate])
+
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
 		const historyLessons_ = []
+		const now = new Date()
 
 		for (let i = 0; i < items.length; i++) {
 			const differenceDays = differenceInDays(
@@ -874,10 +928,23 @@ const AddStudent = ({}: IAddStudent) => {
 					scheduleForDay.endTime.minute === 0
 
 				if (!cond) {
+					const lessonDate = new Date(date)
+					lessonDate.setHours(
+						scheduleForDay.startTime.hour,
+						scheduleForDay.startTime.minute,
+					)
+
+					const isDone =
+						lessonDate < now ||
+						(lessonDate.toDateString() === now.toDateString() &&
+							now.getHours() > scheduleForDay.endTime.hour) ||
+						(now.getHours() === scheduleForDay.endTime.hour &&
+							now.getMinutes() >= scheduleForDay.endTime.minute)
+
 					const hl = {
-						date: date,
+						date: lessonDate,
 						itemName: items[i].itemName,
-						isDone: date <= new Date(Date.now()) ? true : false,
+						isDone: isDone,
 						price: items[i].costOneLesson,
 						isPaid: false,
 					}
@@ -889,16 +956,11 @@ const AddStudent = ({}: IAddStudent) => {
 				}
 			}
 		}
-		console.log(historyLessons_, 'historyLesson___')
 
-		// Обновляем состояние
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		// if (!historyLessonsFirst) {
 		setHistoryLesson(historyLessons_)
 		handlePrePayment(historyLessons_)
-		// }
-		console.log(historyLesson, 'historyLesson___2')
 	}, [items, prePayCost, prePayDate])
 
 	const setHistoryLessonIsDone = (index: number, value: boolean) => {
@@ -1092,7 +1154,7 @@ const AddStudent = ({}: IAddStudent) => {
 			// Если даты разные, возвращаем результат сравнения дат
 			return dateComparison
 		})
-
+		console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
 		setCombinedHistory(sorted)
 	}, [historyLesson, prePayList])
 
@@ -1420,7 +1482,7 @@ const AddStudent = ({}: IAddStudent) => {
 														<div
 															id={`history-data-${formatDate(item.date)}`}
 															key={index}
-															className={s.ListObject}>
+															className={`${s.ListObject} ${item.isCancel ? s.canceled : ''}`}>
 															{item.type === 'lesson' ? (
 																<>
 																	<p
@@ -1498,6 +1560,12 @@ const AddStudent = ({}: IAddStudent) => {
 																		size="16px"
 																		checked={item.isPaid}
 																	/>
+																	{item.isCancel && (
+																		<span className={s.cancelIcon}>
+																			отменено
+																			{/* <CancelIcon fontSize="small" /> */}
+																		</span>
+																	)}
 																</>
 															) : (
 																<>

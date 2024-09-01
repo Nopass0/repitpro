@@ -1668,8 +1668,21 @@ export async function updateStudentSchedule(data, socket: any) {
 
     const updatedFields: any = {};
 
-    if (lessonsPrice !== undefined)
+    if (lessonsPrice !== undefined) {
       updatedFields.lessonsPrice = Number(lessonsPrice);
+    } else {
+      // If lessonsPrice is not provided in the update, we need to fetch the current value
+      const currentSchedule = await db.studentSchedule.findUnique({
+        where: { id, day, month, year, userId },
+        select: { lessonsPrice: true },
+      });
+
+      if (currentSchedule) {
+        updatedFields.lessonsPrice = currentSchedule.lessonsPrice;
+      } else {
+        throw new Error("StudentSchedule record not found");
+      }
+    }
     if (itemName !== undefined) updatedFields.itemName = itemName;
     if (typeLesson !== undefined) updatedFields.typeLesson = Number(typeLesson);
     if (isChecked !== undefined) updatedFields.isChecked = isChecked;
@@ -3280,6 +3293,33 @@ export async function deleteAudio(
   }
 }
 
+// export async function cancelLesson(
+//   data: { id: string; token: string },
+//   socket
+// ) {
+//   try {
+//     const { id, token } = data;
+//     const tokenRecord = await db.token.findFirst({ where: { token } });
+//     if (!tokenRecord) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = tokenRecord.userId;
+
+//     const updatedSchedule = await db.studentSchedule.update({
+//       where: { id, userId },
+//       data: { isCancel: true },
+//     });
+
+//     //TODO: cancel in history
+
+//     socket.emit("lessonCanceled", { success: true, updatedSchedule });
+//   } catch (error) {
+//     console.error("Error canceling lesson:", error);
+//     socket.emit("lessonCanceled", { success: false, error: error.message });
+//   }
+// }
+
 export async function cancelLesson(
   data: { id: string; token: string },
   socket
@@ -3293,12 +3333,52 @@ export async function cancelLesson(
 
     const userId = tokenRecord.userId;
 
+    // Получаем информацию о занятии
+    const schedule = await db.studentSchedule.findUnique({
+      where: { id, userId },
+      include: { item: true },
+    });
+
+    if (!schedule) {
+      throw new Error("Schedule not found");
+    }
+
+    // Обновляем статус занятия
     const updatedSchedule = await db.studentSchedule.update({
       where: { id, userId },
       data: { isCancel: true },
     });
 
-    //TODO: cancel in history
+    const lessonDate = new Date(
+      schedule.year,
+      schedule.month - 1,
+      schedule.day
+    );
+
+    // Находим группу по groupId
+    const group = await db.group.findUnique({
+      where: { id: schedule.groupId },
+    });
+
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    // Обновляем историю занятий в группе
+    let updatedHistoryLessons = group.historyLessons.map((lesson) => {
+      if (
+        new Date(lesson.date).toDateString() === lessonDate.toDateString() &&
+        lesson.itemName === schedule.item.itemName
+      ) {
+        return { ...lesson, isCancel: true };
+      }
+      return lesson;
+    });
+
+    await db.group.update({
+      where: { id: group.id },
+      data: { historyLessons: updatedHistoryLessons },
+    });
 
     socket.emit("lessonCanceled", { success: true, updatedSchedule });
   } catch (error) {
