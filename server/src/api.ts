@@ -64,31 +64,19 @@ api.get("/check-free-slots", async (req, res) => {
       const start = parseISO(startDate as string);
       const end = parseISO(endDate as string);
 
+      // Generate an array of all dates in the range
+      const dateRange = eachDayOfInterval({ start, end });
+
       const studentSchedules = await db.studentSchedule.findMany({
         where: {
           userId: tokenRecord.userId,
-          OR: [
-            {
-              year: {
-                gte: start.getFullYear().toString(),
-                lte: end.getFullYear().toString(),
-              },
-              month: {
-                gte: (start.getMonth() + 1).toString(),
-                lte: (end.getMonth() + 1).toString(),
-              },
-              day: {
-                gte: start.getDate().toString(),
-                lte: end.getDate().toString(),
-              },
-            },
-            {
-              createdAt: {
-                gte: start,
-                lte: end,
-              },
-            },
-          ],
+          OR: dateRange.map((date) => ({
+            AND: [
+              { year: format(date, "yyyy") },
+              { month: format(date, "M") },
+              { day: format(date, "d") },
+            ],
+          })),
         },
       });
 
