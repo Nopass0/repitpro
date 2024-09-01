@@ -42,7 +42,7 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 
 	const getFileLinkById = (id: string) => {
 		// !TODO: Remake after deploy on server with domain
-		const baseLinkToThisSite = window.location.origin + ':3000'
+		const baseLinkToThisSite = window.location.origin
 
 		return `${baseLinkToThisSite}/files/${id}`
 	}

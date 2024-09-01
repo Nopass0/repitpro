@@ -73,7 +73,7 @@ if (localStorage.getItem('token') !== '') {
 // 	// 	}
 // 	// })
 // axios
-// 	.get('http://localhost:3000/check-occupied-slots', {
+// 	.get('https://repitpro.ru/api/check-occupied-slots', {
 // 		params: {token: defaultState.user.token},
 // 	})
 // 	.then((data) => {

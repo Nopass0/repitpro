@@ -48,6 +48,7 @@ WORKDIR /client
 COPY package*.json ./
 
 # Устанавливаем зависимости
+RUN npm install --save @rollup/rollup-linux-x64-gnu
 RUN npm install
 
 RUN npm install -g bun && bun install
@@ -71,9 +72,9 @@ COPY --from=builder /client/dist /usr/share/nginx/html
 # COPY nginx.conf /etc/nginx/nginx.conf
 
 # Копируем сертификаты
-# COPY client/ssl/gs_intermediate_ca.crt /etc/nginx/ssl/gs_intermediate_ca.crt
-# COPY client/ssl/www_repitpro_ru.key /etc/nginx/ssl/www_repitpro_ru.key
-# COPY client/ssl/www_repitpro_ru.crt /etc/nginx/ssl/www_repitpro_ru.crt
+COPY ssl/gs_intermediate_ca.crt /etc/nginx/ssl/gs_intermediate_ca.crt
+COPY ssl/www_repitpro_ru.key /etc/nginx/ssl/www_repitpro_ru.key
+COPY ssl/www_repitpro_ru.crt /etc/nginx/ssl/www_repitpro_ru.crt
 
 # Копируем сборку из этапа сборки
 COPY --from=builder /client/dist /usr/share/nginx/html

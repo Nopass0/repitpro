@@ -315,7 +315,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const [freeSlots, setFreeSlots] = useState([])
 	useEffect(() => {
 		axios
-			.get('http://localhost:3000/check-free-slots', {
+			.get('https://repitpro.ru/api/check-free-slots', {
 				params: {
 					token: token,
 					startDate: items[currentItemIndex].startLesson,
