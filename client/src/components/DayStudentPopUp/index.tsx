@@ -22,6 +22,7 @@ import socket from '../../socket'
 import {ExpandLess, ExpandMore} from '@mui/icons-material'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import {IStudentPoints} from '@/types'
+import PrepaymentComponent from '../PrepaymentComponent'
 interface IDayStudentPopUp {
 	icon?: any
 	name?: string
@@ -681,22 +682,14 @@ const DayStudentPopUp = ({
 							/>
 						)}
 						<div className={s.PrePay}>
-							<p>
-								{student?.prePayCost && (
-									<>
-										{student.prePayCost} - (Остаток:{' '}
-										{student.remainingPrePay?.toFixed(0) || 0}) ₽
-									</>
-								)}
-							</p>
-							<CheckBox
-								size="16px"
-								checked={
-									student?.historyLessons?.some(
-										(lesson) =>
-											new Date(lesson.date).toDateString() ===
-												new Date().toDateString() && lesson.isPaid,
-									) || false
+							<PrepaymentComponent
+								student={student}
+								currentDate={
+									new Date(
+										calendarNowPopupYear,
+										calendarNowPopupMonth - 1,
+										calendarNowPopupDay,
+									)
 								}
 							/>
 						</div>

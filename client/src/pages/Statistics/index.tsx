@@ -161,13 +161,19 @@ const Statistics = () => {
 	const columnTranslations = {
 		name: 'Имя',
 		lessons: 'Занятия',
-		avg_cost: 'Средняя стоимость',
+		avgCost: 'Средняя стоимость',
 		cancel: 'Отменено',
 		income: 'Доход',
 		consumption: 'Расход',
 		duty: 'Долг',
 		total: 'Итого',
 	}
+
+	useEffect(() => {
+		console.log(
+			`\n-----------------Статистика загружена---------------\n${JSON.stringify(studentsData, null, 2)}\n----------------\n`,
+		)
+	}, [columnTranslations])
 
 	const getSubjectIds = useCallback(
 		(selectedSubjects) => {
