@@ -1284,11 +1284,11 @@ const AddStudent = ({}: IAddStudent) => {
 	// 		}
 
 			// Если даты разные, возвращаем результат сравнения дат
-			return dateComparison
-		})
-		console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
-		setCombinedHistory(sorted)
-	}, [historyLesson, prePayList])
+	// 		return dateComparison
+	// 	})
+	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
+	// 	setCombinedHistory(sorted)
+	// }, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
