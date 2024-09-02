@@ -43,6 +43,7 @@ const AddClient = ({}: IAddClient) => {
 	const [currentJobIndex, setCurrentJobIndex] = useState<number>(0)
 	const [currentStageIndex, setCurrentStageIndex] = useState<number>(0)
 
+	const [pagePopUpExitInside, setPagePopUpExitInside] = useState<number>(0)
 	const navigate = useNavigate()
 	const [files, setFiles] = useState<any>([])
 
@@ -410,46 +411,56 @@ const AddClient = ({}: IAddClient) => {
 	}, [data])
 
 	const nextClient = () => {
-		if (Number(currentClientPosition) < allIdsClient.length - 1) {
-			setCurrentClientPosition(Number(currentClientPosition) + 1)
-			const newId = allIdsClient[Number(currentClientPosition) + 1]
+		if (!editedCards) {
+			if (Number(currentClientPosition) < allIdsClient.length - 1) {
+				setCurrentClientPosition(Number(currentClientPosition) + 1)
+				const newId = allIdsClient[Number(currentClientPosition) + 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
-			socket.emit('getClientById', {token: token, clientId: newId})
+				dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
+				socket.emit('getClientById', {token: token, clientId: newId})
 
-			socket.once('getClientById', (data) => {
-				console.log(data, 'getGroupById')
-				setData(data)
-				setJobs(data.jobs)
-				setNameStudent(data.nameStudent)
-				setPhoneNumber(data.phoneNumber)
-				setEmail(data.email)
-				setCostStudent(data.costStudent)
-				setcommentClient(data.commentClient)
-				setAudios(data.audios)
-			})
+				socket.once('getClientById', (data) => {
+					console.log(data, 'getGroupById')
+					setData(data)
+					setJobs(data.jobs)
+					setNameStudent(data.nameStudent)
+					setPhoneNumber(data.phoneNumber)
+					setEmail(data.email)
+					setCostStudent(data.costStudent)
+					setcommentClient(data.commentClient)
+					setAudios(data.audios)
+				})
+			}
+		} else {
+			setPagePopUpExitInside(1)
 		}
 	}
 
 	const prevClient = () => {
-		if (Number(currentClientPosition) > 0) {
-			setCurrentClientPosition(Number(currentClientPosition) - 1)
-			const newId = allIdsClient[Number(currentClientPosition) - 1]
+		if (!editedCards) {
+			if (Number(currentClientPosition) > 0) {
+				setCurrentClientPosition(Number(currentClientPosition) - 1)
+				const newId = allIdsClient[Number(currentClientPosition) - 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
-			socket.emit('getClientById', {token: token, clientId: newId})
+				dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
+				socket.emit('getClientById', {token: token, clientId: newId})
 
-			socket.once('getClientById', (data) => {
-				console.log(data, 'getGroupById')
-				setData(data)
-				setJobs(data.jobs)
-				setNameStudent(data.nameStudent)
-				setPhoneNumber(data.phoneNumber)
-				setEmail(data.email)
-				setCostStudent(data.costStudent)
-				setcommentClient(data.commentClient)
-				setAudios(data.audios)
-			})
+				socket.once('getClientById', (data) => {
+					console.log(data, 'getGroupById')
+					setData(data)
+					setJobs(data.jobs)
+					setNameStudent(data.nameStudent)
+					setPhoneNumber(data.phoneNumber)
+					setEmail(data.email)
+					setCostStudent(data.costStudent)
+					setcommentClient(data.commentClient)
+					setAudios(data.audios)
+				})
+			}
+
+			setIsEditMode(true)
+		} else {
+			setPagePopUpExitInside(2)
 		}
 	}
 
@@ -585,40 +596,42 @@ const AddClient = ({}: IAddClient) => {
 	}, [jobs])
 
 	useEffect(() => {
-		if (
-			nameStudent !== '' ||
-			phoneNumber !== '' ||
-			email !== '' ||
-			costStudent !== '' ||
-			commentClient !== '' ||
-			jobs.some((job) => {
-				return (
-					job.jobName !== '' ||
-					job.itemName !== '' ||
-					job.cost !== 0 ||
-					job.stages.some((stage) => {
-						return (
-							stage.totalCost !== 0 ||
-							stage.name !== '' ||
-							stage.typePayment !== false ||
-							stage.cost !== 0 ||
-							stage.prePay !== true ||
-							stage.postPay !== false ||
-							stage.endPaymentPrice !== 0 ||
-							stage.firstPaymentPayed !== false ||
-							stage.isStartWork !== false ||
-							stage.fisrtPaymentPrice !== 0 ||
-							stage.endPaymentPayed !== false ||
-							stage.isEndWork !== false ||
-							stage.payment !== 0 ||
-							stage.payed !== false ||
-							stage.workStarted !== false
-						)
-					})
-				)
-			})
-		) {
-			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		if (currentOpenedClient === '') {
+			if (
+				nameStudent !== '' ||
+				phoneNumber !== '' ||
+				email !== '' ||
+				costStudent !== '' ||
+				commentClient !== '' ||
+				jobs.some((job) => {
+					return (
+						job.jobName !== '' ||
+						job.itemName !== '' ||
+						job.cost !== 0 ||
+						job.stages.some((stage) => {
+							return (
+								stage.totalCost !== 0 ||
+								stage.name !== '' ||
+								stage.typePayment !== false ||
+								stage.cost !== 0 ||
+								stage.prePay !== true ||
+								stage.postPay !== false ||
+								stage.endPaymentPrice !== 0 ||
+								stage.firstPaymentPayed !== false ||
+								stage.isStartWork !== false ||
+								stage.fisrtPaymentPrice !== 0 ||
+								stage.endPaymentPayed !== false ||
+								stage.isEndWork !== false ||
+								stage.payment !== 0 ||
+								stage.payed !== false ||
+								stage.workStarted !== false
+							)
+						})
+					)
+				})
+			) {
+				dispatch({type: 'SET_EDITED_CARDS', payload: true})
+			}
 		}
 	}, [nameStudent, phoneNumber, email, costStudent, commentClient, jobs])
 	useEffect(() => {
@@ -1968,7 +1981,10 @@ const AddClient = ({}: IAddClient) => {
 									<button
 										disabled={currentOpenedClient === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
-										onClick={() => setIsEditMode(!isEditMode)}>
+										onClick={() => {
+											setIsEditMode(!isEditMode)
+											dispatch({type: 'SET_EDITED_CARDS', payload: true})
+										}}>
 										<p>Редактировать</p>
 									</button>
 									<button
@@ -2049,6 +2065,66 @@ const AddClient = ({}: IAddClient) => {
 								payload: EPagePopUpExit.None,
 							})
 						}
+					/>
+				</div>
+			)}
+			{pagePopUpExitInside > 0 && (
+				<div className={s.ExitPopUpWrap}>
+					<ExitPopUp
+						className={s.ExitPopUp}
+						title="Закрыть без сохранения?"
+						yes={() => {
+							if (pagePopUpExitInside === 1) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentClientPosition) < allIdsClient.length - 1) {
+									setCurrentClientPosition(Number(currentClientPosition) + 1)
+									const newId = allIdsClient[Number(currentClientPosition) + 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
+									socket.emit('getClientById', {token: token, clientId: newId})
+
+									socket.once('getClientById', (data) => {
+										console.log(data, 'getGroupById')
+										setData(data)
+										setJobs(data.jobs)
+										setNameStudent(data.nameStudent)
+										setPhoneNumber(data.phoneNumber)
+										setEmail(data.email)
+										setCostStudent(data.costStudent)
+										setcommentClient(data.commentClient)
+										setAudios(data.audios)
+									})
+									setIsEditMode(true)
+								}
+							}
+							if (pagePopUpExitInside === 2) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentClientPosition) > 0) {
+									setCurrentClientPosition(Number(currentClientPosition) - 1)
+									const newId = allIdsClient[Number(currentClientPosition) - 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: newId})
+									socket.emit('getClientById', {token: token, clientId: newId})
+
+									socket.once('getClientById', (data) => {
+										console.log(data, 'getGroupById')
+										setData(data)
+										setJobs(data.jobs)
+										setNameStudent(data.nameStudent)
+										setPhoneNumber(data.phoneNumber)
+										setEmail(data.email)
+										setCostStudent(data.costStudent)
+										setcommentClient(data.commentClient)
+										setAudios(data.audios)
+									})
+
+									setIsEditMode(true)
+								}
+							}
+						}}
+						no={() => setPagePopUpExitInside(0)}
 					/>
 				</div>
 			)}

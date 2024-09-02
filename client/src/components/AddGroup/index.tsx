@@ -69,6 +69,7 @@ const AddGroup = ({className}: IAddGroup) => {
 	const currentOpenedGroup = useSelector(
 		(state: any) => state.currentOpenedGroup,
 	)
+	const [pagePopUpExitInside, setPagePopUpExitInside] = useState<number>(0)
 
 	const [allCostForGroup, setAllCostForGroup] = useState<number>(0)
 	const [allPriceGroup, setAllPriceGroup] = useState<number>(0)
@@ -279,46 +280,56 @@ const AddGroup = ({className}: IAddGroup) => {
 	}
 
 	const nextGroup = () => {
-		if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
-			setCurrentGroupIndex(Number(currentGroupIndex) + 1)
-			const newId = groupsIndexes[Number(currentGroupIndex) + 1]
+		if (!editedCards) {
+			if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
+				setCurrentGroupIndex(Number(currentGroupIndex) + 1)
+				const newId = groupsIndexes[Number(currentGroupIndex) + 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
-			socket.emit('getGroupById', {token: token, groupId: newId})
+				dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+				socket.emit('getGroupById', {token: token, groupId: newId})
 
-			socket.once('getGroupById', (data) => {
-				console.log(data, 'getGroupById')
-				setData(data)
-				setGroupName(data.groupName)
-				setItems(data.items)
-				setStudents(data.students)
-				setFiles(data.files)
-				setFilesItems(data.filesItems)
-				setAudioItems(data.audioItems)
-				setAudioStudents(data.audioStudents)
-			})
+				socket.once('getGroupById', (data) => {
+					console.log(data, 'getGroupById')
+					setData(data)
+					setGroupName(data.groupName)
+					setItems(data.items)
+					setStudents(data.students)
+					setFiles(data.files)
+					setFilesItems(data.filesItems)
+					setAudioItems(data.audioItems)
+					setAudioStudents(data.audioStudents)
+				})
+			}
+			setIsEditMode(true)
+		} else {
+			setPagePopUpExitInside(1)
 		}
 	}
 
 	const prevGroup = () => {
-		if (Number(currentGroupIndex) > 0) {
-			setCurrentGroupIndex(Number(currentGroupIndex) - 1)
-			const newId = groupsIndexes[Number(currentGroupIndex) - 1]
+		if (!editedCards) {
+			if (Number(currentGroupIndex) > 0) {
+				setCurrentGroupIndex(Number(currentGroupIndex) - 1)
+				const newId = groupsIndexes[Number(currentGroupIndex) - 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
-			socket.emit('getGroupById', {token: token, groupId: newId})
+				dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+				socket.emit('getGroupById', {token: token, groupId: newId})
 
-			socket.once('getGroupById', (data) => {
-				console.log(data, 'getGroupById')
-				setData(data)
-				setGroupName(data.groupName)
-				setItems(data.items)
-				setStudents(data.students)
-				setFiles(data.files)
-				setFilesItems(data.filesItems)
-				setAudioItems(data.audioItems)
-				setAudioStudents(data.audioStudents)
-			})
+				socket.once('getGroupById', (data) => {
+					console.log(data, 'getGroupById')
+					setData(data)
+					setGroupName(data.groupName)
+					setItems(data.items)
+					setStudents(data.students)
+					setFiles(data.files)
+					setFilesItems(data.filesItems)
+					setAudioItems(data.audioItems)
+					setAudioStudents(data.audioStudents)
+				})
+				setIsEditMode(true)
+			}
+		} else {
+			setPagePopUpExitInside(2)
 		}
 	}
 
@@ -1371,38 +1382,40 @@ const AddGroup = ({className}: IAddGroup) => {
 	// }, [students, students[currentStudentIndex], currentStudentIndex])
 
 	useEffect(() => {
-		if (
-			items.some((item) => {
-				return (
-					item.itemName !== '' ||
-					item.tryLessonCheck !== false ||
-					item.tryLessonCost !== '' ||
-					item.todayProgramStudent !== '' ||
-					item.targetLesson !== '' ||
-					item.programLesson !== '' ||
-					item.typeLesson !== '1' ||
-					item.placeLesson !== '' ||
-					item.timeLesson !== '' ||
-					item.valueMuiSelectArchive !== 1 ||
-					item.nowLevel !== 0 ||
-					item.lessonDuration !== null
-				)
-			}) ||
-			groupName !== '' ||
-			students.some((student) => {
-				return (
-					student.nameStudent !== '' ||
-					student.contactFace !== '' ||
-					student.email !== '' ||
-					student.linkStudent !== '' ||
-					student.costStudent !== '' ||
-					student.commentStudent !== '' ||
-					student.phoneNumber !== '' ||
-					student.prePayCost !== ''
-				)
-			})
-		) {
-			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		if (currentOpenedGroup === '') {
+			if (
+				items.some((item) => {
+					return (
+						item.itemName !== '' ||
+						item.tryLessonCheck !== false ||
+						item.tryLessonCost !== '' ||
+						item.todayProgramStudent !== '' ||
+						item.targetLesson !== '' ||
+						item.programLesson !== '' ||
+						item.typeLesson !== '1' ||
+						item.placeLesson !== '' ||
+						item.timeLesson !== '' ||
+						item.valueMuiSelectArchive !== 1 ||
+						item.nowLevel !== 0 ||
+						item.lessonDuration !== null
+					)
+				}) ||
+				groupName !== '' ||
+				students.some((student) => {
+					return (
+						student.nameStudent !== '' ||
+						student.contactFace !== '' ||
+						student.email !== '' ||
+						student.linkStudent !== '' ||
+						student.costStudent !== '' ||
+						student.commentStudent !== '' ||
+						student.phoneNumber !== '' ||
+						student.prePayCost !== ''
+					)
+				})
+			) {
+				dispatch({type: 'SET_EDITED_CARDS', payload: true})
+			}
 		}
 	}, [items, students, groupName])
 	useEffect(() => {
@@ -1947,12 +1960,6 @@ const AddGroup = ({className}: IAddGroup) => {
 																		</div>
 																	)}
 																</div>
-																{index <
-																	items[currentItemIndex].timeLinesArray
-																		.length -
-																		1 && (
-																	<Line width="324px" className={s.Line} />
-																)}
 
 																{items[currentItemIndex].timeLinesArray.length -
 																	1 !==
@@ -2672,7 +2679,10 @@ const AddGroup = ({className}: IAddGroup) => {
 									<button
 										disabled={currentOpenedGroup === ''}
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
-										onClick={() => setIsEditMode(!isEditMode)}>
+										onClick={() => {
+											setIsEditMode(!isEditMode)
+											dispatch({type: 'SET_EDITED_CARDS', payload: true})
+										}}>
 										<p>Редактировать</p>
 									</button>
 									<button
@@ -2753,6 +2763,65 @@ const AddGroup = ({className}: IAddGroup) => {
 								payload: EPagePopUpExit.None,
 							})
 						}
+					/>
+				</div>
+			)}
+			{pagePopUpExitInside > 0 && (
+				<div className={s.ExitPopUpWrap}>
+					<ExitPopUp
+						className={s.ExitPopUp}
+						title="Закрыть без сохранения?"
+						yes={() => {
+							if (pagePopUpExitInside === 1) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentGroupIndex) < groupsIndexes.length - 1) {
+									setCurrentGroupIndex(Number(currentGroupIndex) + 1)
+									const newId = groupsIndexes[Number(currentGroupIndex) + 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+									socket.emit('getGroupById', {token: token, groupId: newId})
+
+									socket.once('getGroupById', (data) => {
+										console.log(data, 'getGroupById')
+										setData(data)
+										setGroupName(data.groupName)
+										setItems(data.items)
+										setStudents(data.students)
+										setFiles(data.files)
+										setFilesItems(data.filesItems)
+										setAudioItems(data.audioItems)
+										setAudioStudents(data.audioStudents)
+									})
+									setIsEditMode(true)
+								}
+							}
+							if (pagePopUpExitInside === 2) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentGroupIndex) > 0) {
+									setCurrentGroupIndex(Number(currentGroupIndex) - 1)
+									const newId = groupsIndexes[Number(currentGroupIndex) - 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: newId})
+									socket.emit('getGroupById', {token: token, groupId: newId})
+
+									socket.once('getGroupById', (data) => {
+										console.log(data, 'getGroupById')
+										setData(data)
+										setGroupName(data.groupName)
+										setItems(data.items)
+										setStudents(data.students)
+										setFiles(data.files)
+										setFilesItems(data.filesItems)
+										setAudioItems(data.audioItems)
+										setAudioStudents(data.audioStudents)
+									})
+									setIsEditMode(true)
+								}
+							}
+						}}
+						no={() => setPagePopUpExitInside(0)}
 					/>
 				</div>
 			)}

@@ -83,6 +83,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const [combinedHistory, setCombinedHistory] = useState([])
+	const [pagePopUpExitInside, setPagePopUpExitInside] = useState<number>(0)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -153,36 +154,46 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [])
 
 	const nextStud = () => {
-		if (Number(currentStudPosition) < allIdStudent.length - 1) {
-			setCurrentStudPosition(Number(currentStudPosition) + 1)
-			const newId = allIdStudent[Number(currentStudPosition) + 1]
+		if (!editedCards) {
+			if (Number(currentStudPosition) < allIdStudent.length - 1) {
+				setCurrentStudPosition(Number(currentStudPosition) + 1)
+				const newId = allIdStudent[Number(currentStudPosition) + 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-			console.log(currentOpenedStudent, 'newIdDispatch')
-			socket.emit('getGroupByStudentId', {
-				token: token,
-				studentId: newId,
+				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+				console.log(currentOpenedStudent, 'newIdDispatch')
+				socket.emit('getGroupByStudentId', {
+					token: token,
+					studentId: newId,
+				})
+			}
+			socket.once('getGroupByStudentId', (data: any) => {
+				setData(data.group)
 			})
+			setIsEditMode(true)
+		} else {
+			setPagePopUpExitInside(1)
 		}
-		socket.once('getGroupByStudentId', (data: any) => {
-			setData(data.group)
-		})
 	}
 
 	const prevStud = () => {
-		if (Number(currentStudPosition) > 0) {
-			setCurrentStudPosition(Number(currentStudPosition) - 1)
-			const newId = allIdStudent[Number(currentStudPosition) - 1]
+		if (!editedCards) {
+			if (Number(currentStudPosition) > 0) {
+				setCurrentStudPosition(Number(currentStudPosition) - 1)
+				const newId = allIdStudent[Number(currentStudPosition) - 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-			console.log(currentOpenedStudent, newId, 'newIdDispatch')
-			socket.emit('getGroupByStudentId', {
-				token: token,
-				studentId: newId,
-			})
-			socket.on('getGroupByStudentId', (data: any) => {
-				setData(data.group)
-			})
+				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+				console.log(currentOpenedStudent, newId, 'newIdDispatch')
+				socket.emit('getGroupByStudentId', {
+					token: token,
+					studentId: newId,
+				})
+				socket.on('getGroupByStudentId', (data: any) => {
+					setData(data.group)
+				})
+				setIsEditMode(true)
+			}
+		} else {
+			setPagePopUpExitInside(2)
 		}
 	}
 
@@ -996,34 +1007,36 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [listRef, scrollPosition, collapseRef])
 
 	useEffect(() => {
-		if (
-			items.some((item) => {
-				return (
-					item.itemName !== '' ||
-					item.tryLessonCheck !== false ||
-					item.tryLessonCost !== '' ||
-					item.todayProgramStudent !== '' ||
-					item.targetLesson !== '' ||
-					item.programLesson !== '' ||
-					item.typeLesson !== '1' ||
-					item.placeLesson !== '' ||
-					item.timeLesson !== '' ||
-					item.valueMuiSelectArchive !== 1 ||
-					item.nowLevel !== undefined ||
-					item.lessonDuration !== null ||
-					item.costOneLesson !== ''
-				)
-			}) ||
-			nameStudent !== '' ||
-			contactFace !== '' ||
-			email !== '' ||
-			linkStudent !== '' ||
-			costStudent !== '' ||
-			commentStudent !== '' ||
-			phoneNumber !== '' ||
-			prePayCost !== ''
-		) {
-			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		if (currentOpenedStudent === '') {
+			if (
+				items.some((item) => {
+					return (
+						item.itemName !== '' ||
+						item.tryLessonCheck !== false ||
+						item.tryLessonCost !== '' ||
+						item.todayProgramStudent !== '' ||
+						item.targetLesson !== '' ||
+						item.programLesson !== '' ||
+						item.typeLesson !== '1' ||
+						item.placeLesson !== '' ||
+						item.timeLesson !== '' ||
+						item.valueMuiSelectArchive !== 1 ||
+						item.nowLevel !== undefined ||
+						item.lessonDuration !== null ||
+						item.costOneLesson !== ''
+					)
+				}) ||
+				nameStudent !== '' ||
+				contactFace !== '' ||
+				email !== '' ||
+				linkStudent !== '' ||
+				costStudent !== '' ||
+				commentStudent !== '' ||
+				phoneNumber !== '' ||
+				prePayCost !== ''
+			) {
+				dispatch({type: 'SET_EDITED_CARDS', payload: true})
+			}
 		}
 	}, [
 		items,
@@ -1154,8 +1167,8 @@ const AddStudent = ({}: IAddStudent) => {
 			// Если даты разные, возвращаем результат сравнения дат
 			return dateComparison
 		})
-		console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
 		setCombinedHistory(sorted)
+		console.log(combinedHistory, 'combinedHistory')
 	}, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
@@ -1482,7 +1495,7 @@ const AddStudent = ({}: IAddStudent) => {
 														<div
 															id={`history-data-${formatDate(item.date)}`}
 															key={index}
-															className={`${s.ListObject} ${item.isCancel ? s.canceled : ''}`}>
+															className={`${s.ListObject} ${item.isCancel ? s.canceled : item.isCancel}`}>
 															{item.type === 'lesson' ? (
 																<>
 																	<p
@@ -2308,7 +2321,7 @@ const AddStudent = ({}: IAddStudent) => {
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => {
 											setIsEditMode(!isEditMode)
-											// dispatch({type: 'SET_EDITED_CARDS', payload: !isEditMode})
+											dispatch({type: 'SET_EDITED_CARDS', payload: true})
 										}}>
 										<p>Редактировать</p>
 									</button>
@@ -2392,6 +2405,55 @@ const AddStudent = ({}: IAddStudent) => {
 								payload: EPagePopUpExit.None,
 							})
 						}
+					/>
+				</div>
+			)}
+			{pagePopUpExitInside > 0 && (
+				<div className={s.ExitPopUpWrap}>
+					<ExitPopUp
+						className={s.ExitPopUp}
+						title="Закрыть без сохранения?"
+						yes={() => {
+							if (pagePopUpExitInside === 1) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentStudPosition) < allIdStudent.length - 1) {
+									setCurrentStudPosition(Number(currentStudPosition) + 1)
+									const newId = allIdStudent[Number(currentStudPosition) + 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+									console.log(currentOpenedStudent, 'newIdDispatch')
+									socket.emit('getGroupByStudentId', {
+										token: token,
+										studentId: newId,
+									})
+									setIsEditMode(true)
+								}
+								socket.once('getGroupByStudentId', (data: any) => {
+									setData(data.group)
+								})
+							}
+							if (pagePopUpExitInside === 2) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentStudPosition) > 0) {
+									setCurrentStudPosition(Number(currentStudPosition) - 1)
+									const newId = allIdStudent[Number(currentStudPosition) - 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+									console.log(currentOpenedStudent, newId, 'newIdDispatch')
+									socket.emit('getGroupByStudentId', {
+										token: token,
+										studentId: newId,
+									})
+									setIsEditMode(true)
+									socket.on('getGroupByStudentId', (data: any) => {
+										setData(data.group)
+									})
+								}
+							}
+						}}
+						no={() => setPagePopUpExitInside(0)}
 					/>
 				</div>
 			)}
