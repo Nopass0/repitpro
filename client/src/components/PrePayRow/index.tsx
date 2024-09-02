@@ -117,7 +117,11 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 								</>
 							) : (
 								<>
-									<button onClick={onDelete}>
+									<button
+										onClick={() => {
+											onDelete()
+											finishDelete()
+										}}>
 										<CheckCircleIcon color="success" />
 									</button>
 									<button onClick={finishDelete}>

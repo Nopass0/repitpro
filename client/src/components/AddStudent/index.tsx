@@ -1495,7 +1495,7 @@ const AddStudent = ({}: IAddStudent) => {
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
 		setHistoryLesson(updatedHistoryLessons)
-	}, [items, prePayList, historyLesson])
+	}, [items, prePayList])
 
 	const setHistoryLessonIsDone = useCallback((index, value) => {
 		setHistoryLesson((prevHistoryLesson) => [
