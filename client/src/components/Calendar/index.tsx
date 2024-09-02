@@ -1,5 +1,10 @@
 import React, {useEffect, useState} from 'react'
-import { ICell, ECurrentDayPopUp, ELeftMenuPage, EPagePopUpExit } from '../../types';
+import {
+	ICell,
+	ECurrentDayPopUp,
+	ELeftMenuPage,
+	EPagePopUpExit,
+} from '../../types'
 import s from './index.module.scss'
 import socket from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
