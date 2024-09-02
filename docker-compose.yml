@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.3"
 
 services:
   postgres:
@@ -47,7 +47,7 @@ services:
       dockerfile: Dockerfile
     environment:
       SERVER_NAME: ${SERVER_NAME}
-      CHOKIDAR_USEPOLLING: true
+      CHOKIDAR_USEPOLLING: "true"
     networks:
       - frontend
       - backend

@@ -57,7 +57,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	}
 
 	const getFileLinkById = (id: string) => {
-		const baseLinkToThisSite = `${window.location.origin}:3000`
+		const baseLinkToThisSite = `${window.location.origin}`
 		window.open(`${baseLinkToThisSite}/files/${id}`, '_blank')
 	}
 

@@ -457,6 +457,35 @@
 
 // Mui Collapse
 
+.canceled {
+	background-color: #ff4747;
+	border: 1px dotted #ffaaaa;
+	opacity: 0.7;
+	p {
+		text-decoration: line-through;
+		color: #888;
+	}
+}
+
+.cancelStamp {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+
+	font-size: 24px;
+	font-weight: bold;
+	color: rgba(255, 0, 0, 0.5);
+	text-transform: uppercase;
+	pointer-events: none;
+	white-space: nowrap;
+	z-index: 1;
+}
+
+.cancelIcon {
+	margin-left: 5px;
+	color: #ff4444;
+}
+
 .MuiCollapse {
 	.MuiList {
 		max-height: 200px;
@@ -464,21 +493,6 @@
 		.ListObjectWrapper {
 			display: flex;
 			flex-direction: column;
-
-			&.canceled {
-				background-color: #ffeeee;
-				border: 1px dotted #ffaaaa;
-
-				p {
-					text-decoration: line-through;
-					color: #888;
-				}
-			}
-
-			.cancelIcon {
-				margin-left: 5px;
-				color: #ff4444;
-			}
 
 			.ListObject {
 				display: flex;

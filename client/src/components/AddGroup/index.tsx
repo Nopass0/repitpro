@@ -29,7 +29,7 @@ import {
 } from '../../types'
 import TimePicker from '../Timer/index'
 import {useDispatch, useSelector} from 'react-redux'
-import socket from '../../socket'
+import socket, {isServer} from '../../socket'
 import {addDays, differenceInDays} from 'date-fns'
 import ExitPopUp from '../ExitPopUp'
 import CloseIcon from '@mui/icons-material/Close'
@@ -1078,8 +1078,9 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	useEffect(() => {
 		if (items[currentItemIndex]) {
+			const adr = !isServer ? 'http://localhost:3000' : 'https://repitpro.ru/api'
 			axios
-				.get('http://localhost:3000/check-free-slots', {
+				.get(`${adr}/check-free-slots`, {
 					params: {
 						token: token,
 						startDate: items[currentItemIndex].startLesson,

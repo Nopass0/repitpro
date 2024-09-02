@@ -2944,14 +2944,12 @@ export async function getTableData(data, socket: any) {
           sum + (schedule.lessonsPrice || 0) * (schedule.lessonsCount || 0),
         0
       );
-      const consumption = studentSchedules_.reduce(
-        (sum, schedule) => sum + (schedule.workPrice || 0),
-        0
-      );
+
+      let consumption = student.costStudent;
 
       // Calculate debt (assuming debt is the difference between expected income and actual income)
       const expectedIncome = lessons * Number(student.costOneLesson || 0);
-      const debt = Math.max(0, expectedIncome - income);
+      const debt = Math.max(0, expectedIncome - Number(consumption));
 
       // Calculate average cost
       const avgCost =

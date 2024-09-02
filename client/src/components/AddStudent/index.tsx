@@ -4,7 +4,14 @@ import {styled} from '@mui/material/styles'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Line from '../Line'
-import {useEffect, useLayoutEffect, useRef, useState} from 'react'
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import Plus from '../../assets/ItemPlus.svg'
 import CheckBox from '../CheckBox'
@@ -25,7 +32,7 @@ import {
 	IPrePayList,
 	ITimeLine,
 } from '../../types'
-import socket from '../../socket'
+import socket, {isServer} from '../../socket'
 import {useDispatch, useSelector} from 'react-redux'
 
 import CloseIcon from '@mui/icons-material/Close'
@@ -41,7 +48,7 @@ import {TailSpin} from 'react-loader-spinner'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import PrePayRow from '../PrePayRow'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import axios from 'axios'
+import axios, {isCancel} from 'axios'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -70,6 +77,8 @@ const AddStudent = ({}: IAddStudent) => {
 	const editedCards = useSelector((state: any) => state.editedCards)
 	const listRef = useRef(null)
 	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
+	const [historyLesson, setHistoryLesson] = useState<any>([])
+
 	const [isEditMode, setIsEditMode] = useState<boolean>(
 		currentOpenedStudent ? true : false,
 	)
@@ -83,7 +92,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const [combinedHistory, setCombinedHistory] = useState([])
-	const [pagePopUpExitInside, setPagePopUpExitInside] = useState<number>(0)
+	const [pagePopUpExitInside,setPagePopUpExitInside] = useState<number>(0)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -229,8 +238,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [prePayDate, setPrePayDate] = useState<any>(new Date(Date.now()))
 	const [costOneLesson, setCostOneLesson] = useState<string>('')
 
-	const [historyLesson, setHistoryLesson] = useState<any>([])
-
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 	const PagePopUpExit = useSelector((state: any) => state.pagePopUpExit)
@@ -325,8 +332,9 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const [freeSlots, setFreeSlots] = useState([])
 	useEffect(() => {
+		const adr = !isServer ? 'http://localhost:3000' : 'https://repitpro.ru/api'
 		axios
-			.get('http://localhost:3000/check-free-slots', {
+			.get(`${adr}/check-free-slots`, {
 				params: {
 					token: token,
 					startDate: items[currentItemIndex].startLesson,
@@ -334,6 +342,7 @@ const AddStudent = ({}: IAddStudent) => {
 				},
 			})
 			.then((data) => {
+				console.log(data)
 				setFreeSlots(data.data.freeSlots)
 			})
 	}, [items])
@@ -762,30 +771,47 @@ const AddStudent = ({}: IAddStudent) => {
 		if (prePayDate && prePayCost) {
 			const prePaymentDate = new Date(prePayDate)
 			let remainingPrePayment = Number(prePayCost)
-			const lessonCount = historyLessons_.filter((i) => i.isPaid).length
-			const costOneLessonItems =
-				items.find((item) => item.costOneLesson)?.costOneLesson || 0
-			if (
-				Math.floor(Number(prePayCost) / Number(costOneLessonItems)) >
-				lessonCount
-			) {
-				const updatedHistoryLesson = historyLessons_.map((lesson) => {
-					const lessonDate = new Date(lesson.date)
-					console.log(lesson)
-					if (
-						lessonDate >= prePaymentDate &&
-						remainingPrePayment >= Number(lesson.price)
-					) {
-						remainingPrePayment -= Number(lesson.price)
-						return {...lesson, isPaid: true}
-					} else {
-						return {...lesson}
-					}
-				})
-				setHistoryLesson(updatedHistoryLesson)
-			}
+			const updatedHistoryLesson = historyLessons_.map((lesson) => {
+				const lessonDate = new Date(lesson.date)
+				if (
+					lessonDate >= prePaymentDate &&
+					remainingPrePayment >= Number(lesson.price) &&
+					!lesson.isCancel // Не оплачивать отмененные занятия
+				) {
+					remainingPrePayment -= Number(lesson.price)
+					return {...lesson, isPaid: true}
+				} else {
+					return lesson // Сохраняем предыдущее состояние занятия, включая isCancel
+				}
+			})
+			setHistoryLesson(updatedHistoryLesson)
 		}
 	}
+	// const handlePrePayment = (historyLessons_: any) => {
+	// 	if (prePayList && prePayList.length > 0) {
+	// 		let remainingPrePayment = prePayList.reduce(
+	// 			(sum, item) => sum + Number(item.cost),
+	// 			0,
+	// 		)
+	// 		const updatedHistoryLesson = historyLessons_.map((lesson) => {
+	// 			const lessonDate = new Date(lesson.date)
+	// 			if (
+	// 				lessonDate >= prePayList[0].date &&
+	// 				remainingPrePayment >= Number(lesson.price)
+	// 			) {
+	// 				remainingPrePayment -= Number(lesson.price)
+	// 				return {...lesson, isPaid: true}
+	// 			} else {
+	// 				return {...lesson}
+	// 			}
+	// 		})
+	// 		setHistoryLesson(updatedHistoryLesson)
+	// 	}
+	// }
+
+	// useEffect(() => {
+	// 	handlePrePayment(historyLesson)
+	// }, [prePayList, historyLesson])
 
 	// useEffect(() => {
 	// 	handlePrePayment()
@@ -913,11 +939,75 @@ const AddStudent = ({}: IAddStudent) => {
 	// 	console.log(historyLesson, 'historyLesson___2')
 	// }, [items, prePayCost, prePayDate])
 
+	// useEffect(() => {
+	// 	let countLessons = 0
+	// 	let countLessonsPrice = 0
+	// 	const historyLessons_ = []
+	// 	const now = new Date()
+
+	// 	for (let i = 0; i < items.length; i++) {
+	// 		const differenceDays = differenceInDays(
+	// 			items[i].endLesson,
+	// 			items[i].startLesson,
+	// 		)
+	// 		const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+	// 			addDays(items[i].startLesson, j),
+	// 		)
+
+	// 		for (const date of dateRange) {
+	// 			const dayOfWeek = getDay(date)
+	// 			const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
+
+	// 			const cond =
+	// 				scheduleForDay.startTime.hour === 0 &&
+	// 				scheduleForDay.startTime.minute === 0 &&
+	// 				scheduleForDay.endTime.hour === 0 &&
+	// 				scheduleForDay.endTime.minute === 0
+
+	// 			if (!cond) {
+	// 				const lessonDate = new Date(date)
+	// 				lessonDate.setHours(
+	// 					scheduleForDay.startTime.hour,
+	// 					scheduleForDay.startTime.minute,
+	// 				)
+
+	// 				const isDone =
+	// 					lessonDate < now ||
+	// 					(lessonDate.toDateString() === now.toDateString() &&
+	// 						now.getHours() > scheduleForDay.endTime.hour) ||
+	// 					(now.getHours() === scheduleForDay.endTime.hour &&
+	// 						now.getMinutes() >= scheduleForDay.endTime.minute)
+
+	// 				const hl = {
+	// 					date: lessonDate,
+	// 					itemName: items[i].itemName,
+	// 					isDone: isDone,
+	// 					price: items[i].costOneLesson,
+	// 					isPaid: false,
+	// 					isCancel: false,
+	// 				}
+
+	// 				historyLessons_.push(hl)
+
+	// 				countLessons++
+	// 				countLessonsPrice = countLessons * Number(items[i].costOneLesson)
+	// 			}
+	// 		}
+	// 	}
+
+	// 	setAllLessons(countLessons)
+	// 	setAllLessonsPrice(countLessonsPrice)
+	// 	setHistoryLesson(historyLessons_)
+	// 	handlePrePayment(historyLessons_)
+	// }, [items, prePayCost, prePayDate])
+
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
-		const historyLessons_ = []
 		const now = new Date()
+
+		// Создаем новый массив занятий
+		const newHistoryLessons = []
 
 		for (let i = 0; i < items.length; i++) {
 			const differenceDays = differenceInDays(
@@ -952,15 +1042,21 @@ const AddStudent = ({}: IAddStudent) => {
 						(now.getHours() === scheduleForDay.endTime.hour &&
 							now.getMinutes() >= scheduleForDay.endTime.minute)
 
-					const hl = {
+					// Ищем соответствующее занятие в текущем historyLesson
+					const existingLesson = historyLesson.find(
+						(lesson) => lesson.date.getTime() === lessonDate.getTime(),
+					)
+
+					const newLesson = {
 						date: lessonDate,
 						itemName: items[i].itemName,
 						isDone: isDone,
 						price: items[i].costOneLesson,
-						isPaid: false,
+						isPaid: existingLesson ? existingLesson.isPaid : false,
+						isCancel: existingLesson ? existingLesson.isCancel : false,
 					}
 
-					historyLessons_.push(hl)
+					newHistoryLessons.push(newLesson)
 
 					countLessons++
 					countLessonsPrice = countLessons * Number(items[i].costOneLesson)
@@ -968,27 +1064,48 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 		}
 
+		// Добавляем занятия, которых нет в новом расписании, но есть в текущем historyLesson
+		historyLesson.forEach((lesson) => {
+			const lessonExists = newHistoryLessons.some(
+				(newLesson) => newLesson.date.getTime() === lesson.date.getTime(),
+			)
+			if (!lessonExists) {
+				newHistoryLessons.push(lesson)
+			}
+		})
+
+		// Сортируем занятия по дате
+		newHistoryLessons.sort((a, b) => a.date.getTime() - b.date.getTime())
+
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		setHistoryLesson(historyLessons_)
-		handlePrePayment(historyLessons_)
+		setHistoryLesson(newHistoryLessons)
+		handlePrePayment(newHistoryLessons)
 	}, [items, prePayCost, prePayDate])
 
-	const setHistoryLessonIsDone = (index: number, value: boolean) => {
-		setHistoryLesson((prevHistoryLesson: any) => [
+	const setHistoryLessonIsDone = useCallback((index, value) => {
+		setHistoryLesson((prevHistoryLesson) => [
 			...prevHistoryLesson.slice(0, index),
-			{...prevHistoryLesson[index], isDone: value},
+			{
+				...prevHistoryLesson[index],
+				isDone: value,
+				isCancel: prevHistoryLesson[index].isCancel || false,
+			},
 			...prevHistoryLesson.slice(index + 1),
 		])
-	}
+	}, [])
 
-	const setHistoryLessonIsPaid = (index: number, value: boolean) => {
-		setHistoryLesson((prevHistoryLesson: any) => [
+	const setHistoryLessonIsPaid = useCallback((index, value) => {
+		setHistoryLesson((prevHistoryLesson) => [
 			...prevHistoryLesson.slice(0, index),
-			{...prevHistoryLesson[index], isPaid: value},
+			{
+				...prevHistoryLesson[index],
+				isPaid: value,
+				isCancel: prevHistoryLesson[index].isCancel || false,
+			},
 			...prevHistoryLesson.slice(index + 1),
 		])
-	}
+	}, [])
 
 	const [scrollPosition, setScrollPosition] = useState(0)
 	const collapseRef = useRef(null)
@@ -1066,10 +1183,10 @@ const AddStudent = ({}: IAddStudent) => {
 			setFiles(data.students[0].filesData)
 			setAudios(data.students[0].audiosData)
 			let dateHistory = data.historyLessons.map((i) => {
-				return {...i, date: new Date(i.date)}
+				return {...i, date: new Date(i.date), isCancel: i.isCancel || false}
 			})
-			setPrePayList(data.students[0].prePay || [])
 			setHistoryLesson(dateHistory)
+			setPrePayList(data.students[0].prePay || [])
 			console.log('dataHistory', data)
 		}
 	}, [data])
@@ -1125,50 +1242,52 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [open])
 
-	useEffect(() => {
-		const combined = [
-			...historyLesson.map((lesson) => ({
-				...lesson,
-				type: 'lesson',
-				date: new Date(lesson.date),
-			})),
-			...prePayList.map((prepay) => ({
-				...prepay,
-				type: 'prepayment',
-				date: new Date(prepay.date),
-			})),
-		]
+	// useEffect(() => {
+	// 	const combined = [
+	// 		...historyLesson.map((lesson) => ({
+	// 			...lesson,
+	// 			type: 'lesson',
+	// 			date: new Date(lesson.date),
+	// 			isCancel: lesson.isCancel || false, // Ensure isCancel is included
+	// 		})),
+	// 		...prePayList.map((prepay) => ({
+	// 			...prepay,
+	// 			type: 'prepayment',
+	// 			date: new Date(prepay.date),
+	// 			isCancel: false,
+	// 		})),
+	// 	]
 
-		const sorted = combined.sort((a, b) => {
-			// Сравниваем даты, игнорируя время
-			const dateA = new Date(
-				a.date.getFullYear(),
-				a.date.getMonth(),
-				a.date.getDate(),
-			)
-			const dateB = new Date(
-				b.date.getFullYear(),
-				b.date.getMonth(),
-				b.date.getDate(),
-			)
+	// 	const sorted = combined.sort((a, b) => {
+	// 		// Сравниваем даты, игнорируя время
+	// 		const dateA = new Date(
+	// 			a.date.getFullYear(),
+	// 			a.date.getMonth(),
+	// 			a.date.getDate(),
+	// 		)
+	// 		const dateB = new Date(
+	// 			b.date.getFullYear(),
+	// 			b.date.getMonth(),
+	// 			b.date.getDate(),
+	// 		)
 
-			const dateComparison = dateB.getTime() - dateA.getTime()
+	// 		const dateComparison = dateB.getTime() - dateA.getTime()
 
-			// Если даты равны, сортируем по типу
-			if (dateComparison === 0) {
-				// Если типы разные, 'lesson' всегда должен быть выше 'prepayment'
-				if (a.type !== b.type) {
-					return a.type === 'lesson' ? -1 : 1
-				}
-				// Если типы одинаковые, сохраняем исходный порядок
-				return 0
-			}
+	// 		// Если даты равны, сортируем по типу
+	// 		if (dateComparison === 0) {
+	// 			// Если типы разные, 'lesson' всегда должен быть выше 'prepayment'
+	// 			if (a.type !== b.type) {
+	// 				return a.type === 'lesson' ? -1 : 1
+	// 			}
+	// 			// Если типы одинаковые, сохраняем исходный порядок
+	// 			return 0
+	// 		}
 
 			// Если даты разные, возвращаем результат сравнения дат
 			return dateComparison
 		})
+		console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
 		setCombinedHistory(sorted)
-		console.log(combinedHistory, 'combinedHistory')
 	}, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
@@ -1373,7 +1492,6 @@ const AddStudent = ({}: IAddStudent) => {
 								</div>
 
 								<Line width="100%" className={s.Line} />
-
 								<div className={s.StudentCard}>
 									<p>Тел:</p>
 									<InputMask
@@ -1397,7 +1515,6 @@ const AddStudent = ({}: IAddStudent) => {
 										onChange={(e) => setEmail(e.target.value)}
 									/>
 								</div>
-
 								<Line width="100%" className={s.Line} />
 								<TextAreaInputBlock
 									title="Источник:"
@@ -1409,7 +1526,6 @@ const AddStudent = ({}: IAddStudent) => {
 									textIndent="80px"
 									firstMinSymbols={27}
 								/>
-
 								<Line width="100%" className={s.Line} />
 								<div className={`${s.StudentCard} `}>
 									<p>Расходы по ученику:</p>
@@ -1424,9 +1540,7 @@ const AddStudent = ({}: IAddStudent) => {
 									/>
 									<p>₽</p>
 								</div>
-
 								<Line width="100%" className={s.Line} />
-
 								<div className={s.StudentCard}>
 									<p>Предоплата:</p>
 									<MiniCalendar
@@ -1469,14 +1583,11 @@ const AddStudent = ({}: IAddStudent) => {
 										<CheckCircleIcon color="success" />
 									</button>
 								</div>
-
 								<Line width="100%" className={s.Line} />
-
 								<mui.ListItemButton onClick={handleClick}>
 									<p className={s.MuiListItemText}>История занятий и оплат</p>
 									{open ? <ExpandLess /> : <ExpandMore />}
 								</mui.ListItemButton>
-
 								<mui.Collapse
 									className={s.MuiCollapse}
 									in={open}
@@ -1495,7 +1606,7 @@ const AddStudent = ({}: IAddStudent) => {
 														<div
 															id={`history-data-${formatDate(item.date)}`}
 															key={index}
-															className={`${s.ListObject} ${item.isCancel ? s.canceled : item.isCancel}`}>
+															className={`${s.ListObject} ${item.isCancel ? s.canceled : ''}`}>
 															{item.type === 'lesson' ? (
 																<>
 																	<p
@@ -1573,12 +1684,7 @@ const AddStudent = ({}: IAddStudent) => {
 																		size="16px"
 																		checked={item.isPaid}
 																	/>
-																	{item.isCancel && (
-																		<span className={s.cancelIcon}>
-																			отменено
-																			{/* <CancelIcon fontSize="small" /> */}
-																		</span>
-																	)}
+																	{item.isCancel && <></>}
 																</>
 															) : (
 																<>
@@ -1616,9 +1722,7 @@ const AddStudent = ({}: IAddStudent) => {
 										</div>
 									</mui.List>
 								</mui.Collapse>
-
 								<Line width="100%" className={s.Line} />
-
 								<TextAreaInputBlock
 									title="Комментарии:"
 									value={commentStudent}
