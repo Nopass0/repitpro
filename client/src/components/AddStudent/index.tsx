@@ -92,7 +92,261 @@ const AddStudent = ({}: IAddStudent) => {
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const [combinedHistory, setCombinedHistory] = useState([])
-	const [pagePopUpExitInside, setPagePopUpExitInside] = useState<number>(0)
+
+	// const maxCanceledLessonsRef = useRef(0)
+	// const canceledLessonsRef = useRef([])
+	// const [canceledLessons, setCanceledLessons] = useState([])
+
+	// // Функция для обновления состояния занятия
+	// const updateHistoryLesson = useCallback((index, updates) => {
+	// 	setHistoryLesson((prevHistory) =>
+	// 		prevHistory.map((lesson, i) =>
+	// 			i === index ? {...lesson, ...updates} : lesson,
+	// 		),
+	// 	)
+	// }, [])
+
+	// Функция для отмены занятия
+	// const cancelLesson = useCallback(
+	// 	(index) => {
+	// 		updateHistoryLesson(index, {isCancel: true})
+	// 	},
+	// 	[updateHistoryLesson],
+	// )
+
+	// ! Ok, but...
+	// useEffect(() => {
+	// 	const combined = [
+	// 		...historyLesson.map((lesson) => ({
+	// 			...lesson,
+	// 			type: 'lesson',
+	// 			date: new Date(lesson.date),
+	// 		})),
+	// 		...prePayList.map((prepay) => ({
+	// 			...prepay,
+	// 			type: 'prepayment',
+	// 			date: new Date(prepay.date),
+	// 			isCancel: false,
+	// 		})),
+	// 	]
+
+	// 	const sorted = combined.sort((a, b) => {
+	// 		const dateA = new Date(
+	// 			a.date.getFullYear(),
+	// 			a.date.getMonth(),
+	// 			a.date.getDate(),
+	// 		)
+	// 		const dateB = new Date(
+	// 			b.date.getFullYear(),
+	// 			b.date.getMonth(),
+	// 			b.date.getDate(),
+	// 		)
+
+	// 		const dateComparison = dateB.getTime() - dateA.getTime()
+
+	// 		if (dateComparison === 0) {
+	// 			if (a.type !== b.type) {
+	// 				return a.type === 'lesson' ? -1 : 1
+	// 			}
+	// 			return 0
+	// 		}
+
+	// 		return dateComparison
+	// 	})
+
+	// 	setCombinedHistory(sorted)
+	// }, [historyLesson, prePayList])
+
+	// useEffect(() => {
+	// 	const combined = [
+	// 		...historyLesson.map((lesson) => ({
+	// 			...lesson,
+	// 			type: 'lesson',
+	// 			date: new Date(lesson.date),
+	// 		})),
+	// 		...prePayList.map((prepay) => ({
+	// 			...prepay,
+	// 			type: 'prepayment',
+	// 			date: new Date(prepay.date),
+	// 			isCancel: false,
+	// 		})),
+	// 	]
+
+	// 	const sorted = combined.sort((a, b) => {
+	// 		const dateA = new Date(
+	// 			a.date.getFullYear(),
+	// 			a.date.getMonth(),
+	// 			a.date.getDate(),
+	// 		)
+	// 		const dateB = new Date(
+	// 			b.date.getFullYear(),
+	// 			b.date.getMonth(),
+	// 			b.date.getDate(),
+	// 		)
+
+	// 		const dateComparison = dateB.getTime() - dateA.getTime()
+
+	// 		if (dateComparison === 0) {
+	// 			if (a.type !== b.type) {
+	// 				return a.type === 'lesson' ? -1 : 1
+	// 			}
+	// 			return 0
+	// 		}
+
+	// 		return dateComparison
+	// 	})
+
+	// 	setCombinedHistory(sorted)
+	// }, [historyLesson, prePayList])
+
+	// const combinedHistory = useMemo(() => {
+	// 	const combined = [
+	// 		...historyLesson.map((lesson) => ({
+	// 			...lesson,
+	// 			type: 'lesson',
+	// 			date: new Date(lesson.date),
+	// 		})),
+	// 		...prePayList.map((prepay) => ({
+	// 			...prepay,
+	// 			type: 'prepayment',
+	// 			date: new Date(prepay.date),
+	// 			isCancel: false,
+	// 		})),
+	// 		...canceledLessons,
+	// 	]
+
+	// 	const sorted = combined.sort((a, b) => {
+	// 		const dateA = new Date(
+	// 			a.date.getFullYear(),
+	// 			a.date.getMonth(),
+	// 			a.date.getDate(),
+	// 		)
+	// 		const dateB = new Date(
+	// 			b.date.getFullYear(),
+	// 			b.date.getMonth(),
+	// 			b.date.getDate(),
+	// 		)
+
+	// 		if (dateA.getTime() === dateB.getTime()) {
+	// 			if (a.type !== b.type) {
+	// 				return a.type === 'lesson' ? -1 : 1
+	// 			}
+	// 			return 0
+	// 		}
+
+	// 		return dateB.getTime() - dateA.getTime()
+	// 	})
+
+	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
+	// 	console.log(
+	// 		`Текущее количество отмененных занятий: ${canceledLessons.length}`,
+	// 	)
+
+	// 	return sorted
+	// }, [historyLesson, prePayList, canceledLessons])
+
+	// useEffect для обновления combinedHistory
+	// useEffect для обновления combinedHistory
+
+	// ! Ок, но нужно перевернуть
+	// useEffect(() => {
+	// 	const combined = [
+	// 		...historyLesson.map((lesson) => ({
+	// 			...lesson,
+	// 			type: 'lesson',
+	// 			date: new Date(lesson.date),
+	// 		})),
+	// 		...(Array.isArray(prePayList) ? prePayList : []).map((prepay) => ({
+	// 			...prepay,
+	// 			type: 'prepayment',
+	// 			date: new Date(prepay.date),
+	// 			isCancel: false,
+	// 		})),
+	// 	]
+
+	// 	const sorted = combined.sort((a, b) => {
+	// 		const dateA = new Date(a.date)
+	// 		const dateB = new Date(b.date)
+
+	// 		const dateComparison = dateA.getTime() - dateB.getTime()
+
+	// 		if (dateComparison === 0) {
+	// 			// Если даты равны, сначала идут занятия, потом предоплаты
+	// 			if (a.type !== b.type) {
+	// 				return a.type === 'lesson' ? -1 : 1
+	// 			}
+	// 			// Если типы одинаковые, сохраняем исходный порядок
+	// 			return 0
+	// 		}
+
+	// 		return dateComparison
+	// 	})
+
+	// 	setCombinedHistory(sorted)
+	// }, [historyLesson, prePayList])
+
+	// useEffect для обновления combinedHistory
+	// useEffect для обновления combinedHistory
+	useEffect(() => {
+		const combined = [
+			...historyLesson.map((lesson) => ({
+				...lesson,
+				type: 'lesson',
+				date: new Date(lesson.date),
+			})),
+			...(Array.isArray(prePayList) ? prePayList : []).map((prepay) => ({
+				...prepay,
+				type: 'prepayment',
+				date: new Date(prepay.date),
+				isCancel: false,
+			})),
+		]
+
+		const sorted = combined.sort((a, b) => {
+			const dateA = new Date(a.date)
+			const dateB = new Date(b.date)
+
+			// Сравниваем только дату (день, месяц, год), игнорируя время
+			const dateComparisonWithoutTime =
+				new Date(
+					dateB.getFullYear(),
+					dateB.getMonth(),
+					dateB.getDate(),
+				).getTime() -
+				new Date(
+					dateA.getFullYear(),
+					dateA.getMonth(),
+					dateA.getDate(),
+				).getTime()
+
+			if (dateComparisonWithoutTime === 0) {
+				// Если даты (день, месяц, год) совпадают
+				if (a.type !== b.type) {
+					// Занятия идут перед предоплатами
+					return a.type === 'lesson' ? -1 : 1
+				} else {
+					// Если типы одинаковые, сортируем по времени в обратном порядке
+					return dateB.getTime() - dateA.getTime()
+				}
+			}
+
+			// Если даты разные, сортируем в обратном хронологическом порядке
+			return dateComparisonWithoutTime
+		})
+
+		setCombinedHistory(sorted)
+	}, [historyLesson, prePayList])
+
+	// useEffect(() => {
+	// 	// Этот эффект будет выполняться при каждом изменении combinedHistory
+	// 	const canceledLessonsCount = combinedHistory.filter(
+	// 		(item) => item.type === 'lesson' && item.isCancel,
+	// 	).length
+	// 	if (canceledLessonsCount > maxCanceledLessonsRef.current) {
+	// 		maxCanceledLessonsRef.current = canceledLessonsCount
+	// 	}
+	// }, [combinedHistory])
+
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -163,46 +417,36 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [])
 
 	const nextStud = () => {
-		if (!editedCards) {
-			if (Number(currentStudPosition) < allIdStudent.length - 1) {
-				setCurrentStudPosition(Number(currentStudPosition) + 1)
-				const newId = allIdStudent[Number(currentStudPosition) + 1]
+		if (Number(currentStudPosition) < allIdStudent.length - 1) {
+			setCurrentStudPosition(Number(currentStudPosition) + 1)
+			const newId = allIdStudent[Number(currentStudPosition) + 1]
 
-				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-				console.log(currentOpenedStudent, 'newIdDispatch')
-				socket.emit('getGroupByStudentId', {
-					token: token,
-					studentId: newId,
-				})
-			}
-			socket.once('getGroupByStudentId', (data: any) => {
-				setData(data.group)
+			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			console.log(currentOpenedStudent, 'newIdDispatch')
+			socket.emit('getGroupByStudentId', {
+				token: token,
+				studentId: newId,
 			})
-			setIsEditMode(true)
-		} else {
-			setPagePopUpExitInside(1)
 		}
+		socket.once('getGroupByStudentId', (data: any) => {
+			setData(data.group)
+		})
 	}
 
 	const prevStud = () => {
-		if (!editedCards) {
-			if (Number(currentStudPosition) > 0) {
-				setCurrentStudPosition(Number(currentStudPosition) - 1)
-				const newId = allIdStudent[Number(currentStudPosition) - 1]
+		if (Number(currentStudPosition) > 0) {
+			setCurrentStudPosition(Number(currentStudPosition) - 1)
+			const newId = allIdStudent[Number(currentStudPosition) - 1]
 
-				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-				console.log(currentOpenedStudent, newId, 'newIdDispatch')
-				socket.emit('getGroupByStudentId', {
-					token: token,
-					studentId: newId,
-				})
-				socket.on('getGroupByStudentId', (data: any) => {
-					setData(data.group)
-				})
-				setIsEditMode(true)
-			}
-		} else {
-			setPagePopUpExitInside(2)
+			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+			console.log(currentOpenedStudent, newId, 'newIdDispatch')
+			socket.emit('getGroupByStudentId', {
+				token: token,
+				studentId: newId,
+			})
+			socket.on('getGroupByStudentId', (data: any) => {
+				setData(data.group)
+			})
 		}
 	}
 
@@ -767,26 +1011,108 @@ const AddStudent = ({}: IAddStudent) => {
 		return `#${hexColor}`
 	}
 
-	const handlePrePayment = (historyLessons_: any) => {
-		if (prePayDate && prePayCost) {
-			const prePaymentDate = new Date(prePayDate)
-			let remainingPrePayment = Number(prePayCost)
-			const updatedHistoryLesson = historyLessons_.map((lesson) => {
-				const lessonDate = new Date(lesson.date)
-				if (
-					lessonDate >= prePaymentDate &&
-					remainingPrePayment >= Number(lesson.price) &&
-					!lesson.isCancel // Не оплачивать отмененные занятия
-				) {
-					remainingPrePayment -= Number(lesson.price)
-					return {...lesson, isPaid: true}
-				} else {
-					return lesson // Сохраняем предыдущее состояние занятия, включая isCancel
-				}
-			})
-			setHistoryLesson(updatedHistoryLesson)
+	// Функция для обработки предоплат
+	// // Функция для обработки предоплат работает
+	// const handlePrePayment = (historyLessons, prePayList) => {
+	// 	// Проверяем, является ли prePayList массивом и не пуст ли он
+	// 	if (!Array.isArray(prePayList) || prePayList.length === 0) {
+	// 		return historyLessons
+	// 	}
+
+	// 	// Сортируем предоплаты по дате
+	// 	const sortedPrePayList = [...prePayList].sort(
+	// 		(a, b) => new Date(a.date) - new Date(b.date),
+	// 	)
+
+	// 	// Сортируем занятия по дате
+	// 	const sortedHistoryLessons = [...historyLessons].sort(
+	// 		(a, b) => new Date(a.date) - new Date(b.date),
+	// 	)
+
+	// 	let remainingPrePayment = 0
+	// 	let nextPrePayIndex = 0
+
+	// 	const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
+	// 		const lessonDate = new Date(lesson.date)
+
+	// 		// Применяем все предоплаты, которые были до или в день этого занятия
+	// 		while (
+	// 			nextPrePayIndex < sortedPrePayList.length &&
+	// 			new Date(sortedPrePayList[nextPrePayIndex].date) <= lessonDate
+	// 		) {
+	// 			remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
+	// 			nextPrePayIndex++
+	// 		}
+
+	// 		// Проверяем, можем ли мы оплатить это занятие
+	// 		if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
+	// 			remainingPrePayment -= Number(lesson.price)
+	// 			return {...lesson, isPaid: true}
+	// 		} else {
+	// 			return {...lesson, isPaid: false}
+	// 		}
+	// 	})
+
+	// 	return updatedHistoryLessons
+	// }
+
+	// Функция для обработки предоплат
+	const handlePrePayment = (historyLessons, prePayList) => {
+		// Проверяем, является ли prePayList массивом и не пуст ли он
+		if (!Array.isArray(prePayList) || prePayList.length === 0) {
+			return historyLessons
 		}
+
+		// Функция для сравнения дат без учета времени
+		const isSameDay = (date1, date2) => {
+			return (
+				date1.getFullYear() === date2.getFullYear() &&
+				date1.getMonth() === date2.getMonth() &&
+				date1.getDate() === date2.getDate()
+			)
+		}
+
+		// Сортируем предоплаты по дате
+		const sortedPrePayList = [...prePayList].sort(
+			(a, b) => new Date(a.date) - new Date(b.date),
+		)
+
+		// Сортируем занятия по дате
+		const sortedHistoryLessons = [...historyLessons].sort(
+			(a, b) => new Date(a.date) - new Date(b.date),
+		)
+
+		let remainingPrePayment = 0
+		let nextPrePayIndex = 0
+
+		const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
+			const lessonDate = new Date(lesson.date)
+
+			// Применяем все предоплаты, которые были до или в тот же день, что и это занятие
+			while (
+				nextPrePayIndex < sortedPrePayList.length &&
+				(new Date(sortedPrePayList[nextPrePayIndex].date) < lessonDate ||
+					isSameDay(
+						new Date(sortedPrePayList[nextPrePayIndex].date),
+						lessonDate,
+					))
+			) {
+				remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
+				nextPrePayIndex++
+			}
+
+			// Проверяем, можем ли мы оплатить это занятие
+			if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
+				remainingPrePayment -= Number(lesson.price)
+				return {...lesson, isPaid: true}
+			} else {
+				return {...lesson, isPaid: false}
+			}
+		})
+
+		return updatedHistoryLessons
 	}
+
 	// const handlePrePayment = (historyLessons_: any) => {
 	// 	if (prePayList && prePayList.length > 0) {
 	// 		let remainingPrePayment = prePayList.reduce(
@@ -1001,6 +1327,90 @@ const AddStudent = ({}: IAddStudent) => {
 	// 	handlePrePayment(historyLessons_)
 	// }, [items, prePayCost, prePayDate])
 
+	// useEffect(() => {
+	// 	let countLessons = 0
+	// 	let countLessonsPrice = 0
+	// 	const now = new Date()
+
+	// 	// Создаем новый массив занятий
+	// 	const newHistoryLessons = []
+
+	// 	for (let i = 0; i < items.length; i++) {
+	// 		const differenceDays = differenceInDays(
+	// 			items[i].endLesson,
+	// 			items[i].startLesson,
+	// 		)
+	// 		const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+	// 			addDays(items[i].startLesson, j),
+	// 		)
+
+	// 		for (const date of dateRange) {
+	// 			const dayOfWeek = getDay(date)
+	// 			const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
+
+	// 			const cond =
+	// 				scheduleForDay.startTime.hour === 0 &&
+	// 				scheduleForDay.startTime.minute === 0 &&
+	// 				scheduleForDay.endTime.hour === 0 &&
+	// 				scheduleForDay.endTime.minute === 0
+
+	// 			if (!cond) {
+	// 				const lessonDate = new Date(date)
+	// 				lessonDate.setHours(
+	// 					scheduleForDay.startTime.hour,
+	// 					scheduleForDay.startTime.minute,
+	// 				)
+
+	// 				const isDone =
+	// 					lessonDate < now ||
+	// 					(lessonDate.toDateString() === now.toDateString() &&
+	// 						now.getHours() > scheduleForDay.endTime.hour) ||
+	// 					(now.getHours() === scheduleForDay.endTime.hour &&
+	// 						now.getMinutes() >= scheduleForDay.endTime.minute)
+
+	// 				// Ищем соответствующее занятие в текущем historyLesson
+	// 				const existingLesson = historyLesson.find(
+	// 					(lesson) => lesson.date.getTime() === lessonDate.getTime(),
+	// 				)
+
+	// 				const newLesson = {
+	// 					date: lessonDate,
+	// 					itemName: items[i].itemName,
+	// 					isDone: isDone,
+	// 					price: items[i].costOneLesson,
+	// 					isPaid: existingLesson ? existingLesson.isPaid : false,
+	// 					isCancel: existingLesson ? existingLesson.isCancel : false,
+	// 				}
+
+	// 				newHistoryLessons.push(newLesson)
+
+	// 				countLessons++
+	// 				countLessonsPrice = countLessons * Number(items[i].costOneLesson)
+	// 			}
+	// 		}
+	// 	}
+
+	// 	// Добавляем занятия, которых нет в новом расписании, но есть в текущем historyLesson
+	// 	historyLesson.forEach((lesson) => {
+	// 		const lessonExists = newHistoryLessons.some(
+	// 			(newLesson) => newLesson.date.getTime() === lesson.date.getTime(),
+	// 		)
+	// 		if (!lessonExists) {
+	// 			newHistoryLessons.push(lesson)
+	// 		}
+	// 	})
+
+	// 	// Сортируем занятия по дате
+	// 	newHistoryLessons.sort((a, b) => a.date.getTime() - b.date.getTime())
+
+	// 	setAllLessons(countLessons)
+	// 	setAllLessonsPrice(countLessonsPrice)
+	// 	setHistoryLesson(newHistoryLessons)
+	// 	handlePrePayment(newHistoryLessons)
+	// }, [items, prePayCost, prePayDate])
+
+	// useEffect для обновления истории занятий
+	// useEffect для обновления истории занятий
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
@@ -1077,11 +1487,15 @@ const AddStudent = ({}: IAddStudent) => {
 		// Сортируем занятия по дате
 		newHistoryLessons.sort((a, b) => a.date.getTime() - b.date.getTime())
 
+		const updatedHistoryLessons = handlePrePayment(
+			newHistoryLessons,
+			prePayList,
+		)
+
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		setHistoryLesson(newHistoryLessons)
-		handlePrePayment(newHistoryLessons)
-	}, [items, prePayCost, prePayDate])
+		setHistoryLesson(updatedHistoryLessons)
+	}, [items, prePayList, historyLesson])
 
 	const setHistoryLessonIsDone = useCallback((index, value) => {
 		setHistoryLesson((prevHistoryLesson) => [
@@ -1124,36 +1538,34 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [listRef, scrollPosition, collapseRef])
 
 	useEffect(() => {
-		if (currentOpenedStudent === '') {
-			if (
-				items.some((item) => {
-					return (
-						item.itemName !== '' ||
-						item.tryLessonCheck !== false ||
-						item.tryLessonCost !== '' ||
-						item.todayProgramStudent !== '' ||
-						item.targetLesson !== '' ||
-						item.programLesson !== '' ||
-						item.typeLesson !== '1' ||
-						item.placeLesson !== '' ||
-						item.timeLesson !== '' ||
-						item.valueMuiSelectArchive !== 1 ||
-						item.nowLevel !== undefined ||
-						item.lessonDuration !== null ||
-						item.costOneLesson !== ''
-					)
-				}) ||
-				nameStudent !== '' ||
-				contactFace !== '' ||
-				email !== '' ||
-				linkStudent !== '' ||
-				costStudent !== '' ||
-				commentStudent !== '' ||
-				phoneNumber !== '' ||
-				prePayCost !== ''
-			) {
-				dispatch({type: 'SET_EDITED_CARDS', payload: true})
-			}
+		if (
+			items.some((item) => {
+				return (
+					item.itemName !== '' ||
+					item.tryLessonCheck !== false ||
+					item.tryLessonCost !== '' ||
+					item.todayProgramStudent !== '' ||
+					item.targetLesson !== '' ||
+					item.programLesson !== '' ||
+					item.typeLesson !== '1' ||
+					item.placeLesson !== '' ||
+					item.timeLesson !== '' ||
+					item.valueMuiSelectArchive !== 1 ||
+					item.nowLevel !== undefined ||
+					item.lessonDuration !== null ||
+					item.costOneLesson !== ''
+				)
+			}) ||
+			nameStudent !== '' ||
+			contactFace !== '' ||
+			email !== '' ||
+			linkStudent !== '' ||
+			costStudent !== '' ||
+			commentStudent !== '' ||
+			phoneNumber !== '' ||
+			prePayCost !== ''
+		) {
+			dispatch({type: 'SET_EDITED_CARDS', payload: true})
 		}
 	}, [
 		items,
@@ -1242,53 +1654,56 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [open])
 
-	useEffect(() => {
-		const combined = [
-			...historyLesson.map((lesson) => ({
-				...lesson,
-				type: 'lesson',
-				date: new Date(lesson.date),
-			})),
-			...prePayList.map((prepay) => ({
-				...prepay,
-				type: 'prepayment',
-				date: new Date(prepay.date),
-				isCancel: false,
-			})),
-		]
+	// useEffect(() => {
+	// 	const combined = [
+	// 		...historyLesson.map((lesson) => ({
+	// 			...lesson,
+	// 			type: 'lesson',
+	// 			date: new Date(lesson.date),
+	// 			isCancel: lesson.isCancel || false, // Ensure isCancel is included
+	// 		})),
+	// 		...prePayList.map((prepay) => ({
+	// 			...prepay,
+	// 			type: 'prepayment',
+	// 			date: new Date(prepay.date),
+	// 			isCancel: false,
+	// 		})),
+	// 	]
 
-		const sorted = combined.sort((a, b) => {
-			const dateA = new Date(
-				a.date.getFullYear(),
-				a.date.getMonth(),
-				a.date.getDate(),
-			)
-			const dateB = new Date(
-				b.date.getFullYear(),
-				b.date.getMonth(),
-				b.date.getDate(),
-			)
+	// 	const sorted = combined.sort((a, b) => {
+	// 		// Сравниваем даты, игнорируя время
+	// 		const dateA = new Date(
+	// 			a.date.getFullYear(),
+	// 			a.date.getMonth(),
+	// 			a.date.getDate(),
+	// 		)
+	// 		const dateB = new Date(
+	// 			b.date.getFullYear(),
+	// 			b.date.getMonth(),
+	// 			b.date.getDate(),
+	// 		)
 
-			const dateComparison = dateB.getTime() - dateA.getTime()
+	// 		const dateComparison = dateB.getTime() - dateA.getTime()
 
-			if (dateComparison === 0) {
-				if (a.type !== b.type) {
-					return a.type === 'lesson' ? -1 : 1
-				}
-				return 0
-			}
+	// 		// Если даты равны, сортируем по типу
+	// 		if (dateComparison === 0) {
+	// 			// Если типы разные, 'lesson' всегда должен быть выше 'prepayment'
+	// 			if (a.type !== b.type) {
+	// 				return a.type === 'lesson' ? -1 : 1
+	// 			}
+	// 			// Если типы одинаковые, сохраняем исходный порядок
+	// 			return 0
+	// 		}
 
-			// Если даты разные, возвращаем результат сравнения дат
+	// 		// Если даты разные, возвращаем результат сравнения дат
 	// 		return dateComparison
 	// 	})
 	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
+	// 	// alert(
+	// 	// 	sorted.filter((item) => item.type === 'lesson' && item.isCancel).length,
+	// 	// )
 	// 	setCombinedHistory(sorted)
 	// }, [historyLesson, prePayList])
-			return dateComparison
-		})
-
-		setCombinedHistory(sorted)
-	}, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
@@ -1606,7 +2021,7 @@ const AddStudent = ({}: IAddStudent) => {
 														<div
 															id={`history-data-${formatDate(item.date)}`}
 															key={index}
-															className={`${s.ListObject} ${item.isCancel ? s.canceled : ''}`}>
+															className={`${s.ListObject} ${item.isCancel} ${item.type === 'lesson' && item.isCancel ? s.canceled : ''}`}>
 															{item.type === 'lesson' ? (
 																<>
 																	<p
@@ -2425,7 +2840,7 @@ const AddStudent = ({}: IAddStudent) => {
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => {
 											setIsEditMode(!isEditMode)
-											dispatch({type: 'SET_EDITED_CARDS', payload: true})
+											// dispatch({type: 'SET_EDITED_CARDS', payload: !isEditMode})
 										}}>
 										<p>Редактировать</p>
 									</button>
@@ -2509,55 +2924,6 @@ const AddStudent = ({}: IAddStudent) => {
 								payload: EPagePopUpExit.None,
 							})
 						}
-					/>
-				</div>
-			)}
-			{pagePopUpExitInside > 0 && (
-				<div className={s.ExitPopUpWrap}>
-					<ExitPopUp
-						className={s.ExitPopUp}
-						title="Закрыть без сохранения?"
-						yes={() => {
-							if (pagePopUpExitInside === 1) {
-								dispatch({type: 'SET_EDITED_CARDS', payload: false})
-								setPagePopUpExitInside(0)
-								if (Number(currentStudPosition) < allIdStudent.length - 1) {
-									setCurrentStudPosition(Number(currentStudPosition) + 1)
-									const newId = allIdStudent[Number(currentStudPosition) + 1]
-
-									dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-									console.log(currentOpenedStudent, 'newIdDispatch')
-									socket.emit('getGroupByStudentId', {
-										token: token,
-										studentId: newId,
-									})
-									setIsEditMode(true)
-								}
-								socket.once('getGroupByStudentId', (data: any) => {
-									setData(data.group)
-								})
-							}
-							if (pagePopUpExitInside === 2) {
-								dispatch({type: 'SET_EDITED_CARDS', payload: false})
-								setPagePopUpExitInside(0)
-								if (Number(currentStudPosition) > 0) {
-									setCurrentStudPosition(Number(currentStudPosition) - 1)
-									const newId = allIdStudent[Number(currentStudPosition) - 1]
-
-									dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-									console.log(currentOpenedStudent, newId, 'newIdDispatch')
-									socket.emit('getGroupByStudentId', {
-										token: token,
-										studentId: newId,
-									})
-									setIsEditMode(true)
-									socket.on('getGroupByStudentId', (data: any) => {
-										setData(data.group)
-									})
-								}
-							}
-						}}
-						no={() => setPagePopUpExitInside(0)}
 					/>
 				</div>
 			)}
