@@ -92,168 +92,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const [combinedHistory, setCombinedHistory] = useState([])
-
-	// const maxCanceledLessonsRef = useRef(0)
-	// const canceledLessonsRef = useRef([])
-	// const [canceledLessons, setCanceledLessons] = useState([])
-
-	// // Функция для обновления состояния занятия
-	// const updateHistoryLesson = useCallback((index, updates) => {
-	// 	setHistoryLesson((prevHistory) =>
-	// 		prevHistory.map((lesson, i) =>
-	// 			i === index ? {...lesson, ...updates} : lesson,
-	// 		),
-	// 	)
-	// }, [])
-
-	// Функция для отмены занятия
-	// const cancelLesson = useCallback(
-	// 	(index) => {
-	// 		updateHistoryLesson(index, {isCancel: true})
-	// 	},
-	// 	[updateHistoryLesson],
-	// )
-
-	useEffect(() => {
-		const combined = [
-			...historyLesson.map((lesson) => ({
-				...lesson,
-				type: 'lesson',
-				date: new Date(lesson.date),
-			})),
-			...prePayList.map((prepay) => ({
-				...prepay,
-				type: 'prepayment',
-				date: new Date(prepay.date),
-				isCancel: false,
-			})),
-		]
-
-		const sorted = combined.sort((a, b) => {
-			const dateA = new Date(
-				a.date.getFullYear(),
-				a.date.getMonth(),
-				a.date.getDate(),
-			)
-			const dateB = new Date(
-				b.date.getFullYear(),
-				b.date.getMonth(),
-				b.date.getDate(),
-			)
-
-			const dateComparison = dateB.getTime() - dateA.getTime()
-
-			if (dateComparison === 0) {
-				if (a.type !== b.type) {
-					return a.type === 'lesson' ? -1 : 1
-				}
-				return 0
-			}
-
-			return dateComparison
-		})
-
-		setCombinedHistory(sorted)
-	}, [historyLesson, prePayList])
-
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
-
-	// 		const dateComparison = dateB.getTime() - dateA.getTime()
-
-	// 		if (dateComparison === 0) {
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			return 0
-	// 		}
-
-	// 		return dateComparison
-	// 	})
-
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
-
-	// const combinedHistory = useMemo(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 		...canceledLessons,
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
-
-	// 		if (dateA.getTime() === dateB.getTime()) {
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			return 0
-	// 		}
-
-	// 		return dateB.getTime() - dateA.getTime()
-	// 	})
-
-	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
-	// 	console.log(
-	// 		`Текущее количество отмененных занятий: ${canceledLessons.length}`,
-	// 	)
-
-	// 	return sorted
-	// }, [historyLesson, prePayList, canceledLessons])
-
-	// useEffect(() => {
-	// 	// Этот эффект будет выполняться при каждом изменении combinedHistory
-	// 	const canceledLessonsCount = combinedHistory.filter(
-	// 		(item) => item.type === 'lesson' && item.isCancel,
-	// 	).length
-	// 	if (canceledLessonsCount > maxCanceledLessonsRef.current) {
-	// 		maxCanceledLessonsRef.current = canceledLessonsCount
-	// 	}
-	// }, [combinedHistory])
-
+	const [pagePopUpExitInside,setPagePopUpExitInside] = useState<number>(0)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -324,36 +163,46 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [])
 
 	const nextStud = () => {
-		if (Number(currentStudPosition) < allIdStudent.length - 1) {
-			setCurrentStudPosition(Number(currentStudPosition) + 1)
-			const newId = allIdStudent[Number(currentStudPosition) + 1]
+		if (!editedCards) {
+			if (Number(currentStudPosition) < allIdStudent.length - 1) {
+				setCurrentStudPosition(Number(currentStudPosition) + 1)
+				const newId = allIdStudent[Number(currentStudPosition) + 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-			console.log(currentOpenedStudent, 'newIdDispatch')
-			socket.emit('getGroupByStudentId', {
-				token: token,
-				studentId: newId,
+				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+				console.log(currentOpenedStudent, 'newIdDispatch')
+				socket.emit('getGroupByStudentId', {
+					token: token,
+					studentId: newId,
+				})
+			}
+			socket.once('getGroupByStudentId', (data: any) => {
+				setData(data.group)
 			})
+			setIsEditMode(true)
+		} else {
+			setPagePopUpExitInside(1)
 		}
-		socket.once('getGroupByStudentId', (data: any) => {
-			setData(data.group)
-		})
 	}
 
 	const prevStud = () => {
-		if (Number(currentStudPosition) > 0) {
-			setCurrentStudPosition(Number(currentStudPosition) - 1)
-			const newId = allIdStudent[Number(currentStudPosition) - 1]
+		if (!editedCards) {
+			if (Number(currentStudPosition) > 0) {
+				setCurrentStudPosition(Number(currentStudPosition) - 1)
+				const newId = allIdStudent[Number(currentStudPosition) - 1]
 
-			dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
-			console.log(currentOpenedStudent, newId, 'newIdDispatch')
-			socket.emit('getGroupByStudentId', {
-				token: token,
-				studentId: newId,
-			})
-			socket.on('getGroupByStudentId', (data: any) => {
-				setData(data.group)
-			})
+				dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+				console.log(currentOpenedStudent, newId, 'newIdDispatch')
+				socket.emit('getGroupByStudentId', {
+					token: token,
+					studentId: newId,
+				})
+				socket.on('getGroupByStudentId', (data: any) => {
+					setData(data.group)
+				})
+				setIsEditMode(true)
+			}
+		} else {
+			setPagePopUpExitInside(2)
 		}
 	}
 
@@ -1275,34 +1124,36 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [listRef, scrollPosition, collapseRef])
 
 	useEffect(() => {
-		if (
-			items.some((item) => {
-				return (
-					item.itemName !== '' ||
-					item.tryLessonCheck !== false ||
-					item.tryLessonCost !== '' ||
-					item.todayProgramStudent !== '' ||
-					item.targetLesson !== '' ||
-					item.programLesson !== '' ||
-					item.typeLesson !== '1' ||
-					item.placeLesson !== '' ||
-					item.timeLesson !== '' ||
-					item.valueMuiSelectArchive !== 1 ||
-					item.nowLevel !== undefined ||
-					item.lessonDuration !== null ||
-					item.costOneLesson !== ''
-				)
-			}) ||
-			nameStudent !== '' ||
-			contactFace !== '' ||
-			email !== '' ||
-			linkStudent !== '' ||
-			costStudent !== '' ||
-			commentStudent !== '' ||
-			phoneNumber !== '' ||
-			prePayCost !== ''
-		) {
-			dispatch({type: 'SET_EDITED_CARDS', payload: true})
+		if (currentOpenedStudent === '') {
+			if (
+				items.some((item) => {
+					return (
+						item.itemName !== '' ||
+						item.tryLessonCheck !== false ||
+						item.tryLessonCost !== '' ||
+						item.todayProgramStudent !== '' ||
+						item.targetLesson !== '' ||
+						item.programLesson !== '' ||
+						item.typeLesson !== '1' ||
+						item.placeLesson !== '' ||
+						item.timeLesson !== '' ||
+						item.valueMuiSelectArchive !== 1 ||
+						item.nowLevel !== undefined ||
+						item.lessonDuration !== null ||
+						item.costOneLesson !== ''
+					)
+				}) ||
+				nameStudent !== '' ||
+				contactFace !== '' ||
+				email !== '' ||
+				linkStudent !== '' ||
+				costStudent !== '' ||
+				commentStudent !== '' ||
+				phoneNumber !== '' ||
+				prePayCost !== ''
+			) {
+				dispatch({type: 'SET_EDITED_CARDS', payload: true})
+			}
 		}
 	}, [
 		items,
@@ -1432,15 +1283,12 @@ const AddStudent = ({}: IAddStudent) => {
 	// 			return 0
 	// 		}
 
-	// 		// Если даты разные, возвращаем результат сравнения дат
-	// 		return dateComparison
-	// 	})
-	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
-	// 	// alert(
-	// 	// 	sorted.filter((item) => item.type === 'lesson' && item.isCancel).length,
-	// 	// )
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
+			// Если даты разные, возвращаем результат сравнения дат
+			return dateComparison
+		})
+		console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
+		setCombinedHistory(sorted)
+	}, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
@@ -1758,7 +1606,7 @@ const AddStudent = ({}: IAddStudent) => {
 														<div
 															id={`history-data-${formatDate(item.date)}`}
 															key={index}
-															className={`${s.ListObject} ${item.isCancel} ${item.type === 'lesson' && item.isCancel ? s.canceled : ''}`}>
+															className={`${s.ListObject} ${item.isCancel ? s.canceled : ''}`}>
 															{item.type === 'lesson' ? (
 																<>
 																	<p
@@ -2577,7 +2425,7 @@ const AddStudent = ({}: IAddStudent) => {
 										className={`${s.Edit} ${isEditMode ? s.Save : ''}`}
 										onClick={() => {
 											setIsEditMode(!isEditMode)
-											// dispatch({type: 'SET_EDITED_CARDS', payload: !isEditMode})
+											dispatch({type: 'SET_EDITED_CARDS', payload: true})
 										}}>
 										<p>Редактировать</p>
 									</button>
@@ -2661,6 +2509,55 @@ const AddStudent = ({}: IAddStudent) => {
 								payload: EPagePopUpExit.None,
 							})
 						}
+					/>
+				</div>
+			)}
+			{pagePopUpExitInside > 0 && (
+				<div className={s.ExitPopUpWrap}>
+					<ExitPopUp
+						className={s.ExitPopUp}
+						title="Закрыть без сохранения?"
+						yes={() => {
+							if (pagePopUpExitInside === 1) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentStudPosition) < allIdStudent.length - 1) {
+									setCurrentStudPosition(Number(currentStudPosition) + 1)
+									const newId = allIdStudent[Number(currentStudPosition) + 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+									console.log(currentOpenedStudent, 'newIdDispatch')
+									socket.emit('getGroupByStudentId', {
+										token: token,
+										studentId: newId,
+									})
+									setIsEditMode(true)
+								}
+								socket.once('getGroupByStudentId', (data: any) => {
+									setData(data.group)
+								})
+							}
+							if (pagePopUpExitInside === 2) {
+								dispatch({type: 'SET_EDITED_CARDS', payload: false})
+								setPagePopUpExitInside(0)
+								if (Number(currentStudPosition) > 0) {
+									setCurrentStudPosition(Number(currentStudPosition) - 1)
+									const newId = allIdStudent[Number(currentStudPosition) - 1]
+
+									dispatch({type: 'SET_CURRENT_OPENED_STUDENT', payload: newId})
+									console.log(currentOpenedStudent, newId, 'newIdDispatch')
+									socket.emit('getGroupByStudentId', {
+										token: token,
+										studentId: newId,
+									})
+									setIsEditMode(true)
+									socket.on('getGroupByStudentId', (data: any) => {
+										setData(data.group)
+									})
+								}
+							}
+						}}
+						no={() => setPagePopUpExitInside(0)}
 					/>
 				</div>
 			)}
