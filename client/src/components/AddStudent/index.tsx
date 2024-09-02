@@ -92,7 +92,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const [combinedHistory, setCombinedHistory] = useState([])
-	const [pagePopUpExitInside,setPagePopUpExitInside] = useState<number>(0)
+	const [pagePopUpExitInside, setPagePopUpExitInside] = useState<number>(0)
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -1242,51 +1242,45 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [open])
 
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 			isCancel: lesson.isCancel || false, // Ensure isCancel is included
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
+	useEffect(() => {
+		const combined = [
+			...historyLesson.map((lesson) => ({
+				...lesson,
+				type: 'lesson',
+				date: new Date(lesson.date),
+			})),
+			...prePayList.map((prepay) => ({
+				...prepay,
+				type: 'prepayment',
+				date: new Date(prepay.date),
+				isCancel: false,
+			})),
+		]
 
-	// 	const sorted = combined.sort((a, b) => {
-	// 		// Сравниваем даты, игнорируя время
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
+		const sorted = combined.sort((a, b) => {
+			const dateA = new Date(
+				a.date.getFullYear(),
+				a.date.getMonth(),
+				a.date.getDate(),
+			)
+			const dateB = new Date(
+				b.date.getFullYear(),
+				b.date.getMonth(),
+				b.date.getDate(),
+			)
 
-	// 		const dateComparison = dateB.getTime() - dateA.getTime()
+			const dateComparison = dateB.getTime() - dateA.getTime()
 
-	// 		// Если даты равны, сортируем по типу
-	// 		if (dateComparison === 0) {
-	// 			// Если типы разные, 'lesson' всегда должен быть выше 'prepayment'
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			// Если типы одинаковые, сохраняем исходный порядок
-	// 			return 0
-	// 		}
+			if (dateComparison === 0) {
+				if (a.type !== b.type) {
+					return a.type === 'lesson' ? -1 : 1
+				}
+				return 0
+			}
 
-			// Если даты разные, возвращаем результат сравнения дат
 			return dateComparison
 		})
-		console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
+
 		setCombinedHistory(sorted)
 	}, [historyLesson, prePayList])
 
