@@ -1467,14 +1467,14 @@ const AddStudent = ({}: IAddStudent) => {
 						(lesson) => lesson.date.getTime() === lessonDate.getTime(),
 					)
 
-					if (existingLesson.isDone) {
+					if (existingLesson && existingLesson?.isDone) {
 						isDone = true
 					}
 
 					const newLesson = {
 						date: lessonDate,
 						itemName: items[i].itemName,
-						isDone: isDone,
+						isDone: isDone || false,
 						price: items[i].costOneLesson,
 						isPaid: existingLesson ? existingLesson.isPaid : false,
 						isCancel: existingLesson ? existingLesson.isCancel : false,
