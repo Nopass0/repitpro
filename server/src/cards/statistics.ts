@@ -5,6 +5,9 @@ import {
   isWithinInterval,
   format,
   parse,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  eachYearOfInterval,
 } from "date-fns";
 import { ru } from "date-fns/locale";
 import db from "../db";
@@ -209,6 +212,110 @@ export async function getStudentFinanceData(
 //   }
 // };
 
+// export async function getStudentCountData(
+//   data: {
+//     startDate: Date;
+//     endDate: Date;
+//     subjectIds: string[];
+//     token: string;
+//   },
+//   socket: any
+// ) {
+//   let { startDate, endDate, subjectIds, token } = data;
+//   startDate = new Date(startDate);
+//   endDate = new Date(endDate);
+
+//   try {
+//     const userId = await getUserId(token);
+
+//     console.log("Fetching data for userId:", userId);
+//     console.log("Date range:", startDate, "to", endDate);
+//     console.log("Subject IDs:", subjectIds);
+
+//     const schedules = await db.studentSchedule.findMany({
+//       where: {
+//         userId: userId,
+//         isArchived: false,
+//         isCancel: false,
+//         itemId: {
+//           in: subjectIds,
+//         },
+//         year: {
+//           gte: startDate.getFullYear().toString(),
+//           lte: endDate.getFullYear().toString(),
+//         },
+//         month: {
+//           gte: (startDate.getMonth() + 1).toString(),
+//           lte: (endDate.getMonth() + 1).toString(),
+//         },
+//         day: {
+//           gte: startDate.getDate().toString(),
+//           lte: endDate.getDate().toString(),
+//         },
+//       },
+//       select: {
+//         day: true,
+//         month: true,
+//         year: true,
+//         itemName: true,
+//       },
+//     });
+
+//     console.log("Fetched schedules count:", schedules.length);
+
+//     const groupedData: { [key: string]: { [itemName: string]: number } } = {};
+
+//     for (const schedule of schedules) {
+//       const date = new Date(
+//         parseInt(schedule.year),
+//         parseInt(schedule.month) - 1,
+//         parseInt(schedule.day)
+//       );
+//       const dateKey = formatDate(date, startDate, endDate);
+
+//       if (!groupedData[dateKey]) {
+//         groupedData[dateKey] = {};
+//       }
+
+//       if (!groupedData[dateKey][schedule.itemName]) {
+//         groupedData[dateKey][schedule.itemName] = 0;
+//       }
+
+//       groupedData[dateKey][schedule.itemName]++;
+//     }
+
+//     console.log("Grouped data:", groupedData);
+
+//     const labels = Object.keys(groupedData).sort((a, b) => {
+//       const dateA = parse(a, "d LLL yyyy", new Date(), { locale: ru });
+//       const dateB = parse(b, "d LLL yyyy", new Date(), { locale: ru });
+//       return dateA.getTime() - dateB.getTime();
+//     });
+//     const uniqueItemNames = [
+//       ...new Set(schedules.map((schedule) => schedule.itemName)),
+//     ];
+
+//     console.log("Unique item names:", uniqueItemNames);
+
+//     const datasets = uniqueItemNames.map((itemName) => ({
+//       label: itemName,
+//       data: labels.map((date) => groupedData[date][itemName] || 0),
+//       backgroundColor: hashToColor(hashString(itemName)),
+//       borderColor: hashToColor(hashString(itemName)),
+//     }));
+
+//     const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
+
+//     console.log("Prepared datasets:", datasets);
+//     console.log("Max value:", maxValue);
+
+//     socket.emit("getStudentCountData", { labels, datasets, maxValue });
+//   } catch (error) {
+//     console.error("Error fetching student count data:", error);
+//     socket.emit("error", { message: "Failed to fetch student count data" });
+//   }
+// }
+
 export async function getStudentCountData(
   data: {
     startDate: Date;
@@ -237,57 +344,28 @@ export async function getStudentCountData(
         itemId: {
           in: subjectIds,
         },
-        year: {
-          gte: startDate.getFullYear().toString(),
-          lte: endDate.getFullYear().toString(),
-        },
-        month: {
-          gte: (startDate.getMonth() + 1).toString(),
-          lte: (endDate.getMonth() + 1).toString(),
-        },
-        day: {
-          gte: startDate.getDate().toString(),
-          lte: endDate.getDate().toString(),
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
         },
       },
       select: {
-        day: true,
-        month: true,
-        year: true,
+        createdAt: true,
         itemName: true,
       },
     });
 
     console.log("Fetched schedules count:", schedules.length);
 
-    const groupedData: { [key: string]: { [itemName: string]: number } } = {};
-
-    for (const schedule of schedules) {
-      const date = new Date(
-        parseInt(schedule.year),
-        parseInt(schedule.month) - 1,
-        parseInt(schedule.day)
-      );
-      const dateKey = formatDate(date, startDate, endDate);
-
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {};
-      }
-
-      if (!groupedData[dateKey][schedule.itemName]) {
-        groupedData[dateKey][schedule.itemName] = 0;
-      }
-
-      groupedData[dateKey][schedule.itemName]++;
-    }
+    const { groupedData, dateFormat } = groupDataByDateRange(
+      schedules,
+      startDate,
+      endDate
+    );
 
     console.log("Grouped data:", groupedData);
 
-    const labels = Object.keys(groupedData).sort((a, b) => {
-      const dateA = parse(a, "d LLL yyyy", new Date(), { locale: ru });
-      const dateB = parse(b, "d LLL yyyy", new Date(), { locale: ru });
-      return dateA.getTime() - dateB.getTime();
-    });
+    const labels = generateDateLabels(startDate, endDate, dateFormat);
     const uniqueItemNames = [
       ...new Set(schedules.map((schedule) => schedule.itemName)),
     ];
@@ -296,7 +374,7 @@ export async function getStudentCountData(
 
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((date) => groupedData[date][itemName] || 0),
+      data: labels.map((date) => groupedData[date]?.[itemName] || 0),
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
@@ -313,6 +391,64 @@ export async function getStudentCountData(
   }
 }
 
+function groupDataByDateRange(schedules, startDate, endDate) {
+  const monthsDiff = differenceInMonths(endDate, startDate);
+  const yearsDiff = differenceInYears(endDate, startDate);
+
+  let dateFormat: string;
+  let formatFunc: (date: Date) => string;
+
+  if (monthsDiff < 2) {
+    dateFormat = "d";
+    formatFunc = (date) => format(date, "d", { locale: ru });
+  } else if (yearsDiff < 2) {
+    dateFormat = "LLL";
+    formatFunc = (date) => format(date, "LLL", { locale: ru });
+  } else {
+    dateFormat = "yyyy";
+    formatFunc = (date) => format(date, "yyyy", { locale: ru });
+  }
+
+  const groupedData: { [key: string]: { [itemName: string]: number } } = {};
+
+  for (const schedule of schedules) {
+    const dateKey = formatFunc(schedule.createdAt);
+
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = {};
+    }
+
+    if (!groupedData[dateKey][schedule.itemName]) {
+      groupedData[dateKey][schedule.itemName] = 0;
+    }
+
+    groupedData[dateKey][schedule.itemName]++;
+  }
+
+  return { groupedData, dateFormat };
+}
+
+function generateDateLabels(
+  startDate: Date,
+  endDate: Date,
+  dateFormat: string
+): string[] {
+  let interval;
+  let formatFunc;
+
+  if (dateFormat === "d") {
+    interval = eachDayOfInterval({ start: startDate, end: endDate });
+    formatFunc = (date) => format(date, "d", { locale: ru });
+  } else if (dateFormat === "LLL") {
+    interval = eachMonthOfInterval({ start: startDate, end: endDate });
+    formatFunc = (date) => format(date, "LLL", { locale: ru });
+  } else {
+    interval = eachYearOfInterval({ start: startDate, end: endDate });
+    formatFunc = (date) => format(date, "yyyy", { locale: ru });
+  }
+
+  return interval.map(formatFunc);
+}
 export async function getStudentLessonsData(
   data: {
     startDate: Date;
@@ -466,6 +602,62 @@ export async function getClientFinanceData(
   }
 }
 
+// export async function getClientCountData(
+//   data: {
+//     startDate: Date;
+//     endDate: Date;
+//     token: string;
+//   },
+//   socket: any
+// ) {
+//   let { startDate, endDate, token } = data;
+//   startDate = new Date(startDate);
+//   endDate = new Date(endDate);
+
+//   try {
+//     const userId = await getUserId(token);
+
+//     const clients = await db.client.findMany({
+//       where: {
+//         userId: userId,
+//         createdAt: {
+//           gte: startDate,
+//           lte: endDate,
+//         },
+//       },
+//       orderBy: {
+//         createdAt: "asc",
+//       },
+//     });
+
+//     const groupedData: { [key: string]: number } = {};
+
+//     for (const client of clients) {
+//       const dateKey = formatDate(client.createdAt, startDate, endDate);
+//       groupedData[dateKey] = (groupedData[dateKey] || 0) + 1;
+//     }
+
+//     const labels = Object.keys(groupedData);
+//     const data = Object.values(groupedData);
+
+//     const datasets = [
+//       {
+//         label: "Количество заказчиков",
+//         data: data,
+//         backgroundColor: hashToColor(hashString("clients")),
+//         borderColor: hashToColor(hashString("clients")),
+//       },
+//     ];
+
+//     const maxValue = Math.max(...data);
+
+//     socket.emit("getClientCountData", { labels, datasets, maxValue });
+//   } catch (error) {
+//     console.error("Error fetching client count data:", error);
+//     socket.emit("error", { message: "Failed to fetch client count data" });
+//   }
+// }
+
 export async function getClientCountData(
   data: {
     startDate: Date;
@@ -481,6 +673,9 @@ export async function getClientCountData(
   try {
     const userId = await getUserId(token);
 
+    console.log("Fetching client data for userId:", userId);
+    console.log("Date range:", startDate, "to", endDate);
+
     const clients = await db.client.findMany({
       where: {
         userId: userId,
@@ -494,32 +689,65 @@ export async function getClientCountData(
       },
     });
 
-    const groupedData: { [key: string]: number } = {};
+    console.log("Fetched clients count:", clients.length);
 
-    for (const client of clients) {
-      const dateKey = formatDate(client.createdAt, startDate, endDate);
-      groupedData[dateKey] = (groupedData[dateKey] || 0) + 1;
-    }
+    const { groupedData, dateFormat } = groupClientsByDateRange(
+      clients,
+      startDate,
+      endDate
+    );
 
-    const labels = Object.keys(groupedData);
-    const data = Object.values(groupedData);
+    console.log("Grouped client data:", groupedData);
+
+    const labels = generateDateLabels(startDate, endDate, dateFormat);
 
     const datasets = [
       {
         label: "Количество заказчиков",
-        data: data,
+        data: labels.map((label) => groupedData[label] || 0),
         backgroundColor: hashToColor(hashString("clients")),
         borderColor: hashToColor(hashString("clients")),
       },
     ];
 
-    const maxValue = Math.max(...data);
+    const maxValue = Math.max(...datasets[0].data);
+
+    console.log("Prepared datasets:", datasets);
+    console.log("Max value:", maxValue);
 
     socket.emit("getClientCountData", { labels, datasets, maxValue });
   } catch (error) {
     console.error("Error fetching client count data:", error);
     socket.emit("error", { message: "Failed to fetch client count data" });
   }
+}
+
+function groupClientsByDateRange(clients, startDate, endDate) {
+  const monthsDiff = differenceInMonths(endDate, startDate);
+  const yearsDiff = differenceInYears(endDate, startDate);
+
+  let dateFormat: string;
+  let formatFunc: (date: Date) => string;
+
+  if (monthsDiff < 2) {
+    dateFormat = "d";
+    formatFunc = (date) => format(date, "d", { locale: ru });
+  } else if (yearsDiff < 2) {
+    dateFormat = "LLL";
+    formatFunc = (date) => format(date, "LLL", { locale: ru });
+  } else {
+    dateFormat = "yyyy";
+    formatFunc = (date) => format(date, "yyyy", { locale: ru });
+  }
+
+  const groupedData: { [key: string]: number } = {};
+
+  for (const client of clients) {
+    const dateKey = formatFunc(client.createdAt);
+    groupedData[dateKey] = (groupedData[dateKey] || 0) + 1;
+  }
+
+  return { groupedData, dateFormat };
 }
 
 export async function getClientWorksData(

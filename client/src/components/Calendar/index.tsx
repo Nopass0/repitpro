@@ -242,6 +242,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 		return days
 	}
 
+	const daysInCurrentMonth = getDaysInMonth(currentYear, currentMonth)
+
 	const isDateToday = (day, month, year) => {
 		const today = new Date()
 		return (
@@ -322,6 +324,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	let usedDates = new Map()
 
+	let isCur = false
+
 	return (
 		<div className={`${className} ${!details ? s.calendarMini : ''}`}>
 			<DataSlidePicker className={s.dataSlidePicker} dateMode />
@@ -353,6 +357,8 @@ export const Calendar = ({className, cells}: ICalendar) => {
 											firstDayOfWeekIndex) %
 											daysInMonth(new Date(currentYear, currentMonth, 0))) +
 										1
+
+									if (day === 1) isCur = true
 
 									if (day < 1 && currentPartOfMonth == 1) {
 										//get previous month
@@ -499,21 +505,38 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												// 	currentMonth,
 												// )
 												if (!isEditDayPopUp) {
+													const selectedMonth = (() => {
+														if (currentPartOfMonth === 0) {
+															return currentMonth === 0 ? 11 : currentMonth - 1
+														} else if (currentPartOfMonth === 2) {
+															return currentMonth === 11 ? 0 : currentMonth + 1
+														} else {
+															return currentMonth
+														}
+													})()
+
+													const selectedYear = (() => {
+														if (
+															currentPartOfMonth === 0 &&
+															currentMonth === 0
+														) {
+															return currentYear - 1
+														} else if (
+															currentPartOfMonth === 2 &&
+															currentMonth === 11
+														) {
+															return currentYear + 1
+														} else {
+															return currentYear
+														}
+													})()
+
 													dispatch({
 														type: 'SET_CALENDAR_NOW_POPUP',
 														payload: {
 															day: String(day),
-															month: String(
-																// isUsed ? currentMonth + 2 : currentMonth + 1,
-																(currentPartOfMonth == 1
-																	? currentMonth + 1
-																	: currentPartOfMonth == 0
-																		? currentMonth - 1
-																		: currentPartOfMonth == 2
-																			? currentMonth + 2
-																			: currentMonth) - 1,
-															),
-															year: String(currentYear),
+															month: String(cellMonth),
+															year: String(selectedYear),
 														},
 													})
 													setPagePopup(PagePopup.DayCalendar)
