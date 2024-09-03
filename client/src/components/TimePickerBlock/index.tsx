@@ -17,7 +17,7 @@ interface TimePickerBlockProps {
 	endDate: string
 }
 
-const API_BASE_URL = 'http://repitpro.ru/api/' // Базовый URL для API
+const API_BASE_URL = 'https://repitpro.ru/api/' // Базовый URL для API
 
 async function fetchOccupiedTimeSlots(
 	token: string,
