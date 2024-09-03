@@ -22,7 +22,7 @@
 		cursor: pointer;
 		padding: 5px;
 		&:hover {
-			transition: all .15s;
+			transition: all 0.15s;
 			background-color: #eee;
 		}
 	}
@@ -31,4 +31,15 @@
 .FileLine {
 	margin: 0 !important;
 	background-color: #e2e2e9;
+}
+
+.ItemList {
+	.Item {
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+
+		align-items: center;
+		flex-wrap: wrap;
+	}
 }

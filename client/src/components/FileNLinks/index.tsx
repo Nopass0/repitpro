@@ -116,7 +116,10 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 			setItems(alreadyUploaded)
 		}
 	}, [alreadyUploaded])
-
+	
+	useEffect(() => {
+		console.log(items)
+	},[items])
 	return (
 		<>
 			<ListItemButton
