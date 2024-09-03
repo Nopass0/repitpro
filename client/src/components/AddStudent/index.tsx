@@ -77,6 +77,7 @@ const AddStudent = ({}: IAddStudent) => {
 	const editedCards = useSelector((state: any) => state.editedCards)
 	const listRef = useRef(null)
 	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
+	const [originalHistoryLesson, setOriginalHistoryLesson] = useState([])
 	const [historyLesson, setHistoryLesson] = useState<any>([])
 
 	const [isEditMode, setIsEditMode] = useState<boolean>(
@@ -1101,6 +1102,15 @@ const AddStudent = ({}: IAddStudent) => {
 				nextPrePayIndex++
 			}
 
+			if (lesson.isPaid) {
+				remainingPrePayment -= Math.max(
+					0,
+					lesson.isPaid ? Number(lesson.price) : 0,
+				)
+
+				return {...lesson, isPaid: lesson.isPaid}
+			}
+
 			// Проверяем, можем ли мы оплатить это занятие
 			if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
 				remainingPrePayment -= Number(lesson.price)
@@ -1445,7 +1455,7 @@ const AddStudent = ({}: IAddStudent) => {
 						scheduleForDay.startTime.minute,
 					)
 
-					const isDone =
+					let isDone =
 						lessonDate < now ||
 						(lessonDate.toDateString() === now.toDateString() &&
 							now.getHours() > scheduleForDay.endTime.hour) ||
@@ -1456,6 +1466,10 @@ const AddStudent = ({}: IAddStudent) => {
 					const existingLesson = historyLesson.find(
 						(lesson) => lesson.date.getTime() === lessonDate.getTime(),
 					)
+
+					if (existingLesson.isDone) {
+						isDone = true
+					}
 
 					const newLesson = {
 						date: lessonDate,
@@ -1597,6 +1611,7 @@ const AddStudent = ({}: IAddStudent) => {
 			let dateHistory = data.historyLessons.map((i) => {
 				return {...i, date: new Date(i.date), isCancel: i.isCancel || false}
 			})
+			setOriginalHistoryLesson(dateHistory)
 			setHistoryLesson(dateHistory)
 			setPrePayList(data.students[0].prePay || [])
 			console.log('dataHistory', data)
