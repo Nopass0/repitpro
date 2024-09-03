@@ -207,13 +207,13 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		<div className={s.wrapper}>
 			<div className={s.timePicker}>
 				<div
-					style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+					style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', textAlign: 'center'}}>
 					<h1 className={s.Title}>
 						{isSelectingEndTime
 							? 'Время окончания занятия'
 							: 'Время начала занятия'}
 					</h1>
-					<button onClick={onExit} style={{position: 'relative', left: '10px'}}>
+					<button onClick={onExit} style={{position: 'relative'}}>
 						<CloseIcon style={{color: 'red'}} />
 					</button>
 				</div>
