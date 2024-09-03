@@ -1078,7 +1078,7 @@ const AddGroup = ({className}: IAddGroup) => {
 
 	useEffect(() => {
 		if (items[currentItemIndex]) {
-			const adr = !isServer ? 'http://localhost:3000' : 'https://repitpro.ru/api'
+			const adr = !isServer ? 'http://localhost:3000' : 'http://repitpro.ru/api'
 			axios
 				.get(`${adr}/check-free-slots`, {
 					params: {
