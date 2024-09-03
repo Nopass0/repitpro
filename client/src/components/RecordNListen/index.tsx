@@ -5,7 +5,7 @@ import Listen from '../../assets/Listen.svg'
 import {Option, Select, SelectOption} from '@mui/base'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import Line from '../Line'
-import socket from '../../socket'
+import socket, {isServer} from '../../socket'
 import {useSelector} from 'react-redux'
 
 interface IRecordNListen {
@@ -42,7 +42,9 @@ const RecordNListen: React.FC<IRecordNListen> = ({
 
 	const getFileLinkById = (id: string) => {
 		// !TODO: Remake after deploy on server with domain
-		const baseLinkToThisSite = window.location.origin
+		const baseLinkToThisSite = isServer
+			? 'https://repitpro.ru'
+			: 'http://localhost:3000'
 
 		return `${baseLinkToThisSite}/files/${id}`
 	}

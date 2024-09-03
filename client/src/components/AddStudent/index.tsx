@@ -2820,16 +2820,6 @@ const AddStudent = ({}: IAddStudent) => {
 									submitLinks={handleLinksSubmit}
 									deleteLink={deleteLink}
 								/>
-
-								{errorList.length > 0 && (
-									<div className={s.ErrorList}>
-										<p>
-											Данное время занято:{' '}
-											{errorList.map((i) => i[0].day)[0] + ' '}
-											{errorList.map((i) => i[0].timeLines)[0][0].time}
-										</p>
-									</div>
-								)}
 							</div>
 						</div>
 						<div className={s.FooterWrapper}>

@@ -71,8 +71,8 @@ export const upload = async (
         data: {
           hashSum,
           name: fileName,
-          size,
-          type: mimeType,
+          size: Number(size) || 0,
+          type: mimeType || "",
           extraType: extraType || "",
           path: filePath,
           userId: userID,

@@ -2665,13 +2665,6 @@ const AddGroup = ({className}: IAddGroup) => {
 												typeCard="group"
 											/>
 										</div>
-										{errorList.length > 0 && (
-											<div className={s.ErrorList}>
-												{errorList.map((i) => (
-													<p key={i}>{i}</p>
-												))}
-											</div>
-										)}
 									</>
 								))}
 							</div>
