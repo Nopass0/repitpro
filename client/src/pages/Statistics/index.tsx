@@ -1,7 +1,14 @@
 import React, {useEffect, useState, useCallback} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {useSelector} from 'react-redux'
-import {Checkbox, MenuItem, Select, styled} from '@mui/material'
+import {
+	Checkbox,
+	FormControl,
+	InputLabel,
+	MenuItem,
+	Select,
+	styled,
+} from '@mui/material'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import CloseIcon from '@mui/icons-material/Close'
@@ -11,6 +18,7 @@ import Line from '../../components/Line'
 import CheckBox from '../../components/CheckBox'
 import Arrow from '../../assets/arrow'
 import s from './index.module.scss'
+import MiniCalendar from '@/components/MiniCalendar'
 
 const StyledPickersLayout = styled('span')({
 	'.MuiDateCalendar-root': {
@@ -81,6 +89,19 @@ const Statistics = () => {
 	const [subjects, setSubjects] = useState([])
 	const [sortColumn, setSortColumn] = useState(null)
 	const [sortDirection, setSortDirection] = useState(null)
+
+	// Tables CONST
+	const [cliTableDateState, setCliTableDateState] = useState<boolean>(0)
+	const [cliTableDateStart, setCliTableDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [cliTableDateEnd, setCliTableDateEnd] = useState(new Date())
+
+	const [studTableDateState, setStudTableDateState] = useState<boolean>(0)
+	const [studTableDateStart, setStudTableDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [studTableDateEnd, setStudTableDateEnd] = useState(new Date())
 
 	const [studFinSubjects, setStudFinSubjects] = useState([])
 	const [studFinDate, setStudFinDate] = useState(0)
@@ -157,6 +178,10 @@ const Statistics = () => {
 
 	const [studentsData, setStudentsData] = useState([])
 	const [clientData, setClientData] = useState([])
+
+	// Tables Change's
+
+	const cliTableOnChangeDate = () => {}
 
 	const columnTranslations = {
 		name: 'Имя',
@@ -389,6 +414,11 @@ const Statistics = () => {
 
 		return (
 			<div className={s.subjectCheckboxes}>
+				<div className={s.subjectHeader}>
+					<p></p>
+					<p>Кол-во</p>
+					<p>%</p>
+				</div>
 				{Object.values(uniqueSubjects).map((subject) => {
 					const dataset = data.datasets.find(
 						(ds) => ds.label === subject.itemName,
@@ -399,18 +429,28 @@ const Statistics = () => {
 					)
 
 					return (
-						<label key={subject.itemName}>
-							<Checkbox
-								style={{color}}
-								checked={isChecked}
-								onChange={(e) =>
-									handleCheckboxChange(subject.itemName, e.target.checked)
-								}
-							/>
-							{subject.itemName}
-						</label>
+						<>
+							<div className={s.subjectOne}>
+								<label key={subject.itemName}>
+									<Checkbox
+										style={{color}}
+										checked={isChecked}
+										onChange={(e) =>
+											handleCheckboxChange(subject.itemName, e.target.checked)
+										}
+									/>
+									{subject.itemName}
+								</label>
+								<p>1</p>
+								<p>1</p>
+							</div>
+						</>
 					)
 				})}
+				<div className={s.subjectCheckboxesAll}>
+					<p>Всего:</p>
+					<p></p>
+				</div>
 			</div>
 		)
 	}
@@ -530,6 +570,45 @@ const Statistics = () => {
 				<div className={s.GraphicBlock}>
 					<div className={s.MenuForGraphic}>
 						<p className={s.TitleTable}>Ученики сводная таблица</p>
+						<FormControl variant="standard" className={s.formControl}>
+							<InputLabel id="date-select-label">Выберите период</InputLabel>
+							<Select
+								labelId="date-select-label"
+								className={s.muiSelect}
+								value={studTableDateState}
+								onChange={(e) => {
+									setStudTableDateState(e.target.value)
+									updateDateRange(
+										e.target.value,
+										setStudTableDateStart,
+										setStudTableDateEnd,
+									)
+								}}
+								defaultValue={0}>
+								<MenuItem value={0}>За последние 30 дней</MenuItem>
+								<MenuItem value={1}>С начала месяца</MenuItem>
+								<MenuItem value={2}>С начала года</MenuItem>
+								<MenuItem value={3}>За всё время</MenuItem>
+							</Select>
+						</FormControl>
+						<Line width="260px" />
+						<div className={s.Dates}>
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={studTableDateStart}
+									onChange={setStudTableDateStart}
+									calendarId={'cliTable-left'}
+								/>
+							</div>
+							<Line width="20px" className={s.LineDate} />
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={studTableDateEnd}
+									onChange={setStudTableDateEnd}
+									calendarId={`cliTable-right`}
+								/>
+							</div>
+						</div>
 					</div>
 					<div className={s.TableWrap}>
 						<table className={s.Table}>
@@ -655,6 +734,45 @@ const Statistics = () => {
 				<div className={s.GraphicBlock}>
 					<div className={s.MenuForGraphic}>
 						<p className={s.TitleTable}>Заказчики сводная таблица</p>
+						<FormControl variant="standard" className={s.formControl}>
+							<InputLabel id="date-select-label">Выберите период</InputLabel>
+							<Select
+								labelId="date-select-label"
+								className={s.muiSelect}
+								value={cliTableDateState}
+								onChange={(e) => {
+									setCliTableDateState(e.target.value)
+									updateDateRange(
+										e.target.value,
+										setCliTableDateStart,
+										setCliTableDateEnd,
+									)
+								}}
+								defaultValue={0}>
+								<MenuItem value={0}>За последние 30 дней</MenuItem>
+								<MenuItem value={1}>С начала месяца</MenuItem>
+								<MenuItem value={2}>С начала года</MenuItem>
+								<MenuItem value={3}>За всё время</MenuItem>
+							</Select>
+						</FormControl>
+						<Line width="260px" />
+						<div className={s.Dates}>
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={cliTableDateStart}
+									onChange={setCliTableDateStart}
+									calendarId={'cliTable-left'}
+								/>
+							</div>
+							<Line width="20px" className={s.LineDate} />
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={cliTableDateEnd}
+									onChange={setCliTableDateEnd}
+									calendarId={`cliTable-right`}
+								/>
+							</div>
+						</div>
 					</div>
 					<div className={s.TableWrap}>
 						<table className={s.Table}>

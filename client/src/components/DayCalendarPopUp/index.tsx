@@ -95,6 +95,7 @@ const DayCalendarPopUp = ({
 	const retryCountRef = useRef(0)
 	const mountedRef = useRef(false)
 
+	const [isEditCard, setIsEditCard] = useState<boolean>(false)
 	useEffect(() => {
 		mountedRef.current = true
 		return () => {
@@ -180,7 +181,7 @@ const DayCalendarPopUp = ({
 	const timeNormalize = (time: number) => {
 		return time < 10 ? '0' + time : time
 	}
-
+	let isEditStudents: boolean
 	const onUpdate = (
 		id: string,
 		editIcon: string,
@@ -199,6 +200,22 @@ const DayCalendarPopUp = ({
 		const [endHour, endMinute] = editTimeEnd.split(':')
 
 		console.log('onUpdate', id, editIcon, editName, editTimeStart, editTimeEnd)
+		isEditStudents =
+			students
+				.map((student) =>
+					student.id === id
+						? (student.nameStudent !== editName ||
+								student.costOneLesson !== editPrice ||
+								student.itemName !== editItem ||
+								student.typeLesson !== editIcon ||
+								student.startTime.hour !== parseInt(startHour) ||
+								student.startTime.minute !== parseInt(startMinute) ||
+								student.endTime.hour !== parseInt(endHour) ||
+								student.endTime.minute !== parseInt(endMinute)) &&
+							true
+						: false,
+				)
+				.filter((item) => item === true).length > 0
 
 		// Create a new array with the updated student data
 		const updatedStudents = students.map((student) =>
@@ -357,8 +374,7 @@ const DayCalendarPopUp = ({
 						startTime: {hour: 0, minute: 0},
 						endTime: {hour: 0, minute: 0},
 					},
-				)
-				setEditMode(true),
+				),
 					//delete all undefined from students array
 					setStudents(students.filter((student) => student !== undefined))
 			}
@@ -568,20 +584,23 @@ const DayCalendarPopUp = ({
 						</button>
 						<button
 							onClick={() => {
-								if (editMode) {
-									setEditMode(!editMode)
+								if (!isEditStudents) {
+									if (editMode) {
+										setEditMode(!editMode)
+										dispatch({
+											type: 'SET_IS_EDIT_DAY_POPUP',
+											payload: false,
+										})
+									}
+									console.log(isEditDayPopUp, 'Saved version: ', students)
+									handleSend(students)
+								} else {
+									setIsEditCard(isEditCard)
 									dispatch({
-										type: 'SET_IS_EDIT_DAY_POPUP',
-										payload: false,
+										type: 'SET_DAY_POPUP_EXIT',
+										payload: EPagePopUpExit.Exit,
 									})
 								}
-								dispatch({
-									type: 'SET_DAY_POPUP_EXIT',
-									payload: EPagePopUpExit.Exit,
-								})
-
-								console.log(isEditDayPopUp, 'Saved version: ', students)
-								handleSend(students)
 							}}
 							className={`${s.SaveBtn} ${editMode && s.active}`}>
 							Сохранить
@@ -627,7 +646,7 @@ const DayCalendarPopUp = ({
 				</div>
 			</div>
 			{ReactDOM.createPortal(
-				dayPopUpExit === EPagePopUpExit.Exit && editMode && (
+				dayPopUpExit === EPagePopUpExit.Exit && editMode && isEditCard && (
 					<>
 						<div className={s.PopUp__wrapper}>
 							<ExitPopUp
@@ -641,6 +660,8 @@ const DayCalendarPopUp = ({
 										type: 'SET_DAY_POPUP_EXIT',
 										payload: EPagePopUpExit.None,
 									})
+									setIsEditCard(false)
+									isEditStudents = false
 								}}
 								no={() => {
 									dispatch({

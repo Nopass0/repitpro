@@ -5,6 +5,26 @@
 .subjectCheckboxes {
 	display: flex;
 	flex-direction: column;
+
+	.subjectHeader {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.subjectCheckboxesAll {
+		display: flex;
+		flex-direction: row;
+		margin-top: 10px;
+	}
+
+	.subjectOne {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
 }
 
 .wrapper {
