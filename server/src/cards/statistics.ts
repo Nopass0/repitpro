@@ -530,6 +530,7 @@ export async function getClientFinanceData(
     startDate: Date;
     endDate: Date;
     token: string;
+    subjectIds: string[];
   },
   socket: any
 ) {

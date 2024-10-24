@@ -87,7 +87,7 @@ const Statistics = () => {
 	const user = useSelector((state) => state.user)
 	const [chooseGraphic, setChooseGraphic] = useState(0)
 	const [subjects, setSubjects] = useState([])
-	const [sortColumn, setSortColumn] = useState(null)
+	const [sortColumn, setSortColumn] = useState('name')
 	const [sortDirection, setSortDirection] = useState(null)
 
 	// Tables CONST
@@ -386,6 +386,81 @@ const Statistics = () => {
 		studRelatDateEnd,
 	])
 
+	// const renderSubjectCheckboxes = (
+	// 	selectedSubjects,
+	// 	setSelectedSubjects,
+	// 	data,
+	// ) => {
+	// 	// Создаем объект с уникальными названиями предметов
+	// 	const uniqueSubjects = subjects.reduce((acc, subject) => {
+	// 		if (!acc[subject.itemName]) {
+	// 			acc[subject.itemName] = subject
+	// 		}
+	// 		return acc
+	// 	}, {})
+
+	// 	const handleCheckboxChange = (subjectName, isChecked) => {
+	// 		if (isChecked) {
+	// 			// Добавляем все предметы с данным названием
+	// 			const subjectsToAdd = subjects.filter((s) => s.itemName === subjectName)
+	// 			setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
+	// 		} else {
+	// 			// Удаляем все предметы с данным названием
+	// 			setSelectedSubjects((prev) =>
+	// 				prev.filter((s) => s.itemName !== subjectName),
+	// 			)
+	// 		}
+	// 	}
+
+	// 	return (
+	// 		<div className={s.subjectCheckboxes}>
+	// 			<div className={s.subjectHeader}>
+	// 				<p></p>
+	// 				<p>Кол-во</p>
+	// 				<p>%</p>
+	// 			</div>
+	// 			{Object.values(uniqueSubjects).map((subject) => {
+	// 				const dataset = data.datasets.find(
+	// 					(ds) => ds.label === subject.itemName,
+	// 				)
+	// 				const color = dataset?.backgroundColor || '#25991c'
+	// 				const isChecked = selectedSubjects.some(
+	// 					(s) => s.itemName === subject.itemName,
+	// 				)
+
+	// 				return (
+	// 					<>
+	// 						<div className={s.subjectOne}>
+	// 							<label key={subject.itemName}>
+	// 								<Checkbox
+	// 									style={{color}}
+	// 									checked={isChecked}
+	// 									onChange={(e) =>
+	// 										handleCheckboxChange(subject.itemName, e.target.checked)
+	// 									}
+	// 								/>
+	// 								{subject.itemName}
+	// 							</label>
+	// 							<div className={s.subjectCounts}>
+	// 								<p>1</p>
+	// 							</div>
+	// 							<div className={s.subjectCounts}>
+	// 								{' '}
+	// 								{/* Добавлен контейнер для выравнивания */}
+	// 								<p>1</p>
+	// 							</div>
+	// 						</div>
+	// 					</>
+	// 				)
+	// 			})}
+	// 			<div className={s.subjectCheckboxesAll}>
+	// 				<p>Всего:</p>
+	// 				<p></p>
+	// 			</div>
+	// 		</div>
+	// 	)
+	// }
+
 	const renderSubjectCheckboxes = (
 		selectedSubjects,
 		setSelectedSubjects,
@@ -412,6 +487,23 @@ const Statistics = () => {
 			}
 		}
 
+		// Calculating totals for all datasets
+		const calculatedSubjects = Object.values(uniqueSubjects).map((subject) => {
+			const dataset = data.datasets.find((ds) => ds.label === subject.itemName)
+			const subjectTotal = dataset
+				? dataset.data.reduce((sum, val) => sum + (val || 0), 0)
+				: 0
+			return {
+				subject,
+				total: subjectTotal,
+			}
+		})
+
+		const grandTotal = calculatedSubjects.reduce(
+			(sum, {total}) => sum + total,
+			0,
+		)
+
 		return (
 			<div className={s.subjectCheckboxes}>
 				<div className={s.subjectHeader}>
@@ -419,7 +511,7 @@ const Statistics = () => {
 					<p>Кол-во</p>
 					<p>%</p>
 				</div>
-				{Object.values(uniqueSubjects).map((subject) => {
+				{calculatedSubjects.map(({subject, total}) => {
 					const dataset = data.datasets.find(
 						(ds) => ds.label === subject.itemName,
 					)
@@ -427,33 +519,50 @@ const Statistics = () => {
 					const isChecked = selectedSubjects.some(
 						(s) => s.itemName === subject.itemName,
 					)
+					const percentage =
+						grandTotal > 0 ? ((total / grandTotal) * 100).toFixed(1) : '0.0'
 
 					return (
-						<>
-							<div className={s.subjectOne}>
-								<label key={subject.itemName}>
-									<Checkbox
-										style={{color}}
-										checked={isChecked}
-										onChange={(e) =>
-											handleCheckboxChange(subject.itemName, e.target.checked)
-										}
-									/>
-									{subject.itemName}
-								</label>
-								<p>1</p>
-								<p>1</p>
+						<div key={subject.itemName} className={s.subjectOne}>
+							<label>
+								<Checkbox
+									style={{color}}
+									checked={isChecked}
+									onChange={(e) =>
+										handleCheckboxChange(subject.itemName, e.target.checked)
+									}
+								/>
+								{subject.itemName}
+							</label>
+							<div className={s.subjectCounts}>
+								<p>{total}</p>
 							</div>
-						</>
+							<div className={s.subjectCounts}>
+								<p>{percentage}%</p>
+							</div>
+						</div>
 					)
 				})}
 				<div className={s.subjectCheckboxesAll}>
 					<p>Всего:</p>
-					<p></p>
+					<p>{grandTotal}</p>
 				</div>
 			</div>
 		)
 	}
+
+	const padTable = (data, columns, rows = 10) => {
+		const paddedData = [...data]
+		while (paddedData.length < rows) {
+			paddedData.push(columns.reduce((acc, col) => ({...acc, [col]: ''}), {}))
+		}
+		return paddedData
+	}
+
+	useEffect(() => {
+		// Устанавливаем сортировку по умолчанию для первого столбца
+		handleSort('name')
+	}, [])
 
 	return (
 		<div className={s.wrapper}>
@@ -630,17 +739,18 @@ const Statistics = () => {
 								</tr>
 							</thead>
 							<tbody className={s.Tbody}>
-								{sortData(studentsData, sortColumn, sortDirection).map(
-									(item, index) => (
-										<tr key={index} className={s.Tr}>
-											{Object.keys(columnTranslations).map((column) => (
-												<td key={column} className={s.Td}>
-													<p>{item[column]}</p>
-												</td>
-											))}
-										</tr>
-									),
-								)}
+								{padTable(
+									sortData(studentsData, sortColumn, sortDirection),
+									Object.keys(columnTranslations),
+								).map((item, index) => (
+									<tr key={index} className={s.Tr}>
+										{Object.keys(columnTranslations).map((column) => (
+											<td key={column} className={s.Td}>
+												<p>{item[column]}</p>
+											</td>
+										))}
+									</tr>
+								))}
 							</tbody>
 						</table>
 					</div>
@@ -670,9 +780,13 @@ const Statistics = () => {
 					optionsBar={optionsBar}
 					title="Заказчики-Финансы"
 					isClient
-					// renderCheckboxes={() =>
-					// 	renderSubjectCheckboxes(cliFinSubjects, setCliFinSubjects)
-					// }
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studLesSubjects,
+							setStudLesSubjects,
+							studentCountItemsData,
+						)
+					}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -695,9 +809,13 @@ const Statistics = () => {
 					optionsBar={optionsBar}
 					title="Заказчики-Количество"
 					isClient
-					// renderCheckboxes={() =>
-					// 	renderSubjectCheckboxes(cliAmSubjects, setCliAmSubjects)
-					// }
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studLesSubjects,
+							setStudLesSubjects,
+							studentCountItemsData,
+						)
+					}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -724,9 +842,13 @@ const Statistics = () => {
 					optionsBar={optionsBar}
 					title="Заказчики-Работы"
 					isClient
-					// renderCheckboxes={() =>
-					// 	renderSubjectCheckboxes(cliWorkSubjects, setCliWorkSubjects)
-					// }
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studLesSubjects,
+							setStudLesSubjects,
+							studentCountItemsData,
+						)
+					}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -794,17 +916,19 @@ const Statistics = () => {
 								</tr>
 							</thead>
 							<tbody className={s.Tbody}>
-								{sortData(clientData, sortColumn, sortDirection).map(
-									(item, index) => (
-										<tr key={index} className={s.Tr}>
-											{Object.keys(columnTranslations).map((column) => (
-												<td key={column} className={s.Td}>
-													<p>{item[column]}</p>
-												</td>
-											))}
-										</tr>
-									),
-								)}
+								{padTable(
+									sortData(clientData, sortColumn, sortDirection),
+									Object.keys(columnTranslations),
+									10,
+								).map((item, index) => (
+									<tr key={index} className={s.Tr}>
+										{Object.keys(columnTranslations).map((column) => (
+											<td key={column} className={s.Td}>
+												<p>{item[column]}</p>
+											</td>
+										))}
+									</tr>
+								))}
 							</tbody>
 						</table>
 					</div>
@@ -834,9 +958,13 @@ const Statistics = () => {
 					optionsBar={optionsBar}
 					title="Ученики - Заказчики сравнительный график"
 					isClient
-					// renderCheckboxes={() =>
-					// 	renderSubjectCheckboxes(studRelatSubjects, setStudRelatSubjects)
-					// }
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studLesSubjects,
+							setStudLesSubjects,
+							studentCountItemsData,
+						)
+					}
 				/>
 			</div>
 		</div>

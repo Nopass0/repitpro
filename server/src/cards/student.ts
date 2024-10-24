@@ -2384,10 +2384,141 @@ export async function getGroupByStudentId(data: any, socket: any) {
 //   }
 // }
 
+// export async function updateStudentAndItems(data: any, socket: any) {
+//   const { id, items, audios, files, token } = data;
+//   console.log(data.historyLessons, "DataHistory");
+//   try {
+//     const token_ = await db.token.findFirst({
+//       where: { token },
+//     });
+
+//     if (!token_) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = token_.userId;
+
+//     const existingStudent = await db.student.findUnique({
+//       where: { id },
+//       include: {
+//         group: {
+//           include: {
+//             items: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (!existingStudent) {
+//       throw new Error("Student not found");
+//     }
+
+//     // Handle file uploads
+//     const existFilesIds = existingStudent.files || [];
+//     let justFilesIds = await handleFileUploads(files, userId, "student/file");
+//     let justAudiosIds = await handleFileUploads(
+//       audios,
+//       userId,
+//       "student/audio"
+//     );
+//     const AllFiles = [
+//       ...new Set([...justFilesIds, ...justAudiosIds, ...existFilesIds]),
+//     ];
+
+//     // Update student data
+//     const updatedStudent = await db.student.update({
+//       where: { id },
+//       data: {
+//         commentStudent: data.commentStudent,
+//         prePayCost: data.prePayCost,
+//         prePayDate: data.prePayDate ? new Date(data.prePayDate) : null,
+//         costOneLesson: data.costOneLesson,
+//         linkStudent: data.linkStudent,
+//         files: AllFiles,
+//         costStudent: data.costStudent,
+//         prePay: data.prePay || [],
+//         phoneNumber: data.phoneNumber,
+//         contactFace: data.contactFace,
+//         email: data.email,
+//         nameStudent: data.nameStudent,
+//       },
+//     });
+
+//     // Update group and items
+//     const updatedGroup = await updateGroupAndItems(
+//       existingStudent.group.id,
+//       items,
+//       userId
+//     );
+
+//     await db.group.update({
+//       where: {
+//         id: existingStudent.group.id,
+//       },
+//       data: {
+//         historyLessons: data.historyLessons,
+//       },
+//     });
+
+//     // Update student schedules
+//     await updateStudentSchedules(
+//       id,
+//       updatedGroup.items,
+//       userId,
+//       updatedStudent.nameStudent,
+//       existingStudent.group.id
+//     );
+
+//     // Fetch the final updated student with all related data
+//     const finalUpdatedStudent = await db.student.findUnique({
+//       where: { id },
+//       include: {
+//         group: {
+//           include: {
+//             items: true,
+//           },
+//         },
+//       },
+//     });
+
+//     socket.emit("updateStudentAndItems", finalUpdatedStudent);
+
+//     return finalUpdatedStudent;
+//   } catch (error) {
+//     console.error("Error updating student and items:", error);
+//     socket.emit("updateStudentAndItems", { error: error.message });
+//   }
+// }
+
+// Helper function to handle file uploads
+async function handleFileUploads(
+  files: IUploadFiles[],
+  userId: string,
+  extraType: string
+): Promise<string[]> {
+  if (!files || !Array.isArray(files) || files.length === 0) {
+    return [];
+  }
+
+  try {
+    return await upload(files, userId, extraType, (ids) => {
+      console.log(
+        `Uploaded ${files.length} files with type ${extraType}. File IDs:`,
+        ids
+      );
+    });
+  } catch (error) {
+    console.error(`Error uploading ${extraType}:`, error);
+    return [];
+  }
+}
+
 export async function updateStudentAndItems(data: any, socket: any) {
   const { id, items, audios, files, token } = data;
   console.log(data.historyLessons, "DataHistory");
+
   try {
+    // Validate token
     const token_ = await db.token.findFirst({
       where: { token },
     });
@@ -2398,6 +2529,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
 
     const userId = token_.userId;
 
+    // Get existing student
     const existingStudent = await db.student.findUnique({
       where: { id },
       include: {
@@ -2414,16 +2546,26 @@ export async function updateStudentAndItems(data: any, socket: any) {
     }
 
     // Handle file uploads
-    const existFilesIds = existingStudent.files || [];
-    let justFilesIds = await handleFileUploads(files, userId, "student/file");
-    let justAudiosIds = await handleFileUploads(
+    const existingFileIds = existingStudent.files || [];
+    console.log("Existing file IDs:", existingFileIds);
+
+    // Handle new file uploads
+    const newFileIds = await handleFileUploads(files, userId, "student/file");
+    console.log("New file IDs:", newFileIds);
+
+    // Handle new audio uploads
+    const newAudioIds = await handleFileUploads(
       audios,
       userId,
       "student/audio"
     );
-    const AllFiles = [
-      ...new Set([...justFilesIds, ...justAudiosIds, ...existFilesIds]),
+    console.log("New audio IDs:", newAudioIds);
+
+    // Combine all file IDs, removing duplicates
+    const allFiles = [
+      ...new Set([...existingFileIds, ...newFileIds, ...newAudioIds]),
     ];
+    console.log("Combined file IDs:", allFiles);
 
     // Update student data
     const updatedStudent = await db.student.update({
@@ -2434,7 +2576,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
         prePayDate: data.prePayDate ? new Date(data.prePayDate) : null,
         costOneLesson: data.costOneLesson,
         linkStudent: data.linkStudent,
-        files: AllFiles,
+        files: allFiles,
         costStudent: data.costStudent,
         prePay: data.prePay || [],
         phoneNumber: data.phoneNumber,
@@ -2451,6 +2593,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
       userId
     );
 
+    // Update history lessons
     await db.group.update({
       where: {
         id: existingStudent.group.id,
@@ -2481,12 +2624,31 @@ export async function updateStudentAndItems(data: any, socket: any) {
       },
     });
 
-    socket.emit("updateStudentAndItems", finalUpdatedStudent);
+    // Add additional file information to the response
+    const enrichedStudent = {
+      ...finalUpdatedStudent,
+      fileDetails: await Promise.all(
+        allFiles.map(async (fileId) => {
+          const fileInfo = await db.file.findUnique({
+            where: { id: fileId },
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              size: true,
+            },
+          });
+          return fileInfo;
+        })
+      ),
+    };
 
-    return finalUpdatedStudent;
+    socket.emit("updateStudentAndItems", enrichedStudent);
+    return enrichedStudent;
   } catch (error) {
     console.error("Error updating student and items:", error);
     socket.emit("updateStudentAndItems", { error: error.message });
+    throw error;
   }
 }
 
@@ -2574,10 +2736,10 @@ async function updateGroupAndItems(
   });
 }
 
-async function handleFileUploads(files: any[], userId: string, path: string) {
-  if (!files || files.length === 0) return [];
-  return await upload(files, userId, path, (paths: string[]) => paths);
-}
+// async function handleFileUploads(files: any[], userId: string, path: string) {
+//   if (!files || files.length === 0) return [];
+//   return await upload(files, userId, path, (paths: string[]) => paths);
+// }
 
 async function updateStudentSchedules(
   studentId: string,
@@ -2932,10 +3094,8 @@ export async function getTableData(data, socket: any) {
         `Found ${studentSchedules_.length} schedules for student ${student.nameStudent}`
       );
 
-      const lessons = studentSchedules_.reduce(
-        (sum, schedule) => sum + (schedule.lessonsCount || 0),
-        0
-      );
+      const lessons = studentSchedules_.length;
+
       const canceledLessons = studentSchedules_.filter(
         (schedule) => schedule.isCancel || !schedule.isChecked
       ).length;

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState} from 'react'
 import s from './index.module.scss'
 import {Collapse, List, ListItemButton, ListItemText} from '@mui/material'
 import Line from '../Line'
@@ -72,11 +72,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 			if (text && text.trim() !== '') {
 				const newItem = {name: text, isLink: true, type: 'link'}
 				setItems((prevItems) => [...prevItems, newItem])
-				submitLinks &&
-					submitLinks([
-						...items.filter((item) => item.isLink).map((item) => item.name),
-						text,
-					])
+				updateSubmitLinks([...items, newItem])
 			} else {
 				alert('Буфер обмена пуст или не содержит текст.')
 			}
@@ -89,26 +85,40 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const DefFiles = Array.from(e.target.files || [])
-		DefFiles.forEach((file: File) => {
-			callback && callback(file, file.name, file.size, file.type)
-			setItems((prevItems) => [
-				...prevItems,
-				{
-					name: file.name,
-					type: file.type,
-					size: file.size,
-					file: file,
-					isLink: false,
-				},
-			])
+		const newFileItems = DefFiles.map((file: File) => ({
+			name: file.name,
+			type: file.type,
+			size: file.size,
+			file: file,
+			isLink: false,
+		}))
+
+		setItems((prevItems) => [...prevItems, ...newFileItems])
+
+		newFileItems.forEach((item) => {
+			callback && callback(item.file, item.name, item.size, item.type)
 		})
 
-		// Обновляем ссылки после добавления файлов
-		const updatedLinks = [
-			...items.filter((item) => item.isLink).map((item) => item.name),
-			...DefFiles.map((file) => file.name),
-		]
-		submitLinks && submitLinks(updatedLinks)
+		updateSubmitLinks([...items, ...newFileItems])
+	}
+
+	const updateSubmitLinks = (updatedItems: any[]) => {
+		const links = updatedItems
+			.filter((item) => item.isLink || !item.file)
+			.map((item) => item.name)
+		submitLinks && submitLinks(links)
+	}
+
+	const handleDeleteItem = (index: number) => {
+		setItems((prevItems) => {
+			const updatedItems = prevItems.filter((_, i) => i !== index)
+			updateSubmitLinks(updatedItems)
+			return updatedItems
+		})
+
+		const deletedItem = items[index]
+		if (deletedItem.id) sendDelete(deletedItem.id)
+		deleteItem && deleteItem(deletedItem, index)
 	}
 
 	useEffect(() => {
@@ -136,25 +146,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					id={`fileInput__${fileInputId}`}
 					multiple
 					style={{display: 'none'}}
-					onChange={
-						handleFileChange
-						// 	(e) => {
-						// 	const DefFiles = Array.from(e.target.files)
-						// 	DefFiles.forEach((file: any) => {
-						// 		callback && callback(file, file.name, file.type, file.size)
-						// 		setItems((prevItems) => [
-						// 			...prevItems,
-						// 			{
-						// 				name: file.name,
-						// 				type: file.type,
-						// 				size: file.size,
-						// 				file: file,
-						// 				isLink: false,
-						// 			},
-						// 		])
-						// 	})
-						// }
-					}
+					onChange={handleFileChange}
 				/>
 				<label
 					htmlFor={`fileInput__${fileInputId}`}
@@ -203,11 +195,7 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 										<button
 											onClick={(e) => {
 												e.stopPropagation()
-												setItems((prevItems) =>
-													prevItems.filter((_, i) => i !== index),
-												)
-												if (item.id) sendDelete(item.id)
-												deleteItem && deleteItem(item, index)
+												handleDeleteItem(index)
 											}}>
 											<DeleteOutlineIcon />
 										</button>

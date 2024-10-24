@@ -11,6 +11,30 @@ function calculateBufferHash(buffer: Buffer): string {
   return hash.digest("hex");
 }
 
+function getMimeType(fileExtension: string, originalType: any): string {
+  // Common MIME type mappings
+  const mimeTypes: { [key: string]: string } = {
+    jpeg: "image/jpeg",
+    jpg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    pdf: "application/pdf",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ogg: "audio/ogg",
+    mkv: "video/x-matroska",
+  };
+
+  // If original type is a string and seems valid, use it
+  if (typeof originalType === "string" && originalType.includes("/")) {
+    return originalType;
+  }
+
+  // Normalize extension and look up MIME type
+  const ext = fileExtension.toLowerCase();
+  return mimeTypes[ext] || "application/octet-stream";
+}
+
 export const upload = async (
   data: IUploadFiles[],
   userID: string,
@@ -23,36 +47,24 @@ export const upload = async (
   if (data && data.length > 0) {
     const FilesDir = join("./files", folderName);
     mkdirSync(FilesDir, { recursive: true });
-    console.log(data, "FILE FILE FILE");
+
     for (const item of data) {
       const { file, name, size, type } = item;
-      // Calculate hash-sum
 
       if (file === undefined) continue;
+
+      // Calculate hash-sum
       const hashSum = calculateBufferHash(file);
-      let mimeType = type; // Use type as mime type
-      let ext: string = "";
-      const fileExtension = name.split(".").pop(); // Properly get the file extension
 
-      console.log(
-        "\n-----------------name----------------\n",
-        name,
-        "\n-----------ext----------\n",
-        fileExtension
-      );
+      // Get file extension and proper MIME type
+      const fileExtension = name.split(".").pop()?.toLowerCase() || "unknown";
+      const mimeType = getMimeType(fileExtension, type);
 
-      if (fileExtension === "ogg") {
-        ext = "ogg";
-      } else if (fileExtension === "mkv") {
-        ext = "mkv";
-      } else {
-        ext = fileExtension ? fileExtension : "unknown"; // Default to "unknown" if no extension is found
-      }
-
+      // Create a sanitized filename with the original extension
       const fileName = `${name.split(".")[0]}_${randomBytes(6).toString(
         "hex"
-      )}.${ext}`;
-      const filePath = join(FilesDir, fileName); // Use the new file name with the correct extension
+      )}.${fileExtension}`;
+      const filePath = join(FilesDir, fileName);
 
       // Check if file already exists in db (By path)
       const existingFile = await db.file.findFirst({
@@ -64,29 +76,21 @@ export const upload = async (
         continue;
       }
 
-      // Write file to disk (replace with appropriate function)
+      // Write file to disk
       writeFileSync(filePath, file);
 
+      // Create database record with proper string type
       const newFile = await db.file.create({
         data: {
           hashSum,
           name: fileName,
           size: Number(size) || 0,
-          type: mimeType || "",
+          type: mimeType,
           extraType: extraType || "",
           path: filePath,
           userId: userID,
         },
       });
-
-      console.log(
-        "ext",
-        ext,
-        "mimeType",
-        mimeType,
-        "file size",
-        file.length // assuming 'file' is a Buffer
-      );
 
       ids.push(newFile.id);
     }
@@ -104,14 +108,9 @@ export const getBufferByFilePath = async (filePath: string) => {
   }
 
   const filePathAbsolute = join(__dirname, "..", "..", file.path);
-
-  const file_ = readFileSync(filePathAbsolute);
-
-  console.log("File path", filePathAbsolute, file_);
-
-  return file_;
+  return readFileSync(filePathAbsolute);
 };
 
 export const uploadFiles = (data: IUploadFiles) => {
-  console.log(data);
+  console.log("Received upload request:", data);
 };
