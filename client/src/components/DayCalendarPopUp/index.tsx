@@ -177,11 +177,61 @@ const DayCalendarPopUp = ({
 		}
 	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 
-	//hour or minute to normal view. Ex: 12:3 to 12:03/ 1:5 to 01:05
-	const timeNormalize = (time: number) => {
-		return time < 10 ? '0' + time : time
+	// New state to track temporary lines
+	const [tempStudents, setTempStudents] = React.useState<
+		Array<{
+			id: string
+			nameStudent: string
+			costOneLesson: string
+			itemName: string
+			studentId: string
+			typeLesson: string
+			tryLessonCheck: boolean
+			startTime: {hour: number; minute: number}
+			endTime: {hour: number; minute: number}
+			isTemp?: boolean // New flag to mark temporary entries
+		}>
+	>([])
+
+	// Функция для сортировки студентов по времени начала занятия
+	const sortStudentsByStartTime = (studentsToSort) => {
+		return [...studentsToSort].sort((a, b) => {
+			const aTime = a.startTime.hour * 60 + a.startTime.minute
+			const bTime = b.startTime.hour * 60 + b.startTime.minute
+			return aTime - bTime
+		})
 	}
-	let isEditStudents: boolean
+
+	// Modified handleAddStudentDay to use temporary storage
+	const handleAddStudentDay = () => {
+		socket.emit('createStudentSchedule', {
+			token: token,
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+		})
+
+		socket.once('createStudentSchedule', (data: any) => {
+			if (data.created) {
+				const newTempStudent = {
+					id: data.created,
+					nameStudent: '',
+					costOneLesson: '0',
+					itemName: '',
+					studentId: '',
+					typeLesson: '1',
+					tryLessonCheck: false,
+					startTime: {hour: 0, minute: 0},
+					endTime: {hour: 0, minute: 0},
+					isTemp: true,
+				}
+
+				setTempStudents((prev) => [...prev, newTempStudent])
+			}
+		})
+	}
+
+	// Modified onUpdate to track changes in temporary lines
 	const onUpdate = (
 		id: string,
 		editIcon: string,
@@ -193,93 +243,228 @@ const DayCalendarPopUp = ({
 		isDelete: boolean,
 		studentId: string,
 	) => {
-		// Split the editTimeStart into startHour, startMinute
 		const [startHour, startMinute] = editTimeStart.split(':')
-
-		// Split the editTimeEnd into endHour, endMinute
 		const [endHour, endMinute] = editTimeEnd.split(':')
 
-		console.log('onUpdate', id, editIcon, editName, editTimeStart, editTimeEnd)
-		isEditStudents =
-			students
-				.map((student) =>
+		// Check if we're updating a temporary line
+		const isTempLine = tempStudents.some((student) => student.id === id)
+
+		if (isTempLine) {
+			setTempStudents((prev) =>
+				prev.map((student) =>
 					student.id === id
-						? (student.nameStudent !== editName ||
-								student.costOneLesson !== editPrice ||
-								student.itemName !== editItem ||
-								student.typeLesson !== editIcon ||
-								student.startTime.hour !== parseInt(startHour) ||
-								student.startTime.minute !== parseInt(startMinute) ||
-								student.endTime.hour !== parseInt(endHour) ||
-								student.endTime.minute !== parseInt(endMinute)) &&
-							true
-						: false,
-				)
-				.filter((item) => item === true).length > 0
-
-		// Create a new array with the updated student data
-		const updatedStudents = students.map((student) =>
-			student.id === id
-				? {
-						...student,
-						nameStudent: editName,
-						costOneLesson: editPrice,
-						itemName: editItem,
-						tryLessonCheck: false, // You can update this based on your requirements
-						typeLesson: editIcon,
-						isDelete: isDelete,
-						studentId: studentId,
-						startTime: {
-							hour: parseInt(startHour),
-							minute: parseInt(startMinute),
-						},
-						endTime: {hour: parseInt(endHour), minute: parseInt(endMinute)},
-					}
-				: student,
-		)
-
-		// Update the students state with the updated data
-		setStudents(updatedStudents)
+						? {
+								...student,
+								nameStudent: editName,
+								costOneLesson: editPrice,
+								itemName: editItem,
+								typeLesson: editIcon,
+								startTime: {
+									hour: parseInt(startHour),
+									minute: parseInt(startMinute),
+								},
+								endTime: {
+									hour: parseInt(endHour),
+									minute: parseInt(endMinute),
+								},
+								studentId,
+							}
+						: student,
+				),
+			)
+		} else {
+			// Update regular students as before
+			const updatedStudents = students.map((student) =>
+				student.id === id
+					? {
+							...student,
+							nameStudent: editName,
+							costOneLesson: editPrice,
+							itemName: editItem,
+							typeLesson: editIcon,
+							startTime: {
+								hour: parseInt(startHour),
+								minute: parseInt(startMinute),
+							},
+							endTime: {
+								hour: parseInt(endHour),
+								minute: parseInt(endMinute),
+							},
+							studentId,
+						}
+					: student,
+			)
+			setStudents(updatedStudents)
+		}
 	}
 
-	function handleSend(
-		students: {
-			nameStudent: string
-			costOneLesson: string
-			studentId: string
-			itemName: string
-			tryLessonCheck: boolean
-			id: string
-			typeLesson: string
-			startTime: {hour: number; minute: number}
-			endTime: {hour: number; minute: number}
-		}[],
-	) {
-		console.log(
-			students,
-			'handleSend',
-			token,
-			calendarNowPopupDay,
-			calendarNowPopupMonth,
-			calendarNowPopupYear,
+	// Modified handleSend to filter out empty temporary lines
+	const handleSend = () => {
+		// Combine regular and filled temporary students
+		const filledTempStudents = tempStudents.filter(
+			(student) =>
+				student.nameStudent &&
+				student.itemName &&
+				(student.startTime.hour !== 0 || student.startTime.minute !== 0),
 		)
-		for (let i = 0; i < students.length; i++) {
+
+		const studentsToSave = [...students, ...filledTempStudents]
+
+		studentsToSave.forEach((student) => {
 			socket.emit('updateStudentSchedule', {
-				id: students[i].id,
+				id: student.id,
 				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
-				lessonsPrice: students[i].costOneLesson || 0,
-				studentName: students[i].nameStudent,
-				itemName: students[i].itemName,
-				typeLesson: students[i].typeLesson,
-				startTime: students[i].startTime,
-				endTime: students[i].endTime,
-				isChecked: students[i].tryLessonCheck,
+				lessonsPrice: student.costOneLesson || 0,
+				studentName: student.nameStudent,
+				itemName: student.itemName,
+				typeLesson: student.typeLesson,
+				startTime: student.startTime,
+				endTime: student.endTime,
+				isChecked: student.tryLessonCheck,
 				token: token,
 			})
+		})
+
+		// Clear temporary students after saving
+		setTempStudents([])
+	}
+
+	// Modified exit handler
+	const handleExit = () => {
+		if (editMode) {
+			const hasUnsavedChanges = tempStudents.some(
+				(student) =>
+					student.nameStudent ||
+					student.itemName ||
+					student.startTime.hour !== 0 ||
+					student.startTime.minute !== 0,
+			)
+
+			if (hasUnsavedChanges) {
+				dispatch({
+					type: 'SET_DAY_POPUP_EXIT',
+					payload: EPagePopUpExit.Exit,
+				})
+			} else {
+				setTempStudents([])
+				setEditMode(false)
+				onExit?.()
+			}
+		} else {
+			setTempStudents([])
+			onExit?.()
 		}
 	}
+
+	// Combine regular and temporary students for display
+	const displayStudents = [...students, ...tempStudents]
+	const sortedDisplayStudents = sortStudentsByStartTime(displayStudents)
+
+	//hour or minute to normal view. Ex: 12:3 to 12:03/ 1:5 to 01:05
+	const timeNormalize = (time: number) => {
+		return time < 10 ? '0' + time : time
+	}
+	let isEditStudents: boolean
+	// const onUpdate = (
+	// 	id: string,
+	// 	editIcon: string,
+	// 	editName: string,
+	// 	editTimeStart: string,
+	// 	editTimeEnd: string,
+	// 	editItem: string,
+	// 	editPrice: string,
+	// 	isDelete: boolean,
+	// 	studentId: string,
+	// ) => {
+	// 	// Split the editTimeStart into startHour, startMinute
+	// 	const [startHour, startMinute] = editTimeStart.split(':')
+
+	// 	// Split the editTimeEnd into endHour, endMinute
+	// 	const [endHour, endMinute] = editTimeEnd.split(':')
+
+	// 	console.log('onUpdate', id, editIcon, editName, editTimeStart, editTimeEnd)
+	// 	isEditStudents =
+	// 		students
+	// 			.map((student) =>
+	// 				student.id === id
+	// 					? (student.nameStudent !== editName ||
+	// 							student.costOneLesson !== editPrice ||
+	// 							student.itemName !== editItem ||
+	// 							student.typeLesson !== editIcon ||
+	// 							student.startTime.hour !== parseInt(startHour) ||
+	// 							student.startTime.minute !== parseInt(startMinute) ||
+	// 							student.endTime.hour !== parseInt(endHour) ||
+	// 							student.endTime.minute !== parseInt(endMinute)) &&
+	// 						true
+	// 					: false,
+	// 			)
+	// 			.filter((item) => item === true).length > 0
+
+	// 	// Create a new array with the updated student data
+	// 	const updatedStudents = students.map((student) =>
+	// 		student.id === id
+	// 			? {
+	// 					...student,
+	// 					nameStudent: editName,
+	// 					costOneLesson: editPrice,
+	// 					itemName: editItem,
+	// 					tryLessonCheck: false, // You can update this based on your requirements
+	// 					typeLesson: editIcon,
+	// 					isDelete: isDelete,
+	// 					studentId: studentId,
+	// 					startTime: {
+	// 						hour: parseInt(startHour),
+	// 						minute: parseInt(startMinute),
+	// 					},
+	// 					endTime: {hour: parseInt(endHour), minute: parseInt(endMinute)},
+	// 				}
+	// 			: student,
+	// 	)
+
+	// 	// Update the students state with the updated data
+	// 	setStudents(updatedStudents)
+	// }
+
+	// function handleSend(
+	// 	students: {
+	// 		nameStudent: string
+	// 		costOneLesson: string
+	// 		studentId: string
+	// 		itemName: string
+	// 		tryLessonCheck: boolean
+	// 		id: string
+	// 		typeLesson: string
+	// 		startTime: {hour: number; minute: number}
+	// 		endTime: {hour: number; minute: number}
+	// 	}[],
+	// ) {
+	// 	console.log(
+	// 		students,
+	// 		'handleSend',
+	// 		token,
+	// 		calendarNowPopupDay,
+	// 		calendarNowPopupMonth,
+	// 		calendarNowPopupYear,
+	// 	)
+	// 	for (let i = 0; i < students.length; i++) {
+	// 		socket.emit('updateStudentSchedule', {
+	// 			id: students[i].id,
+	// 			day: calendarNowPopupDay,
+	// 			month: calendarNowPopupMonth,
+	// 			year: calendarNowPopupYear,
+	// 			lessonsPrice: students[i].costOneLesson || 0,
+	// 			studentName: students[i].nameStudent,
+	// 			itemName: students[i].itemName,
+	// 			typeLesson: students[i].typeLesson,
+	// 			startTime: students[i].startTime,
+	// 			endTime: students[i].endTime,
+	// 			isChecked: students[i].tryLessonCheck,
+	// 			token: token,
+	// 		})
+	// 	}
+	// }
 
 	const updData = (day: string, month: string, year: string) => {
 		//remove leading 0
@@ -378,15 +563,6 @@ const DayCalendarPopUp = ({
 					//delete all undefined from students array
 					setStudents(students.filter((student) => student !== undefined))
 			}
-		})
-	}
-
-	// Функция для сортировки студентов по времени начала занятия
-	const sortStudentsByStartTime = (studentsToSort) => {
-		return [...studentsToSort].sort((a, b) => {
-			const aTime = a.startTime.hour * 60 + a.startTime.minute
-			const bTime = b.startTime.hour * 60 + b.startTime.minute
-			return aTime - bTime
 		})
 	}
 
