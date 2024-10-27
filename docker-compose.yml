@@ -59,15 +59,6 @@ services:
       bun run dev:server
       "
 
-  fileserver:
-    image: nginx:alpine
-    volumes:
-      - ./files:/usr/share/nginx/html
-    networks:
-      - backend
-    ports:
-      - "8080:80"
-
 networks:
   backend:
   frontend:

@@ -279,10 +279,12 @@ model File {
 }
 
 model Link {
-  id String @id @default(cuid())
-  links String[]
-  tag String
-  linkedId String // id of student, group, etc
-  userId String
-}
+  id        String   @id @default(cuid())
+  links     String[] @default([])  // Make links optional with default empty array
+  tag       String
+  linkedId  String   // id of student, group, etc
+  userId    String
 
+  // @@unique([tag, userId], name: "tag_userId")
+
+}

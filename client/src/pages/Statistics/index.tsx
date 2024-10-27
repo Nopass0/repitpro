@@ -637,9 +637,13 @@ const Statistics = () => {
 					options={options}
 					optionsBar={optionsBar}
 					title="Ученики-Количество"
-					// renderCheckboxes={() =>
-					// 	renderSubjectCheckboxes(studAmSubjects, setStudAmSubjects)
-					// }
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studFinSubjects,
+							setStudFinSubjects,
+							financeData,
+						)
+					}
 				/>
 				<Line width="100%" className={s.Line} />
 

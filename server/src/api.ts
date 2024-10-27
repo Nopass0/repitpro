@@ -28,7 +28,7 @@ api.get("/files/:id", async (req, res) => {
       return res.status(404).send("File not found");
     }
 
-    const fullPath = join(__dirname.replace("src", ""), file.path); // Using absolute path
+    const fullPath = join(__dirname.replace("src", ""), file.path);
     console.log("Full Path:", fullPath);
 
     res.sendFile(fullPath);
@@ -48,113 +48,230 @@ api.get("/check-free-slots", async (req, res) => {
       return res.status(400).json({ error: "Missing required parameters" });
     }
 
-    let tokenRecord;
-    try {
-      tokenRecord = await db.token.findFirst({
-        where: {
-          token: token as string,
-        },
-      });
-      console.log("Token record:", tokenRecord);
+    // Проверяем токен и получаем пользователя
+    let tokenRecord = await db.token.findFirst({
+      where: {
+        token: token as string,
+      },
+    });
 
-      if (!tokenRecord || !tokenRecord.userId) {
-        return res.status(401).json({ error: "Invalid token" });
-      }
-
-      const start = parseISO(startDate as string);
-      const end = parseISO(endDate as string);
-
-      // Generate an array of all dates in the range
-      const dateRange = eachDayOfInterval({ start, end });
-
-      const studentSchedules = await db.studentSchedule.findMany({
-        where: {
-          userId: tokenRecord.userId,
-          OR: dateRange.map((date) => ({
-            AND: [
-              { year: format(date, "yyyy") },
-              { month: format(date, "M") },
-              { day: format(date, "d") },
-            ],
-          })),
-        },
-      });
-
-      console.log("Found student schedules:", studentSchedules.length);
-
-      const occupiedSlots = studentSchedules.flatMap(
-        (schedule) => schedule.timeLinesArray
-      );
-
-      console.log("Occupied slots:", occupiedSlots.length);
-
-      const daysOfWeek = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-      const freeSlots = daysOfWeek.map((day) => ({
-        day,
-        freeTime: calculateFreeTime(
-          occupiedSlots.filter((slot) => slot.day === day)
-        ),
-      }));
-
-      res.json({ freeSlots });
-    } catch (error) {
-      console.error("Error processing request:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+    if (!tokenRecord || !tokenRecord.userId) {
+      return res.status(401).json({ error: "Invalid token" });
     }
+
+    const start = parseISO(startDate as string);
+    const end = parseISO(endDate as string);
+
+    // Получаем все даты в диапазоне
+    const dateRange = eachDayOfInterval({ start, end });
+
+    // Получаем существующие записи расписания
+    const studentSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId: tokenRecord.userId,
+        OR: dateRange.map((date) => ({
+          AND: [
+            { year: format(date, "yyyy") },
+            { month: format(date, "M") },
+            { day: format(date, "d") },
+          ],
+        })),
+      },
+    });
+
+    console.log("Found student schedules:", studentSchedules.length);
+
+    // Получаем все временные слоты
+    const occupiedSlots = studentSchedules.flatMap(
+      (schedule) => schedule.timeLinesArray
+    );
+    console.log("Occupied slots:", occupiedSlots.length);
+
+    // Группируем слоты по дням недели
+    const daysOfWeek = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+    const occupiedTimeSlots = daysOfWeek.map((day) => {
+      // Находим все слоты для текущего дня
+      const daySlots = occupiedSlots.filter((slot) => slot.day === day);
+
+      // Для каждого дня создаем массив уникальных занятых слотов
+      const uniqueSlots = new Map();
+
+      daySlots.forEach((slot) => {
+        // Пропускаем "пустые" слоты
+        if (
+          slot.startTime.hour === 0 &&
+          slot.startTime.minute === 0 &&
+          slot.endTime.hour === 0 &&
+          slot.endTime.minute === 0
+        ) {
+          return;
+        }
+
+        const key = `${slot.startTime.hour}:${slot.startTime.minute}-${slot.endTime.hour}:${slot.endTime.minute}`;
+        if (!uniqueSlots.has(key)) {
+          uniqueSlots.set(key, {
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          });
+        }
+      });
+
+      // Преобразуем Map в массив и сортируем по времени
+      const sortedSlots = Array.from(uniqueSlots.values()).sort((a, b) => {
+        const timeA = a.startTime.hour * 60 + a.startTime.minute;
+        const timeB = b.startTime.hour * 60 + b.startTime.minute;
+        return timeA - timeB;
+      });
+
+      return {
+        day,
+        // Переименовываем freeTime в occupiedTime для большей ясности
+        freeTime: sortedSlots,
+      };
+    });
+
+    res.json({ freeSlots: occupiedTimeSlots });
   } catch (error) {
     console.error("Error in check-free-slots:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-function calculateFreeTime(occupiedSlots) {
-  // Convert occupied slots to minutes for easier calculation
-  const occupiedMinutes = occupiedSlots
-    .map((slot) => ({
-      start: slot.startTime.hour * 60 + slot.startTime.minute,
-      end: slot.endTime.hour * 60 + slot.endTime.minute,
-    }))
-    .sort((a, b) => a.start - b.start);
+// Дополнительный эндпоинт для получения общей информации о занятости
+api.get("/schedule-summary", async (req, res) => {
+  try {
+    const { token } = req.query;
 
-  // Initialize the day as completely free
-  let freeMinutes = [{ start: 0, end: 24 * 60 - 1 }];
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
+    }
 
-  // Remove occupied time from free time
-  for (let occupied of occupiedMinutes) {
-    freeMinutes = freeMinutes.flatMap((free) => {
-      if (occupied.start <= free.start && occupied.end >= free.end) {
-        // Occupied slot completely covers free slot
-        return [];
-      } else if (occupied.start > free.start && occupied.end < free.end) {
-        // Occupied slot splits free slot
-        return [
-          { start: free.start, end: occupied.start - 1 },
-          { start: occupied.end + 1, end: free.end },
-        ];
-      } else if (occupied.start <= free.start && occupied.end > free.start) {
-        // Occupied slot covers start of free slot
-        return [{ start: occupied.end + 1, end: free.end }];
-      } else if (occupied.start < free.end && occupied.end >= free.end) {
-        // Occupied slot covers end of free slot
-        return [{ start: free.start, end: occupied.start - 1 }];
-      } else {
-        // Occupied slot doesn't overlap with this free slot
-        return [free];
-      }
+    const tokenRecord = await db.token.findFirst({
+      where: {
+        token: token as string,
+      },
     });
-  }
 
-  // Convert minutes back to hour/minute format
-  return freeMinutes.map((slot) => ({
-    start: {
-      hour: Math.floor(slot.start / 60),
-      minute: slot.start % 60,
-    },
-    end: {
-      hour: Math.floor(slot.end / 60),
-      minute: slot.end % 60,
-    },
-  }));
-}
+    if (!tokenRecord || !tokenRecord.userId) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Получаем все расписание пользователя
+    const allSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId: tokenRecord.userId,
+      },
+    });
+
+    // Подсчитываем общую статистику
+    const stats = {
+      totalSlots: 0,
+      slotsPerDay: {} as Record<string, number>,
+      busyHours: 0,
+      mostBusyDay: "",
+    };
+
+    allSchedules.forEach((schedule) => {
+      schedule.timeLinesArray.forEach((slot) => {
+        // Пропускаем пустые слоты
+        if (
+          slot.startTime.hour === 0 &&
+          slot.startTime.minute === 0 &&
+          slot.endTime.hour === 0 &&
+          slot.endTime.minute === 0
+        ) {
+          return;
+        }
+
+        stats.totalSlots++;
+        stats.slotsPerDay[slot.day] = (stats.slotsPerDay[slot.day] || 0) + 1;
+
+        // Подсчитываем часы занятости
+        const startMinutes = slot.startTime.hour * 60 + slot.startTime.minute;
+        const endMinutes = slot.endTime.hour * 60 + slot.endTime.minute;
+        stats.busyHours += (endMinutes - startMinutes) / 60;
+      });
+    });
+
+    // Находим самый загруженный день
+    stats.mostBusyDay = Object.entries(stats.slotsPerDay).reduce((a, b) =>
+      a[1] > b[1] ? a : b
+    )[0];
+
+    res.json({
+      summary: stats,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error in schedule-summary:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Эндпоинт для проверки конфликтов в расписании
+api.post("/check-schedule-conflicts", async (req, res) => {
+  try {
+    const { token, newSlot } = req.body;
+
+    if (!token || !newSlot) {
+      return res.status(400).json({ error: "Missing required parameters" });
+    }
+
+    const tokenRecord = await db.token.findFirst({
+      where: {
+        token: token as string,
+      },
+    });
+
+    if (!tokenRecord || !tokenRecord.userId) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    const existingSchedules = await db.studentSchedule.findMany({
+      where: {
+        userId: tokenRecord.userId,
+      },
+    });
+
+    // Проверяем конфликты с существующими слотами
+    const conflicts = [];
+    existingSchedules.forEach((schedule) => {
+      schedule.timeLinesArray
+        .filter((slot) => slot.day === newSlot.day)
+        .forEach((slot) => {
+          const newSlotStart =
+            newSlot.startTime.hour * 60 + newSlot.startTime.minute;
+          const newSlotEnd = newSlot.endTime.hour * 60 + newSlot.endTime.minute;
+          const existingSlotStart =
+            slot.startTime.hour * 60 + slot.startTime.minute;
+          const existingSlotEnd = slot.endTime.hour * 60 + slot.endTime.minute;
+
+          if (
+            (newSlotStart >= existingSlotStart &&
+              newSlotStart < existingSlotEnd) ||
+            (newSlotEnd > existingSlotStart && newSlotEnd <= existingSlotEnd) ||
+            (newSlotStart <= existingSlotStart && newSlotEnd >= existingSlotEnd)
+          ) {
+            conflicts.push({
+              day: slot.day,
+              conflictingSlot: {
+                start: slot.startTime,
+                end: slot.endTime,
+              },
+            });
+          }
+        });
+    });
+
+    res.json({
+      hasConflicts: conflicts.length > 0,
+      conflicts,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error in check-schedule-conflicts:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 export default api;

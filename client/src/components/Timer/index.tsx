@@ -34,9 +34,11 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	const [isSelectingEndTime, setIsSelectingEndTime] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>('')
 
-	const currentDaySlots =
-		freeSlots.find((slot) => slot.day === currentDay)?.freeTime || []
+	// Получаем занятые слоты для текущего дня
+	const occupiedSlotsForDay =
+		freeSlots?.find((slot) => slot.day === currentDay)?.freeTime || []
 
+	// Проверка доступности интервала
 	const isIntervalAvailable = (
 		startHours: number,
 		startMinutes: number,
@@ -45,13 +47,20 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	): boolean => {
 		const startTime = startHours * 60 + startMinutes
 		const endTime = endHours * 60 + endMinutes
-		return currentDaySlots.some((slot) => {
-			const slotStartTime = slot.start.hour * 60 + slot.start.minute
-			const slotEndTime = slot.end.hour * 60 + slot.end.minute
+
+		// Проверяем, что интервал не выходит за пределы рабочего дня
+		if (startTime < 8 * 60 || endTime > 22 * 60) return false
+		if (endTime <= startTime) return false
+
+		// Проверяем, что интервал не пересекается с занятыми слотами
+		return !occupiedSlotsForDay.some((slot) => {
+			const slotStart = slot.startTime.hour * 60 + slot.startTime.minute
+			const slotEnd = slot.endTime.hour * 60 + slot.endTime.minute
+
 			return (
-				startTime >= slotStartTime &&
-				endTime <= slotEndTime &&
-				startTime < endTime
+				(startTime >= slotStart && startTime < slotEnd) || // Начало пересекается
+				(endTime > slotStart && endTime <= slotEnd) || // Конец пересекается
+				(startTime <= slotStart && endTime >= slotEnd) // Полностью покрывает занятый слот
 			)
 		})
 	}
@@ -61,36 +70,50 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		minutes: number,
 		increment: number,
 	): [number, number] => {
+		let attempts = 0
+		const maxAttempts = 180 // 15 часов * 12 (5-минутные интервалы)
+
 		let newHours = hours
 		let newMinutes = minutes
-		while (
-			!isIntervalAvailable(
-				newHours,
-				newMinutes,
-				(newHours + 1) % 24,
-				newMinutes,
-			)
-		) {
+
+		while (attempts < maxAttempts) {
+			if (newHours < 8) {
+				newHours = 8
+				newMinutes = 0
+			}
+			if (newHours >= 22) {
+				newHours = 8
+				newMinutes = 0
+			}
+
+			const [endHours, endMinutes] = calculateEndTime(newHours, newMinutes)
+
+			if (isIntervalAvailable(newHours, newMinutes, endHours, endMinutes)) {
+				return [newHours, newMinutes]
+			}
+
 			newMinutes += increment
 			if (newMinutes >= 60) {
-				newHours = (newHours + 1) % 24
+				newHours = newHours + 1
 				newMinutes = 0
-			} else if (newMinutes < 0) {
-				newHours = (newHours - 1 + 24) % 24
-				newMinutes = 55
 			}
+
+			attempts++
 		}
-		return [newHours, newMinutes]
+
+		return [8, 0] // Возвращаем начало рабочего дня, если не нашли свободный слот
 	}
 
 	const calculateEndTime = (
 		startHours: number,
 		startMinutes: number,
 	): [number, number] => {
-		if (!lessonDuration) return [(startHours + 1) % 24, startMinutes]
-		let endMinutes = startMinutes + lessonDuration
-		let endHours = (startHours + Math.floor(endMinutes / 60)) % 24
-		endMinutes = endMinutes % 60
+		if (!lessonDuration) return [startHours + 1, startMinutes]
+
+		let totalMinutes = startMinutes + lessonDuration
+		let endHours = startHours + Math.floor(totalMinutes / 60)
+		let endMinutes = totalMinutes % 60
+
 		return [endHours, endMinutes]
 	}
 
@@ -99,8 +122,17 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		minutesIncrement: number,
 	) => {
 		if (isSelectingEndTime) {
-			let newEndHours = (endHours + hoursIncrement + 24) % 24
-			let newEndMinutes = (endMinutes + minutesIncrement + 60) % 60
+			let newEndHours = endHours + hoursIncrement
+			let newEndMinutes = endMinutes + minutesIncrement
+
+			if (newEndMinutes >= 60) {
+				newEndHours += Math.floor(newEndMinutes / 60)
+				newEndMinutes = newEndMinutes % 60
+			} else if (newEndMinutes < 0) {
+				newEndHours -= 1
+				newEndMinutes = 60 + newEndMinutes
+			}
+
 			const startTime = selectedHours * 60 + selectedMinutes
 			const newEndTime = newEndHours * 60 + newEndMinutes
 
@@ -121,20 +153,20 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				setEndMinutes(newEndMinutes)
 				setErrorMessage('')
 			} else {
-				setErrorMessage('Выбранный интервал недоступен')
+				setErrorMessage('Выбранное время пересекается с занятым слотом')
 			}
 		} else {
-			let newHours = (selectedHours + hoursIncrement + 24) % 24
-			let newMinutes = (selectedMinutes + minutesIncrement + 60) % 60
-			;[newHours, newMinutes] = findNextAvailableTime(
-				newHours,
-				newMinutes,
+			const [newHours, newMinutes] = findNextAvailableTime(
+				selectedHours + hoursIncrement,
+				selectedMinutes + minutesIncrement,
 				minutesIncrement || 5,
 			)
+
 			const [newEndHours, newEndMinutes] = calculateEndTime(
 				newHours,
 				newMinutes,
 			)
+
 			if (
 				isIntervalAvailable(newHours, newMinutes, newEndHours, newEndMinutes)
 			) {
@@ -144,18 +176,31 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				setEndMinutes(newEndMinutes)
 				setErrorMessage('')
 			} else {
-				setErrorMessage('Выбранный интервал недоступен')
+				setErrorMessage('Выбранное время пересекается с занятым слотом')
 			}
 		}
 	}
 
 	useEffect(() => {
-		const [startHours, startMinutes] = findNextAvailableTime(8, 0, 5)
-		const [endHours, endMinutes] = calculateEndTime(startHours, startMinutes)
-		setSelectedHours(startHours)
-		setSelectedMinutes(startMinutes)
-		setEndHours(endHours)
-		setEndMinutes(endMinutes)
+		const initializeTime = () => {
+			// Начинаем с 8:00
+			let initHours = 8
+			let initMinutes = 0
+
+			const [newHours, newMinutes] = findNextAvailableTime(
+				initHours,
+				initMinutes,
+				5,
+			)
+			const [endHours, endMinutes] = calculateEndTime(newHours, newMinutes)
+
+			setSelectedHours(newHours)
+			setSelectedMinutes(newMinutes)
+			setEndHours(endHours)
+			setEndMinutes(endMinutes)
+		}
+
+		initializeTime()
 	}, [currentDay, freeSlots, lessonDuration])
 
 	const handleSave = () => {
@@ -171,49 +216,40 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				onTimeChange(selectedHours, selectedMinutes, endHours, endMinutes)
 				onExit && onExit()
 			} else {
-				setErrorMessage('Выбранный интервал недоступен')
+				setErrorMessage('Выбранное время пересекается с занятым слотом')
 			}
 		} else {
 			setIsSelectingEndTime(true)
 		}
 	}
 
-	const handleSlotClick = (slot) => {
-		const newStartHours = slot.start.hour
-		const newStartMinutes = slot.start.minute
-		const [newEndHours, newEndMinutes] = calculateEndTime(
-			newStartHours,
-			newStartMinutes,
-		)
-		if (
-			isIntervalAvailable(
-				newStartHours,
-				newStartMinutes,
-				newEndHours,
-				newEndMinutes,
+	// Получаем отсортированные занятые слоты
+	const getSortedOccupiedSlots = () => {
+		return [...occupiedSlotsForDay]
+			.sort((a, b) => {
+				const timeA = a.startTime.hour * 60 + a.startTime.minute
+				const timeB = b.startTime.hour * 60 + b.startTime.minute
+				return timeA - timeB
+			})
+			.filter(
+				(slot) =>
+					slot.startTime.hour !== 0 ||
+					slot.startTime.minute !== 0 ||
+					slot.endTime.hour !== 0 ||
+					slot.endTime.minute !== 0,
 			)
-		) {
-			setSelectedHours(newStartHours)
-			setSelectedMinutes(newStartMinutes)
-			setEndHours(newEndHours)
-			setEndMinutes(newEndMinutes)
-			setErrorMessage('')
-		} else {
-			setErrorMessage('Выбранный интервал недоступен')
-		}
 	}
 
 	return (
 		<div className={s.wrapper}>
 			<div className={s.timePicker}>
-				<div
-					style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start', textAlign: 'center'}}>
+				<div className={s.header}>
 					<h1 className={s.Title}>
 						{isSelectingEndTime
 							? 'Время окончания занятия'
 							: 'Время начала занятия'}
 					</h1>
-					<button onClick={onExit} style={{position: 'relative'}}>
+					<button onClick={onExit} className={s.closeButton}>
 						<CloseIcon style={{color: 'red'}} />
 					</button>
 				</div>
@@ -261,21 +297,18 @@ const TimePicker: React.FC<TimePickerProps> = ({
 					{isSelectingEndTime ? 'Сохранить' : 'Далее'}
 				</button>
 			</div>
-			{addBlock && (
+			{addBlock && getSortedOccupiedSlots().length > 0 && (
 				<div className={s.freeSlotContainer}>
-					<h2 className={s.freeSlotTitle}>Свободные слоты на {currentDay}:</h2>
+					<h2 className={s.freeSlotTitle}>Занятые слоты на {currentDay}:</h2>
 					<div className={s.freeSlotList}>
-						{currentDaySlots.map((slot, index) => (
-							<div
-								key={index}
-								className={s.freeSlot}
-								onClick={() => handleSlotClick(slot)}>
-								{`${slot.start.hour.toString().padStart(2, '0')}:${slot.start.minute
+						{getSortedOccupiedSlots().map((slot, index) => (
+							<div key={index} className={s.occupiedSlot}>
+								{`${slot.startTime.hour.toString().padStart(2, '0')}:${slot.startTime.minute
 									.toString()
 									.padStart(2, '0')} - 
-                 ${slot.end.hour.toString().padStart(2, '0')}:${slot.end.minute
-										.toString()
-										.padStart(2, '0')}`}
+                ${slot.endTime.hour.toString().padStart(2, '0')}:${slot.endTime.minute
+									.toString()
+									.padStart(2, '0')}`}
 							</div>
 						))}
 					</div>

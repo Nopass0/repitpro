@@ -802,181 +802,411 @@ function formatTime(time) {
 //   }
 // }
 
+// export async function addStudent(data, socket: any) {
+//   try {
+//     const {
+//       nameStudent,
+//       phoneNumber,
+//       contactFace,
+//       email,
+//       prePayCost,
+//       prePayDate,
+//       costOneLesson,
+//       commentStudent,
+//       prePay,
+//       linkStudent,
+//       costStudent,
+//       audios,
+//       cost,
+//       historyLessons,
+//       files,
+//       items,
+//       token,
+//     } = data;
+
+//     const token_ = await db.token.findFirst({ where: { token } });
+
+//     if (!token_) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const userId = token_.userId;
+
+//     if (!userId) {
+//       throw new Error("Invalid token");
+//     }
+
+//     const createdGroup = await db.group.create({
+//       data: {
+//         groupName: "",
+//         userId,
+//         historyLessons: JSON.parse(JSON.stringify(historyLessons)),
+//         items: {
+//           create: items.map((item) => ({
+//             itemName: item.itemName,
+//             tryLessonCheck: item.tryLessonCheck || false,
+//             tryLessonCost: item.tryLessonCost || "",
+//             todayProgramStudent: item.todayProgramStudent || "",
+//             targetLesson: item.targetLesson || "",
+//             programLesson: item.programLesson || "",
+//             typeLesson: Number(item.typeLesson) || 1,
+//             placeLesson: item.placeLesson || "",
+//             timeLesson: item.timeLesson || "",
+//             valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
+//             startLesson: item.startLesson ? new Date(item.startLesson) : null,
+//             endLesson: item.endLesson ? new Date(item.endLesson) : null,
+//             nowLevel: item.nowLevel || 0,
+//             costOneLesson: item.costOneLesson || "",
+//             lessonDuration: item.lessonDuration || null,
+//             timeLinesArray: item.timeLinesArray || {},
+//             userId,
+//           })),
+//         },
+//         students: {
+//           create: [
+//             {
+//               nameStudent,
+//               contactFace,
+//               phoneNumber,
+//               email,
+//               prePay: prePay || [],
+//               address: "",
+//               linkStudent: linkStudent || "",
+//               costStudent: costStudent || "",
+//               commentStudent,
+//               prePayCost,
+//               prePayDate: prePayDate ? new Date(prePayDate) : null,
+//               selectedDate: null,
+//               storyLesson: "",
+//               costOneLesson,
+//               targetLessonStudent: "",
+//               todayProgramStudent: "",
+//               userId,
+//             },
+//           ],
+//         },
+//       },
+//       select: {
+//         id: true,
+//         _count: true,
+//         isArchived: true,
+//         groupName: true,
+//         students: true,
+//         userId: true,
+//         items: true,
+//       },
+//     });
+
+//     for (const item of createdGroup.items) {
+//       const startDate = new Date(item.startLesson);
+//       const endDate = new Date(item.endLesson);
+//       const daysToAdd = differenceInDays(endDate, startDate);
+//       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+//         addDays(startDate, i)
+//       );
+
+//       for (const date of dateRange) {
+//         const dayOfWeek = getDay(date);
+//         const scheduleForDay = item.timeLinesArray[dayOfWeek];
+
+//         if (!scheduleForDay) {
+//           console.warn(
+//             `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+//           );
+//           continue;
+//         }
+
+//         const cond =
+//           scheduleForDay.startTime.hour === 0 &&
+//           scheduleForDay.startTime.minute === 0 &&
+//           scheduleForDay.endTime.hour === 0 &&
+//           scheduleForDay.endTime.minute === 0;
+
+//         if (!cond) {
+//           await db.studentSchedule.create({
+//             data: {
+//               day: date.getDate().toString(),
+//               groupId: createdGroup.id,
+//               workCount: 0,
+//               lessonsCount: 1,
+//               lessonsPrice: Number(item.costOneLesson),
+//               workPrice: 0,
+//               month: (date.getMonth() + 1).toString(),
+//               timeLinesArray: item.timeLinesArray,
+//               isChecked: false,
+//               itemName: item.itemName,
+//               studentName: nameStudent,
+//               typeLesson: item.typeLesson,
+//               year: date.getFullYear().toString(),
+//               itemId: item.id,
+//               userId,
+//             },
+//           });
+//         }
+//       }
+//     }
+
+//     let filePaths = [];
+
+//     if (files.length > 0) {
+//       filePaths = await upload(files, userId, "", (ids) => {
+//         filePaths = ids;
+//       });
+//     }
+
+//     let audiosIds = [];
+
+//     if (audios.length > 0) {
+//       audiosIds = await upload(audios, userId, "student/audio", (ids) => {
+//         audiosIds = ids;
+//       });
+//     }
+
+//     filePaths = [...filePaths, ...audiosIds];
+
+//     await db.student.update({
+//       where: {
+//         id: createdGroup.students[0].id,
+//       },
+//       data: {
+//         files: filePaths,
+//       },
+//     });
+
+//     socket.emit("addStudent", { ok: true });
+//   } catch (error) {
+//     console.error("Error creating group:", error);
+//     socket.emit("addStudent", { error: error.message, ok: false });
+//   }
+// }
+
 export async function addStudent(data, socket: any) {
+  const TIMEOUT = 30000;
+  let timeoutId;
+  let operationCompleted = false;
+
   try {
-    const {
-      nameStudent,
-      phoneNumber,
-      contactFace,
-      email,
-      prePayCost,
-      prePayDate,
-      costOneLesson,
-      commentStudent,
-      prePay,
-      linkStudent,
-      costStudent,
-      audios,
-      cost,
-      historyLessons,
-      files,
-      items,
-      token,
-    } = data;
-
-    const token_ = await db.token.findFirst({ where: { token } });
-
-    if (!token_) {
-      throw new Error("Invalid token");
-    }
-
-    const userId = token_.userId;
-
-    if (!userId) {
-      throw new Error("Invalid token");
-    }
-
-    const createdGroup = await db.group.create({
-      data: {
-        groupName: "",
-        userId,
-        historyLessons: JSON.parse(JSON.stringify(historyLessons)),
-        items: {
-          create: items.map((item) => ({
-            itemName: item.itemName,
-            tryLessonCheck: item.tryLessonCheck || false,
-            tryLessonCost: item.tryLessonCost || "",
-            todayProgramStudent: item.todayProgramStudent || "",
-            targetLesson: item.targetLesson || "",
-            programLesson: item.programLesson || "",
-            typeLesson: Number(item.typeLesson) || 1,
-            placeLesson: item.placeLesson || "",
-            timeLesson: item.timeLesson || "",
-            valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
-            startLesson: item.startLesson ? new Date(item.startLesson) : null,
-            endLesson: item.endLesson ? new Date(item.endLesson) : null,
-            nowLevel: item.nowLevel || 0,
-            costOneLesson: item.costOneLesson || "",
-            lessonDuration: item.lessonDuration || null,
-            timeLinesArray: item.timeLinesArray || {},
-            userId,
-          })),
-        },
-        students: {
-          create: [
-            {
-              nameStudent,
-              contactFace,
-              phoneNumber,
-              email,
-              prePay: prePay || [],
-              address: "",
-              linkStudent: linkStudent || "",
-              costStudent: costStudent || "",
-              commentStudent,
-              prePayCost,
-              prePayDate: prePayDate ? new Date(prePayDate) : null,
-              selectedDate: null,
-              storyLesson: "",
-              costOneLesson,
-              targetLessonStudent: "",
-              todayProgramStudent: "",
-              userId,
-            },
-          ],
-        },
-      },
-      select: {
-        id: true,
-        _count: true,
-        isArchived: true,
-        groupName: true,
-        students: true,
-        userId: true,
-        items: true,
-      },
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        if (!operationCompleted) {
+          reject(new Error('Operation timed out'));
+        }
+      }, TIMEOUT);
     });
 
-    for (const item of createdGroup.items) {
-      const startDate = new Date(item.startLesson);
-      const endDate = new Date(item.endLesson);
-      const daysToAdd = differenceInDays(endDate, startDate);
-      const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-        addDays(startDate, i)
-      );
-
-      for (const date of dateRange) {
-        const dayOfWeek = getDay(date);
-        const scheduleForDay = item.timeLinesArray[dayOfWeek];
-
-        if (!scheduleForDay) {
-          console.warn(
-            `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
-          );
-          continue;
+    const addStudentPromise = async () => {
+      // Проверяем, не существует ли уже студент с такими данными
+      const existingStudent = await db.student.findFirst({
+        where: {
+          nameStudent: data.nameStudent,
+          phoneNumber: data.phoneNumber,
+          email: data.email,
+          userId: (await db.token.findFirst({ where: { token: data.token } }))?.userId,
+          createdAt: {
+            gte: new Date(Date.now() - 5000) // Проверяем последние 5 секунд
+          }
         }
+      });
 
-        const cond =
-          scheduleForDay.startTime.hour === 0 &&
-          scheduleForDay.startTime.minute === 0 &&
-          scheduleForDay.endTime.hour === 0 &&
-          scheduleForDay.endTime.minute === 0;
-
-        if (!cond) {
-          await db.studentSchedule.create({
-            data: {
-              day: date.getDate().toString(),
-              groupId: createdGroup.id,
-              workCount: 0,
-              lessonsCount: 1,
-              lessonsPrice: Number(item.costOneLesson),
-              workPrice: 0,
-              month: (date.getMonth() + 1).toString(),
-              timeLinesArray: item.timeLinesArray,
-              isChecked: false,
-              itemName: item.itemName,
-              studentName: nameStudent,
-              typeLesson: item.typeLesson,
-              year: date.getFullYear().toString(),
-              itemId: item.id,
-              userId,
-            },
-          });
-        }
+      if (existingStudent) {
+        throw new Error("Студент уже создается или был недавно создан");
       }
-    }
 
-    let filePaths = [];
+      const {
+        nameStudent,
+        phoneNumber,
+        contactFace,
+        email,
+        prePayCost,
+        prePayDate,
+        costOneLesson,
+        commentStudent,
+        prePay,
+        linkStudent,
+        costStudent,
+        audios = [],
+        historyLessons = [],
+        files = [],
+        items,
+        token,
+        links = [],
+      } = data;
 
-    if (files.length > 0) {
-      filePaths = await upload(files, userId, "", (ids) => {
-        filePaths = ids;
+      const token_ = await db.token.findFirst({ where: { token } });
+      if (!token_) throw new Error("Invalid token");
+      const userId = token_.userId;
+      if (!userId) throw new Error("Invalid token");
+
+      // Создаем группу и связанные данные в одной транзакции
+      const createdGroup = await db.$transaction(async (prisma) => {
+        const group = await prisma.group.create({
+          data: {
+            groupName: "",
+            userId,
+            historyLessons: JSON.parse(JSON.stringify(historyLessons)),
+            items: {
+              create: items.map((item) => ({
+                itemName: item.itemName,
+                tryLessonCheck: item.tryLessonCheck || false,
+                tryLessonCost: item.tryLessonCost || "",
+                todayProgramStudent: item.todayProgramStudent || "",
+                targetLesson: item.targetLesson || "",
+                programLesson: item.programLesson || "",
+                typeLesson: Number(item.typeLesson) || 1,
+                placeLesson: item.placeLesson || "",
+                timeLesson: item.timeLesson || "",
+                valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
+                startLesson: item.startLesson ? new Date(item.startLesson) : null,
+                endLesson: item.endLesson ? new Date(item.endLesson) : null,
+                nowLevel: item.nowLevel || 0,
+                costOneLesson: item.costOneLesson || "",
+                lessonDuration: item.lessonDuration || null,
+                timeLinesArray: item.timeLinesArray || {},
+                userId,
+              })),
+            },
+            students: {
+              create: [
+                {
+                  nameStudent,
+                  contactFace,
+                  phoneNumber,
+                  email,
+                  prePay: prePay || [],
+                  address: "",
+                  linkStudent: linkStudent || "",
+                  costStudent: costStudent || "",
+                  commentStudent,
+                  prePayCost,
+                  prePayDate: prePayDate ? new Date(prePayDate) : null,
+                  selectedDate: null,
+                  storyLesson: "",
+                  costOneLesson,
+                  targetLessonStudent: "",
+                  todayProgramStudent: "",
+                  userId,
+                },
+              ],
+            },
+          },
+          select: {
+            id: true,
+            _count: true,
+            isArchived: true,
+            groupName: true,
+            students: true,
+            userId: true,
+            items: true,
+          },
+        });
+
+        // Создаем расписание
+        for (const item of group.items) {
+          const startDate = new Date(item.startLesson);
+          const endDate = new Date(item.endLesson);
+          const daysToAdd = differenceInDays(endDate, startDate);
+          const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
+            addDays(startDate, i)
+          );
+
+          for (const date of dateRange) {
+            const dayOfWeek = getDay(date);
+            const scheduleForDay = item.timeLinesArray[dayOfWeek];
+
+            if (!scheduleForDay) continue;
+
+            const cond =
+              scheduleForDay.startTime.hour === 0 &&
+              scheduleForDay.startTime.minute === 0 &&
+              scheduleForDay.endTime.hour === 0 &&
+              scheduleForDay.endTime.minute === 0;
+
+            if (!cond) {
+              await prisma.studentSchedule.create({
+                data: {
+                  day: date.getDate().toString(),
+                  groupId: group.id,
+                  workCount: 0,
+                  lessonsCount: 1,
+                  lessonsPrice: Number(item.costOneLesson),
+                  workPrice: 0,
+                  month: (date.getMonth() + 1).toString(),
+                  timeLinesArray: item.timeLinesArray,
+                  isChecked: false,
+                  itemName: item.itemName,
+                  studentName: nameStudent,
+                  typeLesson: item.typeLesson,
+                  year: date.getFullYear().toString(),
+                  itemId: item.id,
+                  userId,
+                },
+              });
+            }
+          }
+        }
+
+        return group;
       });
+
+      // Обрабатываем файлы
+      const [filePaths, audiosIds] = await Promise.all([
+        files.length > 0 ? upload(files, userId, "") : [],
+        audios.length > 0 ? upload(audios, userId, "student/audio") : []
+      ]);
+
+      const allFiles = [...filePaths, ...audiosIds];
+
+      if (allFiles.length > 0 && createdGroup.students?.[0]?.id) {
+        await db.student.update({
+          where: { id: createdGroup.students[0].id },
+          data: { files: allFiles },
+        });
+      }
+
+      // Обрабатываем ссылки
+      if (links?.length > 0 && createdGroup.students?.[0]?.id) {
+        const studentId = createdGroup.students[0].id;
+        await db.link.upsert({
+          where: {
+            tag_userId: {
+              tag: "addStudent",
+              userId
+            }
+          },
+          update: {
+            links,
+            linkedId: studentId,
+          },
+          create: {
+            tag: "addStudent",
+            linkedId: studentId,
+            links,
+            userId,
+          },
+        });
+      }
+
+      operationCompleted = true;
+      return createdGroup;
+    };
+
+    const result = await Promise.race([addStudentPromise(), timeoutPromise]);
+    
+    if (!operationCompleted) {
+      throw new Error("Operation did not complete successfully");
     }
-
-    let audiosIds = [];
-
-    if (audios.length > 0) {
-      audiosIds = await upload(audios, userId, "student/audio", (ids) => {
-        audiosIds = ids;
-      });
-    }
-
-    filePaths = [...filePaths, ...audiosIds];
-
-    await db.student.update({
-      where: {
-        id: createdGroup.students[0].id,
-      },
-      data: {
-        files: filePaths,
-      },
-    });
 
     socket.emit("addStudent", { ok: true });
+    return result;
+
   } catch (error) {
-    console.error("Error creating group:", error);
-    socket.emit("addStudent", { error: error.message, ok: false });
+    console.error("Error in addStudent:", error);
+    socket.emit("addStudent", { 
+      error: error.message, 
+      ok: false 
+    });
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -3477,6 +3707,38 @@ export async function deleteAudio(
 //     socket.emit("lessonCanceled", { success: false, error: error.message });
 //   }
 // }
+
+// Modified getLinksByLinkedId function with optional links handling
+export async function getLinksByLinkedId(data: any, socket: any) {
+  try {
+    const { linkedId, token } = data;
+
+    const token_ = await db.token.findFirst({
+      where: { token },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const userId = token_.userId;
+
+    const links = await db.link.findFirst({
+      where: { linkedId, userId },
+    });
+
+    // Handle case where no links exist
+    socket.emit("getLinksByLinkedId", {
+      links: links ? JSON.parse(JSON.stringify(links)).links : [],
+    });
+  } catch (error) {
+    console.error("Error in getLinksByLinkedId:", error);
+    socket.emit("getLinksByLinkedId", {
+      error: error.message,
+      links: [],
+    });
+  }
+}
 
 export async function cancelLesson(
   data: { id: string; token: string },
