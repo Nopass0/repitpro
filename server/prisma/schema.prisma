@@ -79,6 +79,8 @@ model Group {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model TimeLine {
@@ -154,6 +156,8 @@ model Student {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId String
+
+  @@index([nameStudent, phoneNumber, email, userId])
 }
 
 model StudentSchedule {
@@ -193,6 +197,9 @@ model StudentSchedule {
 
 
   workStages  Json?
+
+  @@index([groupId])
+  @@index([userId])
   
 }
 

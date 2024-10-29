@@ -16,12 +16,7 @@ import mime from "mime-types";
 import { getBufferByFilePath, upload, uploadFiles } from "../files/files";
 import { cache, strongCache } from "utils/Cache";
 import { deleteFileById } from "utils/filesystem";
-
-// Получение дня недели, начиная с понедельника
-function getDay(date) {
-  const dayIndex = date.getDay() - 1;
-  return dayIndex === -1 ? 6 : dayIndex;
-}
+import { getDay } from "../utils/date.ts";
 
 // Массив дней недели, начиная с понедельника
 const days = [
@@ -980,236 +975,6 @@ function formatTime(time) {
 //   }
 // }
 
-export async function addStudent(data, socket: any) {
-  const TIMEOUT = 30000;
-  let timeoutId;
-  let operationCompleted = false;
-
-  try {
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => {
-        if (!operationCompleted) {
-          reject(new Error('Operation timed out'));
-        }
-      }, TIMEOUT);
-    });
-
-    const addStudentPromise = async () => {
-      // Проверяем, не существует ли уже студент с такими данными
-      const existingStudent = await db.student.findFirst({
-        where: {
-          nameStudent: data.nameStudent,
-          phoneNumber: data.phoneNumber,
-          email: data.email,
-          userId: (await db.token.findFirst({ where: { token: data.token } }))?.userId,
-          createdAt: {
-            gte: new Date(Date.now() - 5000) // Проверяем последние 5 секунд
-          }
-        }
-      });
-
-      if (existingStudent) {
-        throw new Error("Студент уже создается или был недавно создан");
-      }
-
-      const {
-        nameStudent,
-        phoneNumber,
-        contactFace,
-        email,
-        prePayCost,
-        prePayDate,
-        costOneLesson,
-        commentStudent,
-        prePay,
-        linkStudent,
-        costStudent,
-        audios = [],
-        historyLessons = [],
-        files = [],
-        items,
-        token,
-        links = [],
-      } = data;
-
-      const token_ = await db.token.findFirst({ where: { token } });
-      if (!token_) throw new Error("Invalid token");
-      const userId = token_.userId;
-      if (!userId) throw new Error("Invalid token");
-
-      // Создаем группу и связанные данные в одной транзакции
-      const createdGroup = await db.$transaction(async (prisma) => {
-        const group = await prisma.group.create({
-          data: {
-            groupName: "",
-            userId,
-            historyLessons: JSON.parse(JSON.stringify(historyLessons)),
-            items: {
-              create: items.map((item) => ({
-                itemName: item.itemName,
-                tryLessonCheck: item.tryLessonCheck || false,
-                tryLessonCost: item.tryLessonCost || "",
-                todayProgramStudent: item.todayProgramStudent || "",
-                targetLesson: item.targetLesson || "",
-                programLesson: item.programLesson || "",
-                typeLesson: Number(item.typeLesson) || 1,
-                placeLesson: item.placeLesson || "",
-                timeLesson: item.timeLesson || "",
-                valueMuiSelectArchive: item.valueMuiSelectArchive || 1,
-                startLesson: item.startLesson ? new Date(item.startLesson) : null,
-                endLesson: item.endLesson ? new Date(item.endLesson) : null,
-                nowLevel: item.nowLevel || 0,
-                costOneLesson: item.costOneLesson || "",
-                lessonDuration: item.lessonDuration || null,
-                timeLinesArray: item.timeLinesArray || {},
-                userId,
-              })),
-            },
-            students: {
-              create: [
-                {
-                  nameStudent,
-                  contactFace,
-                  phoneNumber,
-                  email,
-                  prePay: prePay || [],
-                  address: "",
-                  linkStudent: linkStudent || "",
-                  costStudent: costStudent || "",
-                  commentStudent,
-                  prePayCost,
-                  prePayDate: prePayDate ? new Date(prePayDate) : null,
-                  selectedDate: null,
-                  storyLesson: "",
-                  costOneLesson,
-                  targetLessonStudent: "",
-                  todayProgramStudent: "",
-                  userId,
-                },
-              ],
-            },
-          },
-          select: {
-            id: true,
-            _count: true,
-            isArchived: true,
-            groupName: true,
-            students: true,
-            userId: true,
-            items: true,
-          },
-        });
-
-        // Создаем расписание
-        for (const item of group.items) {
-          const startDate = new Date(item.startLesson);
-          const endDate = new Date(item.endLesson);
-          const daysToAdd = differenceInDays(endDate, startDate);
-          const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-            addDays(startDate, i)
-          );
-
-          for (const date of dateRange) {
-            const dayOfWeek = getDay(date);
-            const scheduleForDay = item.timeLinesArray[dayOfWeek];
-
-            if (!scheduleForDay) continue;
-
-            const cond =
-              scheduleForDay.startTime.hour === 0 &&
-              scheduleForDay.startTime.minute === 0 &&
-              scheduleForDay.endTime.hour === 0 &&
-              scheduleForDay.endTime.minute === 0;
-
-            if (!cond) {
-              await prisma.studentSchedule.create({
-                data: {
-                  day: date.getDate().toString(),
-                  groupId: group.id,
-                  workCount: 0,
-                  lessonsCount: 1,
-                  lessonsPrice: Number(item.costOneLesson),
-                  workPrice: 0,
-                  month: (date.getMonth() + 1).toString(),
-                  timeLinesArray: item.timeLinesArray,
-                  isChecked: false,
-                  itemName: item.itemName,
-                  studentName: nameStudent,
-                  typeLesson: item.typeLesson,
-                  year: date.getFullYear().toString(),
-                  itemId: item.id,
-                  userId,
-                },
-              });
-            }
-          }
-        }
-
-        return group;
-      });
-
-      // Обрабатываем файлы
-      const [filePaths, audiosIds] = await Promise.all([
-        files.length > 0 ? upload(files, userId, "") : [],
-        audios.length > 0 ? upload(audios, userId, "student/audio") : []
-      ]);
-
-      const allFiles = [...filePaths, ...audiosIds];
-
-      if (allFiles.length > 0 && createdGroup.students?.[0]?.id) {
-        await db.student.update({
-          where: { id: createdGroup.students[0].id },
-          data: { files: allFiles },
-        });
-      }
-
-      // Обрабатываем ссылки
-      if (links?.length > 0 && createdGroup.students?.[0]?.id) {
-        const studentId = createdGroup.students[0].id;
-        await db.link.upsert({
-          where: {
-            tag_userId: {
-              tag: "addStudent",
-              userId
-            }
-          },
-          update: {
-            links,
-            linkedId: studentId,
-          },
-          create: {
-            tag: "addStudent",
-            linkedId: studentId,
-            links,
-            userId,
-          },
-        });
-      }
-
-      operationCompleted = true;
-      return createdGroup;
-    };
-
-    const result = await Promise.race([addStudentPromise(), timeoutPromise]);
-    
-    if (!operationCompleted) {
-      throw new Error("Operation did not complete successfully");
-    }
-
-    socket.emit("addStudent", { ok: true });
-    return result;
-
-  } catch (error) {
-    console.error("Error in addStudent:", error);
-    socket.emit("addStudent", { 
-      error: error.message, 
-      ok: false 
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 export async function getStudentList(token, socket: any) {
   try {
     const userId = await db.token.findFirst({
@@ -1331,34 +1096,34 @@ function calculateRemainingPrePay(student: any, currentDate: Date): number {
 
   return Math.max(remainingPrePay, 0);
 }
-function calculateRemainingPrePay(student: any, currentDate: Date): number {
-  let remainingPrePay = 0;
-  let lastPrePayDate = new Date(0);
+// function calculateRemainingPrePay(student: any, currentDate: Date): number {
+//   let remainingPrePay = 0;
+//   let lastPrePayDate = new Date(0);
 
-  // Находим последнюю предоплату перед или равную текущей дате
-  const sortedPrePay = student.prePay.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  for (const pay of sortedPrePay) {
-    const payDate = new Date(pay.date);
-    if (payDate <= currentDate) {
-      remainingPrePay = parseFloat(pay.cost);
-      lastPrePayDate = payDate;
-      break;
-    }
-  }
+//   // Находим последнюю предоплату перед или равную текущей дате
+//   const sortedPrePay = student.prePay.sort(
+//     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+//   );
+//   for (const pay of sortedPrePay) {
+//     const payDate = new Date(pay.date);
+//     if (payDate <= currentDate) {
+//       remainingPrePay = parseFloat(pay.cost);
+//       lastPrePayDate = payDate;
+//       break;
+//     }
+//   }
 
-  // Вычитаем стоимость уроков между последней предоплатой и текущей датой
-  const historyLessons = student.group.historyLessons[0];
-  for (const lesson of historyLessons) {
-    const lessonDate = new Date(lesson.date);
-    if (lessonDate > lastPrePayDate && lessonDate <= currentDate) {
-      remainingPrePay -= parseFloat(lesson.price);
-    }
-  }
+//   // Вычитаем стоимость уроков между последней предоплатой и текущей датой
+//   const historyLessons = student.group.historyLessons[0];
+//   for (const lesson of historyLessons) {
+//     const lessonDate = new Date(lesson.date);
+//     if (lessonDate > lastPrePayDate && lessonDate <= currentDate) {
+//       remainingPrePay -= parseFloat(lesson.price);
+//     }
+//   }
 
-  return Math.max(remainingPrePay, 0);
-}
+//   return Math.max(remainingPrePay, 0);
+// }
 
 export async function getStudentsByDate(
   data: {

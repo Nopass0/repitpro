@@ -2,7 +2,6 @@ import io from "./socket";
 import { login } from "./auth/login";
 import { register } from "./auth/register";
 import db from "./db";
-import { strongCache, cache } from "utils/Cache";
 
 import {
   calendar,
@@ -11,7 +10,6 @@ import {
   getByGroupScheduleId,
 } from "./calendar/calendar";
 import {
-  addStudent,
   cancelLesson,
   createStudentSchedule,
   deleteAudio,
@@ -26,6 +24,7 @@ import {
   updateStudentSchedule,
   // updateStudents,
 } from "./cards/student";
+import { addStudent } from "./cards/student/add";
 import { getUserData, setUserData, uploadUsersFiles } from "./auth/user";
 import {
   addGroup,
@@ -66,7 +65,7 @@ import {
   getLinksByLinkedId,
   getLinksByTag,
   getLinksByUser,
-} from "cards/links";
+} from "./cards/links";
 
 io.on("connection", (socket) => {
   console.log("a user connected");

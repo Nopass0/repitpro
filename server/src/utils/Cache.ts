@@ -1,136 +1,158 @@
-import fs from "fs";
-import path from "path";
+import { Database } from "bun:sqlite";
 
-type CacheData = {
-  [key: string]: { value: any; expiresAt: number };
-};
+interface CacheOptions {
+  filename?: string;
+  cleanupInterval?: number;
+  maxSize?: number;
+}
 
-type StrongCacheData = {
-  values: any[];
-};
+export class UltraCache {
+  private db: Database;
+  private cleanupTimer: Timer | null = null;
+  private maxSize: number;
+  private prepared: {
+    get: any;
+    set: any;
+    delete: any;
+    clear: any;
+    cleanup: any;
+    size: any;
+    oldest: any;
+  };
 
-class Cache {
-  private cache: Map<string, { value: any; expiresAt: number }>;
-  private cacheFilePath: string;
+  constructor(options: CacheOptions = {}) {
+    const {
+      filename = ":memory:",
+      cleanupInterval = 60000,
+      maxSize = 10000,
+    } = options;
 
-  constructor(cacheFilePath: string) {
-    this.cache = new Map();
-    this.cacheFilePath = cacheFilePath;
-    this.loadCache();
-  }
+    this.maxSize = maxSize;
+    this.db = new Database(filename);
 
-  private loadCache(): void {
-    try {
-      const data = fs.readFileSync(this.cacheFilePath, "utf-8");
-      const parsedData: CacheData = JSON.parse(data);
-      const now = Date.now();
-      for (const key in parsedData) {
-        if (parsedData.hasOwnProperty(key)) {
-          const { value, expiresAt } = parsedData[key];
-          if (expiresAt > now) {
-            this.cache.set(key, { value, expiresAt });
-          }
-        }
-      }
-    } catch (error) {
-      console.log("Error loading cache:", error);
+    // Включаем WAL режим для максимальной производительности
+    this.db.exec("PRAGMA journal_mode = WAL;");
+    this.db.exec("PRAGMA synchronous = NORMAL;");
+    this.db.exec("PRAGMA cache_size = -64000;"); // 64MB cache
+
+    // Создаем таблицу с индексом по ключу для быстрого поиска
+    // Теперь value может быть NULL
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS cache (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+        expires_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_expires_at ON cache(expires_at);
+    `);
+
+    // Подготавливаем запросы
+    this.prepared = {
+      get: this.db.query("SELECT value, expires_at FROM cache WHERE key = ?1"),
+      set: this.db.query(
+        "INSERT OR REPLACE INTO cache (key, value, expires_at) VALUES (?1, ?2, ?3)"
+      ),
+      delete: this.db.query("DELETE FROM cache WHERE key = ?1"),
+      clear: this.db.query("DELETE FROM cache"),
+      cleanup: this.db.query("DELETE FROM cache WHERE expires_at <= ?1"),
+      size: this.db.query("SELECT COUNT(*) as count FROM cache"),
+      oldest: this.db.query(
+        "SELECT key FROM cache ORDER BY expires_at ASC LIMIT ?1"
+      ),
+    };
+
+    if (cleanupInterval > 0) {
+      this.startCleanup(cleanupInterval);
     }
-  }
-
-  saveCache(): void {
-    const cacheData: CacheData = {};
-    const now = Date.now();
-    this.cache.forEach((entry, key) => {
-      if (entry.expiresAt > now) {
-        cacheData[key] = entry;
-      }
-    });
-    fs.writeFileSync(this.cacheFilePath, JSON.stringify(cacheData));
   }
 
   set(key: string, value: any, ttl: number): void {
     const expiresAt = Date.now() + ttl;
-    this.cache.set(key, { value, expiresAt });
-    this.saveCache();
+
+    // Проверяем TTL
+    if (ttl <= 0) {
+      this.delete(key);
+      return;
+    }
+
+    this.db.transaction(() => {
+      const size = this.prepared.size.get().count;
+
+      if (size >= this.maxSize) {
+        const toDelete = Math.ceil(this.maxSize * 0.1);
+        const oldestKeys = this.prepared.oldest.all(toDelete);
+        for (const { key } of oldestKeys) {
+          this.prepared.delete.run(key);
+        }
+      }
+
+      // Обработка специальных значений
+      let valueToStore: string | null = null;
+
+      if (value === undefined) {
+        valueToStore = null;
+      } else if (value === null) {
+        valueToStore = "null";
+      } else {
+        try {
+          valueToStore = JSON.stringify(value);
+        } catch {
+          valueToStore = null;
+        }
+      }
+
+      this.prepared.set.run(key, valueToStore, expiresAt);
+    })();
   }
 
   get(key: string): any | undefined {
-    const entry = this.cache.get(key);
-    if (entry && entry.expiresAt > Date.now()) {
-      return entry.value;
-    } else {
-      this.cache.delete(key);
-      this.saveCache();
+    const result = this.prepared.get.get(key);
+
+    if (!result || result.expires_at <= Date.now()) {
+      this.delete(key);
+      return undefined;
+    }
+
+    if (result.value === null) {
+      return undefined;
+    }
+
+    if (result.value === "null") {
+      return null;
+    }
+
+    try {
+      return JSON.parse(result.value);
+    } catch {
+      this.delete(key);
       return undefined;
     }
   }
 
   delete(key: string): void {
-    this.cache.delete(key);
-    this.saveCache();
+    this.prepared.delete.run(key);
   }
 
   clear(): void {
-    this.cache.clear();
-    this.saveCache();
-  }
-}
-
-class StrongCache {
-  private cache: Set<any>;
-  private cacheFilePath: string;
-
-  constructor(cacheFilePath: string) {
-    this.cache = new Set();
-    this.cacheFilePath = cacheFilePath;
-    this.loadCache();
+    this.prepared.clear.run();
   }
 
-  private loadCache(): void {
-    try {
-      const data = fs.readFileSync(this.cacheFilePath, "utf-8");
-      const parsedData: StrongCacheData = JSON.parse(data);
-      if (parsedData.values && Array.isArray(parsedData.values)) {
-        parsedData.values.forEach((value) => {
-          this.cache.add(value);
-        });
-      } else {
-        console.log("Invalid cache data format.");
-      }
-    } catch (error) {
-      console.log("Error loading cache:", error);
+  private startCleanup(interval: number): void {
+    this.cleanupTimer = setInterval(() => {
+      this.prepared.cleanup.run(Date.now());
+    }, interval);
+  }
+
+  close(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
     }
-  }
-
-  saveCache(): void {
-    const cacheData: StrongCacheData = {
-      values: Array.from(this.cache),
-    };
-    fs.writeFileSync(this.cacheFilePath, JSON.stringify(cacheData));
-  }
-
-  add(value: any): void {
-    this.cache.add(value);
-    this.saveCache();
-  }
-
-  has(value: any): boolean {
-    return this.cache.has(value);
-  }
-
-  delete(value: any): void {
-    this.cache.delete(value);
-    this.saveCache();
-  }
-
-  clear(): void {
-    this.cache.clear();
-    this.saveCache();
+    this.db.close();
   }
 }
 
-// Instances
-const cache = new Cache("CacheMap.json");
-const strongCache = new StrongCache("StrongCacheMap.json");
-
-export { cache, strongCache };
+export const cache = new UltraCache({
+  filename: ":memory:",
+  cleanupInterval: 1000,
+  maxSize: 5,
+});
