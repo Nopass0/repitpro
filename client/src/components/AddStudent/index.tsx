@@ -49,6 +49,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'
 import PrePayRow from '../PrePayRow'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import axios, {isCancel} from 'axios'
+import DeleteConfirmation from '../DeleteConfirmation'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -77,7 +78,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const editedCards = useSelector((state: any) => state.editedCards)
 	const listRef = useRef(null)
 	const [currentStudPosition, setCurrentStudPosition] = useState<number>()
-	const [originalHistoryLesson, setOriginalHistoryLesson] = useState([])
 	const [historyLesson, setHistoryLesson] = useState<any>([])
 
 	const [isEditMode, setIsEditMode] = useState<boolean>(
@@ -93,6 +93,8 @@ const AddStudent = ({}: IAddStudent) => {
 	const addGroupExit = useSelector((state: any) => state.addGroupExit)
 	const addClientExit = useSelector((state: any) => state.addClientExit)
 	const [combinedHistory, setCombinedHistory] = useState([])
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+	const deleteButtonRef = useRef(null)
 
 	// const maxCanceledLessonsRef = useRef(0)
 	// const canceledLessonsRef = useRef([])
@@ -410,6 +412,7 @@ const AddStudent = ({}: IAddStudent) => {
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
+			setOpen(true)
 		})
 
 		socket.on('getGroupByStudentId', (data: any) => {
@@ -1102,15 +1105,6 @@ const AddStudent = ({}: IAddStudent) => {
 				nextPrePayIndex++
 			}
 
-			if (lesson.isPaid) {
-				remainingPrePayment -= Math.max(
-					0,
-					lesson.isPaid ? Number(lesson.price) : 0,
-				)
-
-				return {...lesson, isPaid: lesson.isPaid}
-			}
-
 			// Проверяем, можем ли мы оплатить это занятие
 			if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
 				remainingPrePayment -= Number(lesson.price)
@@ -1455,7 +1449,7 @@ const AddStudent = ({}: IAddStudent) => {
 						scheduleForDay.startTime.minute,
 					)
 
-					let isDone =
+					const isDone =
 						lessonDate < now ||
 						(lessonDate.toDateString() === now.toDateString() &&
 							now.getHours() > scheduleForDay.endTime.hour) ||
@@ -1467,14 +1461,10 @@ const AddStudent = ({}: IAddStudent) => {
 						(lesson) => lesson.date.getTime() === lessonDate.getTime(),
 					)
 
-					if (existingLesson && existingLesson?.isDone) {
-						isDone = true
-					}
-
 					const newLesson = {
 						date: lessonDate,
 						itemName: items[i].itemName,
-						isDone: isDone || false,
+						isDone: isDone,
 						price: items[i].costOneLesson,
 						isPaid: existingLesson ? existingLesson.isPaid : false,
 						isCancel: existingLesson ? existingLesson.isCancel : false,
@@ -1509,7 +1499,7 @@ const AddStudent = ({}: IAddStudent) => {
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
 		setHistoryLesson(updatedHistoryLessons)
-	}, [items, prePayList])
+	}, [items, prePayList, historyLesson])
 
 	const setHistoryLessonIsDone = useCallback((index, value) => {
 		setHistoryLesson((prevHistoryLesson) => [
@@ -1611,7 +1601,6 @@ const AddStudent = ({}: IAddStudent) => {
 			let dateHistory = data.historyLessons.map((i) => {
 				return {...i, date: new Date(i.date), isCancel: i.isCancel || false}
 			})
-			setOriginalHistoryLesson(dateHistory)
 			setHistoryLesson(dateHistory)
 			setPrePayList(data.students[0].prePay || [])
 			console.log('dataHistory', data)
@@ -1835,7 +1824,7 @@ const AddStudent = ({}: IAddStudent) => {
 				style={{display: loading && 'none'}}
 				className={s.CloseButton}
 				onClick={() => {
-					if (editedCards) {
+					if (!isEditMode) {
 						dispatch({
 							type: 'SET_PAGE_POPUP_EXIT',
 							payload: EPagePopUpExit.Exit,
@@ -2065,17 +2054,9 @@ const AddStudent = ({}: IAddStudent) => {
 																		{formatDate(item.date)}
 																	</p>
 																	<CheckBox
-																		onChange={() =>
-																			setHistoryLessonIsDone(
-																				historyLesson.findIndex(
-																					(lesson) =>
-																						lesson.date.getTime() ===
-																						item.date.getTime(),
-																				),
-																				!item.isDone,
-																			)
-																		}
+																		onChange={(e) => e.preventDefault()}
 																		size="16px"
+																		disabled={item.isCancel}
 																		checked={item.isDone}
 																	/>
 																	<p
@@ -2101,20 +2082,23 @@ const AddStudent = ({}: IAddStudent) => {
 																		{item.price}₽
 																	</p>
 																	<CheckBox
-																		onChange={() =>
-																			setHistoryLessonIsPaid(
-																				historyLesson.findIndex(
-																					(lesson) =>
-																						lesson.date.getTime() ===
-																						item.date.getTime(),
-																				),
-																				!item.isPaid,
-																			)
-																		}
+																		onChange={(e) => e.preventDefault()}
 																		size="16px"
 																		checked={item.isPaid}
+																		disabled={item.isCancel}
 																	/>
-																	{item.isCancel && <></>}
+																	{item.isCancel && (
+																		<p
+																			style={{
+																				position: 'absolute',
+																				left: '100px',
+																				fontWeight: 'bold',
+																				fontSize: '16px',
+																				color: 'red',
+																			}}>
+																			Отменено
+																		</p>
+																	)}
 																</>
 															) : (
 																<>
@@ -2835,6 +2819,16 @@ const AddStudent = ({}: IAddStudent) => {
 									submitLinks={handleLinksSubmit}
 									deleteLink={deleteLink}
 								/>
+
+								{errorList.length > 0 && (
+									<div className={s.ErrorList}>
+										<p>
+											Данное время занято:{' '}
+											{errorList.map((i) => i[0].day)[0] + ' '}
+											{errorList.map((i) => i[0].timeLines)[0][0].time}
+										</p>
+									</div>
+								)}
 							</div>
 						</div>
 						<div className={s.FooterWrapper}>
@@ -2863,11 +2857,33 @@ const AddStudent = ({}: IAddStudent) => {
 										<p>В архив</p>
 									</button>
 									<button
+										ref={deleteButtonRef}
 										disabled={currentOpenedStudent === ''}
 										className={s.Delete}
-										onClick={handleDelete}>
+										onClick={(e) => {
+											e.stopPropagation() // Предотвращаем всплытие события
+											setShowDeleteConfirm(true)
+										}}>
 										<p>Удалить</p>
 									</button>
+
+									{/* Добавьте этот код после закрывающего тега FooterWrapper */}
+									{showDeleteConfirm && (
+										<DeleteConfirmation
+											buttonRef={deleteButtonRef}
+											onDelete={() => {
+												socket.emit('deleteStudent', {
+													token: token,
+													id: currentOpenedStudent,
+												})
+												setShowDeleteConfirm(false)
+												window.location.reload()
+											}}
+											onCancel={() => {
+												setShowDeleteConfirm(false)
+											}}
+										/>
+									)}
 								</div>
 							</div>
 						</div>

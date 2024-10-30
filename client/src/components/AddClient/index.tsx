@@ -1236,21 +1236,23 @@ const AddClient = ({}: IAddClient) => {
 																				%
 																			</p>
 																		</div>
-																		{item.fisrtPaymentPrice +
-																			item.endPaymentPrice >=
-																			item.cost && (
-																			<>
-																				<Line
-																					width="317px"
-																					className={s.Line}
-																				/>
-																				<div className={s.PaymentRow}>
-																					<p style={{color: '#25c25c'}}>
-																						Этап оплачен полностью
-																					</p>
-																				</div>
-																			</>
-																		)}
+
+																		<Line width="317px" className={s.Line} />
+																		<div className={s.PaymentRow}>
+																			<p
+																				style={{
+																					color:
+																						item.fisrtPaymentPrice +
+																							item.endPaymentPrice >=
+																							item.cost &&
+																						item.firstPaymentPayed &&
+																						item.endPaymentPayed
+																							? '#25c25c'
+																							: '#4e4e4e',
+																				}}>
+																				Этап оплачен полностью
+																			</p>
+																		</div>
 																	</>
 																) : (
 																	<>
@@ -1458,7 +1460,17 @@ const AddClient = ({}: IAddClient) => {
 																					className={s.Line}
 																				/>
 																				<div className={s.PaymentRow}>
-																					<p style={{color: '#25c25c'}}>
+																					<p
+																						style={{
+																							color:
+																								item.fisrtPaymentPrice +
+																									item.endPaymentPrice >=
+																									item.cost &&
+																								item.firstPaymentPayed &&
+																								item.endPaymentPayed
+																									? '#25c25c'
+																									: '#4e4e4e',
+																						}}>
 																						Этап оплачен полностью
 																					</p>
 																				</div>
@@ -1718,18 +1730,21 @@ const AddClient = ({}: IAddClient) => {
 																	%
 																</p>
 															</div>
-															{job.stages[0].fisrtPaymentPrice +
-																job.stages[0].endPaymentPrice >=
-																job.stages[0].totalCost && (
-																<>
-																	<Line width="317px" className={s.Line} />
-																	<div className={s.PaymentRow}>
-																		<p style={{color: '#25c25c'}}>
-																			Работа оплачена полностью
-																		</p>
-																	</div>
-																</>
-															)}
+
+															<Line width="317px" className={s.Line} />
+															<div className={` ${s.PaymentRow}}`}>
+																<p
+																	style={{
+																		color:
+																			job.stages[0].fisrtPaymentPrice +
+																				job.stages[0].endPaymentPrice >=
+																			job.stages[0].totalCost
+																				? '#25c25c'
+																				: '#FF0000',
+																	}}>
+																	Работа оплачена полностью
+																</p>
+															</div>
 														</>
 													) : (
 														<>
@@ -1930,18 +1945,23 @@ const AddClient = ({}: IAddClient) => {
 																/>
 																<p style={{width: '33px'}}></p>
 															</div>
-															{job.stages[0].fisrtPaymentPrice +
-																job.stages[0].endPaymentPrice >=
-																job.stages[0].totalCost && (
-																<>
-																	<Line width="317px" className={s.Line} />
-																	<div className={s.PaymentRow}>
-																		<p style={{color: '#25c25c'}}>
-																			Работа оплачена полностью
-																		</p>
-																	</div>
-																</>
-															)}
+
+															<Line width="317px" className={s.Line} />
+															<div className={s.PaymentRow}>
+																<p
+																	style={{
+																		color:
+																			job.stages[0].fisrtPaymentPrice +
+																				job.stages[0].endPaymentPrice >=
+																				job.stages[0].totalCost &&
+																			job.stages[0].firstPaymentPayed &&
+																			job.stages[0].endPaymentPayed
+																				? 'green'
+																				: '#eee',
+																	}}>
+																	Работа оплачена полностью
+																</p>
+															</div>
 														</>
 													)}
 												</div>
