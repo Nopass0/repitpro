@@ -12,7 +12,15 @@ import { z } from "zod";
 import { capture } from "./utils/error";
 
 const api = express();
-api.use(cors());
+api.use(
+  cors({
+    origin: ["http://localhost", "http://localhost:80", "https://repitpro.ru"],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+api.use(express.static(__dirname + "/public"));
 api.use(express.json());
 
 // Схемы валидации
