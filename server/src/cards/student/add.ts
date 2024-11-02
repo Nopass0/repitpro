@@ -269,7 +269,7 @@ function normalizeTimeLinesArray(data: any) {
 const retry = async <T>(
   operation: () => Promise<T>,
   retries = MAX_RETRIES,
-  delay = RETRY_DELAY
+  delay = RETRY_DELAY,
 ): Promise<T> => {
   try {
     return await operation();
@@ -312,7 +312,7 @@ async function validateToken(token: string): Promise<string> {
 // Проверка существующего студента
 async function checkExistingStudent(
   data: AddStudentInput,
-  userId: string
+  userId: string,
 ): Promise<void> {
   try {
     const cacheKey = `student:${userId}:${data.nameStudent}:${data.phoneNumber}:${data.email}`;
@@ -341,7 +341,7 @@ async function checkExistingStudent(
     if (error instanceof Error && "code" in error) throw error;
     throw createError(
       ErrorCode.DATABASE,
-      "Ошибка проверки существующего студента"
+      "Ошибка проверки существующего студента",
     );
   }
 }
@@ -351,7 +351,7 @@ async function createSchedule(
   prisma: PrismaTransaction,
   group: GroupWithRelations,
   nameStudent: string,
-  userId: string
+  userId: string,
 ): Promise<void> {
   try {
     const scheduleData = [];
@@ -366,7 +366,7 @@ async function createSchedule(
       if (daysToAdd < 0) continue;
 
       const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-        addDays(startDate, i)
+        addDays(startDate, i),
       );
 
       for (const date of dateRange) {
@@ -411,7 +411,7 @@ async function createSchedule(
     capture(error);
     throw createError(
       ErrorCode.SCHEDULE_CREATION_FAILED,
-      "Ошибка создания расписания"
+      "Ошибка создания расписания",
     );
   }
 }
@@ -421,7 +421,7 @@ async function processFiles(
   files: IUploadFiles[],
   audios: IUploadFiles[],
   userId: string,
-  studentId: string
+  studentId: string,
 ): Promise<void> {
   if (files.length === 0 && audios.length === 0) return;
 
@@ -450,14 +450,14 @@ async function processFiles(
 async function processLinks(
   links: string[],
   studentId: string,
-  userId: string
+  userId: string,
 ): Promise<void> {
   if (!links?.length) return;
-
+  console.log("links", links);
   try {
     await retry(async () => {
       const linkId = `${userId}-addStudent`;
-      await db.link.upsert({
+      const linksData = await db.link.upsert({
         where: { id: linkId },
         update: {
           links,
@@ -471,6 +471,8 @@ async function processLinks(
           userId,
         },
       });
+
+      console.log("links", linksData);
     });
   } catch (error) {
     capture(error);
@@ -481,7 +483,7 @@ async function processLinks(
 // Основная функция добавления студента
 export async function addStudent(
   data: unknown,
-  socket: any
+  socket: any,
 ): Promise<GroupWithRelations | void> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
   let operationCompleted = false;
@@ -567,14 +569,14 @@ export async function addStudent(
             prisma,
             group,
             validatedData.nameStudent,
-            userId
+            userId,
           );
           return group;
         } catch (error) {
           capture(error);
           throw createError(
             ErrorCode.GROUP_CREATION_FAILED,
-            "Ошибка создания группы"
+            "Ошибка создания группы",
           );
         }
       });
@@ -585,12 +587,12 @@ export async function addStudent(
             validatedData.files as IUploadFiles[],
             validatedData.audios as IUploadFiles[],
             userId,
-            createdGroup.students[0].id
+            createdGroup.students[0].id,
           ),
           processLinks(
             validatedData.links,
             createdGroup.students[0].id,
-            userId
+            userId,
           ),
         ]);
       }
