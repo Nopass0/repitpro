@@ -18,7 +18,7 @@ api.use(
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  }),
 );
 api.use(express.static(__dirname + "/public"));
 api.use(express.json());
@@ -93,7 +93,7 @@ api.get("/files/:id", async (req, res) => {
 api.get("/check-free-slots", async (req, res) => {
   try {
     const { token, startDate, endDate } = await FreeSlotsQuerySchema.parseAsync(
-      req.query
+      req.query,
     );
     console.log("Query params:", { token, startDate, endDate });
 
@@ -126,19 +126,20 @@ api.get("/check-free-slots", async (req, res) => {
 
     console.log("Found schedules:", schedules.length);
 
-    // Обработка временных слотов
-    const slotsMap = new Map<string, Set<string>>();
+    // Инициализация структуры для хранения занятых слотов по дням недели
+    const slotsMap = new Map();
     const daysOfWeek = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-    daysOfWeek.forEach((day) => {
-      slotsMap.set(day, new Set());
+    daysOfWeek.forEach((day, index) => {
+      slotsMap.set(index, new Set());
     });
 
     let totalSlotsFound = 0;
 
-    const processTimeSlots = (schedule: any) => {
+    // Обработка временных слотов
+    schedules.forEach((schedule) => {
       let timeLinesArray = schedule.timeLinesArray;
 
-      // Проверяем, является ли timeLinesArray строкой
+      // Парсинг JSON если необходимо
       if (typeof timeLinesArray === "string") {
         try {
           timeLinesArray = JSON.parse(timeLinesArray);
@@ -148,22 +149,10 @@ api.get("/check-free-slots", async (req, res) => {
         }
       }
 
-      // Приводим к массиву если это объект
-      if (
-        timeLinesArray &&
-        typeof timeLinesArray === "object" &&
-        !Array.isArray(timeLinesArray)
-      ) {
-        // Предполагаем, что ключи - это дни недели (0-6)
-        Object.entries(timeLinesArray).forEach(([dayIndex, timeSlot]) => {
-          if (!timeSlot || typeof timeSlot !== "object") return;
-
-          const dayName =
-            daysOfWeek[Number(dayIndex)] || daysOfWeek[Number(dayIndex) % 7];
-          if (!dayName) return;
-
-          const slot = timeSlot as any;
-          if (!slot.startTime || !slot.endTime) return;
+      // Обрабатываем как массив с индексированными слотами
+      if (Array.isArray(timeLinesArray)) {
+        timeLinesArray.forEach((slot, index) => {
+          if (!slot || !slot.startTime || !slot.endTime) return;
 
           // Пропускаем пустые слоты
           if (
@@ -175,48 +164,36 @@ api.get("/check-free-slots", async (req, res) => {
             return;
           }
 
-          const slotKey = `${String(slot.startTime.hour).padStart(
+          const slotKey = `${String(slot.startTime.hour).padStart(2, "0")}:${String(
+            slot.startTime.minute,
+          ).padStart(
             2,
-            "0"
-          )}:${String(slot.startTime.minute).padStart(2, "0")}-${String(
-            slot.endTime.hour
-          ).padStart(2, "0")}:${String(slot.endTime.minute).padStart(2, "0")}`;
+            "0",
+          )}-${String(slot.endTime.hour).padStart(2, "0")}:${String(
+            slot.endTime.minute,
+          ).padStart(2, "0")}`;
 
-          const daySet = slotsMap.get(dayName);
+          const daySet = slotsMap.get(index);
           if (daySet) {
             daySet.add(slotKey);
             totalSlotsFound++;
-            console.log(`Added slot ${slotKey} to day ${dayName}`);
+            console.log(`Added slot ${slotKey} to day index ${index}`);
           }
         });
       }
-    };
-
-    // Обработка всех расписаний
-    schedules.forEach((schedule, idx) => {
-      console.log(`Processing schedule ${idx + 1}/${schedules.length}`);
-      processTimeSlots(schedule);
     });
 
-    console.log("Total slots found:", totalSlotsFound);
-
-    // Преобразование в нужный формат
-    const occupiedTimeSlots = daysOfWeek.map((day) => {
-      const slots = Array.from(slotsMap.get(day) || [])
-        .map((timeStr) => {
+    // Формируем ответ
+    const occupiedTimeSlots = daysOfWeek.map((day, index) => {
+      const slots = Array.from(slotsMap.get(index) || [])
+        .map((timeStr: string) => {
           const [start, end] = timeStr.split("-");
           const [startHour, startMinute] = start.split(":").map(Number);
           const [endHour, endMinute] = end.split(":").map(Number);
 
           return {
-            startTime: {
-              hour: startHour,
-              minute: startMinute,
-            },
-            endTime: {
-              hour: endHour,
-              minute: endMinute,
-            },
+            startTime: { hour: startHour, minute: startMinute },
+            endTime: { hour: endHour, minute: endMinute },
           };
         })
         .sort((a, b) => {
@@ -227,7 +204,7 @@ api.get("/check-free-slots", async (req, res) => {
 
       return {
         day,
-        freeTime: slots, // теперь это действительно занятые слоты
+        freeTime: slots, // занятые слоты
       };
     });
 
@@ -235,8 +212,8 @@ api.get("/check-free-slots", async (req, res) => {
       freeSlots: occupiedTimeSlots,
       debug: {
         schedulesCount: schedules.length,
-        slotsFound: [...slotsMap.entries()].map(([day, slots]) => ({
-          day,
+        slotsFound: [...slotsMap.entries()].map(([dayIndex, slots]) => ({
+          day: daysOfWeek[dayIndex],
           count: slots.size,
           slots: [...slots],
         })),
@@ -319,7 +296,7 @@ api.get("/schedule-summary", async (req, res) => {
 
     stats.mostBusyDay = Object.entries(stats.slotsPerDay).reduce(
       (a, b) => (a[1] > b[1] ? a : b),
-      ["", 0]
+      ["", 0],
     )[0];
 
     res.json({

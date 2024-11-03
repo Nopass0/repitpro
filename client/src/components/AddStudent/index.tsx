@@ -680,27 +680,79 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	// Функция для обработки предоплат
+	// const handlePrePayment = (historyLessons, prePayList) => {
+	// 	// Проверяем, является ли prePayList массивом и не пуст ли он
+	// 	if (!Array.isArray(prePayList) || prePayList.length === 0) {
+	// 		return historyLessons
+	// 	}
+
+	// 	// Функция для сравнения дат без учета времени
+	// 	const isSameDay = (date1, date2) => {
+	// 		return (
+	// 			date1.getFullYear() === date2.getFullYear() &&
+	// 			date1.getMonth() === date2.getMonth() &&
+	// 			date1.getDate() === date2.getDate()
+	// 		)
+	// 	}
+
+	// 	// Сортируем предоплаты по дате
+	// 	const sortedPrePayList = [...prePayList].sort(
+	// 		(a, b) => new Date(a.date) - new Date(b.date),
+	// 	)
+
+	// 	// Сортируем занятия по дате
+	// 	const sortedHistoryLessons = [...historyLessons].sort(
+	// 		(a, b) => new Date(a.date) - new Date(b.date),
+	// 	)
+
+	// 	let remainingPrePayment = 0
+	// 	let nextPrePayIndex = 0
+
+	// 	const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
+	// 		const lessonDate = new Date(lesson.date)
+
+	// 		// Применяем все предоплаты, которые были до или в тот же день, что и это занятие
+	// 		while (
+	// 			nextPrePayIndex < sortedPrePayList.length &&
+	// 			(new Date(sortedPrePayList[nextPrePayIndex].date) < lessonDate ||
+	// 				isSameDay(
+	// 					new Date(sortedPrePayList[nextPrePayIndex].date),
+	// 					lessonDate,
+	// 				))
+	// 		) {
+	// 			remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
+	// 			nextPrePayIndex++
+	// 		}
+
+	// 		// Проверяем, можем ли мы оплатить это занятие
+	// 		if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
+	// 			remainingPrePayment -= Number(lesson.price)
+	// 			return {...lesson, isPaid: true}
+	// 		} else {
+	// 			return {...lesson, isPaid: false}
+	// 		}
+	// 	})
+
+	// 	return updatedHistoryLessons
+	// }
+
+	// Функция обработки предоплат
 	const handlePrePayment = (historyLessons, prePayList) => {
-		// Проверяем, является ли prePayList массивом и не пуст ли он
+		console.log(
+			'Processing payments. Lessons:',
+			historyLessons,
+			'PrePay:',
+			prePayList,
+		)
+
 		if (!Array.isArray(prePayList) || prePayList.length === 0) {
 			return historyLessons
 		}
 
-		// Функция для сравнения дат без учета времени
-		const isSameDay = (date1, date2) => {
-			return (
-				date1.getFullYear() === date2.getFullYear() &&
-				date1.getMonth() === date2.getMonth() &&
-				date1.getDate() === date2.getDate()
-			)
-		}
-
-		// Сортируем предоплаты по дате
 		const sortedPrePayList = [...prePayList].sort(
 			(a, b) => new Date(a.date) - new Date(b.date),
 		)
 
-		// Сортируем занятия по дате
 		const sortedHistoryLessons = [...historyLessons].sort(
 			(a, b) => new Date(a.date) - new Date(b.date),
 		)
@@ -708,38 +760,54 @@ const AddStudent = ({}: IAddStudent) => {
 		let remainingPrePayment = 0
 		let nextPrePayIndex = 0
 
-		const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
+		const processedLessons = sortedHistoryLessons.map((lesson) => {
 			const lessonDate = new Date(lesson.date)
+			const now = new Date()
 
-			// Применяем все предоплаты, которые были до или в тот же день, что и это занятие
+			// Проверяем, прошло ли занятие
+			const isDone =
+				lesson.isDone !== undefined ? lesson.isDone : lessonDate < now
+
+			// Применяем предоплаты для будущих занятий
 			while (
 				nextPrePayIndex < sortedPrePayList.length &&
-				(new Date(sortedPrePayList[nextPrePayIndex].date) < lessonDate ||
-					isSameDay(
-						new Date(sortedPrePayList[nextPrePayIndex].date),
-						lessonDate,
-					))
+				new Date(sortedPrePayList[nextPrePayIndex].date) <= lessonDate
 			) {
 				remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
 				nextPrePayIndex++
 			}
 
-			// Проверяем, можем ли мы оплатить это занятие
-			if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
+			// Занятие считается оплаченным если:
+			// 1. Оно уже помечено как оплаченное с сервера
+			// 2. Или есть достаточная предоплата и дата занятия после даты предоплаты
+			const isPaid =
+				lesson.isPaid ||
+				(!lesson.isCancel &&
+					remainingPrePayment >= Number(lesson.price) &&
+					nextPrePayIndex > 0 &&
+					lessonDate >= new Date(sortedPrePayList[0].date))
+
+			if (isPaid && !lesson.isCancel) {
 				remainingPrePayment -= Number(lesson.price)
-				return {...lesson, isPaid: true}
-			} else {
-				return {...lesson, isPaid: false}
 			}
+
+			const processedLesson = {
+				...lesson,
+				isDone,
+				isPaid,
+			}
+
+			return processedLesson
 		})
 
-		return updatedHistoryLessons
+		console.log('Processed lessons:', processedLessons)
+		return processedLessons
 	}
 
 	// Function to get the total sum of paid prices
 	const getTotalPaidPrice = (data) => {
 		return data.reduce((total, item) => {
-			if (item.isPaid) {
+			if (item.isPaid && !item.isCancel) {
 				total += Number(item.price)
 			}
 			return total
@@ -749,7 +817,7 @@ const AddStudent = ({}: IAddStudent) => {
 	// Function to get the count of paid objects
 	const getCountOfPaidObjects = (data) => {
 		return data.reduce((count, item) => {
-			if (item.isPaid) {
+			if (item.isPaid && !item.isCancel) {
 				count++
 			}
 			return count
@@ -759,7 +827,7 @@ const AddStudent = ({}: IAddStudent) => {
 	// Function to get the count of objects where isDone is true
 	const getCountOfDoneObjects = (data) => {
 		return data.reduce((count, item) => {
-			if (item.isDone) {
+			if (item.isDone && !item.isCancel) {
 				count++
 			}
 			return count
@@ -833,36 +901,36 @@ const AddStudent = ({}: IAddStudent) => {
 						scheduleForDay.startTime.minute,
 					)
 
-					const isDone =
-						lessonDate < now ||
-						(lessonDate.toDateString() === now.toDateString() &&
-							now.getHours() > scheduleForDay.endTime.hour) ||
-						(now.getHours() === scheduleForDay.endTime.hour &&
-							now.getMinutes() >= scheduleForDay.endTime.minute)
-
-					// Ищем соответствующее занятие в текущем historyLesson
+					// Ищем существующее занятие
 					const existingLesson = historyLesson.find(
 						(lesson) => lesson.date.getTime() === lessonDate.getTime(),
 					)
 
+					// Определяем isDone на основе даты, если нет существующего значения
+					const isDone = existingLesson
+						? existingLesson.isDone
+						: lessonDate < now
+
 					const newLesson = {
 						date: lessonDate,
 						itemName: items[i].itemName,
-						isDone: isDone,
+						isDone,
 						price: items[i].costOneLesson,
 						isPaid: existingLesson ? existingLesson.isPaid : false,
 						isCancel: existingLesson ? existingLesson.isCancel : false,
 					}
 
-					newHistoryLessons.push(newLesson)
+					if (!newLesson.isCancel) {
+						countLessons++
+						countLessonsPrice += Number(items[i].costOneLesson)
+					}
 
-					countLessons++
-					countLessonsPrice = countLessons * Number(items[i].costOneLesson)
+					newHistoryLessons.push(newLesson)
 				}
 			}
 		}
 
-		// Добавляем занятия, которых нет в новом расписании, но есть в текущем historyLesson
+		// Добавляем существующие занятия из истории
 		historyLesson.forEach((lesson) => {
 			const lessonExists = newHistoryLessons.some(
 				(newLesson) => newLesson.date.getTime() === lesson.date.getTime(),
@@ -874,16 +942,19 @@ const AddStudent = ({}: IAddStudent) => {
 
 		// Сортируем занятия по дате
 		newHistoryLessons.sort((a, b) => a.date.getTime() - b.date.getTime())
+		console.log('Before payment processing:', newHistoryLessons)
 
+		// Обрабатываем предоплаты
 		const updatedHistoryLessons = handlePrePayment(
 			newHistoryLessons,
 			prePayList,
 		)
 
+		console.log('After payment processing:', updatedHistoryLessons)
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
 		setHistoryLesson(updatedHistoryLessons)
-	}, [items, prePayList, historyLesson])
+	}, [items, prePayList])
 
 	const [scrollPosition, setScrollPosition] = useState(0)
 	const collapseRef = useRef(null)
@@ -957,12 +1028,29 @@ const AddStudent = ({}: IAddStudent) => {
 			setItems(data.items)
 			setFiles(data.students[0].filesData)
 			setAudios(data.students[0].audiosData)
+
+			// Преобразуем даты и добавляем isCancel если его нет
 			let dateHistory = data.historyLessons.map((i) => {
-				return {...i, date: new Date(i.date), isCancel: i.isCancel || false}
+				const lessonDate = new Date(i.date)
+				const now = new Date()
+
+				return {
+					...i,
+					date: new Date(i.date),
+					isCancel: i.isCancel || false,
+					// Если это новый студент или новое занятие, устанавливаем isDone
+					isDone: i.isDone !== undefined ? i.isDone : lessonDate < now,
+					// Сохраняем isPaid с сервера если есть, иначе false
+					isPaid: i.isPaid || false,
+				}
 			})
+			console.log('Initial history lessons:', dateHistory)
 			setHistoryLesson(dateHistory)
-			setPrePayList(data.students[0].prePay || [])
-			console.log('dataHistory', data)
+
+			// Обработка предоплат
+			const prePay = data.students[0].prePay || []
+			console.log('Initial prepay list:', prePay)
+			setPrePayList(prePay)
 		}
 	}, [data])
 
@@ -2087,7 +2175,7 @@ const AddStudent = ({}: IAddStudent) => {
 												<p style={{marginRight: '5px'}}>Долг:</p>
 												<p style={{color: 'red'}}>
 													{historyLesson
-														.filter((i) => i.isDone && !i.isPaid)
+														.filter((i) => i.isDone && !i.isPaid && !i.isCancel)
 														.reduce(
 															(total, item) => total + Number(item.price),
 															0,

@@ -166,7 +166,6 @@ const AddClient = ({}: IAddClient) => {
 							totalCost: 0,
 							name: '',
 							typePayment: false, // Предоплата false - оплата true
-
 							dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
 							cost: 0,
 							prePay: true,
@@ -208,36 +207,39 @@ const AddClient = ({}: IAddClient) => {
 	}
 
 	const changeStage = (jobIndex, stageIndex, name, value) => {
-		setJobs((prevJobs) =>
-			prevJobs.map((job, i) => {
-				if (i !== jobIndex) return job
-
-				const updatedStages = job.stages.map((stage, j) => {
-					if (j !== stageIndex) return stage
-					return {...stage, [name]: value}
-				})
-
-				// Calculate total cost whenever a stage's cost changes
-				const totalCost = updatedStages.reduce(
-					(sum, stage) => sum + (Number(stage.cost) || 0),
-					0,
-				)
-
-				// Update all stages with the new total cost
-				const stagesWithTotal = updatedStages.map((stage) => ({
-					...stage,
-					totalCost: totalCost,
-				}))
-
-				return {
-					...job,
-					stages: stagesWithTotal,
-				}
-			}),
+		setJobs(
+			jobs.map((job, i) =>
+				i === jobIndex
+					? {
+							...job,
+							stages: job.stages.map((stage, j) => {
+								if (j === stageIndex) {
+									const updatedStage = {...stage, [name]: value}
+									// Если изменилась стоимость этапа, обновляем общую стоимость
+									if (name === 'cost') {
+										const totalCost = job.stages.reduce(
+											(sum, s, idx) =>
+												sum +
+												(idx === stageIndex
+													? Number(value)
+													: Number(s.cost) || 0),
+											0,
+										)
+										updatedStage.totalCost = totalCost
+										// Обновляем totalCost для всех этапов
+										job.stages.forEach((s) => (s.totalCost = totalCost))
+									}
+									return updatedStage
+								}
+								return stage
+							}),
+						}
+					: job,
+			),
 		)
 	}
 
-	const addStage = (jobIndex: number) => {
+	const addStage = (jobIndex) => {
 		if (
 			jobs[jobIndex].stages[currentStageIndex].name !== '' &&
 			currentStageIndex === jobs[jobIndex].stages.length - 1
@@ -256,8 +258,7 @@ const AddClient = ({}: IAddClient) => {
 										),
 										name: '',
 										typePayment: false, // Предоплата false - оплата true
-
-										dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
+										dateStart: new Date(Date.now()),
 										cost: 0,
 										prePay: true,
 										postPay: false,
