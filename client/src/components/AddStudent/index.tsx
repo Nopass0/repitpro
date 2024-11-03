@@ -1,29 +1,15 @@
-import s from './index.module.scss'
-import * as mui from '@mui/material'
-import {styled} from '@mui/material/styles'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
-import Line from '../Line'
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from 'react'
+import ScheduleIcon from '@mui/icons-material/Schedule'
+import * as mui from '@mui/material'
+import {styled} from '@mui/material/styles'
+import {useCallback, useEffect, useRef, useState} from 'react'
+import InputMask from 'react-input-mask'
+import {useDispatch, useSelector} from 'react-redux'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import Plus from '../../assets/ItemPlus.svg'
-import CheckBox from '../CheckBox'
-import CreateIcon from '@mui/icons-material/Create'
-import './index.css'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import ScheduleDate from '../ScheduleDate/index'
-import InputMask from 'react-input-mask'
-import ScheduleIcon from '@mui/icons-material/Schedule'
-import TimePicker from '../Timer/index'
-import NowLevel from '../NowLevel'
-import Input from '../Input'
+import socket, {isServer} from '../../socket'
 import {
 	ELeftMenuPage,
 	EPagePopUpExit,
@@ -32,39 +18,33 @@ import {
 	IPrePayList,
 	ITimeLine,
 } from '../../types'
-import socket, {isServer} from '../../socket'
-import {useDispatch, useSelector} from 'react-redux'
+import CheckBox from '../CheckBox'
+import Input from '../Input'
+import Line from '../Line'
+import NowLevel from '../NowLevel'
+import ScheduleDate from '../ScheduleDate/index'
+import TimePicker from '../Timer/index'
+import './index.css'
+import s from './index.module.scss'
 
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CloseIcon from '@mui/icons-material/Close'
-import ExitPopUp from '../ExitPopUp'
-import {useNavigate} from 'react-router-dom'
+import axios from 'axios'
 import {addDays, differenceInDays} from 'date-fns'
+import {TailSpin} from 'react-loader-spinner'
+import {useNavigate} from 'react-router-dom'
+import DeleteConfirmation from '../DeleteConfirmation'
+import ExitPopUp from '../ExitPopUp'
 import FileNLinks from '../FileNLinks/index'
-import RecordNListen from '../RecordNListen/index'
 import IconsPhone from '../IconsPhone/index'
 import MiniCalendar from '../MiniCalendar'
-import TextAreaInputBlock from '../TextAreaInputBlock'
-import {TailSpin} from 'react-loader-spinner'
-import AddCircleIcon from '@mui/icons-material/AddCircle'
 import PrePayRow from '../PrePayRow'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import axios, {isCancel} from 'axios'
-import DeleteConfirmation from '../DeleteConfirmation'
+import RecordNListen from '../RecordNListen/index'
+import TextAreaInputBlock from '../TextAreaInputBlock'
 
 interface IAddStudent {}
 interface IScheduleTimer {
 	id: number
-}
-
-const ScheduleTimer = ({id: number}: IScheduleTimer) => {
-	return (
-		<div className={s.timePickerWrapper}>
-			<TimePicker
-				title={`Запланировать занятие #${id}`}
-				onTimeChange={() => {}}
-			/>
-		</div>
-	)
 }
 
 const AddStudent = ({}: IAddStudent) => {
@@ -96,199 +76,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const deleteButtonRef = useRef(null)
 
-	// const maxCanceledLessonsRef = useRef(0)
-	// const canceledLessonsRef = useRef([])
-	// const [canceledLessons, setCanceledLessons] = useState([])
-
-	// // Функция для обновления состояния занятия
-	// const updateHistoryLesson = useCallback((index, updates) => {
-	// 	setHistoryLesson((prevHistory) =>
-	// 		prevHistory.map((lesson, i) =>
-	// 			i === index ? {...lesson, ...updates} : lesson,
-	// 		),
-	// 	)
-	// }, [])
-
-	// Функция для отмены занятия
-	// const cancelLesson = useCallback(
-	// 	(index) => {
-	// 		updateHistoryLesson(index, {isCancel: true})
-	// 	},
-	// 	[updateHistoryLesson],
-	// )
-
-	// ! Ok, but...
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
-
-	// 		const dateComparison = dateB.getTime() - dateA.getTime()
-
-	// 		if (dateComparison === 0) {
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			return 0
-	// 		}
-
-	// 		return dateComparison
-	// 	})
-
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
-
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
-
-	// 		const dateComparison = dateB.getTime() - dateA.getTime()
-
-	// 		if (dateComparison === 0) {
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			return 0
-	// 		}
-
-	// 		return dateComparison
-	// 	})
-
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
-
-	// const combinedHistory = useMemo(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 		...canceledLessons,
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
-
-	// 		if (dateA.getTime() === dateB.getTime()) {
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			return 0
-	// 		}
-
-	// 		return dateB.getTime() - dateA.getTime()
-	// 	})
-
-	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
-	// 	console.log(
-	// 		`Текущее количество отмененных занятий: ${canceledLessons.length}`,
-	// 	)
-
-	// 	return sorted
-	// }, [historyLesson, prePayList, canceledLessons])
-
-	// useEffect для обновления combinedHistory
-	// useEffect для обновления combinedHistory
-
-	// ! Ок, но нужно перевернуть
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...(Array.isArray(prePayList) ? prePayList : []).map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(a.date)
-	// 		const dateB = new Date(b.date)
-
-	// 		const dateComparison = dateA.getTime() - dateB.getTime()
-
-	// 		if (dateComparison === 0) {
-	// 			// Если даты равны, сначала идут занятия, потом предоплаты
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			// Если типы одинаковые, сохраняем исходный порядок
-	// 			return 0
-	// 		}
-
-	// 		return dateComparison
-	// 	})
-
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
-
-	// useEffect для обновления combinedHistory
 	// useEffect для обновления combinedHistory
 	useEffect(() => {
 		const combined = [
@@ -339,16 +126,6 @@ const AddStudent = ({}: IAddStudent) => {
 
 		setCombinedHistory(sorted)
 	}, [historyLesson, prePayList])
-
-	// useEffect(() => {
-	// 	// Этот эффект будет выполняться при каждом изменении combinedHistory
-	// 	const canceledLessonsCount = combinedHistory.filter(
-	// 		(item) => item.type === 'lesson' && item.isCancel,
-	// 	).length
-	// 	if (canceledLessonsCount > maxCanceledLessonsRef.current) {
-	// 		maxCanceledLessonsRef.current = canceledLessonsCount
-	// 	}
-	// }, [combinedHistory])
 
 	const handleAddAudio = (
 		file: any,
@@ -454,14 +231,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	const handleDelete = () => {
-		socket.emit('deleteStudent', {
-			token: token,
-			id: currentOpenedStudent,
-		})
-		window.location.reload()
-	}
-
 	const handleToArchive = () => {
 		socket.emit('studentToArhive', {
 			token: token,
@@ -493,14 +262,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const dispatch = useDispatch()
 
 	const [historyLessonsFirst, setHistoryLessonsFirst] = useState<boolean>(true)
-	const sortHistoryByClosestDate = (history) => {
-		const today = new Date()
-		return history.sort((a, b) => {
-			const dateA = Math.abs(today.getTime() - new Date(a.date).getTime())
-			const dateB = Math.abs(today.getTime() - new Date(b.date).getTime())
-			return dateA - dateB
-		})
-	}
 
 	//get week
 	const getVoidWeek = (): ITimeLine[] => {
@@ -562,16 +323,17 @@ const AddStudent = ({}: IAddStudent) => {
 			token: token,
 		})
 		socket.once('getLinksByLinkedId', (data: any) => {
+			console.log('Links:', data.links)
 			setLinks(data.links)
 		})
 	}, [])
 
-	const deleteLink = (link: string, index: number) => {
+	const deleteLink = (link: string) => {
 		socket.emit('deleteLink', {
 			linkedId: currentOpenedStudent,
 			token: token,
 		})
-		socket.once('deleteLink', (data: any) => {
+		socket.once('deleteLink', () => {
 			setLinks(links.filter((item) => item !== link))
 		})
 	}
@@ -759,35 +521,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	})
 
-	const StyledPickersLayout = styled('span')({
-		'.MuiDateCalendar-root': {
-			color: '#25991c',
-			borderRadius: 2,
-			borderWidth: 1,
-			borderColor: '#25991c',
-			border: '1px solid',
-			// backgroundColor: '#bbdefb',
-		},
-		'.MuiPickersDay-today': {
-			border: '1px solid #25991c ',
-		},
-		'.Mui-selected': {
-			color: '#fff',
-			backgroundColor: '#25991c !important',
-		},
-		'.Mui-selected:focus': {
-			color: '#fff',
-			backgroundColor: '#25991c',
-		},
-		'.MuiButtonBase-root:focus': {
-			color: '#fff',
-			backgroundColor: '#25991c',
-		},
-		'.MuiPickersYear-yearButton .Mui-selected:focus': {
-			color: '#fff',
-			backgroundColor: '#25991c',
-		},
-	})
 	const [open, setOpen] = useState(false)
 
 	const [showEndTimePicker, setShowEndTimePicker] = useState(-1)
@@ -846,36 +579,6 @@ const AddStudent = ({}: IAddStudent) => {
 		setShowEndTimePicker(-1)
 	}
 
-	const handleStartTimeChange = (
-		itemIndex: number,
-		id: number,
-		startHour: number,
-		startMinute: number,
-		endHour: number,
-		endMinute: number,
-	) => {
-		setItems((prevItems) =>
-			prevItems.map((item, index) =>
-				index === itemIndex
-					? {
-							...item,
-							timeLinesArray: item.timeLinesArray.map((timeline) =>
-								timeline.id === id
-									? {
-											...timeline,
-											startTime: {hour: startHour, minute: startMinute},
-											endTime: {hour: endHour, minute: endMinute},
-											editingStart: false,
-											active: false,
-										}
-									: timeline,
-							),
-						}
-					: item,
-			),
-		)
-	}
-
 	const handleTimeChange = (
 		itemIndex: number,
 		id: number,
@@ -929,45 +632,6 @@ const AddStudent = ({}: IAddStudent) => {
 		setShowEndTimePicker(-1)
 	}
 
-	const handleEndTimeChange = (
-		itemIndex: number,
-		id: number,
-		hour: number,
-		minute: number,
-	) => {
-		setItems((prevItems) =>
-			prevItems.map((item, index) =>
-				index === itemIndex
-					? {
-							...item,
-							timeLinesArray: item.timeLinesArray.map((timeline) =>
-								timeline.id === id
-									? {
-											...timeline,
-											endTime: {hour, minute},
-											editingEnd: false,
-										}
-									: timeline,
-							),
-						}
-					: item,
-			),
-		)
-		setShowEndTimePicker(-1)
-	}
-
-	const calculateEndTime = (
-		startHour: number,
-		startMinute: number,
-		duration: number | null,
-	) => {
-		if (!duration) return {hour: startHour, minute: startMinute}
-		let endMinutes = startMinute + duration
-		let endHours = (startHour + Math.floor(endMinutes / 60)) % 24
-		endMinutes = endMinutes % 60
-		return {hour: endHours, minute: endMinutes}
-	}
-
 	// Function to hash a string using a custom hash function
 	const hashString = (str: string) => {
 		let hash = 0
@@ -1014,51 +678,6 @@ const AddStudent = ({}: IAddStudent) => {
 			.join('')
 		return `#${hexColor}`
 	}
-
-	// Функция для обработки предоплат
-	// // Функция для обработки предоплат работает
-	// const handlePrePayment = (historyLessons, prePayList) => {
-	// 	// Проверяем, является ли prePayList массивом и не пуст ли он
-	// 	if (!Array.isArray(prePayList) || prePayList.length === 0) {
-	// 		return historyLessons
-	// 	}
-
-	// 	// Сортируем предоплаты по дате
-	// 	const sortedPrePayList = [...prePayList].sort(
-	// 		(a, b) => new Date(a.date) - new Date(b.date),
-	// 	)
-
-	// 	// Сортируем занятия по дате
-	// 	const sortedHistoryLessons = [...historyLessons].sort(
-	// 		(a, b) => new Date(a.date) - new Date(b.date),
-	// 	)
-
-	// 	let remainingPrePayment = 0
-	// 	let nextPrePayIndex = 0
-
-	// 	const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
-	// 		const lessonDate = new Date(lesson.date)
-
-	// 		// Применяем все предоплаты, которые были до или в день этого занятия
-	// 		while (
-	// 			nextPrePayIndex < sortedPrePayList.length &&
-	// 			new Date(sortedPrePayList[nextPrePayIndex].date) <= lessonDate
-	// 		) {
-	// 			remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
-	// 			nextPrePayIndex++
-	// 		}
-
-	// 		// Проверяем, можем ли мы оплатить это занятие
-	// 		if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
-	// 			remainingPrePayment -= Number(lesson.price)
-	// 			return {...lesson, isPaid: true}
-	// 		} else {
-	// 			return {...lesson, isPaid: false}
-	// 		}
-	// 	})
-
-	// 	return updatedHistoryLessons
-	// }
 
 	// Функция для обработки предоплат
 	const handlePrePayment = (historyLessons, prePayList) => {
@@ -1115,42 +734,6 @@ const AddStudent = ({}: IAddStudent) => {
 		})
 
 		return updatedHistoryLessons
-	}
-
-	// const handlePrePayment = (historyLessons_: any) => {
-	// 	if (prePayList && prePayList.length > 0) {
-	// 		let remainingPrePayment = prePayList.reduce(
-	// 			(sum, item) => sum + Number(item.cost),
-	// 			0,
-	// 		)
-	// 		const updatedHistoryLesson = historyLessons_.map((lesson) => {
-	// 			const lessonDate = new Date(lesson.date)
-	// 			if (
-	// 				lessonDate >= prePayList[0].date &&
-	// 				remainingPrePayment >= Number(lesson.price)
-	// 			) {
-	// 				remainingPrePayment -= Number(lesson.price)
-	// 				return {...lesson, isPaid: true}
-	// 			} else {
-	// 				return {...lesson}
-	// 			}
-	// 		})
-	// 		setHistoryLesson(updatedHistoryLesson)
-	// 	}
-	// }
-
-	// useEffect(() => {
-	// 	handlePrePayment(historyLesson)
-	// }, [prePayList, historyLesson])
-
-	// useEffect(() => {
-	// 	handlePrePayment()
-	// 	console.log(historyLesson, prePayCost, 'historyLesson')
-	// }, [prePayDate, prePayCost])
-
-	// Function to compare dates for sorting
-	const compareDates = (a, b) => {
-		return a.date - b.date
 	}
 
 	// Function to get the total sum of paid prices
@@ -1216,205 +799,6 @@ const AddStudent = ({}: IAddStudent) => {
 	const [allLessons, setAllLessons] = useState<number>(0)
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
 
-	// ! Работает, но без математики по окончанию занятия
-	// useEffect(() => {
-	// 	let countLessons = 0
-	// 	let countLessonsPrice = 0
-	// 	const historyLessons_ = []
-
-	// 	for (let i = 0; i < items.length; i++) {
-	// 		const differenceDays = differenceInDays(
-	// 			items[i].endLesson,
-	// 			items[i].startLesson,
-	// 		)
-	// 		const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
-	// 			addDays(items[i].startLesson, j),
-	// 		)
-
-	// 		for (const date of dateRange) {
-	// 			const dayOfWeek = getDay(date)
-	// 			const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
-
-	// 			const cond =
-	// 				scheduleForDay.startTime.hour === 0 &&
-	// 				scheduleForDay.startTime.minute === 0 &&
-	// 				scheduleForDay.endTime.hour === 0 &&
-	// 				scheduleForDay.endTime.minute === 0
-
-	// 			if (!cond) {
-	// 				const hl = {
-	// 					date: date,
-	// 					itemName: items[i].itemName,
-	// 					isDone: date <= new Date(Date.now()) ? true : false,
-	// 					price: items[i].costOneLesson,
-	// 					isPaid: false,
-	// 				}
-
-	// 				historyLessons_.push(hl)
-
-	// 				countLessons++
-	// 				countLessonsPrice = countLessons * Number(items[i].costOneLesson)
-	// 			}
-	// 		}
-	// 	}
-	// 	console.log(historyLessons_, 'historyLesson___')
-
-	// 	// Обновляем состояние
-	// 	setAllLessons(countLessons)
-	// 	setAllLessonsPrice(countLessonsPrice)
-	// 	// if (!historyLessonsFirst) {
-	// 	setHistoryLesson(historyLessons_)
-	// 	handlePrePayment(historyLessons_)
-	// 	// }
-	// 	console.log(historyLesson, 'historyLesson___2')
-	// }, [items, prePayCost, prePayDate])
-
-	// useEffect(() => {
-	// 	let countLessons = 0
-	// 	let countLessonsPrice = 0
-	// 	const historyLessons_ = []
-	// 	const now = new Date()
-
-	// 	for (let i = 0; i < items.length; i++) {
-	// 		const differenceDays = differenceInDays(
-	// 			items[i].endLesson,
-	// 			items[i].startLesson,
-	// 		)
-	// 		const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
-	// 			addDays(items[i].startLesson, j),
-	// 		)
-
-	// 		for (const date of dateRange) {
-	// 			const dayOfWeek = getDay(date)
-	// 			const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
-
-	// 			const cond =
-	// 				scheduleForDay.startTime.hour === 0 &&
-	// 				scheduleForDay.startTime.minute === 0 &&
-	// 				scheduleForDay.endTime.hour === 0 &&
-	// 				scheduleForDay.endTime.minute === 0
-
-	// 			if (!cond) {
-	// 				const lessonDate = new Date(date)
-	// 				lessonDate.setHours(
-	// 					scheduleForDay.startTime.hour,
-	// 					scheduleForDay.startTime.minute,
-	// 				)
-
-	// 				const isDone =
-	// 					lessonDate < now ||
-	// 					(lessonDate.toDateString() === now.toDateString() &&
-	// 						now.getHours() > scheduleForDay.endTime.hour) ||
-	// 					(now.getHours() === scheduleForDay.endTime.hour &&
-	// 						now.getMinutes() >= scheduleForDay.endTime.minute)
-
-	// 				const hl = {
-	// 					date: lessonDate,
-	// 					itemName: items[i].itemName,
-	// 					isDone: isDone,
-	// 					price: items[i].costOneLesson,
-	// 					isPaid: false,
-	// 					isCancel: false,
-	// 				}
-
-	// 				historyLessons_.push(hl)
-
-	// 				countLessons++
-	// 				countLessonsPrice = countLessons * Number(items[i].costOneLesson)
-	// 			}
-	// 		}
-	// 	}
-
-	// 	setAllLessons(countLessons)
-	// 	setAllLessonsPrice(countLessonsPrice)
-	// 	setHistoryLesson(historyLessons_)
-	// 	handlePrePayment(historyLessons_)
-	// }, [items, prePayCost, prePayDate])
-
-	// useEffect(() => {
-	// 	let countLessons = 0
-	// 	let countLessonsPrice = 0
-	// 	const now = new Date()
-
-	// 	// Создаем новый массив занятий
-	// 	const newHistoryLessons = []
-
-	// 	for (let i = 0; i < items.length; i++) {
-	// 		const differenceDays = differenceInDays(
-	// 			items[i].endLesson,
-	// 			items[i].startLesson,
-	// 		)
-	// 		const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
-	// 			addDays(items[i].startLesson, j),
-	// 		)
-
-	// 		for (const date of dateRange) {
-	// 			const dayOfWeek = getDay(date)
-	// 			const scheduleForDay = items[i].timeLinesArray[dayOfWeek]
-
-	// 			const cond =
-	// 				scheduleForDay.startTime.hour === 0 &&
-	// 				scheduleForDay.startTime.minute === 0 &&
-	// 				scheduleForDay.endTime.hour === 0 &&
-	// 				scheduleForDay.endTime.minute === 0
-
-	// 			if (!cond) {
-	// 				const lessonDate = new Date(date)
-	// 				lessonDate.setHours(
-	// 					scheduleForDay.startTime.hour,
-	// 					scheduleForDay.startTime.minute,
-	// 				)
-
-	// 				const isDone =
-	// 					lessonDate < now ||
-	// 					(lessonDate.toDateString() === now.toDateString() &&
-	// 						now.getHours() > scheduleForDay.endTime.hour) ||
-	// 					(now.getHours() === scheduleForDay.endTime.hour &&
-	// 						now.getMinutes() >= scheduleForDay.endTime.minute)
-
-	// 				// Ищем соответствующее занятие в текущем historyLesson
-	// 				const existingLesson = historyLesson.find(
-	// 					(lesson) => lesson.date.getTime() === lessonDate.getTime(),
-	// 				)
-
-	// 				const newLesson = {
-	// 					date: lessonDate,
-	// 					itemName: items[i].itemName,
-	// 					isDone: isDone,
-	// 					price: items[i].costOneLesson,
-	// 					isPaid: existingLesson ? existingLesson.isPaid : false,
-	// 					isCancel: existingLesson ? existingLesson.isCancel : false,
-	// 				}
-
-	// 				newHistoryLessons.push(newLesson)
-
-	// 				countLessons++
-	// 				countLessonsPrice = countLessons * Number(items[i].costOneLesson)
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// Добавляем занятия, которых нет в новом расписании, но есть в текущем historyLesson
-	// 	historyLesson.forEach((lesson) => {
-	// 		const lessonExists = newHistoryLessons.some(
-	// 			(newLesson) => newLesson.date.getTime() === lesson.date.getTime(),
-	// 		)
-	// 		if (!lessonExists) {
-	// 			newHistoryLessons.push(lesson)
-	// 		}
-	// 	})
-
-	// 	// Сортируем занятия по дате
-	// 	newHistoryLessons.sort((a, b) => a.date.getTime() - b.date.getTime())
-
-	// 	setAllLessons(countLessons)
-	// 	setAllLessonsPrice(countLessonsPrice)
-	// 	setHistoryLesson(newHistoryLessons)
-	// 	handlePrePayment(newHistoryLessons)
-	// }, [items, prePayCost, prePayDate])
-
-	// useEffect для обновления истории занятий
-	// useEffect для обновления истории занятий
 	useEffect(() => {
 		let countLessons = 0
 		let countLessonsPrice = 0
@@ -1501,37 +885,12 @@ const AddStudent = ({}: IAddStudent) => {
 		setHistoryLesson(updatedHistoryLessons)
 	}, [items, prePayList, historyLesson])
 
-	const setHistoryLessonIsDone = useCallback((index, value) => {
-		setHistoryLesson((prevHistoryLesson) => [
-			...prevHistoryLesson.slice(0, index),
-			{
-				...prevHistoryLesson[index],
-				isDone: value,
-				isCancel: prevHistoryLesson[index].isCancel || false,
-			},
-			...prevHistoryLesson.slice(index + 1),
-		])
-	}, [])
-
-	const setHistoryLessonIsPaid = useCallback((index, value) => {
-		setHistoryLesson((prevHistoryLesson) => [
-			...prevHistoryLesson.slice(0, index),
-			{
-				...prevHistoryLesson[index],
-				isPaid: value,
-				isCancel: prevHistoryLesson[index].isCancel || false,
-			},
-			...prevHistoryLesson.slice(index + 1),
-		])
-	}, [])
-
 	const [scrollPosition, setScrollPosition] = useState(0)
 	const collapseRef = useRef(null)
 	useEffect(() => {
 		if (listRef.current && collapseRef.current) {
 			const listHeight = listRef.current.offsetHeight
 			const windowHeight = window.innerHeight
-			const middlePosition = listHeight / 2 + 'px'
 			const collapseIsOpen = Boolean(collapseRef.current.state.expanded)
 
 			if (collapseIsOpen) {
@@ -1631,7 +990,7 @@ const AddStudent = ({}: IAddStudent) => {
 		let nearestDateDiff = Infinity
 		let nearestDateElement = null
 
-		combinedHistory.forEach((lesson, index) => {
+		combinedHistory.forEach((lesson) => {
 			const lessonDate = new Date(lesson.date)
 			const diff = Math.abs(today.getTime() - lessonDate.getTime())
 			const lessonDateFormat = formatDate(lesson.date)
@@ -1657,57 +1016,6 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 		}
 	}, [open])
-
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 			isCancel: lesson.isCancel || false, // Ensure isCancel is included
-	// 		})),
-	// 		...prePayList.map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		// Сравниваем даты, игнорируя время
-	// 		const dateA = new Date(
-	// 			a.date.getFullYear(),
-	// 			a.date.getMonth(),
-	// 			a.date.getDate(),
-	// 		)
-	// 		const dateB = new Date(
-	// 			b.date.getFullYear(),
-	// 			b.date.getMonth(),
-	// 			b.date.getDate(),
-	// 		)
-
-	// 		const dateComparison = dateB.getTime() - dateA.getTime()
-
-	// 		// Если даты равны, сортируем по типу
-	// 		if (dateComparison === 0) {
-	// 			// Если типы разные, 'lesson' всегда должен быть выше 'prepayment'
-	// 			if (a.type !== b.type) {
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			}
-	// 			// Если типы одинаковые, сохраняем исходный порядок
-	// 			return 0
-	// 		}
-
-	// 		// Если даты разные, возвращаем результат сравнения дат
-	// 		return dateComparison
-	// 	})
-	// 	console.log(`\nCombined history:\n${JSON.stringify(sorted, null, 2)}\n`)
-	// 	// alert(
-	// 	// 	sorted.filter((item) => item.type === 'lesson' && item.isCancel).length,
-	// 	// )
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
@@ -2797,7 +2105,7 @@ const AddStudent = ({}: IAddStudent) => {
 							<mui.ListItemText primary="Файлы/ссылки" />
 							{open ? <ExpandLess /> : <ExpandMore />}
 						</mui.ListItemButton> */}
-								{/* 						
+								{/*
 						<mui.Collapse in={open} timeout="auto" unmountOnExit>
 							<mui.List
 								style={{

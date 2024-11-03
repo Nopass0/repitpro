@@ -12,6 +12,87 @@ import {
 import { ru } from "date-fns/locale";
 import db from "../db";
 
+function determineGroupingInterval(startDate: Date, endDate: Date) {
+  const daysDiff = differenceInDays(endDate, startDate);
+  const monthsDiff = differenceInMonths(endDate, startDate);
+  const yearsDiff = differenceInYears(endDate, startDate);
+
+  if (daysDiff <= 31) {
+    return {
+      interval: "day",
+      format: "d",
+      generator: eachDayOfInterval,
+    };
+  } else if (monthsDiff < 24) {
+    return {
+      interval: "month",
+      format: "LLL",
+      generator: eachMonthOfInterval,
+    };
+  } else {
+    return {
+      interval: "year",
+      format: "yyyy",
+      generator: eachYearOfInterval,
+    };
+  }
+}
+
+function groupDataByInterval(
+  data: any[],
+  startDate: Date,
+  endDate: Date,
+  itemNames: string[],
+) {
+  const {
+    interval,
+    format: dateFormat,
+    generator,
+  } = determineGroupingInterval(startDate, endDate);
+
+  // Generate all periods in range
+  const periods = generator({ start: startDate, end: endDate });
+
+  // Initialize grouped data with zeros
+  const groupedData: { [key: string]: { [key: string]: number } } = {};
+  periods.forEach((period) => {
+    const periodKey = format(period, dateFormat, { locale: ru });
+    groupedData[periodKey] = {};
+    itemNames.forEach((itemName) => {
+      groupedData[periodKey][itemName] = 0;
+    });
+  });
+
+  // Group data according to interval
+  data.forEach((item) => {
+    const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+
+    if (!isWithinInterval(itemDate, { start: startDate, end: endDate })) {
+      return;
+    }
+
+    let periodKey: string;
+    if (interval === "day") {
+      periodKey = format(itemDate, "d", { locale: ru });
+    } else if (interval === "month") {
+      periodKey = format(itemDate, "LLL", { locale: ru });
+    } else {
+      periodKey = format(itemDate, "yyyy", { locale: ru });
+    }
+
+    if (!groupedData[periodKey][item.itemName]) {
+      groupedData[periodKey][item.itemName] = 0;
+    }
+
+    groupedData[periodKey][item.itemName] += item.lessonsPrice || 0;
+  });
+
+  return {
+    groupedData,
+    labels: periods.map((period) => format(period, dateFormat, { locale: ru })),
+  };
+}
+
 const hashString = (str: string): number => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -44,7 +125,7 @@ const formatDate = (date: Date, startDate: Date, endDate: Date): string => {
 const parseDateFromSchedule = (
   day: string,
   month: string,
-  year: string
+  year: string,
 ): Date => {
   return new Date(Number(year), Number(month) - 1, Number(day));
 };
@@ -68,7 +149,7 @@ export async function getStudentFinanceData(
     subjectIds: string[];
     token: string;
   },
-  socket: any
+  socket: any,
 ) {
   let { startDate, endDate, subjectIds, token } = data;
   startDate = new Date(startDate);
@@ -84,54 +165,63 @@ export async function getStudentFinanceData(
       }),
     };
 
-    const schedules = await db.studentSchedule.findMany({
-      where: whereClause,
-      select: {
-        lessonsPrice: true,
-        lessonsCount: true,
-        itemName: true,
-        day: true,
-        month: true,
-        year: true,
-      },
-    });
+    // Fetch schedules and items in parallel
+    const [schedules, items] = await Promise.all([
+      db.studentSchedule.findMany({
+        where: whereClause,
+        select: {
+          lessonsPrice: true,
+          itemName: true,
+          day: true,
+          month: true,
+          year: true,
+        },
+      }),
+      db.item.findMany({
+        where: {
+          userId: userId,
+          ...(subjectIds.length > 0 && {
+            id: { in: subjectIds },
+          }),
+        },
+        select: {
+          itemName: true,
+        },
+      }),
+    ]);
 
-    const groupedData: { [key: string]: { [key: string]: number } } = {};
-
-    for (const item of schedules) {
-      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
-
-      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
-        continue;
-
-      const dateKey = formatDate(itemDate, startDate, endDate);
-
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {};
-      }
-
-      if (!groupedData[dateKey][item.itemName]) {
-        groupedData[dateKey][item.itemName] = 0;
-      }
-
-      groupedData[dateKey][item.itemName] += item.lessonsPrice;
-    }
-
-    const labels = Object.keys(groupedData);
+    // Get all unique item names
     const uniqueItemNames = [
-      ...new Set(schedules.map((item) => item.itemName)),
+      ...new Set([
+        ...items.map((item) => item.itemName),
+        ...schedules.map((schedule) => schedule.itemName),
+      ]),
     ];
 
+    // Group data by appropriate interval
+    const { groupedData, labels } = groupDataByInterval(
+      schedules,
+      startDate,
+      endDate,
+      uniqueItemNames,
+    );
+
+    // Create datasets with continuous data for each item
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((date) => groupedData[date][itemName] || 0),
+      data: labels.map((label) => groupedData[label][itemName] || 0),
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
+    // Calculate max value across all datasets
     const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    socket.emit("getStudentFinanceData", { labels, datasets, maxValue });
+    socket.emit("getStudentFinanceData", {
+      labels,
+      datasets,
+      maxValue,
+    });
   } catch (error) {
     console.error("Error fetching student finance data:", error);
     socket.emit("error", { message: "Failed to fetch student finance data" });
@@ -323,7 +413,7 @@ export async function getStudentCountData(
     subjectIds: string[];
     token: string;
   },
-  socket: any
+  socket: any,
 ) {
   let { startDate, endDate, subjectIds, token } = data;
   startDate = new Date(startDate);
@@ -360,7 +450,7 @@ export async function getStudentCountData(
     const { groupedData, dateFormat } = groupDataByDateRange(
       schedules,
       startDate,
-      endDate
+      endDate,
     );
 
     console.log("Grouped data:", groupedData);
@@ -431,7 +521,7 @@ function groupDataByDateRange(schedules, startDate, endDate) {
 function generateDateLabels(
   startDate: Date,
   endDate: Date,
-  dateFormat: string
+  dateFormat: string,
 ): string[] {
   let interval;
   let formatFunc;
@@ -456,7 +546,7 @@ export async function getStudentLessonsData(
     subjectIds: string[];
     token: string;
   },
-  socket: any
+  socket: any,
 ) {
   let { startDate, endDate, subjectIds, token } = data;
   startDate = new Date(startDate);
@@ -472,53 +562,64 @@ export async function getStudentLessonsData(
       }),
     };
 
-    const schedules = await db.studentSchedule.findMany({
-      where: whereClause,
-      select: {
-        lessonsCount: true,
-        itemName: true,
-        day: true,
-        month: true,
-        year: true,
-      },
-    });
+    // Fetch schedules and items in parallel
+    const [schedules, items] = await Promise.all([
+      db.studentSchedule.findMany({
+        where: whereClause,
+        select: {
+          lessonsCount: true,
+          itemName: true,
+          day: true,
+          month: true,
+          year: true,
+        },
+      }),
+      db.item.findMany({
+        where: {
+          userId: userId,
+          ...(subjectIds.length > 0 && {
+            id: { in: subjectIds },
+          }),
+        },
+        select: {
+          itemName: true,
+        },
+      }),
+    ]);
 
-    const groupedData: { [key: string]: { [key: string]: number } } = {};
-
-    for (const item of schedules) {
-      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
-
-      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
-        continue;
-
-      const dateKey = formatDate(itemDate, startDate, endDate);
-
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {};
-      }
-
-      if (!groupedData[dateKey][item.itemName]) {
-        groupedData[dateKey][item.itemName] = 0;
-      }
-
-      groupedData[dateKey][item.itemName] += item.lessonsCount;
-    }
-
-    const labels = Object.keys(groupedData);
+    // Get all unique item names
     const uniqueItemNames = [
-      ...new Set(schedules.map((item) => item.itemName)),
+      ...new Set([
+        ...items.map((item) => item.itemName),
+        ...schedules.map((schedule) => schedule.itemName),
+      ]),
     ];
 
+    // Group data by appropriate interval
+    const { groupedData, labels } = groupDataByInterval(
+      schedules,
+      startDate,
+      endDate,
+      uniqueItemNames,
+      "lessonsCount", // указываем поле для агрегации
+    );
+
+    // Create datasets with continuous data for each item
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((date) => groupedData[date][itemName] || 0),
+      data: labels.map((label) => groupedData[label][itemName] || 0),
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
+    // Calculate max value across all datasets
     const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    socket.emit("getStudentLessonsData", { labels, datasets, maxValue });
+    socket.emit("getStudentLessonsData", {
+      labels,
+      datasets,
+      maxValue,
+    });
   } catch (error) {
     console.error("Error fetching student lessons data:", error);
     socket.emit("error", { message: "Failed to fetch student lessons data" });
@@ -532,9 +633,9 @@ export async function getClientFinanceData(
     token: string;
     subjectIds: string[];
   },
-  socket: any
+  socket: any,
 ) {
-  let { startDate, endDate, token } = data;
+  let { startDate, endDate, token, subjectIds } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
 
@@ -547,56 +648,70 @@ export async function getClientFinanceData(
         not: null,
       },
       isArchived: false,
+      ...(subjectIds.length > 0 && {
+        itemId: { in: subjectIds },
+      }),
     };
 
-    const schedules = await db.studentSchedule.findMany({
-      where: whereClause,
-      select: {
-        workPrice: true,
-        day: true,
-        month: true,
-        year: true,
-        itemName: true,
-        clientId: true,
-      },
-    });
+    // Fetch schedules and items in parallel
+    const [schedules, items] = await Promise.all([
+      db.studentSchedule.findMany({
+        where: whereClause,
+        select: {
+          workPrice: true,
+          day: true,
+          month: true,
+          year: true,
+          itemName: true,
+          clientId: true,
+        },
+      }),
+      db.item.findMany({
+        where: {
+          userId: userId,
+          ...(subjectIds.length > 0 && {
+            id: { in: subjectIds },
+          }),
+        },
+        select: {
+          itemName: true,
+        },
+      }),
+    ]);
 
-    const groupedData: { [key: string]: { [key: string]: number } } = {};
-
-    for (const item of schedules) {
-      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
-
-      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
-        continue;
-
-      const dateKey = formatDate(itemDate, startDate, endDate);
-
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {};
-      }
-
-      if (!groupedData[dateKey][item.itemName]) {
-        groupedData[dateKey][item.itemName] = 0;
-      }
-
-      groupedData[dateKey][item.itemName] += item.workPrice;
-    }
-
-    const labels = Object.keys(groupedData);
+    // Get all unique item names
     const uniqueItemNames = [
-      ...new Set(schedules.map((item) => item.itemName)),
+      ...new Set([
+        ...items.map((item) => item.itemName),
+        ...schedules.map((schedule) => schedule.itemName),
+      ]),
     ];
 
+    // Group data by appropriate interval
+    const { groupedData, labels } = groupDataByInterval(
+      schedules,
+      startDate,
+      endDate,
+      uniqueItemNames,
+      "workPrice", // используем workPrice для заказчиков
+    );
+
+    // Create datasets with continuous data for each item
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((date) => groupedData[date][itemName] || 0),
+      data: labels.map((label) => groupedData[label][itemName] || 0),
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
+    // Calculate max value across all datasets
     const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    socket.emit("getClientFinanceData", { labels, datasets, maxValue });
+    socket.emit("getClientFinanceData", {
+      labels,
+      datasets,
+      maxValue,
+    });
   } catch (error) {
     console.error("Error fetching client finance data:", error);
     socket.emit("error", { message: "Failed to fetch client finance data" });
@@ -665,7 +780,7 @@ export async function getClientCountData(
     endDate: Date;
     token: string;
   },
-  socket: any
+  socket: any,
 ) {
   let { startDate, endDate, token } = data;
   startDate = new Date(startDate);
@@ -695,7 +810,7 @@ export async function getClientCountData(
     const { groupedData, dateFormat } = groupClientsByDateRange(
       clients,
       startDate,
-      endDate
+      endDate,
     );
 
     console.log("Grouped client data:", groupedData);
@@ -757,7 +872,7 @@ export async function getClientWorksData(
     endDate: Date;
     token: string;
   },
-  socket: any
+  socket: any,
 ) {
   let { startDate, endDate, token } = data;
   startDate = new Date(startDate);
@@ -774,53 +889,61 @@ export async function getClientWorksData(
       isArchived: false,
     };
 
-    const schedules = await db.studentSchedule.findMany({
-      where: whereClause,
-      select: {
-        workCount: true,
-        day: true,
-        month: true,
-        year: true,
-        itemName: true,
-      },
-    });
+    // Fetch schedules and items in parallel
+    const [schedules, items] = await Promise.all([
+      db.studentSchedule.findMany({
+        where: whereClause,
+        select: {
+          workCount: true,
+          day: true,
+          month: true,
+          year: true,
+          itemName: true,
+        },
+      }),
+      db.item.findMany({
+        where: {
+          userId: userId,
+        },
+        select: {
+          itemName: true,
+        },
+      }),
+    ]);
 
-    const groupedData: { [key: string]: { [key: string]: number } } = {};
-
-    for (const item of schedules) {
-      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
-
-      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
-        continue;
-
-      const dateKey = formatDate(itemDate, startDate, endDate);
-
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = {};
-      }
-
-      if (!groupedData[dateKey][item.itemName]) {
-        groupedData[dateKey][item.itemName] = 0;
-      }
-
-      groupedData[dateKey][item.itemName] += item.workCount;
-    }
-
-    const labels = Object.keys(groupedData);
+    // Get all unique item names
     const uniqueItemNames = [
-      ...new Set(schedules.map((item) => item.itemName)),
+      ...new Set([
+        ...items.map((item) => item.itemName),
+        ...schedules.map((schedule) => schedule.itemName),
+      ]),
     ];
 
+    // Group data by appropriate interval
+    const { groupedData, labels } = groupDataByInterval(
+      schedules,
+      startDate,
+      endDate,
+      uniqueItemNames,
+      "workCount", // используем workCount для подсчета работ
+    );
+
+    // Create datasets with continuous data for each item
     const datasets = uniqueItemNames.map((itemName) => ({
       label: itemName,
-      data: labels.map((date) => groupedData[date][itemName] || 0),
+      data: labels.map((label) => groupedData[label][itemName] || 0),
       backgroundColor: hashToColor(hashString(itemName)),
       borderColor: hashToColor(hashString(itemName)),
     }));
 
+    // Calculate max value across all datasets
     const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
 
-    socket.emit("getClientWorksData", { labels, datasets, maxValue });
+    socket.emit("getClientWorksData", {
+      labels,
+      datasets,
+      maxValue,
+    });
   } catch (error) {
     console.error("Error fetching client works data:", error);
     socket.emit("error", { message: "Failed to fetch client works data" });
@@ -832,86 +955,163 @@ export async function getStudentClientComparisonData(
     startDate: Date;
     endDate: Date;
     token: string;
+    showStudents?: boolean;
+    showClients?: boolean;
   },
-  socket: any
+  socket: any,
 ) {
-  let { startDate, endDate, token } = data;
+  let {
+    startDate,
+    endDate,
+    token,
+    showStudents = true,
+    showClients = true,
+  } = data;
   startDate = new Date(startDate);
   endDate = new Date(endDate);
 
   try {
     const userId = await getUserId(token);
 
-    const studentData = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        clientId: null,
-        isArchived: false,
-      },
-      select: {
-        lessonsCount: true,
-        day: true,
-        month: true,
-        year: true,
-      },
-    });
+    // Determine grouping interval
+    const {
+      interval,
+      format: dateFormat,
+      generator,
+    } = determineGroupingInterval(startDate, endDate);
+    const periods = generator({ start: startDate, end: endDate });
+    const labels = periods.map((period) =>
+      format(period, dateFormat, { locale: ru }),
+    );
 
-    const clientData = await db.studentSchedule.findMany({
-      where: {
-        userId: userId,
-        clientId: {
-          not: null,
-        },
-        isArchived: false,
-      },
-      select: {
-        workCount: true,
-        day: true,
-        month: true,
-        year: true,
-      },
-    });
-
+    // Initialize grouped data with zeros
     const groupedData: {
       [key: string]: { students: number; clients: number };
     } = {};
+    labels.forEach((label) => {
+      groupedData[label] = { students: 0, clients: 0 };
+    });
 
-    for (const item of [...studentData, ...clientData]) {
-      const itemDate = parseDateFromSchedule(item.day, item.month, item.year);
+    // Fetch student data if needed
+    if (showStudents) {
+      const studentSchedules = await db.studentSchedule.findMany({
+        where: {
+          userId: userId,
+          clientId: null,
+          isArchived: false,
+          isCancel: false,
+          day: { not: null },
+          month: { not: null },
+          year: { not: null },
+        },
+        select: {
+          lessonsCount: true,
+          day: true,
+          month: true,
+          year: true,
+        },
+      });
 
-      if (!isWithinInterval(itemDate, { start: startDate, end: endDate }))
-        continue;
+      // Process student data
+      studentSchedules.forEach((schedule) => {
+        const itemDate = parseDateFromSchedule(
+          schedule.day,
+          schedule.month,
+          schedule.year,
+        );
 
-      const dateKey = formatDate(itemDate, startDate, endDate);
+        if (!isWithinInterval(itemDate, { start: startDate, end: endDate })) {
+          return;
+        }
 
-      if (!groupedData[dateKey]) {
-        groupedData[dateKey] = { students: 0, clients: 0 };
-      }
+        let periodKey: string;
+        if (interval === "day") {
+          periodKey = format(itemDate, "d", { locale: ru });
+        } else if (interval === "month") {
+          periodKey = format(itemDate, "LLL", { locale: ru });
+        } else {
+          periodKey = format(itemDate, "yyyy", { locale: ru });
+        }
 
-      if ("lessonsCount" in item) {
-        groupedData[dateKey].students += item.lessonsCount;
-      } else if ("workCount" in item) {
-        groupedData[dateKey].clients += item.workCount;
-      }
+        groupedData[periodKey].students += schedule.lessonsCount || 0;
+      });
     }
 
-    const labels = Object.keys(groupedData);
-    const datasets = [
-      {
+    // Fetch client data if needed
+    if (showClients) {
+      const clientSchedules = await db.studentSchedule.findMany({
+        where: {
+          userId: userId,
+          clientId: { not: null },
+          isArchived: false,
+          isCancel: false,
+          day: { not: null },
+          month: { not: null },
+          year: { not: null },
+        },
+        select: {
+          workCount: true,
+          day: true,
+          month: true,
+          year: true,
+        },
+      });
+
+      // Process client data
+      clientSchedules.forEach((schedule) => {
+        const itemDate = parseDateFromSchedule(
+          schedule.day,
+          schedule.month,
+          schedule.year,
+        );
+
+        if (!isWithinInterval(itemDate, { start: startDate, end: endDate })) {
+          return;
+        }
+
+        let periodKey: string;
+        if (interval === "day") {
+          periodKey = format(itemDate, "d", { locale: ru });
+        } else if (interval === "month") {
+          periodKey = format(itemDate, "LLL", { locale: ru });
+        } else {
+          periodKey = format(itemDate, "yyyy", { locale: ru });
+        }
+
+        groupedData[periodKey].clients += schedule.workCount || 0;
+      });
+    }
+
+    // Prepare datasets
+    const datasets = [];
+
+    if (showStudents) {
+      datasets.push({
         label: "Ученики",
-        data: labels.map((date) => groupedData[date].students),
+        data: labels.map((label) => groupedData[label].students),
         backgroundColor: hashToColor(hashString("students")),
         borderColor: hashToColor(hashString("students")),
-      },
-      {
+      });
+    }
+
+    if (showClients) {
+      datasets.push({
         label: "Заказчики",
-        data: labels.map((date) => groupedData[date].clients),
+        data: labels.map((label) => groupedData[label].clients),
         backgroundColor: hashToColor(hashString("clients")),
         borderColor: hashToColor(hashString("clients")),
-      },
-    ];
+      });
+    }
 
+    // Calculate max value across all datasets
     const maxValue = Math.max(...datasets.flatMap((dataset) => dataset.data));
+
+    console.log("Comparison Data:", {
+      labels,
+      datasets,
+      groupedData,
+      maxValue,
+    });
 
     socket.emit("getStudentClientComparisonData", {
       labels,
@@ -941,7 +1141,7 @@ export async function getAllItemsIdsAndNames(token: string, socket: any) {
     });
 
     const filteredItems = items.filter(
-      (item) => item.itemName && item.itemName.toLowerCase() !== "void"
+      (item) => item.itemName && item.itemName.toLowerCase() !== "void",
     );
 
     socket.emit("getAllItemsIdsAndNames", filteredItems);

@@ -207,23 +207,33 @@ const AddClient = ({}: IAddClient) => {
 		setJobs(jobs.map((job, i) => (i === index ? {...job, [name]: value} : job)))
 	}
 
-	const changeStage = (
-		jobIndex: number,
-		stageIndex: number,
-		name: string,
-		value: any,
-	) => {
-		setJobs(
-			jobs.map((job, i) =>
-				i === jobIndex
-					? {
-							...job,
-							stages: job.stages.map((stage, j) =>
-								j === stageIndex ? {...stage, [name]: value} : stage,
-							),
-						}
-					: job,
-			),
+	const changeStage = (jobIndex, stageIndex, name, value) => {
+		setJobs((prevJobs) =>
+			prevJobs.map((job, i) => {
+				if (i !== jobIndex) return job
+
+				const updatedStages = job.stages.map((stage, j) => {
+					if (j !== stageIndex) return stage
+					return {...stage, [name]: value}
+				})
+
+				// Calculate total cost whenever a stage's cost changes
+				const totalCost = updatedStages.reduce(
+					(sum, stage) => sum + (Number(stage.cost) || 0),
+					0,
+				)
+
+				// Update all stages with the new total cost
+				const stagesWithTotal = updatedStages.map((stage) => ({
+					...stage,
+					totalCost: totalCost,
+				}))
+
+				return {
+					...job,
+					stages: stagesWithTotal,
+				}
+			}),
 		)
 	}
 
@@ -240,7 +250,10 @@ const AddClient = ({}: IAddClient) => {
 								stages: [
 									...job.stages,
 									{
-										totalCost: 0,
+										totalCost: job.stages.reduce(
+											(sum, stage) => sum + (Number(stage.cost) || 0),
+											0,
+										),
 										name: '',
 										typePayment: false, // Предоплата false - оплата true
 

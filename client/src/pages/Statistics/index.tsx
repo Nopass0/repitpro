@@ -200,6 +200,131 @@ const Statistics = () => {
 		)
 	}, [columnTranslations])
 
+	// В начале файла Statistics.tsx добавим новые состояния
+const [showStudents, setShowStudents] = useState(true);
+const [showClients, setShowClients] = useState(true);
+
+// Обновим функцию renderComparisonCheckboxes
+const renderComparisonCheckboxes = (data) => {
+  // Создаем стейты внутри функции компонента Statistics, НЕ внутри renderComparisonCheckboxes
+  // const [showStudents, setShowStudents] = useState(true);
+  // const [showClients, setShowClients] = useState(true);
+
+  // Функция подсчета общего количества для определенного типа (студенты/клиенты)
+  const calculateTotal = (label) => {
+    const dataset = data.datasets.find((ds) => ds.label === label);
+    if (!dataset) return 0;
+
+    // Суммируем все значения в наборе данных, заменяя undefined и null на 0
+    return dataset.data.reduce((sum, val) => sum + (val || 0), 0);
+  };
+
+  // Получаем общие суммы для каждого типа
+  const clientsTotal = calculateTotal('Заказчики');
+  const studentsTotal = calculateTotal('Ученики');
+  const grandTotal = clientsTotal + studentsTotal;
+
+  // Функция расчета процентного соотношения
+  const getPercentage = (value) => {
+    if (grandTotal === 0) return '0.0';
+    return ((value / grandTotal) * 100).toFixed(1);
+  };
+
+  // Обработчик изменения чекбокса студентов
+  const handleStudentsChange = (e) => {
+    const newShowStudents = e.target.checked;
+    setShowStudents(newShowStudents);
+
+    // Переизлучаем событие с обновленными параметрами
+    socket.emit('getStudentClientComparisonData', {
+      token: user.token,
+      startDate: studRelatDateStart,
+      endDate: studRelatDateEnd,
+      showStudents: newShowStudents,
+      showClients,
+    });
+  };
+
+  // Обработчик изменения чекбокса клиентов
+  const handleClientsChange = (e) => {
+    const newShowClients = e.target.checked;
+    setShowClients(newShowClients);
+
+    // Переизлучаем событие с обновленными параметрами
+    socket.emit('getStudentClientComparisonData', {
+      token: user.token,
+      startDate: studRelatDateStart,
+      endDate: studRelatDateEnd,
+      showStudents,
+      showClients: newShowClients,
+    });
+  };
+
+  // Получаем цвета из датасетов
+  const getDatasetColor = (label) => {
+    const dataset = data.datasets.find((ds) => ds.label === label);
+    return dataset?.backgroundColor || '#25991c';
+  };
+
+  // Формируем структуру компонента
+  return (
+    <div className={s.subjectCheckboxes}>
+      {/* Заголовок таблицы */}
+      <div className={s.subjectHeader}>
+        <p></p>
+        <p>Кол-во</p>
+        <p>%</p>
+      </div>
+
+      {/* Блок с клиентами */}
+      <div className={s.subjectOne}>
+        <label>
+          <Checkbox
+            style={{
+              color: getDatasetColor('Заказчики'),
+            }}
+            checked={showClients}
+            onChange={handleClientsChange}
+          />
+          Заказчики
+        </label>
+        <div className={s.subjectCounts}>
+          <p>{clientsTotal}</p>
+        </div>
+        <div className={s.subjectCounts}>
+          <p>{getPercentage(clientsTotal)}%</p>
+        </div>
+      </div>
+
+      {/* Блок со студентами */}
+      <div className={s.subjectOne}>
+        <label>
+          <Checkbox
+            style={{
+              color: getDatasetColor('Ученики'),
+            }}
+            checked={showStudents}
+            onChange={handleStudentsChange}
+          />
+          Ученики
+        </label>
+        <div className={s.subjectCounts}>
+          <p>{studentsTotal}</p>
+        </div>
+        <div className={s.subjectCounts}>
+          <p>{getPercentage(studentsTotal)}%</p>
+        </div>
+      </div>
+
+      {/* Итоговая строка */}
+      <div className={s.subjectCheckboxesAll}>
+        <p>Всего:</p>
+        <p>{grandTotal}</p>
+      </div>
+    </div>
+  );
+};
+
 	const getSubjectIds = useCallback(
 		(selectedSubjects) => {
 			return selectedSubjects.length === 0
@@ -963,11 +1088,7 @@ const Statistics = () => {
 					title="Ученики - Заказчики сравнительный график"
 					isClient
 					renderCheckboxes={() =>
-						renderSubjectCheckboxes(
-							studLesSubjects,
-							setStudLesSubjects,
-							studentCountItemsData,
-						)
+						renderComparisonCheckboxes(clientsNstudentsCompareData)
 					}
 				/>
 			</div>
