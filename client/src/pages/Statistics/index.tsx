@@ -152,6 +152,10 @@ const Statistics = () => {
 	)
 	const [studRelatDateEnd, setStudRelatDateEnd] = useState(new Date())
 
+	// Add these state variables for table subject filtering
+	const [studTableSubjects, setStudTableSubjects] = useState([])
+	const [cliTableSubjects, setCliTableSubjects] = useState([])
+
 	const [financeData, setFinanceData] = useState({labels: [], datasets: []})
 	const [studentCountData, setStudentCountData] = useState({
 		labels: [],
@@ -201,129 +205,128 @@ const Statistics = () => {
 	}, [columnTranslations])
 
 	// В начале файла Statistics.tsx добавим новые состояния
-const [showStudents, setShowStudents] = useState(true);
-const [showClients, setShowClients] = useState(true);
+	const [showStudents, setShowStudents] = useState(true)
+	const [showClients, setShowClients] = useState(true)
 
-// Обновим функцию renderComparisonCheckboxes
-const renderComparisonCheckboxes = (data) => {
-  // Создаем стейты внутри функции компонента Statistics, НЕ внутри renderComparisonCheckboxes
-  // const [showStudents, setShowStudents] = useState(true);
-  // const [showClients, setShowClients] = useState(true);
+	// Обновим функцию renderComparisonCheckboxes
+	const renderComparisonCheckboxes = (data) => {
+		// Создаем стейты внутри функции компонента Statistics, НЕ внутри renderComparisonCheckboxes
+		// const [showStudents, setShowStudents] = useState(true);
+		// const [showClients, setShowClients] = useState(true);
 
-  // Функция подсчета общего количества для определенного типа (студенты/клиенты)
-  const calculateTotal = (label) => {
-    const dataset = data.datasets.find((ds) => ds.label === label);
-    if (!dataset) return 0;
+		// Функция подсчета общего количества для определенного типа (студенты/клиенты)
+		const calculateTotal = (label) => {
+			const dataset = data.datasets.find((ds) => ds.label === label)
+			if (!dataset) return 0
 
-    // Суммируем все значения в наборе данных, заменяя undefined и null на 0
-    return dataset.data.reduce((sum, val) => sum + (val || 0), 0);
-  };
+			// Суммируем все значения в наборе данных, заменяя undefined и null на 0
+			return dataset.data.reduce((sum, val) => sum + (val || 0), 0)
+		}
 
-  // Получаем общие суммы для каждого типа
-  const clientsTotal = calculateTotal('Заказчики');
-  const studentsTotal = calculateTotal('Ученики');
-  const grandTotal = clientsTotal + studentsTotal;
+		// Получаем общие суммы для каждого типа
+		const clientsTotal = calculateTotal('Заказчики')
+		const studentsTotal = calculateTotal('Ученики')
+		const grandTotal = clientsTotal + studentsTotal
 
-  // Функция расчета процентного соотношения
-  const getPercentage = (value) => {
-    if (grandTotal === 0) return '0.0';
-    return ((value / grandTotal) * 100).toFixed(1);
-  };
+		// Функция расчета процентного соотношения
+		const getPercentage = (value) => {
+			if (grandTotal === 0) return '0.0'
+			return ((value / grandTotal) * 100).toFixed(1)
+		}
 
-  // Обработчик изменения чекбокса студентов
-  const handleStudentsChange = (e) => {
-    const newShowStudents = e.target.checked;
-    setShowStudents(newShowStudents);
+		// Обработчик изменения чекбокса студентов
+		const handleStudentsChange = (e) => {
+			const newShowStudents = e.target.checked
+			setShowStudents(newShowStudents)
 
-    // Переизлучаем событие с обновленными параметрами
-    socket.emit('getStudentClientComparisonData', {
-      token: user.token,
-      startDate: studRelatDateStart,
-      endDate: studRelatDateEnd,
-      showStudents: newShowStudents,
-      showClients,
-    });
-  };
+			// Переизлучаем событие с обновленными параметрами
+			socket.emit('getStudentClientComparisonData', {
+				token: user.token,
+				startDate: studRelatDateStart,
+				endDate: studRelatDateEnd,
+				showStudents: newShowStudents,
+				showClients,
+			})
+		}
 
-  // Обработчик изменения чекбокса клиентов
-  const handleClientsChange = (e) => {
-    const newShowClients = e.target.checked;
-    setShowClients(newShowClients);
+		// Обработчик изменения чекбокса клиентов
+		const handleClientsChange = (e) => {
+			const newShowClients = e.target.checked
+			setShowClients(newShowClients)
 
-    // Переизлучаем событие с обновленными параметрами
-    socket.emit('getStudentClientComparisonData', {
-      token: user.token,
-      startDate: studRelatDateStart,
-      endDate: studRelatDateEnd,
-      showStudents,
-      showClients: newShowClients,
-    });
-  };
+			// Переизлучаем событие с обновленными параметрами
+			socket.emit('getStudentClientComparisonData', {
+				token: user.token,
+				startDate: studRelatDateStart,
+				endDate: studRelatDateEnd,
+				showStudents,
+				showClients: newShowClients,
+			})
+		}
 
-  // Получаем цвета из датасетов
-  const getDatasetColor = (label) => {
-    const dataset = data.datasets.find((ds) => ds.label === label);
-    return dataset?.backgroundColor || '#25991c';
-  };
+		// Получаем цвета из датасетов
+		const getDatasetColor = (label) => {
+			const dataset = data.datasets.find((ds) => ds.label === label)
+			return dataset?.backgroundColor || '#25991c'
+		}
 
-  // Формируем структуру компонента
-  return (
-    <div className={s.subjectCheckboxes}>
-      {/* Заголовок таблицы */}
-      <div className={s.subjectHeader}>
-        <p></p>
-        <p>Кол-во</p>
-        <p>%</p>
-      </div>
+		// Формируем структуру компонента
+		return (
+			<div className={s.subjectCheckboxes}>
+				{/* Итоговая строка */}
+				<div className={s.subjectCheckboxesAll}>
+					<p>Всего:</p>
+					<p>{grandTotal}</p>
+				</div>
+				{/* Заголовок таблицы */}
+				<div className={s.subjectHeader}>
+					<p></p>
+					<p>Кол-во</p>
+					<p>%</p>
+				</div>
 
-      {/* Блок с клиентами */}
-      <div className={s.subjectOne}>
-        <label>
-          <Checkbox
-            style={{
-              color: getDatasetColor('Заказчики'),
-            }}
-            checked={showClients}
-            onChange={handleClientsChange}
-          />
-          Заказчики
-        </label>
-        <div className={s.subjectCounts}>
-          <p>{clientsTotal}</p>
-        </div>
-        <div className={s.subjectCounts}>
-          <p>{getPercentage(clientsTotal)}%</p>
-        </div>
-      </div>
+				{/* Блок с клиентами */}
+				<div className={s.subjectOne}>
+					<label>
+						<Checkbox
+							style={{
+								color: getDatasetColor('Заказчики'),
+							}}
+							checked={showClients}
+							onChange={handleClientsChange}
+						/>
+						Заказчики
+					</label>
+					<div className={s.subjectCounts}>
+						<p>{clientsTotal}</p>
+					</div>
+					<div className={s.subjectCounts}>
+						<p>{getPercentage(clientsTotal)}%</p>
+					</div>
+				</div>
 
-      {/* Блок со студентами */}
-      <div className={s.subjectOne}>
-        <label>
-          <Checkbox
-            style={{
-              color: getDatasetColor('Ученики'),
-            }}
-            checked={showStudents}
-            onChange={handleStudentsChange}
-          />
-          Ученики
-        </label>
-        <div className={s.subjectCounts}>
-          <p>{studentsTotal}</p>
-        </div>
-        <div className={s.subjectCounts}>
-          <p>{getPercentage(studentsTotal)}%</p>
-        </div>
-      </div>
-
-      {/* Итоговая строка */}
-      <div className={s.subjectCheckboxesAll}>
-        <p>Всего:</p>
-        <p>{grandTotal}</p>
-      </div>
-    </div>
-  );
-};
+				{/* Блок со студентами */}
+				<div className={s.subjectOne}>
+					<label>
+						<Checkbox
+							style={{
+								color: getDatasetColor('Ученики'),
+							}}
+							checked={showStudents}
+							onChange={handleStudentsChange}
+						/>
+						Ученики
+					</label>
+					<div className={s.subjectCounts}>
+						<p>{studentsTotal}</p>
+					</div>
+					<div className={s.subjectCounts}>
+						<p>{getPercentage(studentsTotal)}%</p>
+					</div>
+				</div>
+			</div>
+		)
+	}
 
 	const getSubjectIds = useCallback(
 		(selectedSubjects) => {
@@ -455,10 +458,12 @@ const renderComparisonCheckboxes = (data) => {
 			socket.emit('getTableData', {
 				token: user.token,
 				dateRange: {start: studFinDateStart, end: studFinDateEnd},
+				subjectIds: getSubjectIds(studTableSubjects),
 			})
 			socket.emit('getClientTableData', {
 				token: user.token,
 				dateRange: {start: cliAmDateStart, end: cliAmDateEnd},
+				subjectIds: getSubjectIds(cliTableSubjects),
 			})
 		}
 
@@ -631,6 +636,11 @@ const renderComparisonCheckboxes = (data) => {
 
 		return (
 			<div className={s.subjectCheckboxes}>
+				{/* Итоговая строка */}
+				<div className={s.subjectCheckboxesAll}>
+					<p>Всего:</p>
+					<p>{grandTotal}</p>
+				</div>
 				<div className={s.subjectHeader}>
 					<p></p>
 					<p>Кол-во</p>
@@ -847,6 +857,20 @@ const renderComparisonCheckboxes = (data) => {
 								/>
 							</div>
 						</div>
+						<div style={{maxHeight: '300px', overflowY: 'auto'}}>
+							{renderSubjectCheckboxes(
+								studTableSubjects,
+								setStudTableSubjects,
+								{
+									datasets: subjects.map((subject) => ({
+										label: subject.itemName,
+										data: studentsData
+											.filter((item) => item.subject === subject.itemName)
+											.map((item) => 1),
+									})),
+								},
+							)}
+						</div>
 					</div>
 					<div className={s.TableWrap}>
 						<table className={s.Table}>
@@ -1006,6 +1030,7 @@ const renderComparisonCheckboxes = (data) => {
 								<MenuItem value={3}>За всё время</MenuItem>
 							</Select>
 						</FormControl>
+
 						<Line width="260px" />
 						<div className={s.Dates}>
 							<div className={s.DatePicker}>
@@ -1023,6 +1048,20 @@ const renderComparisonCheckboxes = (data) => {
 									calendarId={`cliTable-right`}
 								/>
 							</div>
+						</div>
+						<div style={{maxHeight: '300px', overflowY: 'auto'}}>
+							{renderSubjectCheckboxes(
+								studTableSubjects,
+								setStudTableSubjects,
+								{
+									datasets: subjects.map((subject) => ({
+										label: subject.itemName,
+										data: studentsData
+											.filter((item) => item.subject === subject.itemName)
+											.map((item) => 1),
+									})),
+								},
+							)}
 						</div>
 					</div>
 					<div className={s.TableWrap}>

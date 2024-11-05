@@ -3092,7 +3092,7 @@ export async function getTableData(data, socket: any) {
       const lessons = studentSchedules_.length;
 
       const canceledLessons = studentSchedules_.filter(
-        (schedule) => schedule.isCancel || !schedule.isChecked
+        (schedule) => schedule.isCancel
       ).length;
       const income = studentSchedules_.reduce(
         (sum, schedule) =>

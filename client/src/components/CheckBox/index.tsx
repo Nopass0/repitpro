@@ -6,8 +6,8 @@ interface ILine {
 	size: string
 	className?: string
 	func?: () => void
-	checked?: boolean // Добавлен пропс для определения состояния "checked"
-	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void // Добавлен пропс для обработчика изменения состояния
+	checked?: boolean
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 	color?: string
 	disabled?: boolean
 	borderRadius?: number
@@ -43,10 +43,8 @@ const CheckBox: React.FC<ILine> = ({
 		},
 		'input:disabled ~ &': {
 			boxShadow: 'none',
-			background:
-				theme.palette.mode === 'dark'
-					? 'rgba(57,75,89,.5)'
-					: 'rgba(206,217,224,.5)',
+			background: '#b0b0b4',
+			opacity: 0.999,
 		},
 		'&::before': {
 			display: 'block',
@@ -77,17 +75,28 @@ const CheckBox: React.FC<ILine> = ({
 		'input:hover ~ &': {
 			backgroundColor: color || '#25991C',
 		},
+		// Добавляем стили для disabled состояния
+		'input:disabled ~ &': {
+			backgroundColor: color || '#25991C',
+			opacity: 0.99,
+			cursor: 'not-allowed',
+		},
 	})
 
 	return (
 		<mui.Checkbox
 			sx={{
 				'&:hover': {bgcolor: 'transparent'},
+				// Добавляем стили для disabled состояния
+				'&.Mui-disabled': {
+					opacity: 0.5,
+					cursor: 'not-allowed',
+				},
 			}}
 			id={idCheckbox}
 			className={className}
-			checked={checked} // Передаем значение "checked" из пропсов
-			onChange={onChange} // Передаем обработчик изменения состояния из пропсов
+			checked={checked}
+			onChange={onChange}
 			disableRipple
 			color="default"
 			disabled={disabled}

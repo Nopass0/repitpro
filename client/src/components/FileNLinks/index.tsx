@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react'
+import React, {useEffect, useState, useCallback, useMemo} from 'react'
 import s from './index.module.scss'
 import {Collapse, List, ListItemButton, ListItemText} from '@mui/material'
 import Line from '../Line'
@@ -28,14 +28,14 @@ interface IFileNLinks {
 
 const FileNLinks: React.FC<IFileNLinks> = ({
 	className,
-	alreadyUploaded,
+	alreadyUploaded = [],
 	callback,
 	typeCard = 'student',
 	submitLinks,
 	deleteItem,
 	fileInputId,
 	linksArray = [],
-}: IFileNLinks) => {
+}) => {
 	const [open, setOpen] = useState<boolean>(false)
 	const [items, setItems] = useState<any[]>([])
 	const [contextMenu, setContextMenu] = useState<{
@@ -53,7 +53,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 	const sendDelete = useCallback(
 		(id: string) => {
 			if (!id) return
-
 			socket.emit('deleteAudio', {
 				token,
 				id,
@@ -73,22 +72,27 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 		if (!file) return
 		const url = URL.createObjectURL(file)
 		window.open(url, '')
-		// Cleanup
-		return () => URL.revokeObjectURL(url)
+		URL.revokeObjectURL(url)
 	}, [])
+
+	// Вызываем submitLinks только когда меняются items
+	useEffect(() => {
+		if (!submitLinks) return
+
+		const links = items
+			.filter((item) => item.isLink)
+			.map((item) => item.name)
+			.filter(Boolean)
+
+		submitLinks(links)
+	}, [items, submitLinks])
 
 	const handleAddLink = async () => {
 		try {
 			const text = await navigator.clipboard.readText()
-			if (text && text.trim() !== '') {
+			if (text?.trim()) {
 				const newItem = {name: text.trim(), isLink: true, type: 'link'}
-				setItems((prevItems) => {
-					const updatedItems = [...prevItems, newItem]
-					updateSubmitLinks(updatedItems)
-					return updatedItems
-				})
-			} else {
-				console.warn('Clipboard is empty or contains no text')
+				setItems((prevItems) => [...prevItems, newItem])
 			}
 		} catch (err) {
 			console.error('Failed to read clipboard contents:', err)
@@ -96,20 +100,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 			setContextMenu(null)
 		}
 	}
-
-	const updateSubmitLinks = useCallback(
-		(updatedItems: any[]) => {
-			if (!submitLinks) return
-
-			const links = updatedItems
-				.filter((item) => item.isLink)
-				.map((item) => item.name)
-				.filter(Boolean)
-
-			submitLinks(links)
-		},
-		[submitLinks],
-	)
 
 	const handleFileChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,20 +114,15 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 				isLink: false,
 			}))
 
-			setItems((prevItems) => {
-				const updatedItems = [...prevItems, ...newFileItems]
-				updateSubmitLinks(updatedItems) // This will only submit links, not files
-				return updatedItems
-			})
+			setItems((prevItems) => [...prevItems, ...newFileItems])
 
-			// Call callback for each file if provided
 			if (callback) {
 				newFileItems.forEach((item) => {
 					callback(item.file, item.name, item.size, item.type)
 				})
 			}
 		},
-		[callback, updateSubmitLinks],
+		[callback],
 	)
 
 	const handleDeleteItem = useCallback(
@@ -146,7 +131,6 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 				const deletedItem = prevItems[index]
 				const updatedItems = prevItems.filter((_, i) => i !== index)
 
-				// Handle deletion
 				if (deletedItem?.id) {
 					sendDelete(deletedItem.id)
 				}
@@ -154,20 +138,18 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 					deleteItem(deletedItem, index)
 				}
 
-				updateSubmitLinks(updatedItems)
 				return updatedItems
 			})
 		},
-		[deleteItem, sendDelete, updateSubmitLinks],
+		[deleteItem, sendDelete],
 	)
 
-	// Initialize items when alreadyUploaded changes
+	// Инициализируем items только при изменении входных данных
 	useEffect(() => {
-		const uploadedItems =
-			alreadyUploaded?.map((item) => ({
-				...item,
-				isLink: false,
-			})) || []
+		const uploadedItems = alreadyUploaded.map((item) => ({
+			...item,
+			isLink: false,
+		}))
 
 		const linkItems = linksArray.map((link) => ({
 			name: link,
@@ -175,10 +157,8 @@ const FileNLinks: React.FC<IFileNLinks> = ({
 			isLink: true,
 		}))
 
-		const combinedItems = [...uploadedItems, ...linkItems]
-		setItems(combinedItems)
-		updateSubmitLinks(combinedItems)
-	}, [alreadyUploaded, linksArray, updateSubmitLinks])
+		setItems([...uploadedItems, ...linkItems])
+	}, [alreadyUploaded, linksArray])
 
 	return (
 		<>
