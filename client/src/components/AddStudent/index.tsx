@@ -266,7 +266,7 @@ const AddStudent = ({}: IAddStudent) => {
 	//get week
 	const getVoidWeek = (): ITimeLine[] => {
 		const week = daysOfWeek.map((day, index) => ({
-			id: (index + 1) * (currentItemIndex > 0 ? currentItemIndex : 1),
+			id: (index + 1) * (currentItemIndex + 1),
 			day,
 			active: false,
 			startTime: {hour: 0, minute: 0},
@@ -356,6 +356,14 @@ const AddStudent = ({}: IAddStudent) => {
 				setFreeSlots(data.data.freeSlots)
 			})
 	}, [items])
+
+	const [activeTimePicker, setActiveTimePicker] = useState<{
+		itemIndex: number
+		timelineId: number | null
+	}>({
+		itemIndex: -1,
+		timelineId: null,
+	})
 
 	const handleFileNLinks = (
 		file: any,
@@ -548,33 +556,48 @@ const AddStudent = ({}: IAddStudent) => {
 		)
 	}
 
+	// const handleClick_dp = (itemIndex: number, id: number) => {
+	// 	console.log(itemIndex, id, items)
+	// 	setItems((prevItems) =>
+	// 		prevItems.map((item, index) =>
+	// 			index === itemIndex
+	// 				? {
+	// 						...item,
+	// 						timeLinesArray: item.timeLinesArray.map((timeline) =>
+	// 							timeline.id === id
+	// 								? {
+	// 										...timeline,
+	// 										active: !timeline.active,
+	// 										editingStart: !timeline.active,
+	// 										editingEnd: false,
+	// 									}
+	// 								: {
+	// 										...timeline,
+	// 										active: false,
+	// 										editingStart: false,
+	// 										editingEnd: false,
+	// 									},
+	// 						),
+	// 					}
+	// 				: item,
+	// 		),
+	// 	)
+	// 	console.log(items, 'itemsitemsitems')
+
+	// 	setShowEndTimePicker(-1)
+	// }
+	// Измененная функция handleClick_dp
 	const handleClick_dp = (itemIndex: number, id: number) => {
-		console.log(itemIndex, id, items)
-		setItems((prevItems) =>
-			prevItems.map((item, index) =>
-				index === itemIndex
-					? {
-							...item,
-							timeLinesArray: item.timeLinesArray.map((timeline) =>
-								timeline.id === id
-									? {
-											...timeline,
-											active: !timeline.active,
-											editingStart: !timeline.active,
-											editingEnd: false,
-										}
-									: {
-											...timeline,
-											active: false,
-											editingStart: false,
-											editingEnd: false,
-										},
-							),
-						}
-					: item,
-			),
-		)
-		console.log(items, 'itemsitemsitems')
+		// Если этот таймпикер уже активен, деактивируем его
+		if (
+			activeTimePicker.itemIndex === itemIndex &&
+			activeTimePicker.timelineId === id
+		) {
+			setActiveTimePicker({itemIndex: -1, timelineId: null})
+		} else {
+			// Иначе активируем новый таймпикер
+			setActiveTimePicker({itemIndex, timelineId: id})
+		}
 
 		setShowEndTimePicker(-1)
 	}
@@ -1025,7 +1048,14 @@ const AddStudent = ({}: IAddStudent) => {
 			setLinkStudent(data.students[0].linkStudent)
 			setCommentStudent(data.students[0].commentStudent)
 			setCostStudent(data.students[0].costStudent)
-			setItems(data.items)
+			const itemsWithTimelineIds = data.items.map((item, itemIndex) => ({
+				...item,
+				timeLinesArray: item.timeLinesArray.map((timeline, timelineIndex) => ({
+					...timeline,
+					id: (timelineIndex + 1) * (itemIndex + 1), // Генерируем уникальный id
+				})),
+			}))
+			setItems(itemsWithTimelineIds)
 			setFiles(data.students[0].filesData)
 			setAudios(data.students[0].audiosData)
 
@@ -2049,54 +2079,19 @@ const AddStudent = ({}: IAddStudent) => {
 																		</>
 																	)}
 
-																	{(timeline.active ||
-																		timeline.id === showEndTimePicker) && (
-																		<div
-																			className={s.timePickerWrapper}
-																			style={{
-																				...(window.innerWidth >= 1024
-																					? {
-																							transform: `translateY(${
-																								index * 40
-																							}px) translateX(-50%)`,
-																						}
-																					: {}),
-																			}}>
-																			{timeline.active &&
-																				!timeline.editingEnd && (
-																					<TimePicker
-																						title={`Запланировать занятие #${timeline.id}`}
-																						onTimeChange={(
-																							startHour,
-																							startMinute,
-																							endHour,
-																							endMinute,
-																						) =>
-																							handleTimeChange(
-																								currentItemIndex,
-																								timeline.id,
-																								startHour,
-																								startMinute,
-																								endHour,
-																								endMinute,
-																							)
-																						}
-																						onExit={() =>
-																							closeTimePicker(
-																								currentItemIndex,
-																								timeline.id,
-																							)
-																						}
-																						addBlock={true}
-																						freeSlots={freeSlots}
-																						currentDay={timeline.day}
-																						lessonDuration={
-																							items[currentItemIndex]
-																								.lessonDuration || undefined
-																						}
-																					/>
-																				)}
-																			{timeline.editingEnd && (
+																	{activeTimePicker.itemIndex ===
+																		currentItemIndex &&
+																		activeTimePicker.timelineId ===
+																			timeline.id && (
+																			<div
+																				className={s.timePickerWrapper}
+																				style={{
+																					...(window.innerWidth >= 1024
+																						? {
+																								transform: `translateY(${index * 40}px) translateX(-50%)`,
+																							}
+																						: {}),
+																				}}>
 																				<TimePicker
 																					title={`Запланировать занятие #${timeline.id}`}
 																					onTimeChange={(
@@ -2114,12 +2109,12 @@ const AddStudent = ({}: IAddStudent) => {
 																							endMinute,
 																						)
 																					}
-																					onExit={() =>
-																						closeTimePicker(
-																							currentItemIndex,
-																							timeline.id,
-																						)
-																					}
+																					onExit={() => {
+																						setActiveTimePicker({
+																							itemIndex: -1,
+																							timelineId: null,
+																						})
+																					}}
 																					addBlock={true}
 																					freeSlots={freeSlots}
 																					currentDay={timeline.day}
@@ -2128,9 +2123,8 @@ const AddStudent = ({}: IAddStudent) => {
 																							.lessonDuration || undefined
 																					}
 																				/>
-																			)}
-																		</div>
-																	)}
+																			</div>
+																		)}
 																</div>
 
 																{items[currentItemIndex].timeLinesArray.length -
