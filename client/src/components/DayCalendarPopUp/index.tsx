@@ -6,7 +6,7 @@ import * as mui from '@mui/base'
 
 import Plus from '../../assets/ItemPlus.svg'
 import {useDispatch, useSelector} from 'react-redux'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import socket from '../../socket'
 import React from 'react'
 import {debounce} from 'lodash'
@@ -23,6 +23,113 @@ interface IDayCalendarPopUp {
 	iconClick?: () => void
 	LineClick?: () => void
 	className?: string
+}
+
+const calculatePaymentStatus = (student, currentDate) => {
+	let sortedPrePay = []
+	if (Array.isArray(student.prePay)) {
+		sortedPrePay = [...student.prePay].sort(
+			(a, b) => new Date(a.date) - new Date(b.date),
+		)
+	} else if (typeof student.prePay === 'object' && student.prePay !== null) {
+		sortedPrePay = [student.prePay].sort(
+			(a, b) => new Date(a.date) - new Date(b.date),
+		)
+	}
+
+	let sortedHistory =
+		Array.isArray(student.history) &&
+		student.history.length > 0 &&
+		Array.isArray(student.history[0].historyLessons)
+			? [...student.history[0].historyLessons].sort(
+					(a, b) => new Date(a.date) - new Date(b.date),
+				)
+			: []
+
+	let balance = 0
+
+	sortedPrePay.forEach((pay) => {
+		if (new Date(pay.date) <= currentDate) {
+			balance += parseFloat(pay.cost || 0)
+		}
+	})
+
+	const todayLesson = sortedHistory.find(
+		(lesson) =>
+			new Date(lesson.date).toDateString() === currentDate.toDateString(),
+	)
+
+	let isPaid = false
+	if (todayLesson) {
+		if (balance >= parseFloat(todayLesson.price || 0)) {
+			isPaid = true
+			balance -= parseFloat(todayLesson.price || 0)
+		}
+	}
+
+	return isPaid
+}
+
+// Функция для создания даты из дня, месяца и года
+const createDate = (
+	day: string | number,
+	month: string | number,
+	year: string | number,
+): Date => {
+	// Убираем ведущие нули и конвертируем в числа
+	const normalizedDay = parseInt(String(day).replace(/^0+/, ''))
+	const normalizedMonth = parseInt(String(month).replace(/^0+/, ''))
+	const normalizedYear = parseInt(String(year))
+
+	return new Date(Date.UTC(normalizedYear, normalizedMonth - 1, normalizedDay))
+}
+
+// Функция для нормализации даты
+const normalizeDate = (date: Date | string): Date => {
+	const d = date instanceof Date ? date : new Date(date)
+	return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+}
+
+// Функция для сравнения дат
+const isSameDay = (date1: Date | string, date2: Date | string): boolean => {
+	try {
+		const d1 = normalizeDate(date1)
+		const d2 = normalizeDate(date2)
+
+		return (
+			d1.getUTCDate() === d2.getUTCDate() &&
+			d1.getUTCMonth() === d2.getUTCMonth() &&
+			d1.getUTCFullYear() === d2.getUTCFullYear()
+		)
+	} catch (error) {
+		console.error('Date comparison error:', error)
+		return false
+	}
+}
+
+const getLessonPaidStatus = (
+	student,
+	selectedDay,
+	selectedMonth,
+	selectedYear,
+) => {
+	// Проверяем наличие истории занятий
+	if (!student?.history?.[0]?.historyLessons) {
+		return false
+	}
+
+	// Создаем дату для сравнения (убираем ведущие нули)
+	const compareDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`
+	console.log(`\nCompare date : ${compareDate}\n`)
+	// Ищем занятие на выбранную дату и проверяем isPaid
+	let isPaid = student.history[0].historyLessons.some((lesson) => {
+		const lessonDate = new Date(lesson.date).toISOString().split('T')[0]
+		return lessonDate === compareDate && lesson.isPaid
+	})
+
+	console.log(`\nIs paid : ${isPaid}\n`)
+
+	return isPaid
 }
 
 const DayCalendarPopUp = ({
@@ -42,6 +149,15 @@ const DayCalendarPopUp = ({
 		(state: any) => state.calendarNowPopupYear,
 	)
 
+	// Создаем мемоизированную нормализованную дату
+	const normalizedSelectedDate = useMemo(() => {
+		return normalizeDate(
+			calendarNowPopupDay,
+			calendarNowPopupMonth,
+			calendarNowPopupYear,
+		)
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear])
+	const [currentDate] = useState(new Date())
 	const currentMonth = useSelector((state: any) => state.currentMonth)
 	const currentYear = useSelector((state: any) => state.currentYear)
 	const details = useSelector((state: any) => state.details)
@@ -311,6 +427,7 @@ const DayCalendarPopUp = ({
 		const studentsToSave = [...students, ...filledTempStudents]
 
 		studentsToSave.forEach((student) => {
+		console.log("Lessons price: ", student.costOneLesson)
 			socket.emit('updateStudentSchedule', {
 				id: student.id,
 				day: calendarNowPopupDay,
@@ -358,8 +475,25 @@ const DayCalendarPopUp = ({
 		}
 	}
 
-	// Combine regular and temporary students for display
-	const displayStudents = [...students, ...tempStudents]
+	const displayStudents = useMemo(() => {
+		const allStudents = [...students, ...tempStudents]
+		return allStudents.map((student) => ({
+			...student,
+			isPaid: getLessonPaidStatus(
+				student,
+				calendarNowPopupDay,
+				calendarNowPopupMonth,
+				calendarNowPopupYear,
+			),
+		}))
+	}, [
+		students,
+		tempStudents,
+		calendarNowPopupDay,
+		calendarNowPopupMonth,
+		calendarNowPopupYear,
+	])
+
 	const sortedDisplayStudents = sortStudentsByStartTime(displayStudents)
 
 	//hour or minute to normal view. Ex: 12:3 to 12:03/ 1:5 to 01:05
@@ -729,7 +863,7 @@ const DayCalendarPopUp = ({
 									}
 									item={student.itemName}
 									price={student.costOneLesson}
-									prevpay={student.tryLessonCheck}
+									prevpay={student.isPaid}
 									type={student.type}
 								/>
 								{/* <Line className={s.Line} width="700px" /> */}
@@ -793,10 +927,16 @@ const DayCalendarPopUp = ({
 						<div className={s.Left}>
 							<div className={s.Lessons}>
 								<p>
-									Занятий: <b>{students.length}</b>
+									Занятий:{' '}
+									<b>{students.filter((item) => !item.isCancel).length}</b>
 								</p>
 								{!hiddenNum && (
-									<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+									<b>
+										{students
+											.filter((item) => !item.isCancel)
+											.reduce((a, b) => +a + +b.costOneLesson, 0)}
+										₽
+									</b>
 								)}
 							</div>
 							<div className={s.works}>

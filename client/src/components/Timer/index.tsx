@@ -34,11 +34,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	const [isSelectingEndTime, setIsSelectingEndTime] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>('')
 
-	// Получаем занятые слоты для текущего дня
 	const occupiedSlotsForDay =
 		freeSlots?.find((slot) => slot.day === currentDay)?.freeTime || []
 
-	// Проверка доступности интервала
 	const isIntervalAvailable = (
 		startHours: number,
 		startMinutes: number,
@@ -48,21 +46,46 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		const startTime = startHours * 60 + startMinutes
 		const endTime = endHours * 60 + endMinutes
 
-		// Проверяем, что интервал не выходит за пределы рабочего дня
 		if (startTime < 8 * 60 || endTime > 22 * 60) return false
 		if (endTime <= startTime) return false
 
-		// Проверяем, что интервал не пересекается с занятыми слотами
 		return !occupiedSlotsForDay.some((slot) => {
 			const slotStart = slot.startTime.hour * 60 + slot.startTime.minute
 			const slotEnd = slot.endTime.hour * 60 + slot.endTime.minute
 
 			return (
-				(startTime >= slotStart && startTime < slotEnd) || // Начало пересекается
-				(endTime > slotStart && endTime <= slotEnd) || // Конец пересекается
-				(startTime <= slotStart && endTime >= slotEnd) // Полностью покрывает занятый слот
+				(startTime >= slotStart && startTime < slotEnd) ||
+				(endTime > slotStart && endTime <= slotEnd) ||
+				(startTime <= slotStart && endTime >= slotEnd)
 			)
 		})
+	}
+
+	const normalizeTime = (hours: number, minutes: number): [number, number] => {
+		let normalizedHours = hours
+		let normalizedMinutes = minutes
+
+		// Handle minutes overflow
+		if (normalizedMinutes >= 60) {
+			normalizedHours += Math.floor(normalizedMinutes / 60)
+			normalizedMinutes = normalizedMinutes % 60
+		}
+		// Handle minutes underflow
+		else if (normalizedMinutes < 0) {
+			normalizedHours -= 1
+			normalizedMinutes = 60 + normalizedMinutes
+		}
+
+		// Handle hours overflow/underflow
+		if (normalizedHours >= 22) {
+			normalizedHours = 8
+			normalizedMinutes = 0
+		} else if (normalizedHours < 8) {
+			normalizedHours = 8
+			normalizedMinutes = 0
+		}
+
+		return [normalizedHours, normalizedMinutes]
 	}
 
 	const findNextAvailableTime = (
@@ -73,31 +96,16 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		let attempts = 0
 		const maxAttempts = 180 // 15 часов * 12 (5-минутные интервалы)
 
-		let newHours = hours
-		let newMinutes = minutes
+		let [newHours, newMinutes] = normalizeTime(hours, minutes)
 
 		while (attempts < maxAttempts) {
-			if (newHours < 8) {
-				newHours = 8
-				newMinutes = 0
-			}
-			if (newHours >= 22) {
-				newHours = 8
-				newMinutes = 0
-			}
-
 			const [endHours, endMinutes] = calculateEndTime(newHours, newMinutes)
 
 			if (isIntervalAvailable(newHours, newMinutes, endHours, endMinutes)) {
 				return [newHours, newMinutes]
 			}
 
-			newMinutes += increment
-			if (newMinutes >= 60) {
-				newHours = newHours + 1
-				newMinutes = 0
-			}
-
+			;[newHours, newMinutes] = normalizeTime(newHours, newMinutes + increment)
 			attempts++
 		}
 
@@ -110,9 +118,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	): [number, number] => {
 		if (!lessonDuration) return [startHours + 1, startMinutes]
 
-		let totalMinutes = startMinutes + lessonDuration
-		let endHours = startHours + Math.floor(totalMinutes / 60)
-		let endMinutes = totalMinutes % 60
+		const totalMinutes = startMinutes + lessonDuration
+		const endHours = startHours + Math.floor(totalMinutes / 60)
+		const endMinutes = totalMinutes % 60
 
 		return [endHours, endMinutes]
 	}
@@ -122,16 +130,10 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		minutesIncrement: number,
 	) => {
 		if (isSelectingEndTime) {
-			let newEndHours = endHours + hoursIncrement
-			let newEndMinutes = endMinutes + minutesIncrement
-
-			if (newEndMinutes >= 60) {
-				newEndHours += Math.floor(newEndMinutes / 60)
-				newEndMinutes = newEndMinutes % 60
-			} else if (newEndMinutes < 0) {
-				newEndHours -= 1
-				newEndMinutes = 60 + newEndMinutes
-			}
+			const [newEndHours, newEndMinutes] = normalizeTime(
+				endHours + hoursIncrement,
+				endMinutes + minutesIncrement,
+			)
 
 			const startTime = selectedHours * 60 + selectedMinutes
 			const newEndTime = newEndHours * 60 + newEndMinutes
@@ -156,10 +158,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				setErrorMessage('Выбранное время пересекается с занятым слотом')
 			}
 		} else {
-			const [newHours, newMinutes] = findNextAvailableTime(
+			const [newHours, newMinutes] = normalizeTime(
 				selectedHours + hoursIncrement,
 				selectedMinutes + minutesIncrement,
-				minutesIncrement || 5,
 			)
 
 			const [newEndHours, newEndMinutes] = calculateEndTime(
@@ -223,7 +224,6 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		}
 	}
 
-	// Получаем отсортированные занятые слоты
 	const getSortedOccupiedSlots = () => {
 		return [...occupiedSlotsForDay]
 			.sort((a, b) => {

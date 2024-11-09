@@ -3,8 +3,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import ScheduleIcon from '@mui/icons-material/Schedule'
 import * as mui from '@mui/material'
-import {styled} from '@mui/material/styles'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import InputMask from 'react-input-mask'
 import {useDispatch, useSelector} from 'react-redux'
 import Arrow, {ArrowType} from '../../assets/arrow'
@@ -64,6 +63,7 @@ const AddStudent = ({}: IAddStudent) => {
 		currentOpenedStudent ? true : false,
 	)
 	const [loading, setLoading] = useState<boolean>(false)
+	const [originalHistory, setOriginalHistory] = useState([])
 	const navigate = useNavigate()
 	const [audios, setAudios] = useState<any>([])
 	const [prePayList, setPrePayList] = useState<IPrePayList[]>([])
@@ -75,6 +75,12 @@ const AddStudent = ({}: IAddStudent) => {
 	const [combinedHistory, setCombinedHistory] = useState([])
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const deleteButtonRef = useRef(null)
+
+	const [initialData, setInitialData] = useState({
+		items: [],
+		prePayList: [],
+		currentItemIndex: 0,
+	})
 
 	// useEffect для обновления combinedHistory
 	useEffect(() => {
@@ -566,36 +572,6 @@ const AddStudent = ({}: IAddStudent) => {
 		)
 	}
 
-	// const handleClick_dp = (itemIndex: number, id: number) => {
-	// 	console.log(itemIndex, id, items)
-	// 	setItems((prevItems) =>
-	// 		prevItems.map((item, index) =>
-	// 			index === itemIndex
-	// 				? {
-	// 						...item,
-	// 						timeLinesArray: item.timeLinesArray.map((timeline) =>
-	// 							timeline.id === id
-	// 								? {
-	// 										...timeline,
-	// 										active: !timeline.active,
-	// 										editingStart: !timeline.active,
-	// 										editingEnd: false,
-	// 									}
-	// 								: {
-	// 										...timeline,
-	// 										active: false,
-	// 										editingStart: false,
-	// 										editingEnd: false,
-	// 									},
-	// 						),
-	// 					}
-	// 				: item,
-	// 		),
-	// 	)
-	// 	console.log(items, 'itemsitemsitems')
-
-	// 	setShowEndTimePicker(-1)
-	// }
 	// Измененная функция handleClick_dp
 	const handleClick_dp = (itemIndex: number, id: number) => {
 		// Если этот таймпикер уже активен, деактивируем его
@@ -712,63 +688,6 @@ const AddStudent = ({}: IAddStudent) => {
 		return `#${hexColor}`
 	}
 
-	// Функция для обработки предоплат
-	// const handlePrePayment = (historyLessons, prePayList) => {
-	// 	// Проверяем, является ли prePayList массивом и не пуст ли он
-	// 	if (!Array.isArray(prePayList) || prePayList.length === 0) {
-	// 		return historyLessons
-	// 	}
-
-	// 	// Функция для сравнения дат без учета времени
-	// 	const isSameDay = (date1, date2) => {
-	// 		return (
-	// 			date1.getFullYear() === date2.getFullYear() &&
-	// 			date1.getMonth() === date2.getMonth() &&
-	// 			date1.getDate() === date2.getDate()
-	// 		)
-	// 	}
-
-	// 	// Сортируем предоплаты по дате
-	// 	const sortedPrePayList = [...prePayList].sort(
-	// 		(a, b) => new Date(a.date) - new Date(b.date),
-	// 	)
-
-	// 	// Сортируем занятия по дате
-	// 	const sortedHistoryLessons = [...historyLessons].sort(
-	// 		(a, b) => new Date(a.date) - new Date(b.date),
-	// 	)
-
-	// 	let remainingPrePayment = 0
-	// 	let nextPrePayIndex = 0
-
-	// 	const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
-	// 		const lessonDate = new Date(lesson.date)
-
-	// 		// Применяем все предоплаты, которые были до или в тот же день, что и это занятие
-	// 		while (
-	// 			nextPrePayIndex < sortedPrePayList.length &&
-	// 			(new Date(sortedPrePayList[nextPrePayIndex].date) < lessonDate ||
-	// 				isSameDay(
-	// 					new Date(sortedPrePayList[nextPrePayIndex].date),
-	// 					lessonDate,
-	// 				))
-	// 		) {
-	// 			remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
-	// 			nextPrePayIndex++
-	// 		}
-
-	// 		// Проверяем, можем ли мы оплатить это занятие
-	// 		if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
-	// 			remainingPrePayment -= Number(lesson.price)
-	// 			return {...lesson, isPaid: true}
-	// 		} else {
-	// 			return {...lesson, isPaid: false}
-	// 		}
-	// 	})
-
-	// 	return updatedHistoryLessons
-	// }
-	//
 	const isSameDay = (date1, date2) => {
 		const d1 = new Date(date1)
 		const d2 = new Date(date2)
@@ -923,118 +842,124 @@ const AddStudent = ({}: IAddStudent) => {
 	const [allLessonsPrice, setAllLessonsPrice] = useState<number>(0)
 
 	useEffect(() => {
-		console.log('Effect triggered:', {items, prePayList, currentItemIndex})
-
 		if (!Array.isArray(items) || items.length === 0) {
+			return
+		}
+
+		// Если это существующий студент и мы не в режиме редактирования,
+		// используем историю с сервера без изменений
+		if (currentOpenedStudent && !isEditMode) {
+			// const serverHistory = data.historyLessons.map((lesson) => ({
+			// 	...lesson,
+			// 	date: new Date(lesson.date),
+			// }))
+			// setHistoryLesson(serverHistory)
 			return
 		}
 
 		let countLessons = 0
 		let countLessonsPrice = 0
 		const now = new Date()
-
-		// Create new array for lessons
 		let newHistoryLessons = []
 
-		// Generate lessons for all items
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i]
-			const differenceDays = differenceInDays(item.endLesson, item.startLesson)
+		// Сначала добавляем существующие уроки из истории
+		if (data?.historyLessons) {
+			newHistoryLessons = data.historyLessons.map((lesson) => ({
+				...lesson,
+				date: new Date(lesson.date),
+			}))
+		}
 
-			const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
-				addDays(item.startLesson, j),
-			)
-
-			for (const date of dateRange) {
-				const dayOfWeek = getDay(date)
-				const scheduleForDay = item.timeLinesArray[dayOfWeek]
-
-				const hasScheduledTime = !(
-					scheduleForDay.startTime.hour === 0 &&
-					scheduleForDay.startTime.minute === 0 &&
-					scheduleForDay.endTime.hour === 0 &&
-					scheduleForDay.endTime.minute === 0
+		// Генерируем новые уроки только если мы в режиме редактирования
+		if (isEditMode) {
+			for (let i = 0; i < items.length; i++) {
+				const item = items[i]
+				const differenceDays = differenceInDays(
+					item.endLesson,
+					item.startLesson,
 				)
 
-				if (hasScheduledTime) {
-					const lessonDate = new Date(date)
-					lessonDate.setHours(
-						scheduleForDay.startTime.hour,
-						scheduleForDay.startTime.minute,
+				const dateRange = Array.from({length: differenceDays + 1}, (_, j) =>
+					addDays(item.startLesson, j),
+				)
+
+				for (const date of dateRange) {
+					const dayOfWeek = getDay(date)
+					const scheduleForDay = item.timeLinesArray[dayOfWeek]
+
+					const hasScheduledTime = !(
+						scheduleForDay.startTime.hour === 0 &&
+						scheduleForDay.startTime.minute === 0 &&
+						scheduleForDay.endTime.hour === 0 &&
+						scheduleForDay.endTime.minute === 0
 					)
 
-					const existingLesson = historyLesson.find(
-						(lesson) => lesson.date.getTime() === lessonDate.getTime(),
-					)
+					if (hasScheduledTime) {
+						const lessonDate = new Date(date)
+						lessonDate.setHours(
+							scheduleForDay.startTime.hour,
+							scheduleForDay.startTime.minute,
+						)
 
-					const newLesson = {
-						date: lessonDate,
-						itemName: item.itemName,
-						isDone: existingLesson ? existingLesson.isDone : lessonDate < now,
-						price: item.costOneLesson,
-						isPaid: false, // Reset payment status for recalculation
-						isCancel: existingLesson ? existingLesson.isCancel : false,
+						// Ищем существующий урок по точному совпадению даты и времени
+						const existingLessonIndex = newHistoryLessons.findIndex(
+							(lesson) => lesson.date.getTime() === lessonDate.getTime(),
+						)
+
+						if (existingLessonIndex !== -1) {
+							// Обновляем существующий урок, сохраняя статусы
+							newHistoryLessons[existingLessonIndex] = {
+								...newHistoryLessons[existingLessonIndex],
+								itemName: item.itemName,
+								price: item.costOneLesson,
+							}
+						} else {
+							// Добавляем новый урок
+							newHistoryLessons.push({
+								date: lessonDate,
+								itemName: item.itemName,
+								isDone: lessonDate < now,
+								price: item.costOneLesson,
+								isPaid: false,
+								isCancel: false,
+							})
+						}
 					}
-
-					// Update counters only for current item and non-canceled lessons
-					if (!newLesson.isCancel && i === currentItemIndex) {
-						countLessons++
-						countLessonsPrice += Number(item.costOneLesson)
-					}
-
-					newHistoryLessons.push(newLesson)
 				}
 			}
 		}
 
-		// Add existing lessons that weren't generated
-		historyLesson.forEach((lesson) => {
-			const lessonExists = newHistoryLessons.some(
-				(newLesson) => newLesson.date.getTime() === lesson.date.getTime(),
-			)
+		// Обновляем счетчики только для текущего предмета
+		countLessons = newHistoryLessons.filter(
+			(lesson) =>
+				!lesson.isCancel &&
+				lesson.itemName === items[currentItemIndex].itemName,
+		).length
 
-			if (!lessonExists) {
-				newHistoryLessons.push({
-					...lesson,
-					date: new Date(lesson.date),
-					isPaid: false, // Reset payment status for recalculation
-				})
-
-				if (
-					!lesson.isCancel &&
-					lesson.itemName === items[currentItemIndex].itemName
-				) {
-					countLessons++
-					countLessonsPrice += Number(lesson.price)
-				}
+		countLessonsPrice = newHistoryLessons.reduce((sum, lesson) => {
+			if (
+				!lesson.isCancel &&
+				lesson.itemName === items[currentItemIndex].itemName
+			) {
+				return sum + Number(lesson.price)
 			}
-		})
+			return sum
+		}, 0)
 
-		// Sort lessons chronologically
-		newHistoryLessons.sort((a, b) => a.date.getTime() - b.date.getTime())
+		// Сортируем по дате
+		newHistoryLessons.sort((a, b) => b.date.getTime() - a.date.getTime())
 
-		console.log('Before payment processing:', {
-			lessonsCount: newHistoryLessons.length,
-			prePayList,
-		})
-
-		// Process payments
-		const updatedHistoryLessons = handlePrePayment(
-			newHistoryLessons,
-			prePayList || [],
-			items[currentItemIndex].itemName,
-		)
-
-		console.log('After payment processing:', {
-			lessonsCount: updatedHistoryLessons.length,
-			paidLessons: updatedHistoryLessons.filter((l) => l.isPaid).length,
-		})
-
-		// Update state
 		setAllLessons(countLessons)
 		setAllLessonsPrice(countLessonsPrice)
-		setHistoryLesson(updatedHistoryLessons)
-	}, [items, prePayList, currentItemIndex])
+		setHistoryLesson(newHistoryLessons)
+	}, [
+		items,
+		prePayList,
+		currentItemIndex,
+		isEditMode,
+		currentOpenedStudent,
+		data,
+	])
 
 	const [scrollPosition, setScrollPosition] = useState(0)
 	const collapseRef = useRef(null)
@@ -1112,9 +1037,23 @@ const AddStudent = ({}: IAddStudent) => {
 					id: (timelineIndex + 1) * (itemIndex + 1), // Генерируем уникальный id
 				})),
 			}))
+
+			setInitialData({
+				items: data.items,
+				prePayList: data.students[0].prePay || [],
+				currentItemIndex,
+			})
+
 			setItems(itemsWithTimelineIds)
 			setFiles(data.students[0].filesData)
 			setAudios(data.students[0].audiosData)
+
+			const serverHistory = data.historyLessons.map((lesson) => ({
+				...lesson,
+				date: new Date(lesson.date),
+			}))
+			setOriginalHistory(serverHistory)
+			setHistoryLesson(serverHistory)
 
 			// Преобразуем даты и добавляем isCancel если его нет
 			let dateHistory = data.historyLessons.map((i) => {
@@ -1129,6 +1068,8 @@ const AddStudent = ({}: IAddStudent) => {
 					isDone: i.isDone !== undefined ? i.isDone : lessonDate < now,
 					// Сохраняем isPaid с сервера если есть, иначе false
 					isPaid: i.isPaid || false,
+					price: i.price || '0',
+					itemName: i.itemName || '',
 				}
 			})
 			console.log('Initial history lessons:', dateHistory)
@@ -1673,8 +1614,6 @@ const AddStudent = ({}: IAddStudent) => {
 									</button>
 								</div>
 
-								{/* <Line width="100%" className={s.Line} /> */}
-
 								{items.map((item, index) => (
 									<>
 										<div
@@ -1973,40 +1912,7 @@ const AddStudent = ({}: IAddStudent) => {
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCard}>
 												<p>Начало занятий:</p>
-												{/* <LocalizationProvider
-											dateAdapter={AdapterDateFns}
-											adapterLocale={ru}>
-											<DatePicker
-												slots={{
-													layout: StyledPickersLayout,
-													calendarHeader: PickersCalendarHeader,
-												}}
-												slotProps={{
-													calendarHeader: {
-														slots: {
-															switchViewButton: CalendarCloseButton,
-														},
-													},
-												}}
-												sx={{
-													input: {
-														paddingTop: '0px',
-														paddingBottom: '0px',
-													},
-												}}
-												value={item.startLesson}
-												disabled={isEditMode}
-												onChange={(newValue) => {
-													changeItemValue(
-														index,
-														'startLesson',
-														String(newValue!),
-													)
-												}}
-												timezone="system"
-												showDaysOutsideCurrentMonth
-											/>
-										</LocalizationProvider> */}
+
 												<MiniCalendar
 													disabled={isEditMode}
 													value={item.startLesson}
@@ -2261,28 +2167,7 @@ const AddStudent = ({}: IAddStudent) => {
 										</div>
 									</div>
 								</div>
-								{/* <mui.ListItemButton
-							style={{marginTop: '10px'}}
-							onClick={handleClick}>
-							<img src={uploadFile} alt={uploadFile} />
-							<mui.ListItemText primary="Файлы/ссылки" />
-							{open ? <ExpandLess /> : <ExpandMore />}
-						</mui.ListItemButton> */}
-								{/*
-						<mui.Collapse in={open} timeout="auto" unmountOnExit>
-							<mui.List
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									flexDirection: 'column',
-								}}
-								component="div"
-								disablePadding>
-								<Line width="100%" className={s.Line} />
-								<p>Список пока пуст</p>
-							</mui.List>
-						</mui.Collapse> */}
+
 								<FileNLinks
 									alreadyUploaded={files}
 									callback={handleFileNLinks}

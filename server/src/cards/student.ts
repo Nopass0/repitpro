@@ -326,10 +326,10 @@ function checkTimeConflicts(schedules) {
           conflicts.push({
             day: schedules[i].day,
             conflictA: `${formatTime(schedules[i].startTime)}-${formatTime(
-              schedules[i].endTime
+              schedules[i].endTime,
             )}`,
             conflictB: `${formatTime(schedules[j].startTime)}-${formatTime(
-              schedules[j].endTime
+              schedules[j].endTime,
             )}`,
           });
         }
@@ -1036,7 +1036,7 @@ export async function getStudentWithItems(studentId: string, socket: any) {
             ? current
             : latest;
         },
-        { date: new Date(0), cost: "0" }
+        { date: new Date(0), cost: "0" },
       );
 
       const enrichedStudent = {
@@ -1074,7 +1074,7 @@ function calculateRemainingPrePay(student: any, currentDate: Date): number {
 
   // Находим последнюю предоплату перед или равную текущей дате
   const sortedPrePay = student.prePay.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
   for (const pay of sortedPrePay) {
     const payDate = new Date(pay.date);
@@ -1134,7 +1134,7 @@ export async function getStudentsByDate(
     isGroup: boolean;
     studentId: string;
   },
-  socket: any
+  socket: any,
 ) {
   const { day, month, year, token, isGroup, studentId } = data;
   const token_ = await db.token.findFirst({ where: { token } });
@@ -1152,7 +1152,7 @@ export async function getStudentsByDate(
   }
 
   const dayOfWeekIndex = getDay(
-    new Date(Number(year), Number(month) - 1, Number(day))
+    new Date(Number(year), Number(month) - 1, Number(day)),
   );
 
   const studentSchedules = await db.studentSchedule.findMany({
@@ -1309,6 +1309,7 @@ export async function getStudentsByDate(
     }
 
     groupsData.push({ totalPrice });
+
     // console.log(groupsData, "\n-----groupsData");
     socket.emit("getStudentsByDate", groupsData);
   } else {
@@ -1643,6 +1644,7 @@ export async function updateStudentSchedule(data, socket: any) {
 
     const userId = token_.userId;
 
+    // Handle file uploads
     let homeFilePaths = [];
     let classFilePaths = [];
     let homeAudiosPaths = [];
@@ -1663,10 +1665,10 @@ export async function updateStudentSchedule(data, socket: any) {
 
     const updatedFields: any = {};
 
+    // Handle price update
     if (lessonsPrice !== undefined) {
       updatedFields.lessonsPrice = Number(lessonsPrice);
     } else {
-      // If lessonsPrice is not provided in the update, we need to fetch the current value
       const currentSchedule = await db.studentSchedule.findUnique({
         where: { id, day, month, year, userId },
         select: { lessonsPrice: true },
@@ -1678,6 +1680,8 @@ export async function updateStudentSchedule(data, socket: any) {
         throw new Error("StudentSchedule record not found");
       }
     }
+
+    // Update other fields
     if (itemName !== undefined) updatedFields.itemName = itemName;
     if (typeLesson !== undefined) updatedFields.typeLesson = Number(typeLesson);
     if (isChecked !== undefined) updatedFields.isChecked = isChecked;
@@ -1691,9 +1695,9 @@ export async function updateStudentSchedule(data, socket: any) {
     if (classAudiosPaths.length > 0)
       updatedFields.classAudios = classAudiosPaths;
     if (isCancel !== undefined) updatedFields.isCancel = isCancel;
-
     if (prePay !== undefined) updatedFields.prePay = prePay;
 
+    // Handle student points
     if (homeStudentsPoints !== undefined) {
       const studentIds = homeStudentsPoints.map((obj) => obj.studentId);
       const students = await db.student.findMany({
@@ -1720,8 +1724,9 @@ export async function updateStudentSchedule(data, socket: any) {
       }));
     }
 
+    // Handle time updates
     const dayOfWeekIndex = getDay(
-      new Date(Number(year), Number(month) - 1, Number(day))
+      new Date(Number(year), Number(month) - 1, Number(day)),
     );
 
     if (startTime !== undefined || endTime !== undefined) {
@@ -1743,6 +1748,7 @@ export async function updateStudentSchedule(data, socket: any) {
       }));
     }
 
+    // Create or update schedule
     let updatedSchedule;
     if (id?.startsWith("-")) {
       updatedSchedule = await db.studentSchedule.create({
@@ -1768,45 +1774,29 @@ export async function updateStudentSchedule(data, socket: any) {
       });
     }
 
-    // Update historyLesson
+    // Update history in group
     try {
       const schedule = await db.studentSchedule.findUnique({
         where: { id: updatedSchedule.id },
         include: { item: { include: { group: true } } },
       });
 
-      if (schedule && schedule.item && schedule.item.group) {
+      if (schedule?.item?.group) {
         const group = schedule.item.group;
         const updateDate = new Date(
           Number(year),
           Number(month) - 1,
-          Number(day)
+          Number(day) + 1,
         );
 
-        let updatedHistoryLesson;
+        // Update history lessons based on group type
         if (Array.isArray(group.historyLessons)) {
+          let updatedHistoryLesson;
+
           if (Array.isArray(group.historyLessons[0])) {
-            // Group historyLesson
-            updatedHistoryLesson = (group.historyLessons as any[][]).map(
-              (subArray) =>
-                subArray.map((lesson) => {
-                  if (
-                    new Date(lesson.date).toDateString() ===
-                    updateDate.toDateString()
-                  ) {
-                    return {
-                      ...lesson,
-                      price: lessonsPrice ? Number(lessonsPrice) : lesson.price,
-                      itemName: itemName || lesson.itemName,
-                    };
-                  }
-                  return lesson;
-                })
-            );
-          } else {
-            // Student historyLesson
-            updatedHistoryLesson = (group.historyLessons as any[]).map(
-              (lesson) => {
+            // Regular group format (array of arrays)
+            updatedHistoryLesson = group.historyLessons.map((subArray) =>
+              subArray.map((lesson) => {
                 if (
                   new Date(lesson.date).toDateString() ===
                   updateDate.toDateString()
@@ -1815,37 +1805,46 @@ export async function updateStudentSchedule(data, socket: any) {
                     ...lesson,
                     price: lessonsPrice ? Number(lessonsPrice) : lesson.price,
                     itemName: itemName || lesson.itemName,
+                    isPaid: isChecked !== undefined ? isChecked : lesson.isPaid,
                   };
                 }
                 return lesson;
-              }
+              }),
             );
+          } else {
+            // Single student format (flat array)
+            updatedHistoryLesson = group.historyLessons.map((lesson) => {
+              if (
+                new Date(lesson.date).toISOString().split("T")[0] ===
+                updateDate.toISOString().split("T")[0]
+              ) {
+                return {
+                  ...lesson,
+                  price: lessonsPrice ? Number(lessonsPrice) : lesson.price,
+                  itemName: itemName || lesson.itemName,
+                  isPaid: isChecked !== undefined ? isChecked : lesson.isPaid,
+                };
+              }
+              return lesson;
+            });
           }
 
+          // Update the group with new history
           await db.group.update({
             where: { id: group.id },
             data: { historyLessons: updatedHistoryLesson },
           });
-        } else {
-          console.error(
-            "historyLessons is not an array:",
-            group.historyLessons
-          );
         }
       }
     } catch (historyError) {
       console.error("Error updating historyLesson:", historyError);
+      throw historyError;
     }
 
-    // console.log(
-    //   "\n----------------student-schedule---------------------\n",
-    //   updatedSchedule,
-    //   "\n--------------------------------------\n"
-    // );
     return updatedSchedule;
   } catch (error) {
     console.error("Error in updateStudentSchedule:", error);
-    return null;
+    throw error;
   }
 }
 
@@ -1918,7 +1917,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
     const audiosBuffers = await JSON.parse(JSON.stringify(audios)).map(
       (audio) => {
         return getBufferByFilePath(audio.path);
-      }
+      },
     );
 
     // console.log(audiosBuffers, "audiosBuffers");
@@ -2489,7 +2488,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
 async function handleFileUploads(
   files: IUploadFiles[],
   userId: string,
-  extraType: string
+  extraType: string,
 ): Promise<string[]> {
   if (!files || !Array.isArray(files) || files.length === 0) {
     return [];
@@ -2499,7 +2498,7 @@ async function handleFileUploads(
     return await upload(files, userId, extraType, (ids) => {
       console.log(
         `Uploaded ${files.length} files with type ${extraType}. File IDs:`,
-        ids
+        ids,
       );
     });
   } catch (error) {
@@ -2552,7 +2551,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
     const newAudioIds = await handleFileUploads(
       audios,
       userId,
-      "student/audio"
+      "student/audio",
     );
     console.log("New audio IDs:", newAudioIds);
 
@@ -2585,7 +2584,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
     const updatedGroup = await updateGroupAndItems(
       existingStudent.group.id,
       items,
-      userId
+      userId,
     );
 
     // Update history lessons
@@ -2604,7 +2603,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
       updatedGroup.items,
       userId,
       updatedStudent.nameStudent,
-      existingStudent.group.id
+      existingStudent.group.id,
     );
 
     // Fetch the final updated student with all related data
@@ -2634,7 +2633,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
             },
           });
           return fileInfo;
-        })
+        }),
       ),
     };
 
@@ -2650,7 +2649,7 @@ export async function updateStudentAndItems(data: any, socket: any) {
 async function updateGroupAndItems(
   groupId: string,
   newItems: any[],
-  userId: string
+  userId: string,
 ) {
   const group = await db.group.findUnique({
     where: { id: groupId },
@@ -2741,7 +2740,7 @@ async function updateStudentSchedules(
   items: any[],
   userId: string,
   studentName: string,
-  groupId: string
+  groupId: string,
 ) {
   console.log(
     "\n----------------updateStudentSchedules--------------------\n",
@@ -2749,7 +2748,7 @@ async function updateStudentSchedules(
     items,
     userId,
     studentName,
-    groupId
+    groupId,
   );
   // Delete old studentSchedule records
   await db.studentSchedule.deleteMany({
@@ -2763,7 +2762,7 @@ async function updateStudentSchedules(
     const endDate = new Date(itemData.endLesson);
     const daysToAdd = differenceInDays(endDate, startDate);
     const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-      addDays(startDate, i)
+      addDays(startDate, i),
     );
 
     for (const date of dateRange) {
@@ -2772,7 +2771,7 @@ async function updateStudentSchedules(
 
       if (!scheduleForDay) {
         console.warn(
-          `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`
+          `No schedule defined for day of week: ${dayOfWeek} on date: ${date}`,
         );
         continue;
       }
@@ -3032,7 +3031,7 @@ export async function getTableData(data, socket: any) {
     const endDate = new Date(dateRange.end);
 
     console.log(
-      `Date range: ${startDate.toISOString()} - ${endDate.toISOString()}`
+      `Date range: ${startDate.toISOString()} - ${endDate.toISOString()}`,
     );
 
     // Fetch all students for the user
@@ -3082,22 +3081,22 @@ export async function getTableData(data, socket: any) {
 
     const tableData = students.map((student) => {
       const studentSchedules_ = studentSchedules.filter(
-        (schedule) => schedule.groupId === student.groupId
+        (schedule) => schedule.groupId === student.groupId,
       );
 
       console.log(
-        `Found ${studentSchedules_.length} schedules for student ${student.nameStudent}`
+        `Found ${studentSchedules_.length} schedules for student ${student.nameStudent}`,
       );
 
       const lessons = studentSchedules_.length;
 
       const canceledLessons = studentSchedules_.filter(
-        (schedule) => schedule.isCancel
+        (schedule) => schedule.isCancel,
       ).length;
       const income = studentSchedules_.reduce(
         (sum, schedule) =>
           sum + (schedule.lessonsPrice || 0) * (schedule.lessonsCount || 0),
-        0
+        0,
       );
 
       let consumption = student.costStudent;
@@ -3113,7 +3112,7 @@ export async function getTableData(data, socket: any) {
           : student.costOneLesson || "0";
 
       console.log(
-        `\n-----------\n${student.nameStudent}\nLessons: ${lessons}\nAvg Cost: ${avgCost}\nCanceled: ${canceledLessons}\nIncome: ${income}\nConsumption: ${consumption}\nDebt: ${debt}\n----------\n`
+        `\n-----------\n${student.nameStudent}\nLessons: ${lessons}\nAvg Cost: ${avgCost}\nCanceled: ${canceledLessons}\nIncome: ${income}\nConsumption: ${consumption}\nDebt: ${debt}\n----------\n`,
       );
 
       return {
@@ -3138,7 +3137,7 @@ export async function getTableData(data, socket: any) {
 
 export async function deleteStudent(
   data: { token: string; id: string },
-  socket: any
+  socket: any,
 ) {
   const { token, id } = data; // token is the user's token. id is the student's id
 
@@ -3205,7 +3204,7 @@ export async function studentToArhive(
     id: string;
     isArchived: boolean;
   },
-  socket: any
+  socket: any,
 ) {
   const { token, id, isArchived } = data; // token is the user's token. id is the student's id
 
@@ -3378,7 +3377,7 @@ export async function deleteAudio(
     id: string;
     type: "student" | "client" | "group";
   },
-  socket: any
+  socket: any,
 ) {
   try {
     const { token, id, type } = data; // token is the user's token. id is the file's id
@@ -3422,7 +3421,7 @@ export async function deleteAudio(
 
       for (const item of items) {
         const updatedFiles = item[model.field].filter(
-          (fileId) => fileId !== id
+          (fileId) => fileId !== id,
         );
         await db[
           model.name.charAt(0).toLowerCase() + model.name.slice(1)
@@ -3507,7 +3506,7 @@ export async function getLinksByLinkedId(data: any, socket: any) {
 
 export async function cancelLesson(
   data: { id: string; token: string },
-  socket
+  socket,
 ) {
   try {
     const { id, token } = data;
@@ -3537,7 +3536,7 @@ export async function cancelLesson(
     const lessonDate = new Date(
       schedule.year,
       schedule.month - 1,
-      schedule.day
+      schedule.day,
     );
 
     // Находим группу по groupId
