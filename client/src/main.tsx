@@ -39,6 +39,7 @@ const defaultState = {
 	currentOpenedGroup: '', //ID of current opened group
 	currentScheduleDay: '', //ID of schedule dayIndex
 	mobileLeft: true,
+	updateCard: false,
 	currentScheduleDayClientId: '',
 	currentPopUpType: ECurrentDayPopUp.None,
 	dayStudents: [],
@@ -91,6 +92,14 @@ const reducer = (state = defaultState, action: any) => {
 
 			return {...state, user: {...state.user, token: action.payload}}
 
+		case 'RELOAD_STUDENT_CARD':
+			return {
+				...state,
+				currentOpenedStudent: '',
+				updateCard: true,
+			}
+		case 'SET_UPDATE_CARD':
+			return {...state, updateCard: action.payload}
 		case 'SET_DAY_STUDENTS':
 			return {...state, dayStudents: action.payload}
 		case 'SET_CURRENT_OPENED_SCHEDULE_DAY':

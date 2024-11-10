@@ -416,7 +416,6 @@ const DayCalendarPopUp = ({
 
 	// Modified handleSend to filter out empty temporary lines
 	const handleSend = () => {
-		// Combine regular and filled temporary students
 		const filledTempStudents = tempStudents.filter(
 			(student) =>
 				student.nameStudent &&
@@ -425,9 +424,10 @@ const DayCalendarPopUp = ({
 		)
 
 		const studentsToSave = [...students, ...filledTempStudents]
+		let savedCount = 0
+		const totalToSave = studentsToSave.length
 
 		studentsToSave.forEach((student) => {
-		console.log("Lessons price: ", student.costOneLesson)
 			socket.emit('updateStudentSchedule', {
 				id: student.id,
 				day: calendarNowPopupDay,
@@ -444,8 +444,22 @@ const DayCalendarPopUp = ({
 			})
 		})
 
-		// Clear temporary students after saving
+		// После сохранения всех изменений
 		setTempStudents([])
+		setEditMode(false)
+		dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
+
+		// Триггерим перезагрузку карточки
+		const currentStudentId = student.studentId // сохраняем ID текущего студента
+		dispatch({type: 'RELOAD_STUDENT_CARD'})
+
+		// Через небольшую задержку открываем карточку заново
+		setTimeout(() => {
+			dispatch({
+				type: 'SET_CURRENT_OPENED_STUDENT',
+				payload: currentStudentId,
+			})
+		}, 100)
 	}
 
 	// Modified exit handler
@@ -901,6 +915,7 @@ const DayCalendarPopUp = ({
 											type: 'SET_IS_EDIT_DAY_POPUP',
 											payload: false,
 										})
+										dispatch({type: 'SET_UPDATE_CARD', payload: true})
 									}
 									console.log(isEditDayPopUp, 'Saved version: ', students)
 									handleSend(students)
