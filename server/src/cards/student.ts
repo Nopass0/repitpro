@@ -1728,7 +1728,7 @@ export async function updateStudentSchedule(data, socket: any) {
 
     // Handle time updates
     const dayOfWeekIndex = getDay(
-      new Date(Number(year), Number(month) - 1, Number(day)),
+      new Date(Number(year), Number(month) - 1, Number(day) + 1),
     );
 
     if (startTime !== undefined || endTime !== undefined) {

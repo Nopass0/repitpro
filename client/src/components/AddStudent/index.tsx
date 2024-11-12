@@ -543,6 +543,7 @@ const AddStudent = ({}: IAddStudent) => {
 		console.log('\n---------ADD DATA---------\n', data)
 
 		if (data?.ok === true) {
+			socket.off('addStudent')
 			window.location.reload() // Немедленная перезагрузка при успехе
 			return // Прерываем выполнение функции
 		}
