@@ -6,7 +6,7 @@ import * as mui from '@mui/base'
 
 import Plus from '../../assets/ItemPlus.svg'
 import {useDispatch, useSelector} from 'react-redux'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import socket from '../../socket'
 import React from 'react'
 import {debounce} from 'lodash'
@@ -25,6 +25,26 @@ interface IDayCalendarPopUp {
 	className?: string
 }
 
+const calculateStatistics = (students, clients, hiddenNum) => {
+	// Фильтруем отмененные занятия
+	const activeStudents = students.filter((item) => !item.isCancel)
+
+	const statistics = {
+		lessonsCount: activeStudents.length,
+		lessonsTotal: activeStudents.reduce(
+			(sum, student) => sum + Number(student.costOneLesson || 0),
+			0,
+		),
+		worksCount: clients?.length || 0,
+		worksTotal:
+			clients?.reduce(
+				(sum, client) => sum + Number(client.workPrice || 0),
+				0,
+			) || 0,
+	}
+
+	return statistics
+}
 const calculatePaymentStatus = (student, currentDate) => {
 	let sortedPrePay = []
 	if (Array.isArray(student.prePay)) {
@@ -211,6 +231,10 @@ const DayCalendarPopUp = ({
 	const retryCountRef = useRef(0)
 	const mountedRef = useRef(false)
 
+	const statistics = useMemo(() => {
+		return calculateStatistics(students, clients, hiddenNum)
+	}, [students, clients, hiddenNum])
+
 	const [isEditCard, setIsEditCard] = useState<boolean>(false)
 	useEffect(() => {
 		mountedRef.current = true
@@ -219,24 +243,55 @@ const DayCalendarPopUp = ({
 		}
 	}, [])
 
-	const fetchData = () => {
-		console.log(`Fetching data (Attempt ${retryCountRef.current + 1}/5)`)
+	const handleCancelLesson = (id) => {
+		setStudents((prevStudents) =>
+			prevStudents.map((student) =>
+				student.id === id ? {...student, isCancel: !student.isCancel} : student,
+			),
+		)
+	}
+
+	const Footer = () => (
+		<footer className={s.Footer}>
+			<div className={s.Left}>
+				<div className={s.Lessons}>
+					<p>
+						Занятий: <b>{statistics.lessonsCount}</b>
+					</p>
+					{!hiddenNum && <b>{statistics.lessonsTotal}₽</b>}
+				</div>
+				<div className={s.works}>
+					<p>
+						Работ: <b>{statistics.worksCount}</b>
+					</p>
+					{!hiddenNum && <b>{statistics.worksTotal}₽</b>}
+				</div>
+			</div>
+			<div className={s.income}>
+				{!hiddenNum && (
+					<p>
+						Доход: <b>{statistics.lessonsTotal}₽</b>
+					</p>
+				)}
+			</div>
+		</footer>
+	)
+
+	const fetchData = useCallback(() => {
+		console.log('Fetching data...')
 		setIsLoading(true)
 		setError(null)
 
-		socket.emit('getStudentsByDate', {
+		const params = {
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
-		})
-		socket.emit('getClientsByDate', {
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-			token: token,
-		})
-	}
+		}
+
+		socket.emit('getStudentsByDate', params)
+		socket.emit('getClientsByDate', params)
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout
@@ -348,6 +403,72 @@ const DayCalendarPopUp = ({
 	}
 
 	// Modified onUpdate to track changes in temporary lines
+	// const onUpdate = (
+	// 	id: string,
+	// 	editIcon: string,
+	// 	editName: string,
+	// 	editTimeStart: string,
+	// 	editTimeEnd: string,
+	// 	editItem: string,
+	// 	editPrice: string,
+	// 	isDelete: boolean,
+	// 	studentId: string,
+	// ) => {
+	// 	const [startHour, startMinute] = editTimeStart.split(':')
+	// 	const [endHour, endMinute] = editTimeEnd.split(':')
+
+	// 	// Check if we're updating a temporary line
+	// 	const isTempLine = tempStudents.some((student) => student.id === id)
+
+	// 	if (isTempLine) {
+	// 		setTempStudents((prev) =>
+	// 			prev.map((student) =>
+	// 				student.id === id
+	// 					? {
+	// 							...student,
+	// 							nameStudent: editName,
+	// 							costOneLesson: editPrice,
+	// 							itemName: editItem,
+	// 							typeLesson: editIcon,
+	// 							startTime: {
+	// 								hour: parseInt(startHour),
+	// 								minute: parseInt(startMinute),
+	// 							},
+	// 							endTime: {
+	// 								hour: parseInt(endHour),
+	// 								minute: parseInt(endMinute),
+	// 							},
+	// 							studentId,
+	// 						}
+	// 					: student,
+	// 			),
+	// 		)
+	// 	} else {
+	// 		// Update regular students as before
+	// 		const updatedStudents = students.map((student) =>
+	// 			student.id === id
+	// 				? {
+	// 						...student,
+	// 						nameStudent: editName,
+	// 						costOneLesson: editPrice,
+	// 						itemName: editItem,
+	// 						typeLesson: editIcon,
+	// 						startTime: {
+	// 							hour: parseInt(startHour),
+	// 							minute: parseInt(startMinute),
+	// 						},
+	// 						endTime: {
+	// 							hour: parseInt(endHour),
+	// 							minute: parseInt(endMinute),
+	// 						},
+	// 						studentId,
+	// 					}
+	// 				: student,
+	// 		)
+	// 		setStudents(updatedStudents)
+	// 	}
+	// }
+
 	const onUpdate = (
 		id: string,
 		editIcon: string,
@@ -358,64 +479,124 @@ const DayCalendarPopUp = ({
 		editPrice: string,
 		isDelete: boolean,
 		studentId: string,
+		isCancel: boolean,
 	) => {
 		const [startHour, startMinute] = editTimeStart.split(':')
 		const [endHour, endMinute] = editTimeEnd.split(':')
 
-		// Check if we're updating a temporary line
-		const isTempLine = tempStudents.some((student) => student.id === id)
-
-		if (isTempLine) {
-			setTempStudents((prev) =>
-				prev.map((student) =>
-					student.id === id
-						? {
-								...student,
-								nameStudent: editName,
-								costOneLesson: editPrice,
-								itemName: editItem,
-								typeLesson: editIcon,
-								startTime: {
-									hour: parseInt(startHour),
-									minute: parseInt(startMinute),
-								},
-								endTime: {
-									hour: parseInt(endHour),
-									minute: parseInt(endMinute),
-								},
-								studentId,
-							}
-						: student,
-				),
-			)
-		} else {
-			// Update regular students as before
-			const updatedStudents = students.map((student) =>
-				student.id === id
-					? {
-							...student,
-							nameStudent: editName,
-							costOneLesson: editPrice,
-							itemName: editItem,
-							typeLesson: editIcon,
-							startTime: {
-								hour: parseInt(startHour),
-								minute: parseInt(startMinute),
-							},
-							endTime: {
-								hour: parseInt(endHour),
-								minute: parseInt(endMinute),
-							},
-							studentId,
-						}
-					: student,
-			)
-			setStudents(updatedStudents)
+		// Создаем обновленного студента
+		const updatedStudent = {
+			nameStudent: editName,
+			costOneLesson: editPrice,
+			itemName: editItem,
+			typeLesson: editIcon,
+			startTime: {
+				hour: parseInt(startHour),
+				minute: parseInt(startMinute),
+			},
+			endTime: {
+				hour: parseInt(endHour),
+				minute: parseInt(endMinute),
+			},
+			studentId,
+			isCancel,
 		}
+
+		// Обновляем состояние локально
+		setStudents((prevStudents) =>
+			prevStudents.map((student) =>
+				student.id === id ? {...student, ...updatedStudent} : student,
+			),
+		)
 	}
 
+	// Обновляем useEffect для обработки данных
+	useEffect(() => {
+		const handleStudentsData = (data: any) => {
+			console.log('Received students data:', data)
+			if (mountedRef.current) {
+				// Нормализуем данные перед установкой
+				const normalizedData = data.map((student) => ({
+					...student,
+					isCancel: Boolean(student.isCancel),
+					costOneLesson: student.costOneLesson || '0',
+					tryLessonCheck: Boolean(student.tryLessonCheck),
+				}))
+				setStudents(normalizedData)
+				setIsLoading(false)
+			}
+		}
+
+		const handleClientsData = (data: any) => {
+			if (mountedRef.current) {
+				setClients(data || [])
+				setIsLoading(false)
+			}
+		}
+
+		socket.on('getStudentsByDate', handleStudentsData)
+		socket.on('getClientsByDate', handleClientsData)
+
+		// Запрашиваем начальные данные
+		if (token) {
+			fetchData()
+		}
+
+		return () => {
+			socket.off('getStudentsByDate', handleStudentsData)
+			socket.off('getClientsByDate', handleClientsData)
+		}
+	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
+
 	// Modified handleSend to filter out empty temporary lines
-	const handleSend = () => {
+	// const handleSend = () => {
+	// 	const filledTempStudents = tempStudents.filter(
+	// 		(student) =>
+	// 			student.nameStudent &&
+	// 			student.itemName &&
+	// 			(student.startTime.hour !== 0 || student.startTime.minute !== 0),
+	// 	)
+
+	// 	const studentsToSave = [...students, ...filledTempStudents]
+	// 	let savedCount = 0
+	// 	const totalToSave = studentsToSave.length
+
+	// 	studentsToSave.forEach((student) => {
+	// 		socket.emit('updateStudentSchedule', {
+	// 			id: student.id,
+	// 			day: calendarNowPopupDay,
+	// 			month: calendarNowPopupMonth,
+	// 			year: calendarNowPopupYear,
+	// 			lessonsPrice: student.costOneLesson || 0,
+	// 			studentName: student.nameStudent,
+	// 			itemName: student.itemName,
+	// 			typeLesson: student.typeLesson,
+	// 			startTime: student.startTime,
+	// 			endTime: student.endTime,
+	// 			isChecked: student.tryLessonCheck,
+	// 			token: token,
+	// 		})
+	// 	})
+
+	// 	// После сохранения всех изменений
+	// 	setTempStudents([])
+	// 	setEditMode(false)
+	// 	dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
+
+	// 	// Триггерим перезагрузку карточки
+	// 	const currentStudentId = student.studentId // сохраняем ID текущего студента
+	// 	dispatch({type: 'RELOAD_STUDENT_CARD'})
+
+	// 	// Через небольшую задержку открываем карточку заново
+	// 	setTimeout(() => {
+	// 		dispatch({
+	// 			type: 'SET_CURRENT_OPENED_STUDENT',
+	// 			payload: currentStudentId,
+	// 		})
+	// 	}, 100)
+	// }
+
+	const handleSend = async () => {
 		const filledTempStudents = tempStudents.filter(
 			(student) =>
 				student.nameStudent &&
@@ -424,42 +605,69 @@ const DayCalendarPopUp = ({
 		)
 
 		const studentsToSave = [...students, ...filledTempStudents]
-		let savedCount = 0
-		const totalToSave = studentsToSave.length
+		let updatePromises = []
 
+		// Создаем массив промисов для каждого обновления
 		studentsToSave.forEach((student) => {
-			socket.emit('updateStudentSchedule', {
-				id: student.id,
+			const promise = new Promise((resolve, reject) => {
+				socket.emit('updateStudentSchedule', {
+					id: student.id,
+					day: calendarNowPopupDay,
+					month: calendarNowPopupMonth,
+					year: calendarNowPopupYear,
+					lessonsPrice: student.costOneLesson || 0,
+					studentName: student.nameStudent,
+					itemName: student.itemName,
+					typeLesson: student.typeLesson,
+					startTime: student.startTime,
+					endTime: student.endTime,
+					isChecked: student.tryLessonCheck,
+					isCancel: student.isCancel,
+					token: token,
+				})
+
+				// Ожидаем ответ от сервера для каждого обновления
+				socket.once(`updateStudentSchedule_${student.id}`, (response) => {
+					if (response.success) {
+						resolve(response)
+					} else {
+						reject(new Error('Failed to update student schedule'))
+					}
+				})
+
+				// Добавляем таймаут для каждого запроса
+				setTimeout(() => reject(new Error('Update timeout')), 5000)
+			})
+			updatePromises.push(promise)
+		})
+
+		try {
+			// Ждем завершения всех обновлений
+			await Promise.all(updatePromises)
+
+			// После успешного сохранения всех изменений
+			setTempStudents([])
+			setEditMode(false)
+			dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
+
+			// Принудительно запрашиваем свежие данные
+			socket.emit('getStudentsByDate', {
 				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
-				lessonsPrice: student.costOneLesson || 0,
-				studentName: student.nameStudent,
-				itemName: student.itemName,
-				typeLesson: student.typeLesson,
-				startTime: student.startTime,
-				endTime: student.endTime,
-				isChecked: student.tryLessonCheck,
 				token: token,
 			})
-		})
 
-		// После сохранения всех изменений
-		setTempStudents([])
-		setEditMode(false)
-		dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
-
-		// Триггерим перезагрузку карточки
-		const currentStudentId = student.studentId // сохраняем ID текущего студента
-		dispatch({type: 'RELOAD_STUDENT_CARD'})
-
-		// Через небольшую задержку открываем карточку заново
-		setTimeout(() => {
-			dispatch({
-				type: 'SET_CURRENT_OPENED_STUDENT',
-				payload: currentStudentId,
+			socket.emit('getClientsByDate', {
+				day: calendarNowPopupDay,
+				month: calendarNowPopupMonth,
+				year: calendarNowPopupYear,
+				token: token,
 			})
-		}, 100)
+		} catch (error) {
+			console.error('Error saving changes:', error)
+			// Здесь можно добавить обработку ошибок, например показ уведомления
+		}
 	}
 
 	// Modified exit handler
@@ -842,7 +1050,9 @@ const DayCalendarPopUp = ({
 										editPrice,
 										isDelete,
 										studentId,
-									) =>
+										isCancel,
+									) => {
+										handleCancelLesson(id)
 										onUpdate(
 											id,
 											editIcon,
@@ -853,13 +1063,45 @@ const DayCalendarPopUp = ({
 											editPrice,
 											isDelete,
 											studentId,
+											isCancel,
 										)
-									}
+
+										//sleep 1 sec js
+										setTimeout(() => {
+											handleCancelLesson(id)
+										}, 500)
+
+										setStudents((prevStudents) =>
+											prevStudents.map((s) =>
+												s.id === id
+													? {
+															...s,
+															nameStudent: editName,
+															costOneLesson: editPrice,
+															itemName: editItem,
+															typeLesson: editIcon,
+															startTime: {
+																hour: parseInt(editTimeStart.split(':')[0]),
+																minute: parseInt(editTimeStart.split(':')[1]),
+															},
+															endTime: {
+																hour: parseInt(editTimeEnd.split(':')[0]),
+																minute: parseInt(editTimeEnd.split(':')[1]),
+															},
+															studentId,
+															isCancel,
+														}
+													: s,
+											),
+										)
+									}}
 									LineClick={LineClick}
 									iconClick={iconClick}
 									icon={student.type == 'group' ? 3 : student.typeLesson}
 									isCancel={student.isCancel}
+									isTrial={student.isTrial}
 									editMode={editMode}
+									onCancel={handleCancelLesson}
 									timeStart={
 										timeNormalize(student.startTime.hour) +
 										':' +
@@ -910,6 +1152,7 @@ const DayCalendarPopUp = ({
 							onClick={() => {
 								if (!isEditStudents) {
 									if (editMode) {
+										handleSend(students)
 										setEditMode(!editMode)
 										dispatch({
 											type: 'SET_IS_EDIT_DAY_POPUP',
@@ -918,7 +1161,6 @@ const DayCalendarPopUp = ({
 										dispatch({type: 'SET_UPDATE_CARD', payload: true})
 									}
 									console.log(isEditDayPopUp, 'Saved version: ', students)
-									handleSend(students)
 								} else {
 									setIsEditCard(isEditCard)
 									dispatch({
@@ -930,13 +1172,13 @@ const DayCalendarPopUp = ({
 							className={`${s.SaveBtn} ${editMode && s.active}`}>
 							Сохранить
 						</button>
-						<button
+						{/* <button
 							onClick={() => {
 								handeleAddStudentDay()
 							}}
 							className={s.PlusBtn}>
 							<img src={Plus} alt={Plus} />
-						</button>
+						</button> */}
 					</section>
 					<footer className={s.Footer}>
 						<div className={s.Left}>
@@ -968,8 +1210,7 @@ const DayCalendarPopUp = ({
 						<div className={s.income}>
 							{!hiddenNum && (
 								<p>
-									Доход:{' '}
-									<b>{students.reduce((a, b) => +a + +b.costOneLesson, 0)}₽</b>
+									Доход: <b>{statistics.lessonsTotal}₽</b>
 								</p>
 							)}
 						</div>

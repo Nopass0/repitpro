@@ -5,6 +5,34 @@ input {
 	background: none;
 	outline: none;
 }
+.trial {
+	position: relative;
+	opacity: 0.7;
+}
+
+.trialWrapper {
+	opacity: 0.7;
+}
+
+.trialStamp {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) rotate(-25deg);
+	color: #0066cc; // Синий цвет
+	font-weight: bold;
+	font-size: 24px;
+	z-index: 2;
+	pointer-events: none;
+
+	p {
+		text-transform: uppercase;
+		border: 2px solid #0066cc;
+		padding: 2px 10px;
+		border-radius: 5px;
+		background-color: rgba(255, 255, 255, 0.8);
+	}
+}
 
 .cancelStamp {
 	position: relative;
@@ -172,7 +200,7 @@ input {
 	background-color: #e2e2e2;
 }
 
-.PopUp__wrapper {	
+.PopUp__wrapper {
 	z-index: 100;
 	position: absolute;
 	top: 200px;

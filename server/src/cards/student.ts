@@ -1178,6 +1178,7 @@ export async function getStudentsByDate(
       clientId: true,
       homeAudios: true,
       classAudios: true,
+      isTrial: true,
       item: {
         select: {
           tryLessonCheck: true,
@@ -1393,6 +1394,7 @@ export async function getStudentsByDate(
         prePayCost: student?.prePayCost ?? null,
         lessonPrice: schedule.lessonsPrice,
         lessonCount: schedule.lessonsCount,
+        isTrial: schedule.isTrial,
         classWork: schedule.classWork,
         homeStudentsPoints: Array.isArray(homeStudentsPoints)
           ? homeStudentsPoints

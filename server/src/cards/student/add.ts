@@ -132,6 +132,7 @@ const ItemSchema = z
     itemName: z.string(),
     tryLessonCheck: z.boolean().optional().default(false),
     tryLessonCost: z.string().optional().default(""),
+    trialLessonDate: z.string().datetime().nullable(),
     todayProgramStudent: z.string().optional().default(""),
     targetLesson: z.string().optional().default(""),
     programLesson: z.string().optional().default(""),
@@ -357,6 +358,29 @@ async function createSchedule(
     const scheduleData = [];
 
     for (const item of group.items) {
+      if (item.tryLessonCheck && item.tryLessonCost && item.trialLessonDate) {
+        const trialDate = new Date(item.trialLessonDate);
+
+        scheduleData.push({
+          day: trialDate.getDate().toString(),
+          groupId: group.id,
+          workCount: 0,
+          lessonsCount: 1,
+          lessonsPrice: Number(item.tryLessonCost) || 0,
+          workPrice: 0,
+          month: (trialDate.getMonth() + 1).toString(),
+          timeLinesArray: item.timeLinesArray,
+          isChecked: false,
+          itemName: item.itemName,
+          studentName: nameStudent,
+          typeLesson: item.typeLesson,
+          year: trialDate.getFullYear().toString(),
+          itemId: item.id,
+          userId,
+          isTrial: true, // Добавляем флаг пробного занятия
+        });
+      }
+
       if (!item.startLesson || !item.endLesson) continue;
 
       const startDate = new Date(item.startLesson);
@@ -400,6 +424,7 @@ async function createSchedule(
           year: date.getFullYear().toString(),
           itemId: item.id,
           userId,
+          isTrial: false,
         });
       }
     }
@@ -520,6 +545,9 @@ export async function addStudent(
                   endLesson: item.endLesson ? new Date(item.endLesson) : null,
                   tryLessonCheck: item.tryLessonCheck,
                   tryLessonCost: item.tryLessonCost,
+                  trialLessonDate: item.trialLessonDate
+                    ? new Date(item.trialLessonDate)
+                    : null,
                   todayProgramStudent: item.todayProgramStudent,
                   targetLesson: item.targetLesson,
                   programLesson: item.programLesson,

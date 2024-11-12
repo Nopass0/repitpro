@@ -319,6 +319,7 @@ const AddStudent = ({}: IAddStudent) => {
 			itemName: '',
 			tryLessonCheck: false,
 			tryLessonCost: '',
+			trialLessonDate: new Date(),
 			todayProgramStudent: '',
 			targetLesson: '',
 			programLesson: '',
@@ -422,6 +423,7 @@ const AddStudent = ({}: IAddStudent) => {
 					itemName: '',
 					tryLessonCheck: false,
 					tryLessonCost: '',
+					trialLessonDate: new Date(),
 					todayProgramStudent: '',
 					targetLesson: '',
 					programLesson: '',
@@ -540,18 +542,14 @@ const AddStudent = ({}: IAddStudent) => {
 	socket.once('addStudent', (data) => {
 		console.log('\n---------ADD DATA---------\n', data)
 
-		const ok: boolean = data.ok
-
-		if (ok === true) {
-			window.location.reload()
-			// setLoading(false)
-		} else {
-			const meesage = data.error
-			if (errorList.indexOf(meesage) === -1) {
-				setErrorList([...errorList, meesage])
-			}
-			setLoading(false)
+		if (data?.ok === true) {
+			window.location.reload() // Немедленная перезагрузка при успехе
+			return // Прерываем выполнение функции
 		}
+
+		// Если не ok, показываем ошибку и убираем загрузку
+		alert(data?.error)
+		setLoading(false)
 	})
 
 	const [open, setOpen] = useState(false)
@@ -1872,6 +1870,27 @@ const AddStudent = ({}: IAddStudent) => {
 												/>
 												<p>₽</p>
 											</div>
+
+											{item.tryLessonCheck && (
+												<>
+													<Line width="100%" className={s.Line} />
+													<div className={s.StudentCard}>
+														<p>Дата пробного занятия:</p>
+														<MiniCalendar
+															disabled={isEditMode}
+															value={item.trialLessonDate || new Date()}
+															onChange={(newDate) =>
+																changeItemValue(
+																	index,
+																	'trialLessonDate',
+																	new Date(newDate),
+																)
+															}
+															calendarId={`trialLesson_${index}`}
+														/>
+													</div>
+												</>
+											)}
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCardCheckBox}>
 												<div className={s.CardCheckBoxLevel}>

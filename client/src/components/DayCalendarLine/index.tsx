@@ -53,7 +53,7 @@ interface IDayCalendarLine {
 	type?: string
 	isCancel: boolean
 	place?: string
-
+	isTrial?: boolean
 	iconClick?: () => void
 	LineClick?: () => void
 	onUpdate?: (
@@ -66,6 +66,7 @@ interface IDayCalendarLine {
 		editPrice: string,
 		isDelete: boolean,
 		studentId: string,
+		isCancel: boolean,
 	) => void
 }
 const DayCalendarLine = ({
@@ -78,6 +79,7 @@ const DayCalendarLine = ({
 	price,
 	place,
 	key,
+	isTrial,
 	students,
 	studentId,
 	groupId,
@@ -233,6 +235,54 @@ const DayCalendarLine = ({
 	}
 
 	// Create a debounced version of onUpdate
+	// const debouncedOnUpdate = useCallback(
+	// 	debounce((updatedPrice: string) => {
+	// 		if (onUpdate) {
+	// 			onUpdate(
+	// 				id,
+	// 				editIcon,
+	// 				editName,
+	// 				editTimeStart,
+	// 				editTimeEnd,
+	// 				editItem,
+	// 				updatedPrice,
+	// 				isDelete,
+	// 				studentId,
+	// 			)
+	// 		}
+	// 	}, 300),
+	// 	[
+	// 		id,
+	// 		editIcon,
+	// 		editName,
+	// 		editTimeStart,
+	// 		editTimeEnd,
+	// 		editItem,
+	// 		isDelete,
+	// 		studentId,
+	// 		onUpdate,
+	// 	],
+	// )
+	//
+	const handleUpdate = () => {
+		if (onUpdate) {
+			console.log('handleUpdate с isCancel:', isCancel)
+			onUpdate(
+				id,
+				editIcon,
+				editName,
+				editTimeStart,
+				editTimeEnd,
+				editItem,
+				editPrice,
+				isDelete,
+				studentId,
+				isCancel,
+			)
+		}
+	}
+
+	// Обновляем debouncedOnUpdate
 	const debouncedOnUpdate = useCallback(
 		debounce((updatedPrice: string) => {
 			if (onUpdate) {
@@ -246,6 +296,7 @@ const DayCalendarLine = ({
 					updatedPrice,
 					isDelete,
 					studentId,
+					isCancel,
 				)
 			}
 		}, 300),
@@ -258,50 +309,51 @@ const DayCalendarLine = ({
 			editItem,
 			isDelete,
 			studentId,
+			isCancel,
 			onUpdate,
 		],
 	)
 
 	const [isDetailsShow, setIsDetailsShow] = useState<boolean>(false)
 
-	const handleUpdate = () => {
-		console.log(
-			'handleUpdate',
-			id,
-			editIcon,
-			editName,
-			editTimeStart,
-			editTimeEnd,
-			editItem,
-			editPrice,
-			isDelete,
-			studentId,
-		)
-		if (onUpdate) {
-			console.log(
-				'onUpdate',
-				id,
-				editIcon,
-				editName,
-				editTimeStart,
-				editTimeEnd,
-				editItem,
-				editPrice,
-				isDelete,
-				studentId,
-			)
-			debouncedOnUpdate(
-				id,
-				editIcon,
-				editName,
-				editTimeStart,
-				editTimeEnd,
-				editItem,
-				editPrice,
-				isDelete,
-			)
-		}
-	}
+	// const handleUpdate = () => {
+	// 	console.log(
+	// 		'handleUpdate',
+	// 		id,
+	// 		editIcon,
+	// 		editName,
+	// 		editTimeStart,
+	// 		editTimeEnd,
+	// 		editItem,
+	// 		editPrice,
+	// 		isDelete,
+	// 		studentId,
+	// 	)
+	// 	if (onUpdate) {
+	// 		console.log(
+	// 			'onUpdate',
+	// 			id,
+	// 			editIcon,
+	// 			editName,
+	// 			editTimeStart,
+	// 			editTimeEnd,
+	// 			editItem,
+	// 			editPrice,
+	// 			isDelete,
+	// 			studentId,
+	// 		)
+	// 		debouncedOnUpdate(
+	// 			id,
+	// 			editIcon,
+	// 			editName,
+	// 			editTimeStart,
+	// 			editTimeEnd,
+	// 			editItem,
+	// 			editPrice,
+	// 			isDelete,
+	// 		)
+	// 	}
+	// }
 	const calendarNowPopupDay = useSelector(
 		(state: any) => state.calendarNowPopupDay,
 	)
@@ -317,9 +369,30 @@ const DayCalendarLine = ({
 	}
 
 	const confirmCancel = () => {
+		// Обновляем локальное состояние
+		setIsCancel(true)
+
+		// Уведомляем родительский компонент об отмене
+		if (onUpdate) {
+			onUpdate(
+				id,
+				editIcon,
+				editName,
+				editTimeStart,
+				editTimeEnd,
+				editItem,
+				editPrice,
+				isDelete,
+				studentId,
+				true, // isCancel = true
+			)
+		}
+
+		// Отправляем запрос на сервер
 		socket.emit('cancelLesson', {id, token})
 		setPagePopup(PagePopup.None)
 
+		// Запрашиваем обновленные данные
 		socket.emit('getStudentsByDate', {
 			day: calendarNowPopupDay,
 			month: calendarNowPopupMonth,
@@ -342,11 +415,16 @@ const DayCalendarLine = ({
 	return (
 		<>
 			<div
-				className={`${isCancel ? s.cancelled : ''}`}
+				className={`${isCancel ? s.cancelled : ''} ${isTrial ? s.trial : ''}`}
 				style={{display: isDelete ? 'none' : 'block'}}>
 				{isCancel && (
 					<div className={s.cancelStamp}>
 						<p>Отменено</p>
+					</div>
+				)}
+				{isTrial && (
+					<div className={s.trialStamp}>
+						<p>Пробное</p>
 					</div>
 				)}
 				<div className={`${s.wrapper} ${isCancel && s.cancelWrapper}`}>

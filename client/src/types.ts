@@ -71,6 +71,7 @@ export interface IItemCard {
 	nowLevel: number | undefined
 	timeLinesArray: ITimeLine[]
 	commentItem?: string
+	trialLessonDate?: Date
 }
 
 export interface IGroupHistoryLessons {

@@ -99,6 +99,7 @@ model Item {
   itemName   String
   tryLessonCheck  Boolean
   tryLessonCost   String
+  trialLessonDate DateTime?
   todayProgramStudent  String
   targetLesson  String
   programLesson  String
@@ -194,13 +195,14 @@ model StudentSchedule {
   item         Item     @relation(fields: [itemId], references: [id])
   itemId       String
   isCancel       Boolean @default(false)
+  isTrial      Boolean @default(false)
 
 
   workStages  Json?
 
   @@index([groupId])
   @@index([userId])
-  
+
 }
 
 // ... (остальные модели)
@@ -265,7 +267,7 @@ model Stage {
   jobId              String
   client             Client?  @relation(fields: [clientId], references: [id])
   clientId           String?
-  
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
