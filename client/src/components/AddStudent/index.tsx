@@ -458,27 +458,102 @@ const AddStudent = ({}: IAddStudent) => {
 		)
 	}
 
+	// const sendData = () => {
+	// 	setLoading(true)
+	// 	console.log(
+	// 		{
+	// 			nameStudent,
+	// 			contactFace,
+	// 			email,
+	// 			linkStudent,
+	// 			costStudent,
+	// 			commentStudent,
+	// 			prePayCost,
+	// 			prePayDate,
+	// 			costOneLesson,
+	// 			items,
+	// 			audios,
+	// 			token,
+	// 			files,
+	// 			phoneNumber,
+	// 		},
+	// 		'sendData',
+	// 	)
+	// 	if (currentOpenedStudent !== '') {
+	// 		socket.emit('updateStudentAndItems', {
+	// 			id: currentOpenedStudent,
+	// 			nameStudent,
+	// 			contactFace,
+	// 			email,
+	// 			linkStudent,
+	// 			costStudent,
+	// 			commentStudent,
+	// 			prePayCost,
+	// 			prePayDate,
+	// 			costOneLesson,
+	// 			files,
+	// 			audios,
+	// 			historyLessons: historyLesson,
+
+	// 			items,
+	// 			token,
+	// 			phoneNumber,
+	// 			prePay: prePayList,
+	// 		})
+
+	// 		socket.emit('createLink', {
+	// 			tag: 'addStudent',
+	// 			linkedId: currentOpenedStudent,
+	// 			links: links,
+	// 			token: token,
+	// 		})
+	// 		window.location.reload()
+	// 	} else {
+	// 		socket.emit('addStudent', {
+	// 			nameStudent,
+	// 			contactFace,
+	// 			email,
+	// 			linkStudent,
+	// 			historyLessons: historyLesson,
+	// 			costStudent,
+	// 			commentStudent,
+	// 			prePayCost,
+	// 			prePayDate,
+	// 			files,
+	// 			audios,
+	// 			costOneLesson,
+	// 			items,
+	// 			token,
+	// 			phoneNumber,
+	// 			prePay: prePayList,
+	// 		})
+
+	// 		socket.emit('createLink', {
+	// 			tag: 'addStudent',
+	// 			linkedId: currentOpenedStudent,
+	// 			links: links,
+	// 			token: token,
+	// 		})
+	// 	}
+	// }
+
 	const sendData = () => {
 		setLoading(true)
-		console.log(
-			{
-				nameStudent,
-				contactFace,
-				email,
-				linkStudent,
-				costStudent,
-				commentStudent,
-				prePayCost,
-				prePayDate,
-				costOneLesson,
-				items,
-				audios,
-				token,
-				files,
-				phoneNumber,
-			},
-			'sendData',
-		)
+
+		// Удаляем предыдущие слушатели перед добавлением нового
+		socket.off('addStudent')
+
+		// Устанавливаем новый слушатель
+		socket.once('addStudent', (data) => {
+			if (data?.ok === true) {
+				window.location.reload()
+				return
+			}
+			alert(data?.error)
+			setLoading(false)
+		})
+
+		// Отправляем данные
 		if (currentOpenedStudent !== '') {
 			socket.emit('updateStudentAndItems', {
 				id: currentOpenedStudent,
@@ -494,7 +569,6 @@ const AddStudent = ({}: IAddStudent) => {
 				files,
 				audios,
 				historyLessons: historyLesson,
-
 				items,
 				token,
 				phoneNumber,
@@ -507,7 +581,6 @@ const AddStudent = ({}: IAddStudent) => {
 				links: links,
 				token: token,
 			})
-			window.location.reload()
 		} else {
 			socket.emit('addStudent', {
 				nameStudent,
@@ -538,20 +611,6 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 
 	const [errorList, setErrorList] = useState<string[]>([])
-
-	socket.once('addStudent', (data) => {
-		console.log('\n---------ADD DATA---------\n', data)
-
-		if (data?.ok === true) {
-			socket.off('addStudent')
-			window.location.reload() // Немедленная перезагрузка при успехе
-			return // Прерываем выполнение функции
-		}
-
-		// Если не ok, показываем ошибку и убираем загрузку
-		alert(data?.error)
-		setLoading(false)
-	})
 
 	const [open, setOpen] = useState(false)
 
