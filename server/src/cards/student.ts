@@ -1728,7 +1728,7 @@ export async function updateStudentSchedule(data, socket: any) {
 
     // Handle time updates
     const dayOfWeekIndex = getDay(
-      new Date(Number(year), Number(month) - 1, Number(day) + 1),
+      new Date(Number(year), Number(month) - 1, Number(day)),
     );
 
     if (startTime !== undefined || endTime !== undefined) {
@@ -1788,7 +1788,7 @@ export async function updateStudentSchedule(data, socket: any) {
         const updateDate = new Date(
           Number(year),
           Number(month) - 1,
-          Number(day) + 1,
+          Number(day),
         );
 
         // Update history lessons based on group type
