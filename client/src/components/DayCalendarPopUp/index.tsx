@@ -4,7 +4,6 @@ import CloseIcon from '@mui/icons-material/Close'
 import DayCalendarLine from '../DayCalendarLine/index'
 import * as mui from '@mui/base'
 
-import Plus from '../../assets/ItemPlus.svg'
 import {useDispatch, useSelector} from 'react-redux'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import socket from '../../socket'
@@ -548,54 +547,6 @@ const DayCalendarPopUp = ({
 		}
 	}, [calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token])
 
-	// Modified handleSend to filter out empty temporary lines
-	// const handleSend = () => {
-	// 	const filledTempStudents = tempStudents.filter(
-	// 		(student) =>
-	// 			student.nameStudent &&
-	// 			student.itemName &&
-	// 			(student.startTime.hour !== 0 || student.startTime.minute !== 0),
-	// 	)
-
-	// 	const studentsToSave = [...students, ...filledTempStudents]
-	// 	let savedCount = 0
-	// 	const totalToSave = studentsToSave.length
-
-	// 	studentsToSave.forEach((student) => {
-	// 		socket.emit('updateStudentSchedule', {
-	// 			id: student.id,
-	// 			day: calendarNowPopupDay,
-	// 			month: calendarNowPopupMonth,
-	// 			year: calendarNowPopupYear,
-	// 			lessonsPrice: student.costOneLesson || 0,
-	// 			studentName: student.nameStudent,
-	// 			itemName: student.itemName,
-	// 			typeLesson: student.typeLesson,
-	// 			startTime: student.startTime,
-	// 			endTime: student.endTime,
-	// 			isChecked: student.tryLessonCheck,
-	// 			token: token,
-	// 		})
-	// 	})
-
-	// 	// После сохранения всех изменений
-	// 	setTempStudents([])
-	// 	setEditMode(false)
-	// 	dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
-
-	// 	// Триггерим перезагрузку карточки
-	// 	const currentStudentId = student.studentId // сохраняем ID текущего студента
-	// 	dispatch({type: 'RELOAD_STUDENT_CARD'})
-
-	// 	// Через небольшую задержку открываем карточку заново
-	// 	setTimeout(() => {
-	// 		dispatch({
-	// 			type: 'SET_CURRENT_OPENED_STUDENT',
-	// 			payload: currentStudentId,
-	// 		})
-	// 	}, 100)
-	// }
-
 	const handleSend = async () => {
 		const filledTempStudents = tempStudents.filter(
 			(student) =>
@@ -892,35 +843,50 @@ const DayCalendarPopUp = ({
 		fetchDataForDate(newDay, newMonth, newYear)
 	}
 
-	const handeleAddStudentDay = () => {
-		socket.emit('createStudentSchedule', {
-			token: token,
-			day: calendarNowPopupDay,
-			month: calendarNowPopupMonth,
-			year: calendarNowPopupYear,
-		})
-		socket.once('createStudentSchedule', (data: any) => {
-			if (data.created != '' || data.created != undefined) {
-				console.log('createStudentSchedule', data)
-				students.push(
-					// @ts-ignore
-					{
-						id: data.created,
-						nameStudent: '',
-						costOneLesson: '0',
-						itemName: '',
-						studentId: '',
-						typeLesson: '1',
-						tryLessonCheck: false,
-						startTime: {hour: 0, minute: 0},
-						endTime: {hour: 0, minute: 0},
-					},
-				),
-					//delete all undefined from students array
-					setStudents(students.filter((student) => student !== undefined))
+	useEffect(() => {
+		const handleCreateStudentSchedule = (data: {
+			created: string
+			nameStudent?: string
+			costOneLesson?: string
+			itemName?: string
+		}) => {
+			if (data.created && typeof data.created === 'string') {
+				console.log('Received new student schedule:', data)
+				setStudents((prevStudents) => {
+					// Check if this ID already exists to prevent duplicates
+					const exists = prevStudents.some(
+						(student) => student.id === data.created,
+					)
+					if (exists) {
+						return prevStudents
+					}
+
+					return [
+						...prevStudents,
+						{
+							id: data.created,
+							nameStudent: data.nameStudent ?? '',
+							costOneLesson: data.costOneLesson ?? '0',
+							itemName: data.itemName ?? '',
+							studentId: '',
+							typeLesson: '1',
+							tryLessonCheck: false,
+							startTime: {hour: 0, minute: 0},
+							endTime: {hour: 0, minute: 0},
+							type: 'student',
+							isCancel: false,
+						},
+					]
+				})
 			}
-		})
-	}
+		}
+
+		socket.on('createStudentSchedule', handleCreateStudentSchedule)
+
+		return () => {
+			socket.off('createStudentSchedule', handleCreateStudentSchedule)
+		}
+	}, []) // Empty dependency array since we're using function reference
 
 	// Отсортированный список студентов
 	const sortedStudents = sortStudentsByStartTime(students)

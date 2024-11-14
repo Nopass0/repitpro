@@ -11,19 +11,18 @@ import {
 } from "./calendar/calendar";
 import {
   cancelLesson,
-  createStudentSchedule,
   deleteAudio,
   deleteStudent,
   getAllIdStudents,
   getGroupByStudentId,
   getStudentList,
-  getStudentsByDate,
   getTableData,
   studentToArhive,
   updateStudentAndItems,
-  updateStudentSchedule,
+
   // updateStudents,
 } from "./cards/student";
+
 import { addStudent } from "./cards/student/add";
 import { getUserData, setUserData, uploadUsersFiles } from "./auth/user";
 import {
@@ -49,7 +48,6 @@ import {
 } from "./cards/client";
 import {
   getAllItemsIdsAndNames,
-  getAllStatisticsData,
   getClientCountData,
   getClientFinanceData,
   getClientWorksData,
@@ -66,6 +64,11 @@ import {
   getLinksByTag,
   getLinksByUser,
 } from "./cards/links";
+import {
+  createStudentSchedule,
+  getStudentsByDate,
+  updateStudentSchedule,
+} from "cards/student/schedule";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -102,34 +105,34 @@ io.on("connection", (socket) => {
   socket.on("getClientTableData", (token) => getClientTableData(token, socket));
 
   socket.on("getStudentFinanceData", (data) =>
-    getStudentFinanceData(data, socket)
+    getStudentFinanceData(data, socket),
   );
   socket.on("getStudentCountData", (data) => getStudentCountData(data, socket));
   socket.on("getStudentLessonsData", (data) =>
-    getStudentLessonsData(data, socket)
+    getStudentLessonsData(data, socket),
   );
   socket.on("getClientFinanceData", (data) =>
-    getClientFinanceData(data, socket)
+    getClientFinanceData(data, socket),
   );
   socket.on("getClientCountData", (data) => getClientCountData(data, socket));
   socket.on("getClientWorksData", (data) => getClientWorksData(data, socket));
   socket.on("getStudentClientComparisonData", (data) =>
-    getStudentClientComparisonData(data, socket)
+    getStudentClientComparisonData(data, socket),
   );
   socket.on("fetchGroupsByDate", (data) => fetchGroupsByDate(data, socket));
   //modifyGroupSchedule
   socket.on("modifyGroupSchedule", (data) => modifyGroupSchedule(data, socket));
 
   socket.on("createStudentSchedule", (data) =>
-    createStudentSchedule(data, socket)
+    createStudentSchedule(data, socket),
   );
 
   socket.on("getAllItemsIdsAndNames", (token) =>
-    getAllItemsIdsAndNames(token, socket)
+    getAllItemsIdsAndNames(token, socket),
   );
 
   socket.on("updateStudentSchedule", (data) =>
-    updateStudentSchedule(data, socket)
+    updateStudentSchedule(data, socket),
   );
 
   socket.on("createLink", (data) => createLink(data, socket));
@@ -146,7 +149,7 @@ io.on("connection", (socket) => {
 
   // socket.on("updateStudents", (data) => updateStudents(data, socket));
   socket.on("updateStudentAndItems", (data) =>
-    updateStudentAndItems(data, socket)
+    updateStudentAndItems(data, socket),
   );
   socket.on("updateGroup", (data) => updateGroup(data, socket));
   socket.on("uploadUsersFiles", (data) => uploadUsersFiles(data, socket));
@@ -156,10 +159,10 @@ io.on("connection", (socket) => {
 
   socket.on("getByGroupId", (data) => getByGroupId(data, socket));
   socket.on("getByClientScheduleId", (data) =>
-    getByClientScheduleId(data, socket)
+    getByClientScheduleId(data, socket),
   );
   socket.on("getByGroupScheduleId", (data) =>
-    getByGroupScheduleId(data, socket)
+    getByGroupScheduleId(data, socket),
   );
 
   socket.on("deleteLink", (data) => deleteLink(data, socket));

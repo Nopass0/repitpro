@@ -368,6 +368,71 @@ const DayCalendarLine = ({
 		setPagePopup(PagePopup.Cancel)
 	}
 
+	const handleAddStudentDay = () => {
+		socket.emit('createStudentSchedule', {
+			token: token,
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			studentId: studentId,
+			itemName: editItem, // Ensure this matches the server schema
+			lessonsPrice: editPrice, // Ensure this matches the server schema
+			studentName: editName, // Ensure this matches the server schema
+			copyBy: id,
+		})
+	}
+
+	// Function to update payment status in history
+	const updatePaymentStatus = async (newIsPaid: boolean) => {
+		const updateData = {
+			id,
+			token,
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			isChecked: newIsPaid,
+			studentId,
+			// Include other necessary fields
+			itemName: editItem,
+			lessonsPrice: editPrice,
+			typeLesson: editIcon,
+			startTime: {
+				hour: parseInt(editTimeStart.split(':')[0]),
+				minute: parseInt(editTimeStart.split(':')[1]),
+			},
+			endTime: {
+				hour: parseInt(editTimeEnd.split(':')[0]),
+				minute: parseInt(editTimeEnd.split(':')[1]),
+			},
+		}
+
+		// Emit update to server
+		socket.emit('updateStudentSchedule', updateData)
+
+		// Wait for response to confirm update
+		return new Promise((resolve) => {
+			socket.once(`updateStudentSchedule_${id}`, (response) => {
+				if (response.success) {
+					resolve(true)
+				} else {
+					console.error('Failed to update payment status:', response.error)
+					resolve(false)
+				}
+			})
+		})
+	}
+
+	// Handle checkbox change
+	const handlePaymentStatusChange = async () => {
+		const newIsPaid = !editPrevpay
+
+		// Show confirmation dialog
+		setPagePopup(PagePopup.PrePay)
+
+		// The actual update will happen in the confirmation dialog's "yes" handler
+		// See the ExitPopUp component below
+	}
+
 	const confirmCancel = () => {
 		// Обновляем локальное состояние
 		setIsCancel(true)
@@ -540,6 +605,16 @@ const DayCalendarLine = ({
 								/>
 							)}
 						</div>
+						<div className={s.NewAdd}>
+							<button
+								onClick={(e) => {
+									e.stopPropagation()
+									handleAddStudentDay()
+								}}
+								className={`${s.AddButton} ${s.AddButtonGreen}`}>
+								+
+							</button>
+						</div>
 						<div className={s.Item}>
 							{!editMode ? (
 								<p title={editItem}>
@@ -634,9 +709,37 @@ const DayCalendarLine = ({
 							<ExitPopUp
 								className={s.PopUp}
 								title="Подтвердите действие"
-								yes={() => {
-									setEditPrevpay(!editPrevpay)
-									handleUpdate()
+								yes={async () => {
+									const newIsPaid = !editPrevpay
+									const success = await updatePaymentStatus(newIsPaid)
+
+									if (success) {
+										setEditPrevpay(newIsPaid)
+										// Update local state
+										if (onUpdate) {
+											onUpdate(
+												id,
+												editIcon,
+												editName,
+												editTimeStart,
+												editTimeEnd,
+												editItem,
+												editPrice,
+												isDelete,
+												studentId,
+												isCancel,
+											)
+										}
+
+										// Refresh the data
+										socket.emit('getStudentsByDate', {
+											day: calendarNowPopupDay,
+											month: calendarNowPopupMonth,
+											year: calendarNowPopupYear,
+											token: token,
+										})
+									}
+
 									setPagePopup(PagePopup.None)
 								}}
 								no={() => setPagePopup(PagePopup.None)}
