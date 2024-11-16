@@ -30,7 +30,7 @@ import s from './index.module.scss'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CloseIcon from '@mui/icons-material/Close'
 import axios from 'axios'
-import {addDays, differenceInDays} from 'date-fns'
+import {addDays, differenceInDays, format} from 'date-fns'
 import {TailSpin} from 'react-loader-spinner'
 import {useNavigate} from 'react-router-dom'
 import DeleteConfirmation from '../DeleteConfirmation'
@@ -320,6 +320,10 @@ const AddStudent = ({}: IAddStudent) => {
 			tryLessonCheck: false,
 			tryLessonCost: '',
 			trialLessonDate: new Date(),
+			trialLessonTime: {
+				startTime: {hour: 0, minute: 0},
+				endTime: {hour: 0, minute: 0},
+			},
 			todayProgramStudent: '',
 			targetLesson: '',
 			programLesson: '',
@@ -424,6 +428,10 @@ const AddStudent = ({}: IAddStudent) => {
 					tryLessonCheck: false,
 					tryLessonCost: '',
 					trialLessonDate: new Date(),
+					trialLessonTime: {
+						startTime: {hour: 0, minute: 0},
+						endTime: {hour: 0, minute: 0},
+					},
 					todayProgramStudent: '',
 					targetLesson: '',
 					programLesson: '',
@@ -1935,19 +1943,91 @@ const AddStudent = ({}: IAddStudent) => {
 												<>
 													<Line width="100%" className={s.Line} />
 													<div className={s.StudentCard}>
-														<p>Дата пробного занятия:</p>
-														<MiniCalendar
-															disabled={isEditMode}
-															value={item.trialLessonDate || new Date()}
-															onChange={(newDate) =>
-																changeItemValue(
-																	index,
-																	'trialLessonDate',
-																	new Date(newDate),
-																)
-															}
-															calendarId={`trialLesson_${index}`}
-														/>
+														<p>Дата и время пробного занятия:</p>
+														<div className="flex flex-col gap-2 w-full">
+															<div className="flex items-center gap-4">
+																<MiniCalendar
+																	disabled={isEditMode}
+																	value={item.trialLessonDate || new Date()}
+																	onChange={(newDate) =>
+																		changeItemValue(
+																			index,
+																			'trialLessonDate',
+																			new Date(newDate),
+																		)
+																	}
+																	calendarId={`trialLesson_${index}`}
+																/>
+																{!isEditMode && (
+																	<button
+																		onClick={() =>
+																			handleClick_dp(
+																				index,
+																				-1, // Special ID for trial lesson
+																			)
+																		}
+																		className={s.ScheduleBtn}>
+																		<ScheduleIcon />
+																	</button>
+																)}
+															</div>
+															{item.trialLessonTime && (
+																<div className="text-sm ml-2">
+																	{`${String(item.trialLessonTime.startTime.hour).padStart(2, '0')}:${String(item.trialLessonTime.startTime.minute).padStart(2, '0')} -
+             ${String(item.trialLessonTime.endTime.hour).padStart(2, '0')}:${String(item.trialLessonTime.endTime.minute).padStart(2, '0')}`}
+																</div>
+															)}
+															{activeTimePicker.itemIndex === index &&
+																activeTimePicker.timelineId === -1 && (
+																	<div className={s.timePickerWrapper}>
+																		<TimePicker
+																			title="Время пробного занятия"
+																			onTimeChange={(
+																				startHour,
+																				startMinute,
+																				endHour,
+																				endMinute,
+																			) => {
+																				changeItemValue(
+																					index,
+																					'trialLessonTime',
+																					{
+																						startTime: {
+																							hour: startHour,
+																							minute: startMinute,
+																						},
+																						endTime: {
+																							hour: endHour,
+																							minute: endMinute,
+																						},
+																					},
+																				)
+																				setActiveTimePicker({
+																					itemIndex: -1,
+																					timelineId: null,
+																				})
+																			}}
+																			onExit={() => {
+																				setActiveTimePicker({
+																					itemIndex: -1,
+																					timelineId: null,
+																				})
+																			}}
+																			addBlock={true}
+																			freeSlots={freeSlots}
+																			currentDay={format(
+																				new Date(
+																					item.trialLessonDate || new Date(),
+																				),
+																				'EE',
+																			)}
+																			lessonDuration={
+																				item.lessonDuration || undefined
+																			}
+																		/>
+																	</div>
+																)}
+														</div>
 													</div>
 												</>
 											)}

@@ -133,6 +133,13 @@ const ItemSchema = z
     tryLessonCheck: z.boolean().optional().default(false),
     tryLessonCost: z.string().optional().default(""),
     trialLessonDate: z.string().datetime().nullable(),
+    trialLessonTime: z
+      .object({
+        startTime: TimeSchema,
+        endTime: TimeSchema,
+      })
+      .optional()
+      .nullable(),
     todayProgramStudent: z.string().optional().default(""),
     targetLesson: z.string().optional().default(""),
     programLesson: z.string().optional().default(""),
@@ -358,8 +365,27 @@ async function createSchedule(
     const scheduleData = [];
 
     for (const item of group.items) {
-      if (item.tryLessonCheck && item.tryLessonCost && item.trialLessonDate) {
+      // Handle trial lesson
+      if (
+        item.tryLessonCheck &&
+        item.tryLessonCost &&
+        item.trialLessonDate &&
+        item.trialLessonTime
+      ) {
         const trialDate = new Date(item.trialLessonDate);
+        const dayOfWeek = getDay(trialDate);
+
+        // Create array of 7 days with empty time slots
+        const trialTimeLinesArray = Array.from({ length: 7 }, (_, index) => ({
+          startTime: {
+            hour: item.trialLessonTime.startTime.hour,
+            minute: item.trialLessonTime.startTime.minute,
+          },
+          endTime: {
+            hour: item.trialLessonTime.endTime.hour,
+            minute: item.trialLessonTime.endTime.minute,
+          },
+        }));
 
         scheduleData.push({
           day: trialDate.getDate().toString(),
@@ -369,7 +395,7 @@ async function createSchedule(
           lessonsPrice: Number(item.tryLessonCost) || 0,
           workPrice: 0,
           month: (trialDate.getMonth() + 1).toString(),
-          timeLinesArray: item.timeLinesArray,
+          timeLinesArray: trialTimeLinesArray,
           isChecked: false,
           itemName: item.itemName,
           studentName: nameStudent,
@@ -377,10 +403,11 @@ async function createSchedule(
           year: trialDate.getFullYear().toString(),
           itemId: item.id,
           userId,
-          isTrial: true, // Добавляем флаг пробного занятия
+          isTrial: true,
         });
       }
 
+      // Handle regular lessons
       if (!item.startLesson || !item.endLesson) continue;
 
       const startDate = new Date(item.startLesson);
@@ -548,6 +575,7 @@ export async function addStudent(
                   trialLessonDate: item.trialLessonDate
                     ? new Date(item.trialLessonDate)
                     : null,
+                  trialLessonTime: item.trialLessonTime,
                   todayProgramStudent: item.todayProgramStudent,
                   targetLesson: item.targetLesson,
                   programLesson: item.programLesson,

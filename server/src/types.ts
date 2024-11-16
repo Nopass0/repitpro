@@ -28,6 +28,11 @@ export interface IItemCard {
   todayProgramStudent: string;
   targetLesson: string;
   programLesson: string;
+  trialLessonTime?: {
+    startTime: {
+      hour: number;
+      minute: number;
+    };
   typeLesson: number;
   placeLesson: string;
   timeLesson: string;
