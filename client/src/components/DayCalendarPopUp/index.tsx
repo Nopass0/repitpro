@@ -25,10 +25,10 @@ interface IDayCalendarPopUp {
 }
 
 const calculateStatistics = (students, clients, hiddenNum) => {
-	// Фильтруем отмененные занятия
-	const activeStudents = students.filter((item) => !item.isCancel)
+	// Only count non-canceled lessons
+	const activeStudents = students.filter((student) => !student.isCancel)
 
-	const statistics = {
+	return {
 		lessonsCount: activeStudents.length,
 		lessonsTotal: activeStudents.reduce(
 			(sum, student) => sum + Number(student.costOneLesson || 0),
@@ -41,8 +41,6 @@ const calculateStatistics = (students, clients, hiddenNum) => {
 				0,
 			) || 0,
 	}
-
-	return statistics
 }
 const calculatePaymentStatus = (student, currentDate) => {
 	let sortedPrePay = []
@@ -230,8 +228,16 @@ const DayCalendarPopUp = ({
 	const retryCountRef = useRef(0)
 	const mountedRef = useRef(false)
 
-	const statistics = useMemo(() => {
-		return calculateStatistics(students, clients, hiddenNum)
+	// const statistics = useMemo(() => {
+	// 	return calculateStatistics(students, clients, hiddenNum)
+	// }, [students, clients, hiddenNum])
+
+	const [statistics, setStatistics] = useState(() =>
+		calculateStatistics(students, clients, hiddenNum),
+	)
+
+	useEffect(() => {
+		setStatistics(calculateStatistics(students, clients, hiddenNum))
 	}, [students, clients, hiddenNum])
 
 	const [isEditCard, setIsEditCard] = useState<boolean>(false)
@@ -242,13 +248,24 @@ const DayCalendarPopUp = ({
 		}
 	}, [])
 
-	const handleCancelLesson = (id) => {
-		setStudents((prevStudents) =>
-			prevStudents.map((student) =>
-				student.id === id ? {...student, isCancel: !student.isCancel} : student,
-			),
-		)
-	}
+	const handleCancelLesson = useCallback(
+		(id: string) => {
+			setStudents((prevStudents) => {
+				const newStudents = prevStudents.map((student) =>
+					student.id === id
+						? {...student, isCancel: !student.isCancel}
+						: student,
+				)
+
+				// Immediately update statistics based on the new state
+				const newStats = calculateStatistics(newStudents, clients, hiddenNum)
+				setStatistics(newStats)
+
+				return newStudents
+			})
+		},
+		[clients, hiddenNum],
+	)
 
 	const Footer = () => (
 		<footer className={s.Footer}>
@@ -468,6 +485,47 @@ const DayCalendarPopUp = ({
 	// 	}
 	// }
 
+	// const onUpdate = (
+	// 	id: string,
+	// 	editIcon: string,
+	// 	editName: string,
+	// 	editTimeStart: string,
+	// 	editTimeEnd: string,
+	// 	editItem: string,
+	// 	editPrice: string,
+	// 	isDelete: boolean,
+	// 	studentId: string,
+	// 	isCancel: boolean,
+	// ) => {
+	// 	const [startHour, startMinute] = editTimeStart.split(':')
+	// 	const [endHour, endMinute] = editTimeEnd.split(':')
+
+	// 	// Создаем обновленного студента
+	// 	const updatedStudent = {
+	// 		nameStudent: editName,
+	// 		costOneLesson: editPrice,
+	// 		itemName: editItem,
+	// 		typeLesson: editIcon,
+	// 		startTime: {
+	// 			hour: parseInt(startHour),
+	// 			minute: parseInt(startMinute),
+	// 		},
+	// 		endTime: {
+	// 			hour: parseInt(endHour),
+	// 			minute: parseInt(endMinute),
+	// 		},
+	// 		studentId,
+	// 		isCancel,
+	// 	}
+
+	// 	// Обновляем состояние локально
+	// 	setStudents((prevStudents) =>
+	// 		prevStudents.map((student) =>
+	// 			student.id === id ? {...student, ...updatedStudent} : student,
+	// 		),
+	// 	)
+	// }
+
 	const onUpdate = (
 		id: string,
 		editIcon: string,
@@ -483,7 +541,7 @@ const DayCalendarPopUp = ({
 		const [startHour, startMinute] = editTimeStart.split(':')
 		const [endHour, endMinute] = editTimeEnd.split(':')
 
-		// Создаем обновленного студента
+		// Create the updated student object
 		const updatedStudent = {
 			nameStudent: editName,
 			costOneLesson: editPrice,
@@ -501,12 +559,39 @@ const DayCalendarPopUp = ({
 			isCancel,
 		}
 
-		// Обновляем состояние локально
+		// Update local state
 		setStudents((prevStudents) =>
 			prevStudents.map((student) =>
 				student.id === id ? {...student, ...updatedStudent} : student,
 			),
 		)
+
+		// Notify other components about the change
+		socket.emit('studentScheduleChanged', {
+			id,
+			...updatedStudent,
+			day: calendarNowPopupDay,
+			month: calendarNowPopupMonth,
+			year: calendarNowPopupYear,
+			token: token,
+		})
+
+		// Update AddStudent component and other related components
+		dispatch({type: 'SET_UPDATE_CARD', payload: true})
+
+		// Emit an event to update related components
+		socket.emit('updateRelatedComponents', {
+			type: 'FIELD_CHANGED',
+			payload: {
+				id,
+				field: 'all', // indicates all fields have potentially changed
+				value: updatedStudent,
+				day: calendarNowPopupDay,
+				month: calendarNowPopupMonth,
+				year: calendarNowPopupYear,
+			},
+			token: token,
+		})
 	}
 
 	// Обновляем useEffect для обработки данных

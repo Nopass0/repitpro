@@ -2357,17 +2357,30 @@ const AddStudent = ({}: IAddStudent) => {
 																			alignItems: 'center',
 																		}}>
 																		<ScheduleDate
-																			weekend={
-																				timeline.day === 'Сб' ||
-																				timeline.day === 'Вс'
-																			}
+																			weekend={index === 5 || index === 6}
 																			active={
 																				timeline.startTime.hour !== 0 ||
 																				timeline.startTime.minute !== 0 ||
 																				timeline.endTime.hour !== 0 ||
 																				timeline.endTime.minute !== 0
 																			}>
-																			<p>{timeline.day}</p>
+																			<p>
+																				{index === 0
+																					? 'Пн'
+																					: index === 1
+																						? 'Вт'
+																						: index === 2
+																							? 'Ср'
+																							: index === 3
+																								? 'Чт'
+																								: index === 4
+																									? 'Пт'
+																									: index === 5
+																										? 'Сб'
+																										: index === 6
+																											? 'Вс'
+																											: ''}
+																			</p>
 																		</ScheduleDate>
 																		{(timeline.startTime.hour !== 0 ||
 																			timeline.startTime.minute !== 0 ||
