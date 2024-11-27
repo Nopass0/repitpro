@@ -634,21 +634,13 @@ export const Calendar = ({className, cells}: ICalendar) => {
 																	Array.from({
 																		length: Math.min(55, cell.lessonsCount),
 																	}).map((_, i) => (
-																		<Line
-																			key={i}
-																			width="30px"
-																			className={`${s.LineLesson} ${s.green}`}
-																		/>
+																		<div className="w-[25px] h-[3px] mb-[3px] bg-green-500 rounded-md"></div>
 																	))}
 																{cell &&
 																	Array.from({
 																		length: Math.min(55, cell.workCount),
 																	}).map((_, i) => (
-																		<Line
-																			key={i}
-																			width="30px"
-																			className={`${s.LineLesson} ${s.blue}`}
-																		/>
+																		<div className="w-[25px] h-[3px] mb-[3px] bg-blue-500 rounded-md"></div>
 																	))}
 															</div>
 														</>

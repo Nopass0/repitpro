@@ -1,3 +1,5 @@
+import {z} from 'zod'
+
 export interface IUser {
 	token: string
 	hiddenNum: boolean
@@ -188,4 +190,104 @@ export interface IPrePayList {
 	id: number
 	date: Date
 	cost: string
+}
+
+// Base schemas
+export const TimeSchema = z.object({
+	hour: z.number().min(0).max(23),
+	minute: z.number().min(0).max(59),
+})
+
+export const TimeLineSchema = z.object({
+	id: z.number(),
+	day: z.string(),
+	active: z.boolean(),
+	startTime: TimeSchema,
+	endTime: TimeSchema,
+	editingStart: z.boolean(),
+	editingEnd: z.boolean(),
+})
+
+export const ItemSchema = z.object({
+	id: z.string(),
+	itemName: z.string(),
+	tryLessonCheck: z.boolean(),
+	tryLessonCost: z.string().optional(),
+	trialLessonDate: z.date().optional(),
+	trialLessonTime: z
+		.object({
+			startTime: TimeSchema,
+			endTime: TimeSchema,
+		})
+		.optional(),
+	todayProgramStudent: z.string(),
+	targetLesson: z.string(),
+	programLesson: z.string(),
+	typeLesson: z.string(),
+	placeLesson: z.string(),
+	timeLesson: z.string(),
+	valueMuiSelectArchive: z.number(),
+	costOneLesson: z.string(),
+	startLesson: z.date(),
+	endLesson: z.date(),
+	nowLevel: z.number().optional(),
+	lessonDuration: z.number().nullable(),
+	timeLinesArray: z.array(TimeLineSchema),
+	files: z.array(z.unknown()),
+})
+
+export const StudentSchema = z.object({
+	id: z.string(),
+	nameStudent: z.string(),
+	contactFace: z.string(),
+	phoneNumber: z.string(),
+	email: z.string().email().optional(),
+	linkStudent: z.string(),
+	costStudent: z.string(),
+	commentStudent: z.string(),
+	items: z.array(ItemSchema),
+	prePayList: z.array(
+		z.object({
+			id: z.number(),
+			cost: z.string(),
+			date: z.date(),
+		}),
+	),
+	historyLessons: z.array(
+		z.object({
+			id: z.string(),
+			date: z.date(),
+			itemName: z.string(),
+			price: z.string(),
+			isDone: z.boolean(),
+			isPaid: z.boolean(),
+			isCancel: z.boolean(),
+		}),
+	),
+})
+
+// Infer types from schemas
+export type Time = z.infer<typeof TimeSchema>
+export type TimeLine = z.infer<typeof TimeLineSchema>
+export type Item = z.infer<typeof ItemSchema>
+export type Student = z.infer<typeof StudentSchema>
+
+// API Response types
+export const StudentListResponseSchema = z.object({
+	students: z.array(
+		z.object({
+			id: z.string(),
+			nameStudent: z.string(),
+		}),
+	),
+})
+
+export type StudentListResponse = z.infer<typeof StudentListResponseSchema>
+
+// Navigation state type
+export interface NavigationState {
+	currentStudentIndex: number
+	currentItemIndex: number
+	totalStudents: number
+	totalItems: number
 }

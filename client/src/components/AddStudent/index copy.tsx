@@ -208,8 +208,6 @@ const AddStudent = ({}: IAddStudent) => {
 		setDeletedId(null)
 	}
 
-	const [isBalanceOpen, setIsBalanceOpen] = useState(false)
-
 	useEffect(() => {
 		socket.emit('getAllIdStudents', {token: token})
 		socket.on('getAllIdStudents', (data: any) => {
@@ -1561,12 +1559,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<Button variant="ghost" size="icon" onClick={prevStud}>
 										<ChevronLeft className="h-5 w-5" />
 									</Button>
-									<h2 className="text-lg font-medium">
-										Ученик{' '}
-										{currentOpenedStudent
-											? `${currentStudPosition + 1}/${allIdStudent.length}`
-											: `${allIdStudent.length + 1}/${allIdStudent.length + 1}`}
-									</h2>
+									<h2 className="text-lg font-medium">Ученик</h2>
 									<Button variant="ghost" size="icon" onClick={nextStud}>
 										<ChevronRight className="h-5 w-5" />
 									</Button>
@@ -1652,7 +1645,7 @@ const AddStudent = ({}: IAddStudent) => {
 									/>
 								</div>
 								<Line width="100%" className={s.Line} />
-								{/* <TextAreaInputBlock
+								<TextAreaInputBlock
 									title="Источник:"
 									value={linkStudent}
 									disabled={isEditMode}
@@ -1661,8 +1654,8 @@ const AddStudent = ({}: IAddStudent) => {
 									}}
 									textIndent="80px"
 									firstMinSymbols={27}
-								/> */}
-								{/* <Line width="100%" className={s.Line} /> */}
+								/>
+								<Line width="100%" className={s.Line} />
 								<div className={`${s.StudentCard} `}>
 									<p>Расходы по ученику:</p>
 									<Input
@@ -1677,60 +1670,47 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>₽</p>
 								</div>
 								<Line width="100%" className={s.Line} />
-								<div className={s.StudentCard + 'flex flex-col'}>
-									<div className="flex flex-row justify-between w-full">
-										<p className="text-lg font-medium">Баланс</p>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => setIsBalanceOpen(!isBalanceOpen)}>
-											{isBalanceOpen ? <ExpandLess /> : <ExpandMore />}
-										</Button>
-									</div>
+								<div className={s.StudentCard}>
+									<p>Предоплата:</p>
+									<MiniCalendar
+										disabled={isEditMode}
+										value={prePayDate}
+										onChange={(newDate) => handlePrePayDate(newDate)}
+										calendarId="prePay"
+									/>
 
-									{isBalanceOpen && (
-										<div className="flex flex-row w-full">
-											<MiniCalendar
-												disabled={isEditMode}
-												value={prePayDate}
-												onChange={(newDate) => handlePrePayDate(newDate)}
-												calendarId="prePay"
-											/>
+									<Input
+										num
+										className={s.PrePayCostInput}
+										type="text"
+										value={prePayCostValue}
+										disabled={isEditMode}
+										onChange={(e) => {
+											setPrePayCostValue(e.target.value)
+										}}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter' && prePayCost !== '') {
+												addPrePayList(
+													prePayCostValue,
+													prePayDate,
+													prePayList.length,
+												)
+											}
+										}}
+									/>
 
-											<Input
-												num
-												className={s.PrePayCostInput}
-												type="text"
-												value={prePayCostValue}
-												disabled={isEditMode}
-												onChange={(e) => {
-													setPrePayCostValue(e.target.value)
-												}}
-												onKeyDown={(e) => {
-													if (e.key === 'Enter' && prePayCost !== '') {
-														addPrePayList(
-															prePayCostValue,
-															prePayDate,
-															prePayList.length,
-														)
-													}
-												}}
-											/>
-
-											<p>₽</p>
-											<button
-												onClick={() =>
-													addPrePayList(
-														prePayCostValue,
-														prePayDate,
-														prePayList.length,
-													)
-												}
-												style={{marginLeft: '10px'}}>
-												<CheckCircleIcon color="success" />
-											</button>
-										</div>
-									)}
+									<p>₽</p>
+									<button
+										onClick={() =>
+											addPrePayList(
+												prePayCostValue,
+												prePayDate,
+												prePayList.length,
+											)
+										}
+										style={{marginLeft: '10px'}}>
+										<CheckCircleIcon color="success" />
+									</button>
 								</div>
 								<Line width="100%" className={s.Line} />
 								<mui.ListItemButton onClick={handleClick}>
@@ -1887,35 +1867,37 @@ const AddStudent = ({}: IAddStudent) => {
 
 							<div className={s.ItemWrapper}>
 								<div className={s.ItemHeader}>
-									<div className="flex flex-row  ">
-										<Button
-											variant="ghost"
-											size="icon"
+									<div className={s.dataSlidePicker}>
+										<button
 											onClick={() =>
 												currentItemIndex > 0 &&
 												setCurrentItemIndex(currentItemIndex - 1)
-											}>
-											<ChevronLeft className="h-5 w-5" />
-										</Button>
-										<h2 className="text-lg font-medium">
+											}
+											className={s.btn}>
+											<span>
+												<Arrow direction={ArrowType.left} />
+											</span>
+										</button>
+										<p className={s.btnText}>
 											Предмет {currentItemIndex + 1} / {items.length}
-										</h2>
-										<Button
-											variant="ghost"
-											size="icon"
+										</p>
+										<button
 											onClick={() =>
 												currentItemIndex < items.length - 1 &&
 												setCurrentItemIndex(currentItemIndex + 1)
-											}>
-											<ChevronRight className="h-5 w-5" />
-										</Button>
+											}
+											className={s.btn}>
+											<span>
+												<Arrow direction={ArrowType.right} />
+											</span>
+										</button>
 									</div>
-									<Button
-										variant="ghost"
+									<button
 										disabled={isEditMode}
-										onClick={() => addItem()}>
+										onClick={() => addItem()}
+										className={s.ItemPlus}>
 										<img src={Plus} alt={Plus} />
-									</Button>
+									</button>
 								</div>
 
 								{/* <Line width="100%" className={s.Line} /> */}
@@ -2094,6 +2076,48 @@ const AddStudent = ({}: IAddStudent) => {
 													amountInputs={5}
 												/>
 											</div>
+											<Line width="100%" className={s.Line} />
+											<TextAreaInputBlock
+												title="Текущая программа ученика:"
+												value={item.todayProgramStudent}
+												disabled={isEditMode}
+												onChange={(e) => {
+													changeItemValue(
+														index,
+														'todayProgramStudent',
+														e.target.value,
+													)
+												}}
+												textIndent="230px"
+												firstMinSymbols={10}
+											/>
+
+											<Line width="100%" className={s.Line} />
+											<TextAreaInputBlock
+												title="Цель занятий:"
+												value={item.targetLesson!}
+												disabled={isEditMode}
+												onChange={(e) => {
+													changeItemValue(index, 'targetLesson', e.target.value)
+												}}
+												textIndent="110px"
+												firstMinSymbols={22}
+											/>
+
+											<Line width="100%" className={s.Line} />
+											<TextAreaInputBlock
+												title="Программа ученика:"
+												value={item.programLesson!}
+												disabled={isEditMode}
+												onChange={(e) => {
+													changeItemValue(
+														index,
+														'programLesson',
+														e.target.value,
+													)
+												}}
+												textIndent="160px"
+											/>
 
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCard}>
@@ -2506,7 +2530,70 @@ const AddStudent = ({}: IAddStudent) => {
 										</div>
 									</>
 								))}
-
+								<div className={s.MathBlock}>
+									<div className={s.MathObjectsList}>
+										<div className={s.MathObject}>
+											<p>Всего занятий: {allLessons}</p>
+											<p>Сумма: {allLessonsPrice}₽</p>
+										</div>
+										<Line width="324px" className={s.Line} />
+										<div className={s.MathObject}>
+											{/* HistoryLesson isDone count */}
+											<p>
+												Прошло:{' '}
+												{getCountOfDoneObjects(
+													historyLesson,
+													items[currentItemIndex].itemName,
+												)}
+											</p>
+											<p>
+												Оплачено:{' '}
+												{getCountOfPaidObjects(
+													historyLesson,
+													items[currentItemIndex].itemName,
+												)}{' '}
+												(
+												{getTotalPaidPrice(
+													historyLesson,
+													items[currentItemIndex].itemName,
+												)}
+												₽)
+											</p>
+										</div>
+										<Line width="324px" className={s.Line} />
+										<div className={s.MathObject}>
+											<p>
+												Не оплачено:{' '}
+												{
+													historyLesson.filter(
+														(i) =>
+															!i.isPaid &&
+															i.isDone &&
+															i.itemName === items[currentItemIndex].itemName,
+													).length
+												}
+											</p>
+											<p style={{display: 'flex', flexDirection: 'row'}}>
+												<p style={{marginRight: '5px'}}>Долг:</p>
+												<p style={{color: 'red'}}>
+													{historyLesson
+														.filter(
+															(i) =>
+																i.isDone &&
+																!i.isPaid &&
+																!i.isCancel &&
+																i.itemName === items[currentItemIndex].itemName,
+														)
+														.reduce(
+															(total, item) => total + Number(item.price),
+															0,
+														)}
+												</p>
+												<p>₽</p>
+											</p>
+										</div>
+									</div>
+								</div>
 								{/* <mui.ListItemButton
 							style={{marginTop: '10px'}}
 							onClick={handleClick}>
@@ -2529,13 +2616,13 @@ const AddStudent = ({}: IAddStudent) => {
 								<p>Список пока пуст</p>
 							</mui.List>
 						</mui.Collapse> */}
-								{/* <FileNLinks
+								<FileNLinks
 									alreadyUploaded={files}
 									callback={handleFileNLinks}
 									linksArray={links}
 									submitLinks={handleLinksSubmit}
 									deleteLink={deleteLink}
-								/> */}
+								/>
 
 								{errorList.length > 0 && (
 									<div className={s.ErrorList}>
