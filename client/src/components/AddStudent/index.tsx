@@ -43,6 +43,7 @@ import RecordNListen from '../RecordNListen/index'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import {Button} from '@/ui/button'
 import {ChevronLeft, ChevronRight, X} from 'lucide-react'
+import {Textarea} from '@/ui/textarea'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -218,7 +219,7 @@ const AddStudent = ({}: IAddStudent) => {
 			const csp = arr.indexOf(currentOpenedStudent)
 			setAllIdStudent(arr)
 			setCurrentStudPosition(csp)
-			setOpen(true)
+			// setOpen(true)
 		})
 
 		socket.on('getGroupByStudentId', (data: any) => {
@@ -1526,7 +1527,7 @@ const AddStudent = ({}: IAddStudent) => {
 				{!loading ? (
 					<>
 						<div className={s.Header}>
-							<div className="flex items-center w-full gap-2 justify-between">
+							<div className="flex items-center w-full  rounded-md gap-2 border border-green-500 px-0.5 py-1 justify-between">
 								{/* <div className={s.dataSlidePicker}>
 									<button
 										onClick={prevStud}
@@ -1557,45 +1558,47 @@ const AddStudent = ({}: IAddStudent) => {
 										</span>
 									</button>
 								</div> */}
-								<div className="flex items-center w-full gap-2 justify-between">
-									<Button variant="ghost" size="icon" onClick={prevStud}>
-										<ChevronLeft className="h-5 w-5" />
-									</Button>
-									<h2 className="text-lg font-medium">
-										Ученик{' '}
-										{currentOpenedStudent
-											? `${currentStudPosition + 1}/${allIdStudent.length}`
-											: `${allIdStudent.length + 1}/${allIdStudent.length + 1}`}
-									</h2>
-									<Button variant="ghost" size="icon" onClick={nextStud}>
-										<ChevronRight className="h-5 w-5" />
+								<div className="flex items-center bg-white justify-between w-full mb-2 p-4 border-2 border-green-500 rounded-lg">
+									<div className="flex items-center w-full gap-2 justify-between">
+										<Button variant="ghost" size="icon" onClick={prevStud}>
+											<ChevronLeft className="h-5 w-5" />
+										</Button>
+										<h2 className="text-lg font-medium">
+											Ученик{' '}
+											{currentOpenedStudent
+												? `${currentStudPosition + 1}/${allIdStudent.length}`
+												: `${allIdStudent.length + 1}/${allIdStudent.length + 1}`}
+										</h2>
+										<Button variant="ghost" size="icon" onClick={nextStud}>
+											<ChevronRight className="h-5 w-5" />
+										</Button>
+									</div>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => {
+											if (!isEditMode) {
+												dispatch({
+													type: 'SET_PAGE_POPUP_EXIT',
+													payload: 'Exit',
+												})
+											} else {
+												dispatch({
+													type: 'SET_LEFT_MENU_PAGE',
+													payload: 'MainPage',
+												})
+											}
+										}}
+										className="hover:text-red-500">
+										<X className="h-5 w-5" />
 									</Button>
 								</div>
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={() => {
-										if (!isEditMode) {
-											dispatch({
-												type: 'SET_PAGE_POPUP_EXIT',
-												payload: EPagePopUpExit.Exit,
-											})
-										} else {
-											dispatch({
-												type: 'SET_LEFT_MENU_PAGE',
-												payload: ELeftMenuPage.MainPage,
-											})
-										}
-									}}
-									className="hover:text-red-500">
-									<X className="h-5 w-5" />
-								</Button>
 							</div>
 							<div className={s.StudNameHead}>
 								<div className={s.StudentCardName}>
 									<div className={s.StudentCardInput}>
 										<TextAreaInputBlock
-											title="Имя:"
+											placeholder="Имя студента"
 											value={nameStudent}
 											disabled={isEditMode}
 											onChange={(e) =>
@@ -1867,8 +1870,11 @@ const AddStudent = ({}: IAddStudent) => {
 									</mui.List>
 								</mui.Collapse>
 								<Line width="100%" className={s.Line} />
-								<TextAreaInputBlock
-									title="Комментарии:"
+								<label className="block text-sm font-medium text-gray-700">
+									Комментарий
+								</label>
+								<Textarea
+									className="mt-1 p-2 w-[90%] border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
 									value={commentStudent}
 									disabled={isEditMode}
 									onChange={(e) => {
@@ -1878,16 +1884,16 @@ const AddStudent = ({}: IAddStudent) => {
 								<Line width="100%" className={s.Line} />
 							</div>
 
-							<RecordNListen
+							{/* <RecordNListen
 								alreadyRecorded={audios}
 								callback={handleAddAudio}
 								className={s.RecordNListen}
 								typeCard="student"
-							/>
-
+							/> */}
+							<div className="flex flex-col gap-2 w-full"></div>
 							<div className={s.ItemWrapper}>
 								<div className={s.ItemHeader}>
-									<div className="flex flex-row  ">
+									<div className="flex items-center bg-white justify-between w-full mb-2 p-4 border-2 border-green-500 rounded-lg  ">
 										<Button
 											variant="ghost"
 											size="icon"

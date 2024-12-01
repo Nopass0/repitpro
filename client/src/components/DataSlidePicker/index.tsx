@@ -5,6 +5,8 @@ import {useDispatch, useSelector} from 'react-redux'
 import * as mui from '@mui/base'
 import CalendarPopUp from '../CalendarPopUp/index'
 import './index.css'
+import {Button} from '@/ui/button'
+import {ChevronLeft, ChevronRight} from 'lucide-react'
 interface IDataSlidePicker {
 	defaultValueId?: number
 	data?: string[]
@@ -72,15 +74,14 @@ const DataSlidePicker = ({
 
 	return (
 		<div className={s.dataSlidePicker + ' ' + (className || '')}>
-			<button
-				className={s.btn}
+			<Button
+				variant="ghost"
+				size="icon"
 				onClick={() => {
 					dateMode ? handleChangeDate(value - 1) : handleChange(value - 1)
 				}}>
-				<span>
-					<Arrow direction={ArrowType.left} />
-				</span>
-			</button>
+				<ChevronLeft className="h-5 w-5" />
+			</Button>
 			<mui.Select
 				listboxOpen={selectOpen}
 				className={s.muiSelect}
@@ -109,19 +110,18 @@ const DataSlidePicker = ({
 					)
 				}}>
 				<mui.Option className={s.muiOption} value={1}>
-					<CalendarPopUp onExit={()=> setSelectOpen(false)}/>
+					<CalendarPopUp onExit={() => setSelectOpen(false)} />
 				</mui.Option>
 			</mui.Select>
 
-			<button
-				className={s.btn}
+			<Button
+				variant="ghost"
+				size="icon"
 				onClick={() => {
 					dateMode ? handleChangeDate(value + 1) : handleChange(value + 1)
 				}}>
-				<span>
-					<Arrow direction={ArrowType.right} />
-				</span>
-			</button>
+				<ChevronRight className="h-5 w-5" />
+			</Button>
 		</div>
 	)
 }

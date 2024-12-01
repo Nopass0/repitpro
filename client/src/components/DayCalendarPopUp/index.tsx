@@ -26,15 +26,7 @@ import {
 } from '@/ui/select'
 import {Input} from '@/ui/input'
 import {Checkbox} from '@/ui/checkbox'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogFooter,
-} from '@/ui/dialog'
 import {cn} from '@/lib/utils'
-import {debounce} from 'lodash'
 
 // Import icons
 import icon1 from '@/assets/1.svg'
@@ -46,6 +38,7 @@ import icon6 from '@/assets/6.svg'
 
 import socket from '@/socket'
 import {ECurrentDayPopUp, EPagePopUpExit, ELeftMenuPage} from '@/types'
+import TimeRangePicker from '@/ui/time-range-picker'
 
 const LESSON_TYPES = {
 	HOME: '1',
@@ -63,7 +56,29 @@ interface IDayCalendarPopUp {
 	className?: string
 }
 
-const LessonRow = ({
+interface LessonRowProps {
+	lesson: {
+		id: string
+		type: string
+		startTime: {hour: number; minute: number}
+		endTime: {hour: number; minute: number}
+		studentName: string
+		subject: string
+		price: number
+		isCompleted: boolean
+		isCancelled: boolean
+		isTest: boolean
+	}
+	isEditing: boolean
+	onToggleComplete: (id: string) => void
+	onCancel: (id: string) => void
+	onCopy: (lesson: any) => void
+	onUpdate: (id: string, updates: any) => void
+	onRowClick: (lesson: any) => void
+	hiddenNum: boolean
+}
+
+const LessonRow: React.FC<LessonRowProps> = ({
 	lesson,
 	isEditing,
 	onToggleComplete,
@@ -73,229 +88,263 @@ const LessonRow = ({
 	onRowClick,
 	hiddenNum,
 }) => {
-	const [isHovered, setIsHovered] = useState(false)
+	const [timePickerOpen, setTimePickerOpen] = useState(false)
+	const [timePickerPosition, setTimePickerPosition] = useState({x: 0, y: 0})
 
-	const handleTimeChange = (field, newTime) => {
-		const [hours, minutes] = newTime.split(':')
-		onUpdate(lesson.id, {
-			[field]: {hour: parseInt(hours), minute: parseInt(minutes)},
-		})
+	const handleTimeClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (isEditing) {
+			const rect = e.currentTarget.getBoundingClientRect()
+			setTimePickerPosition({
+				x: rect.left,
+				y: rect.bottom + window.scrollY + 5,
+			})
+			setTimePickerOpen(true)
+		}
+	}
+
+	const handleTimeRangeSelect = (
+		ranges: {startTime: string; endTime: string}[],
+	) => {
+		if (ranges.length > 0) {
+			const [selectedRange] = ranges
+			const [startHours, startMinutes] = selectedRange.startTime
+				.split(':')
+				.map(Number)
+			const [endHours, endMinutes] = selectedRange.endTime
+				.split(':')
+				.map(Number)
+
+			onUpdate(lesson.id, {
+				startTime: {hour: startHours, minute: startMinutes},
+				endTime: {hour: endHours, minute: endMinutes},
+			})
+		}
+		setTimePickerOpen(false)
 	}
 
 	return (
-		<motion.div
-			initial={false}
-			animate={{
-				opacity: lesson.isCancelled ? 0.5 : 1,
-				scale: 1,
-			}}
-			className={cn(
-				'relative rounded-lg border p-4 transition-all',
-				lesson.isCancelled && 'bg-red-50/50',
-				lesson.isTest && 'border-green-500',
-				isHovered && !lesson.isCancelled && 'bg-gray-50',
-			)}
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}>
-			{lesson.isCancelled && (
-				<div className="absolute -rotate-12 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-red-500 bg-red-500/10 px-3 py-1">
-					<p className="text-sm font-medium text-red-500">Отменено</p>
-				</div>
-			)}
-
-			{lesson.isTest && (
-				<div className="absolute -rotate-12 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-500 bg-green-500/10 px-3 py-1">
-					<p className="text-sm font-medium text-green-500">Пробное</p>
-				</div>
-			)}
-
-			<div className="flex items-center gap-4">
-				{/* Icon selector */}
-				{isEditing ? (
-					<Select
-						value={lesson.type}
-						onValueChange={(value) => onUpdate(lesson.id, {type: value})}>
-						<SelectTrigger className="w-[120px]">
-							<div className="flex items-center gap-2">
-								<img
-									src={
-										lesson.type === LESSON_TYPES.HOME
-											? icon1
-											: lesson.type === LESSON_TYPES.HOME_STUDENT
-												? icon2
-												: lesson.type === LESSON_TYPES.GROUP
-													? icon3
-													: lesson.type === LESSON_TYPES.ONLINE
-														? icon4
-														: icon5
-									}
-									alt={lesson.type}
-									className="h-6 w-6"
-								/>
-							</div>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value={LESSON_TYPES.HOME}>
-								<div className="flex items-center gap-2">
-									<Home className="h-4 w-4" />
-									<span>Дома</span>
-								</div>
-							</SelectItem>
-							<SelectItem value={LESSON_TYPES.HOME_STUDENT}>
-								<div className="flex items-center gap-2">
-									<Users className="h-4 w-4" />
-									<span>У ученика</span>
-								</div>
-							</SelectItem>
-							<SelectItem value={LESSON_TYPES.GROUP}>
-								<div className="flex items-center gap-2">
-									<Users className="h-4 w-4" />
-									<span>Группа</span>
-								</div>
-							</SelectItem>
-							<SelectItem value={LESSON_TYPES.ONLINE}>
-								<div className="flex items-center gap-2">
-									<Video className="h-4 w-4" />
-									<span>Онлайн</span>
-								</div>
-							</SelectItem>
-							<SelectItem value={LESSON_TYPES.GROUP_ONLINE}>
-								<div className="flex items-center gap-2">
-									<Users className="h-4 w-4" />
-									<Video className="h-4 w-4 ml-1" />
-									<span>Группа онлайн</span>
-								</div>
-							</SelectItem>
-						</SelectContent>
-					</Select>
-				) : (
-					<div
-						className="shrink-0"
-						onClick={() => !isEditing && onRowClick(lesson)}>
-						<img
-							src={
-								lesson.type === LESSON_TYPES.HOME
-									? icon1
-									: lesson.type === LESSON_TYPES.HOME_STUDENT
-										? icon2
-										: lesson.type === LESSON_TYPES.GROUP
-											? icon3
-											: lesson.type === LESSON_TYPES.ONLINE
-												? icon4
-												: icon5
-							}
-							alt={lesson.type}
-							className="h-10 w-10"
-						/>
+		<>
+			<div
+				className={cn(
+					'relative border-x border-t p-3 transition-all bg-white min-h-[60px]',
+					lesson.isCancelled && 'bg-red-50/50',
+					lesson.isTest && 'border-green-500',
+				)}>
+				{lesson.isCancelled && (
+					<div className="absolute -rotate-12 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-red-500 bg-red-500/10 px-3 py-1 z-10">
+						<p className="text-sm font-medium text-red-500">Отменено</p>
 					</div>
 				)}
 
-				{/* Main content */}
-				<div className="flex-1 grid grid-cols-[1fr_2fr_2fr_1fr] gap-4">
-					{isEditing ? (
-						<>
-							<div className="flex items-center gap-2">
-								<Input
-									type="time"
-									value={`${String(lesson.startTime.hour).padStart(2, '0')}:${String(lesson.startTime.minute).padStart(2, '0')}`}
-									onChange={(e) =>
-										handleTimeChange('startTime', e.target.value)
-									}
-									className="w-24"
-								/>
-								<span>-</span>
-								<Input
-									type="time"
-									value={`${String(lesson.endTime.hour).padStart(2, '0')}:${String(lesson.endTime.minute).padStart(2, '0')}`}
-									onChange={(e) => handleTimeChange('endTime', e.target.value)}
-									className="w-24"
-								/>
+				{lesson.isTest && (
+					<div className="absolute -rotate-12 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border border-green-500 bg-green-500/10 px-3 py-1 z-10">
+						<p className="text-sm font-medium text-green-500">Пробное</p>
+					</div>
+				)}
+
+				<div className="grid grid-cols-[50px_120px_1.2fr_1.2fr_100px_50px_100px] gap-0 items-center min-h-[50px]">
+					{/* Icon */}
+					<div className="border-r h-full flex items-center justify-center">
+						{isEditing ? (
+							<Select
+								value={lesson.type}
+								onValueChange={(value) => onUpdate(lesson.id, {type: value})}>
+								<SelectTrigger className="w-[40px] h-[40px]">
+									<img
+										src={
+											lesson.type === LESSON_TYPES.HOME
+												? icon1
+												: lesson.type === LESSON_TYPES.HOME_STUDENT
+													? icon2
+													: lesson.type === LESSON_TYPES.GROUP
+														? icon3
+														: lesson.type === LESSON_TYPES.ONLINE
+															? icon4
+															: icon5
+										}
+										alt={lesson.type}
+										className="h-7 w-7"
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={LESSON_TYPES.HOME}>
+										<div className="flex items-center gap-2">
+											<Home className="h-4 w-4" />
+											<span>Дома</span>
+										</div>
+									</SelectItem>
+									<SelectItem value={LESSON_TYPES.HOME_STUDENT}>
+										<div className="flex items-center gap-2">
+											<Users className="h-4 w-4" />
+											<span>У ученика</span>
+										</div>
+									</SelectItem>
+									<SelectItem value={LESSON_TYPES.GROUP}>
+										<div className="flex items-center gap-2">
+											<Users className="h-4 w-4" />
+											<span>Группа</span>
+										</div>
+									</SelectItem>
+									<SelectItem value={LESSON_TYPES.ONLINE}>
+										<div className="flex items-center gap-2">
+											<Video className="h-4 w-4" />
+											<span>Онлайн</span>
+										</div>
+									</SelectItem>
+									<SelectItem value={LESSON_TYPES.GROUP_ONLINE}>
+										<div className="flex items-center gap-2">
+											<Users className="h-4 w-4" />
+											<Video className="h-4 w-4 ml-1" />
+											<span>Группа онлайн</span>
+										</div>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						) : (
+							<img
+								src={
+									lesson.type === LESSON_TYPES.HOME
+										? icon1
+										: lesson.type === LESSON_TYPES.HOME_STUDENT
+											? icon2
+											: lesson.type === LESSON_TYPES.GROUP
+												? icon3
+												: lesson.type === LESSON_TYPES.ONLINE
+													? icon4
+													: icon5
+								}
+								alt={lesson.type}
+								className="h-7 w-7"
+							/>
+						)}
+					</div>
+
+					{/* Time */}
+					<div className="border-r h-full flex items-center justify-center px-2">
+						{isEditing ? (
+							<div
+								onClick={handleTimeClick}
+								className="px-2 py-1.5 border rounded cursor-pointer hover:border-green-500 hover:bg-green-50/50 text-center w-full">
+								<span className="text-base whitespace-nowrap">
+									{`${String(lesson.startTime.hour).padStart(2, '0')}:${String(lesson.startTime.minute).padStart(2, '0')} - ${String(lesson.endTime.hour).padStart(2, '0')}:${String(lesson.endTime.minute).padStart(2, '0')}`}
+								</span>
 							</div>
+						) : (
+							<div
+								className="text-base cursor-pointer text-center w-full whitespace-nowrap"
+								onClick={() => !isEditing && onRowClick(lesson)}>
+								{`${String(lesson.startTime.hour).padStart(2, '0')}:${String(lesson.startTime.minute).padStart(2, '0')} - ${String(lesson.endTime.hour).padStart(2, '0')}:${String(lesson.endTime.minute).padStart(2, '0')}`}
+							</div>
+						)}
+					</div>
+
+					{/* Student Name */}
+					<div className="border-r h-full flex items-center px-3">
+						{isEditing ? (
 							<Input
 								value={lesson.studentName}
 								onChange={(e) =>
 									onUpdate(lesson.id, {studentName: e.target.value})
 								}
 								placeholder="Имя ученика"
+								className="h-9 text-base cursor-text w-full text-center"
 							/>
+						) : (
+							<div
+								className="font-medium cursor-pointer truncate w-full text-base text-center"
+								onClick={() => !isEditing && onRowClick(lesson)}>
+								{lesson.studentName}
+							</div>
+						)}
+					</div>
+
+					{/* Subject */}
+					<div className="border-r h-full flex items-center px-3">
+						{isEditing ? (
 							<Input
 								value={lesson.subject}
 								onChange={(e) => onUpdate(lesson.id, {subject: e.target.value})}
 								placeholder="Предмет"
+								className="h-9 text-base cursor-text w-full text-center"
 							/>
-							<div className="flex items-center gap-2">
-								<Input
-									type="number"
-									value={lesson.price}
-									onChange={(e) => onUpdate(lesson.id, {price: e.target.value})}
-									className="w-20"
-									disabled={hiddenNum}
-								/>
-								<span className="text-gray-500">₽</span>
-							</div>
-						</>
-					) : (
-						<>
+						) : (
 							<div
-								className="text-sm cursor-pointer"
-								onClick={() => !isEditing && onRowClick(lesson)}>
-								{`${String(lesson.startTime.hour).padStart(2, '0')}:${String(lesson.startTime.minute).padStart(2, '0')}`}
-								{' - '}
-								{`${String(lesson.endTime.hour).padStart(2, '0')}:${String(lesson.endTime.minute).padStart(2, '0')}`}
-							</div>
-							<div
-								className="font-medium cursor-pointer truncate"
-								onClick={() => !isEditing && onRowClick(lesson)}>
-								{lesson.studentName}
-							</div>
-							<div
-								className="text-gray-600 truncate"
+								className="text-gray-600 truncate w-full text-base text-center"
 								onClick={() => !isEditing && onRowClick(lesson)}>
 								{lesson.subject}
 							</div>
-							<div className="text-right">
+						)}
+					</div>
+
+					{/* Price */}
+					<div className="border-r h-full flex items-center justify-center px-3">
+						{isEditing ? (
+							<Input
+								type="number"
+								value={lesson.price}
+								onChange={(e) => onUpdate(lesson.id, {price: e.target.value})}
+								className="h-9 text-base cursor-text w-full text-center"
+								disabled={hiddenNum}
+							/>
+						) : (
+							<div className="text-center w-full text-base">
 								{!hiddenNum && <span>{lesson.price}₽</span>}
 							</div>
-						</>
-					)}
-				</div>
+						)}
+					</div>
 
-				{/* Actions */}
-				<div className="flex items-center gap-2">
-					<Checkbox
-						checked={lesson.isCompleted}
-						onCheckedChange={() => onToggleComplete(lesson.id)}
-						disabled={lesson.isCancelled || isEditing}
-					/>
-					{(isHovered || isEditing) && !lesson.isCancelled && (
-						<div className="flex items-center gap-1">
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => onCopy(lesson)}
-								disabled={isEditing}>
-								<Copy className="h-4 w-4" />
-							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => onCancel(lesson.id)}
-								disabled={isEditing}
-								className="text-red-500 hover:text-red-600">
-								<Trash2 className="h-4 w-4" />
-							</Button>
-						</div>
-					)}
+					{/* Checkbox */}
+					<div className="border-r h-full flex items-center justify-center">
+						<Checkbox
+							checked={lesson.isCompleted}
+							onCheckedChange={() => onToggleComplete(lesson.id)}
+							disabled={lesson.isCancelled}
+							className="h-5 w-5"
+						/>
+					</div>
+
+					{/* Actions */}
+					<div className="flex items-center justify-center gap-1 h-full">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => onCopy(lesson)}
+							className="h-10 w-10">
+							<Copy className="h-5 w-5" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => onCancel(lesson.id)}
+							className="text-red-500 hover:text-red-600 h-10 w-10">
+							<Trash2 className="h-5 w-5" />
+						</Button>
+					</div>
 				</div>
 			</div>
-		</motion.div>
+
+			{/* TimePicker Portal */}
+			{timePickerOpen && (
+				<TimeRangePicker
+					onTimeRangeSelect={handleTimeRangeSelect}
+					onClose={() => setTimePickerOpen(false)}
+					position={timePickerPosition}
+					existingRanges={[
+						{
+							startTime: `${String(lesson.startTime.hour).padStart(2, '0')}:${String(lesson.startTime.minute).padStart(2, '0')}`,
+							endTime: `${String(lesson.endTime.hour).padStart(2, '0')}:${String(lesson.endTime.minute).padStart(2, '0')}`,
+						},
+					]}
+				/>
+			)}
+		</>
 	)
 }
 
 const ClientRow = ({client, isEditing, onRowClick, hiddenNum}) => {
 	return (
 		<div
-			className="border rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+			className="border rounded-lg p-2 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
 			onClick={() => !isEditing && onRowClick(client)}>
 			<div className="flex items-center gap-4">
 				<img src={icon6} alt="Client" className="h-10 w-10" />
@@ -335,7 +384,6 @@ const ClientRow = ({client, isEditing, onRowClick, hiddenNum}) => {
 	)
 }
 
-// Основной компонент DayCalendarPopUp
 const DayCalendarPopUp = ({
 	style,
 	onExit,
@@ -635,8 +683,8 @@ const DayCalendarPopUp = ({
 				initial={{opacity: 0, y: -20}}
 				animate={{opacity: 1, y: 0}}
 				exit={{opacity: 0, y: -20}}
-				className="fixed top-20 left-[-300px]  w-[800px] bg-white rounded-xl shadow-lg overflow-hidden"
-				style={{maxHeight: 'calc(100vh-120px)'}}>
+				className="fixed top-1/2 left-[-400px] -translate-x-1/2 -translate-y-1/2 w-[800px] bg-white rounded-xl shadow-2xl overflow-hidden"
+				style={{maxHeight: 'calc(100vh - 120px)'}}>
 				{/* Header */}
 				<div className="p-4 border-b bg-white">
 					<div className="flex items-center justify-between">
@@ -682,7 +730,7 @@ const DayCalendarPopUp = ({
 				{/* Content */}
 				<div className="flex flex-col h-[600px]">
 					<ScrollArea className="flex-1 p-6">
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{isLoading ? (
 								<div className="flex items-center justify-center py-8">
 									<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -702,35 +750,40 @@ const DayCalendarPopUp = ({
 										/>
 									))}
 
-									{clients?.length > 0 && <Separator className="my-6" />}
+									{clients?.length > 0 && <Separator className="my-4" />}
 
 									{/* Regular Lessons */}
-									{students.map((lesson) => (
-										<LessonRow
-											key={lesson.id}
-											lesson={{
-												...lesson,
-												startTime: lesson.startTime,
-												endTime: lesson.endTime,
-												studentName: lesson.nameStudent,
-												subject: lesson.itemName,
-												price: lesson.costOneLesson,
-												isCompleted: lesson.tryLessonCheck,
-												isCancelled: lesson.isCancel,
-												isTest: lesson.isTrial,
-											}}
-											isEditing={editMode}
-											onToggleComplete={handleLessonComplete}
-											onCancel={handleLessonCancel}
-											onCopy={handleLessonCopy}
-											onUpdate={handleLessonUpdate}
-											onRowClick={
-												lesson.type === 'group'
-													? () => handleOpenGroupCard(lesson.groupId)
-													: () => handleOpenStudentCard(lesson.studentId)
-											}
-											hiddenNum={hiddenNum}
-										/>
+									{students.map((lesson, index) => (
+										<>
+											<LessonRow
+												key={lesson.id}
+												lesson={{
+													...lesson,
+													startTime: lesson.startTime,
+													endTime: lesson.endTime,
+													studentName: lesson.nameStudent,
+													subject: lesson.itemName,
+													price: lesson.costOneLesson,
+													isCompleted: lesson.tryLessonCheck,
+													isCancelled: lesson.isCancel,
+													isTest: lesson.isTrial,
+												}}
+												isEditing={editMode}
+												onToggleComplete={handleLessonComplete}
+												onCancel={handleLessonCancel}
+												onCopy={handleLessonCopy}
+												onUpdate={handleLessonUpdate}
+												onRowClick={
+													lesson.type === 'group'
+														? () => handleOpenGroupCard(lesson.groupId)
+														: () => handleOpenStudentCard(lesson.studentId)
+												}
+												hiddenNum={hiddenNum}
+											/>
+											{index < students.length - 1 && (
+												<Separator className="my-2" />
+											)}
+										</>
 									))}
 
 									{/* New Lesson Form */}
@@ -738,7 +791,7 @@ const DayCalendarPopUp = ({
 										<motion.div
 											initial={{opacity: 0, y: -10}}
 											animate={{opacity: 1, y: 0}}>
-											<Separator className="my-3" />
+											<Separator className="my-2" />
 											<LessonRow
 												lesson={editingNewLesson}
 												isEditing={true}
@@ -758,21 +811,21 @@ const DayCalendarPopUp = ({
 					</ScrollArea>
 
 					{/* Footer */}
-					<div className="p-4 border-t bg-white">
+					<div className="p-4 border-t bg-green-100">
 						<div className="flex justify-between items-center">
 							<div className="flex gap-3">
 								<Button
-									size="default"
+									size="lg"
 									variant={editMode ? 'outline' : 'default'}
-									className="text-[13px]"
+									className="text-[15px]"
 									onClick={() => (editMode ? handleSave() : setEditMode(true))}>
 									{editMode ? 'Сохранить' : 'Редактировать'}
 								</Button>
 								{editMode && (
 									<Button
 										variant="ghost"
-										size="default"
-										className="text-[13px]"
+										size="lg"
+										className="text-[15px]"
 										onClick={() => {
 											setEditMode(false)
 											fetchData()
@@ -781,17 +834,16 @@ const DayCalendarPopUp = ({
 									</Button>
 								)}
 								<Button
-									size="default"
-									variant="ghost"
-									className="text-[13px] flex items-center gap-1"
-									onClick={handleAddNewLesson}
-									disabled={!editMode}>
+									size="lg"
+									variant={editMode ? 'outline' : 'default'}
+									className="text-[15px] flex items-center gap-1"
+									onClick={handleAddNewLesson}>
 									<Plus className="h-4 w-4" />
 									Добавить предмет
 								</Button>
 							</div>
 
-							<div className="text-[13px] space-y-1.5">
+							<div className="text-[15px] space-y-1.5">
 								<div className="flex justify-between gap-8">
 									<span>
 										Занятий: <b>{statistics.lessonsCount}</b>
@@ -827,7 +879,11 @@ const DayCalendarPopUp = ({
 						animate={{opacity: 1}}
 						exit={{opacity: 0}}
 						className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-						<div className="bg-white rounded-lg p-6 w-[400px]">
+						<motion.div
+							initial={{scale: 0.95}}
+							animate={{scale: 1}}
+							exit={{scale: 0.95}}
+							className="bg-white rounded-lg p-6 w-[400px]">
 							<h3 className="text-lg font-medium mb-4">Сохранить изменения?</h3>
 							<div className="flex justify-end gap-3">
 								<Button
@@ -848,7 +904,7 @@ const DayCalendarPopUp = ({
 									Сохранить
 								</Button>
 							</div>
-						</div>
+						</motion.div>
 					</motion.div>
 				)}
 
@@ -858,7 +914,11 @@ const DayCalendarPopUp = ({
 						animate={{opacity: 1}}
 						exit={{opacity: 0}}
 						className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-						<div className="bg-white rounded-lg p-6 w-[400px]">
+						<motion.div
+							initial={{scale: 0.95}}
+							animate={{scale: 1}}
+							exit={{scale: 0.95}}
+							className="bg-white rounded-lg p-6 w-[400px]">
 							<h3 className="text-lg font-medium mb-4">
 								Вы действительно хотите отменить занятие?
 							</h3>
@@ -880,7 +940,7 @@ const DayCalendarPopUp = ({
 									Да, отменить
 								</Button>
 							</div>
-						</div>
+						</motion.div>
 					</motion.div>
 				)}
 			</AnimatePresence>
