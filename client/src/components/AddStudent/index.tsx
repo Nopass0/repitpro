@@ -1,14 +1,12 @@
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import ScheduleIcon from '@mui/icons-material/Schedule'
 import * as mui from '@mui/material'
-import {styled} from '@mui/material/styles'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import InputMask from 'react-input-mask'
 import {useDispatch, useSelector} from 'react-redux'
-import Arrow, {ArrowType} from '../../assets/arrow'
 import Plus from '../../assets/ItemPlus.svg'
+import {StudentMedia} from '../StudentMedia'
 import socket, {isServer} from '../../socket'
 import {
 	ELeftMenuPage,
@@ -20,26 +18,23 @@ import {
 } from '../../types'
 import CheckBox from '../CheckBox'
 import Input from '../Input'
+import Schedule from '../Schedule'
 import Line from '../Line'
 import NowLevel from '../NowLevel'
-import ScheduleDate from '../ScheduleDate/index'
 import TimePicker from '../Timer/index'
 import './index.css'
 import s from './index.module.scss'
 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import CloseIcon from '@mui/icons-material/Close'
 import axios from 'axios'
 import {addDays, differenceInDays, format} from 'date-fns'
 import {TailSpin} from 'react-loader-spinner'
 import {useNavigate} from 'react-router-dom'
 import DeleteConfirmation from '../DeleteConfirmation'
 import ExitPopUp from '../ExitPopUp'
-import FileNLinks from '../FileNLinks/index'
 import IconsPhone from '../IconsPhone/index'
 import MiniCalendar from '../MiniCalendar'
 import PrePayRow from '../PrePayRow'
-import RecordNListen from '../RecordNListen/index'
 import TextAreaInputBlock from '../TextAreaInputBlock'
 import {Button} from '@/ui/button'
 import {ChevronLeft, ChevronRight, X} from 'lucide-react'
@@ -80,6 +75,46 @@ const AddStudent = ({}: IAddStudent) => {
 	const deleteButtonRef = useRef(null)
 
 	const updateCard = useSelector((state: any) => state.updateCard)
+
+	//media
+	const [mediaFiles, setMediaFiles] = useState([])
+	const [isMediaExpanded, setIsMediaExpanded] = useState(false)
+	const [mediaSortBy, setMediaSortBy] = useState('name')
+
+	const handleFileUpload = (file) => {
+		const newFile = {
+			id: String(Date.now()),
+			name: file.name,
+			type: 'file',
+			url: URL.createObjectURL(file),
+			size: file.size,
+		}
+		setMediaFiles((prev) => [...prev, newFile])
+	}
+
+	const handleLinkAdd = (url) => {
+		const newLink = {
+			id: String(Date.now()),
+			name: new URL(url).hostname,
+			type: 'link',
+			url: url,
+		}
+		setMediaFiles((prev) => [...prev, newLink])
+	}
+
+	const handleAudioRecord = (blob) => {
+		const newAudio = {
+			id: String(Date.now()),
+			name: `Запись ${new Date().toLocaleString()}`,
+			type: 'audio',
+			url: URL.createObjectURL(blob),
+		}
+		setMediaFiles((prev) => [...prev, newAudio])
+	}
+
+	const handleMediaRemove = (id) => {
+		setMediaFiles((prev) => prev.filter((file) => file.id !== id))
+	}
 
 	useEffect(() => {
 		if (updateCard && currentOpenedStudent) {
@@ -612,6 +647,7 @@ const AddStudent = ({}: IAddStudent) => {
 				token,
 				phoneNumber,
 				prePay: prePayList,
+				mediaFiles,
 			})
 
 			socket.emit('createLink', {
@@ -1317,6 +1353,7 @@ const AddStudent = ({}: IAddStudent) => {
 			setItems(itemsWithTimelineIds)
 			setFiles(data.students[0].filesData)
 			setAudios(data.students[0].audiosData)
+			setMediaFiles(data.students[0].mediaFiles || [])
 
 			// Преобразуем даты и добавляем isCancel если его нет
 			let dateHistory = data.historyLessons.map((i) => {
@@ -1558,7 +1595,7 @@ const AddStudent = ({}: IAddStudent) => {
 										</span>
 									</button>
 								</div> */}
-								<div className="flex items-center bg-white justify-between w-full mb-2 p-4 border-2 border-green-500 rounded-lg">
+								<div className="flex items-center bg-zinc-50 justify-between w-full mb-2 p-4 border-4 border-green-500 rounded-lg">
 									<div className="flex items-center w-full gap-2 justify-between">
 										<Button variant="ghost" size="icon" onClick={prevStud}>
 											<ChevronLeft className="h-5 w-5" />
@@ -1681,13 +1718,18 @@ const AddStudent = ({}: IAddStudent) => {
 								</div>
 								<Line width="100%" className={s.Line} />
 								<div className={s.StudentCard + 'flex flex-col'}>
-									<div className="flex flex-row justify-between w-full">
-										<p className="text-lg font-medium">Баланс</p>
+									<div className="flex flex-row items-center justify-between w-[80%] p-4">
+										<p className="text-md font-medium">Баланс</p>
+										<span className="text-md font-semibold">0 ₽</span>
 										<Button
-											variant="ghost"
+											variant="default"
 											size="icon"
+											className="w-[40%]"
 											onClick={() => setIsBalanceOpen(!isBalanceOpen)}>
-											{isBalanceOpen ? <ExpandLess /> : <ExpandMore />}
+											<>
+												{/* <Plus className="w-4 h-4" /> */}
+												<span>Пополнить</span>
+											</>
 										</Button>
 									</div>
 
@@ -2345,174 +2387,34 @@ const AddStudent = ({}: IAddStudent) => {
 													<p>Расписание</p>
 												</div>
 												<Line width="324px" className={s.LineGreen} />
-												<div className={s.Schedule}>
-													{items[currentItemIndex].timeLinesArray.map(
-														(timeline, index) => (
-															<>
-																<div
-																	id={String(timeline.id)}
-																	key={timeline.id}
-																	className={
-																		s.ScheduleItem +
-																		' ' +
-																		((timeline.startTime.hour !== 0 ||
-																			timeline.startTime.minute !== 0 ||
-																			timeline.endTime.hour !== 0 ||
-																			timeline.endTime.minute !== 0) &&
-																			s.active_s)
-																	}>
-																	<div
-																		style={{
-																			width: '200px',
-																			display: 'flex',
-																			flexDirection: 'row',
-																			alignItems: 'center',
-																		}}>
-																		<ScheduleDate
-																			weekend={index === 5 || index === 6}
-																			active={
-																				timeline.startTime.hour !== 0 ||
-																				timeline.startTime.minute !== 0 ||
-																				timeline.endTime.hour !== 0 ||
-																				timeline.endTime.minute !== 0
-																			}>
-																			<p>
-																				{index === 0
-																					? 'Пн'
-																					: index === 1
-																						? 'Вт'
-																						: index === 2
-																							? 'Ср'
-																							: index === 3
-																								? 'Чт'
-																								: index === 4
-																									? 'Пт'
-																									: index === 5
-																										? 'Сб'
-																										: index === 6
-																											? 'Вс'
-																											: ''}
-																			</p>
-																		</ScheduleDate>
-																		{(timeline.startTime.hour !== 0 ||
-																			timeline.startTime.minute !== 0 ||
-																			timeline.endTime.hour !== 0 ||
-																			timeline.endTime.minute !== 0) && (
-																			<p
-																				style={{
-																					marginLeft: '10px',
-																					fontWeight: '400',
-																				}}>
-																				{`${timeline.startTime.hour
-																					.toString()
-																					.padStart(
-																						2,
-																						'0',
-																					)}:${timeline.startTime.minute
-																					.toString()
-																					.padStart(2, '0')} - ${
-																					timeline.endTime.hour ||
-																					timeline.endTime.minute !== 0
-																						? `${timeline.endTime.hour
-																								.toString()
-																								.padStart(
-																									2,
-																									'0',
-																								)}:${timeline.endTime.minute
-																								.toString()
-																								.padStart(2, '0')}`
-																						: '' // Display only start time if end time is not set
-																				}`}
-																			</p>
-																		)}
-																	</div>
-																	{!isEditMode && (
-																		<>
-																			<button
-																				onClick={() =>
-																					handleClick_delete(
-																						currentItemIndex,
-																						timeline.id,
-																					)
-																				}
-																				className={s.ScheduleBtn_Delete}>
-																				<DeleteOutlineIcon />
-																			</button>
-																			<button
-																				onClick={() =>
-																					handleClick_dp(
-																						currentItemIndex,
-																						timeline.id,
-																					)
-																				}
-																				className={s.ScheduleBtn}>
-																				<ScheduleIcon />
-																			</button>
-																		</>
-																	)}
-
-																	{activeTimePicker.itemIndex ===
-																		currentItemIndex &&
-																		activeTimePicker.timelineId ===
-																			timeline.id && (
-																			<div
-																				className={s.timePickerWrapper}
-																				style={{
-																					...(window.innerWidth >= 1024
-																						? {
-																								transform: `translateY(${index * 40}px) translateX(-50%)`,
-																							}
-																						: {}),
-																				}}>
-																				<TimePicker
-																					title={`Запланировать занятие #${timeline.id}`}
-																					onTimeChange={(
-																						startHour,
-																						startMinute,
-																						endHour,
-																						endMinute,
-																					) =>
-																						handleTimeChange(
-																							currentItemIndex,
-																							timeline.id,
-																							startHour,
-																							startMinute,
-																							endHour,
-																							endMinute,
-																						)
-																					}
-																					onExit={() => {
-																						setActiveTimePicker({
-																							itemIndex: -1,
-																							timelineId: null,
-																						})
-																					}}
-																					addBlock={true}
-																					freeSlots={freeSlots}
-																					currentDay={timeline.day}
-																					lessonDuration={
-																						items[currentItemIndex]
-																							.lessonDuration || undefined
-																					}
-																				/>
-																			</div>
-																		)}
-																</div>
-
-																{items[currentItemIndex].timeLinesArray.length -
-																	1 !==
-																	index && (
-																	<Line width="324px" className={s.Line} />
-																)}
-															</>
-														),
-													)}
-												</div>
+												<Schedule
+													currentItemIndex={currentItemIndex}
+													items={items}
+													changeItemValue={changeItemValue}
+													isEditMode={isEditMode}
+													handleClick_dp={handleClick_dp}
+													handleClick_delete={handleClick_delete}
+													activeTimePicker={activeTimePicker}
+													setActiveTimePicker={setActiveTimePicker}
+													handleTimeChange={handleTimeChange}
+													freeSlots={freeSlots}
+												/>
 											</div>
 										</div>
 									</>
 								))}
-
+								<div className="h-10"></div>
+								<StudentMedia
+									files={mediaFiles}
+									isExpanded={isMediaExpanded}
+									onToggle={() => setIsMediaExpanded(!isMediaExpanded)}
+									onFileUpload={handleFileUpload}
+									onLinkAdd={handleLinkAdd}
+									onAudioRecord={handleAudioRecord}
+									onItemRemove={handleMediaRemove}
+									sortBy={mediaSortBy}
+									onSortChange={setMediaSortBy}
+								/>
 								{/* <mui.ListItemButton
 							style={{marginTop: '10px'}}
 							onClick={handleClick}>
