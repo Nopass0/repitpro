@@ -1447,63 +1447,64 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [data])
 
-	// useEffect(() => {
-	// 	if (data && currentOpenedStudent) {
-	// 		socket.emit('getAllStudentSchedules', {
-	// 			studentId: currentOpenedStudent,
-	// 			token: token,
-	// 		})
+	useEffect(() => {
+		if (data && currentOpenedStudent) {
+			socket.emit('getAllStudentSchedules', {
+				studentId: currentOpenedStudent,
+				token: token,
+			})
 
-	// 		socket.once('getAllStudentSchedules', (schedules) => {
-	// 			// Преобразуем расписания в формат истории
-	// 			const historyFromSchedules = schedules.map((schedule) => {
-	// 				const lessonDate = new Date(
-	// 					Number(schedule.year),
-	// 					Number(schedule.month) - 1,
-	// 					Number(schedule.day),
-	// 				)
+			socket.once('getAllStudentSchedules', (schedules) => {
+				// Преобразуем расписания в формат истории
+				const historyFromSchedules = schedules.map((schedule) => {
+					const lessonDate = new Date(
+						Number(schedule.year),
+						Number(schedule.month) - 1,
+						Number(schedule.day),
+					)
 
-	// 				return {
-	// 					date: lessonDate,
-	// 					itemName: schedule.itemName,
-	// 					price: schedule.lessonsPrice,
-	// 					isDone: schedule.workStages?.isDone || false,
-	// 					isPaid: schedule.isPaid || false, // используем isPaid вместо isChecked
-	// 					isCancel: schedule.isCancel,
-	// 					isAutoChecked: schedule.isAutoChecked,
-	// 					timeSlot: {
-	// 						startTime: schedule.startTime || {hour: 0, minute: 0},
-	// 						endTime: schedule.endTime || {hour: 0, minute: 0},
-	// 					},
-	// 					isTrial: schedule.isTrial,
-	// 				}
-	// 			})
+					return {
+						date: lessonDate,
+						itemName: schedule.itemName,
+						price: schedule.lessonsPrice,
+						isDone: schedule.workStages?.isDone || false,
+						isPaid: schedule.isPaid || false, // используем isPaid вместо isChecked
+						isCancel: schedule.isCancel,
+						isAutoChecked: schedule.isAutoChecked,
+						timeSlot: {
+							startTime: schedule.startTime || {hour: 0, minute: 0},
+							endTime: schedule.endTime || {hour: 0, minute: 0},
+						},
+						isTrial: schedule.isTrial,
+					}
+				})
 
-	// 			// Фильтруем дубликаты, оставляя уникальные записи по дате и itemName
-	// 			const uniqueHistory = historyFromSchedules.filter(
-	// 				(lesson, index, array) => {
-	// 					return (
-	// 						index ===
-	// 						array.findIndex(
-	// 							(l) =>
-	// 								l.date.getTime() === lesson.date.getTime() &&
-	// 								l.itemName === lesson.itemName &&
-	// 								l.price === lesson.price,
-	// 						)
-	// 					)
-	// 				},
-	// 			)
+				// Фильтруем дубликаты, оставляя уникальные записи по дате и itemName
+				const uniqueHistory = historyFromSchedules.filter(
+					(lesson, index, array) => {
+						return (
+							index ===
+							array.findIndex(
+								(l) =>
+									l.date.getTime() === lesson.date.getTime() &&
+									l.itemName === lesson.itemName &&
+									l.price === lesson.price,
+							)
+						)
+					},
+				)
 
-	// 			// Сортируем по дате
-	// 			const sortedHistory = uniqueHistory.sort(
-	// 				(a, b) => b.date.getTime() - a.date.getTime(),
-	// 			)
+				// Сортируем по дате
+				const sortedHistory = uniqueHistory.sort(
+					(a, b) => b.date.getTime() - a.date.getTime(),
+				)
 
-	// 			// Устанавливаем историю
-	// 			setHistoryLesson(sortedHistory)
-	// 		})
-	// 	}
-	// }, [data, currentOpenedStudent])
+				// Устанавливаем историю
+				console.log('History', historyFromSchedules)
+				// setHistoryLesson(sortedHistory)
+			})
+		}
+	}, [data, currentOpenedStudent])
 
 	useEffect(() => {
 		setTimeout(() => {
