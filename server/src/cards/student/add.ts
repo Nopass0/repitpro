@@ -176,10 +176,56 @@ const AddStudentSchema = z
     nameStudent: z.string().min(1, "Имя студента обязательно"),
     phoneNumber: z
       .string()
-      .regex(/^\+?[\d\s-()]+$/, "Некорректный формат телефона"),
-    contactFace: z.string(),
-    email: z.string().email("Некорректный email").or(z.literal("")),
+      .regex(/^\+?[\d\s-()]+$/, "Некорректный формат телефона")
+      .optional()
+      .default(""),
+    contactFace: z.string().optional().default(""),
+    email: z
+      .string()
+      .email("Некорректный email")
+      .or(z.literal(""))
+      .optional()
+      .default(""),
     prePayCost: z.string(),
+    combinedHistory: z
+      .array(
+        z.discriminatedUnion("type", [
+          // Схема для занятий
+          z.object({
+            type: z.literal("lesson"),
+            date: z.date().or(z.string().transform((str) => new Date(str))),
+            itemName: z.string(),
+            isDone: z.boolean(),
+            price: z.string(),
+            isPaid: z.boolean(),
+            isCancel: z.boolean(),
+            isAutoChecked: z.boolean().optional(),
+            timeSlot: z.object({
+              startTime: z.object({
+                hour: z.number(),
+                minute: z.number(),
+              }),
+              endTime: z.object({
+                hour: z.number(),
+                minute: z.number(),
+              }),
+            }),
+            isTrial: z.boolean().optional(),
+          }),
+          // Схема для предоплат
+          z.object({
+            type: z.literal("prepayment"),
+            date: z.date().or(z.string().transform((str) => new Date(str))),
+            cost: z.string(),
+            id: z.number(),
+            isCancel: z.boolean().optional(),
+            isDone: z.boolean().optional(),
+            isPaid: z.boolean().optional(),
+          }),
+        ]),
+      )
+      .optional()
+      .default([]),
     prePayDate: z.string().datetime().nullable(),
     costOneLesson: z.string(),
     commentStudent: z.string(),
@@ -360,100 +406,64 @@ async function createSchedule(
   group: GroupWithRelations,
   nameStudent: string,
   userId: string,
+  combinedHistory: any[], // добавляем параметр
 ): Promise<void> {
   try {
     const scheduleData = [];
 
-    for (const item of group.items) {
-      // Handle trial lesson
-      if (
-        item.tryLessonCheck &&
-        item.tryLessonCost &&
-        item.trialLessonDate &&
-        item.trialLessonTime
-      ) {
-        const trialDate = new Date(item.trialLessonDate);
-        const dayOfWeek = getDay(trialDate);
+    // Теперь используем переданный combinedHistory
+    const lessons = combinedHistory.filter((entry) => entry.type === "lesson");
 
-        // Create array of 7 days with empty time slots
-        const trialTimeLinesArray = Array.from({ length: 7 }, (_, index) => ({
-          startTime: {
-            hour: item.trialLessonTime.startTime.hour,
-            minute: item.trialLessonTime.startTime.minute,
-          },
-          endTime: {
-            hour: item.trialLessonTime.endTime.hour,
-            minute: item.trialLessonTime.endTime.minute,
-          },
-        }));
+    for (const lesson of lessons) {
+      const lessonDate = new Date(lesson.date);
 
-        scheduleData.push({
-          day: trialDate.getDate().toString(),
-          groupId: group.id,
-          workCount: 0,
-          lessonsCount: 1,
-          lessonsPrice: Number(item.tryLessonCost) || 0,
-          workPrice: 0,
-          month: (trialDate.getMonth() + 1).toString(),
-          timeLinesArray: trialTimeLinesArray,
-          isChecked: false,
-          itemName: item.itemName,
-          studentName: nameStudent,
-          typeLesson: item.typeLesson,
-          year: trialDate.getFullYear().toString(),
-          itemId: item.id,
-          userId,
-          isTrial: true,
-        });
-      }
+      scheduleData.push({
+        day: lessonDate.getDate().toString(),
+        groupId: group.id,
+        studentId: group.students[0]?.id,
+        workCount: 0,
+        lessonsCount: 1,
+        lessonsPrice: Number(lesson.price) || 0,
+        workPrice: 0,
+        month: (lessonDate.getMonth() + 1).toString(),
+        year: lessonDate.getFullYear().toString(),
+        timeLinesArray: lesson.timeSlot,
+        isChecked: lesson.isDone || false,
+        itemName: lesson.itemName,
+        isPaid: lesson.isPaid || false,
+        studentName: nameStudent,
+        typeLesson:
+          group.items.find((item) => item.itemName === lesson.itemName)
+            ?.typeLesson || 1,
+        homeWork: "",
+        classWork: "",
+        address:
+          group.items.find((item) => item.itemName === lesson.itemName)
+            ?.placeLesson || "",
+        itemId: group.items.find((item) => item.itemName === lesson.itemName)
+          ?.id,
+        userId,
+        isAutoChecked: lesson.isAutoChecked || false,
+        isTrial: lesson.isTrial || false,
+        isCancel: lesson.isCancel || false,
+        homeStudentsPoints: [],
+        classStudentsPoints: [],
 
-      // Handle regular lessons
-      if (!item.startLesson || !item.endLesson) continue;
-
-      const startDate = new Date(item.startLesson);
-      const endDate = new Date(item.endLesson);
-      const daysToAdd = differenceInDays(endDate, startDate);
-
-      if (daysToAdd < 0) continue;
-
-      const dateRange = Array.from({ length: daysToAdd + 1 }, (_, i) =>
-        addDays(startDate, i),
-      );
-
-      for (const date of dateRange) {
-        const dayOfWeek = getDay(date);
-        const scheduleForDay = item.timeLinesArray[dayOfWeek];
-
-        if (!scheduleForDay) continue;
-
-        const { startTime, endTime } = scheduleForDay;
-        if (
-          startTime.hour === 0 &&
-          startTime.minute === 0 &&
-          endTime.hour === 0 &&
-          endTime.minute === 0
-        )
-          continue;
-
-        scheduleData.push({
-          day: date.getDate().toString(),
-          groupId: group.id,
-          workCount: 0,
-          lessonsCount: 1,
-          lessonsPrice: Number(item.costOneLesson) || 0,
-          workPrice: 0,
-          month: (date.getMonth() + 1).toString(),
-          timeLinesArray: item.timeLinesArray,
-          isChecked: false,
-          itemName: item.itemName,
-          studentName: nameStudent,
-          typeLesson: item.typeLesson,
-          year: date.getFullYear().toString(),
-          itemId: item.id,
-          userId,
-          isTrial: false,
-        });
-      }
+        startTime: lesson.timeSlot?.startTime || null,
+        endTime: lesson.timeSlot?.endTime || null,
+        homeFiles: [],
+        classFiles: [],
+        homeAudios: [],
+        classAudios: [],
+        totalWorkPrice: 0,
+        workStages: {
+          isPaid: lesson.isPaid || false,
+          isDone: lesson.isDone || false,
+          price: Number(lesson.price) || 0,
+          date: lessonDate.toISOString(),
+          timeSlot: lesson.timeSlot,
+        },
+      });
     }
 
     if (scheduleData.length > 0) {
@@ -626,6 +636,7 @@ export async function addStudent(
             group,
             validatedData.nameStudent,
             userId,
+            validatedData.combinedHistory || [], // передаем combinedHistory
           );
           return group;
         } catch (error) {

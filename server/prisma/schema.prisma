@@ -174,11 +174,14 @@ model StudentSchedule {
   workPrice    Int
   itemName     String?
   studentName  String?
+  startTime    Json? // { hour: number, minute: number }
+  endTime      Json? // { hour: number, minute: number }
   timeLinesArray  Json?
   typeLesson  Int?
   isChecked  Boolean?
   homeWork  String?
   classWork  String?
+  isAutoChecked Boolean @default(false)
   address  String?
   homeFiles      String[]
   totalWorkPrice  Int?
@@ -197,6 +200,7 @@ model StudentSchedule {
   itemId       String
   isCancel       Boolean @default(false)
   isTrial      Boolean @default(false)
+  isPaid       Boolean @default(false)
 
 
   workStages  Json?

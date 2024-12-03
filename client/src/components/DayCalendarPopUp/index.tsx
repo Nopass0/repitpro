@@ -38,7 +38,7 @@ import icon6 from '@/assets/6.svg'
 
 import socket from '@/socket'
 import {ECurrentDayPopUp, EPagePopUpExit, ELeftMenuPage} from '@/types'
-import TimeRangePicker from '@/ui/time-range-picker'
+import TimeRangePicker from '@/ui/time-range-picker-day'
 
 const LESSON_TYPES = {
 	HOME: '1',
@@ -68,6 +68,7 @@ interface LessonRowProps {
 		isCompleted: boolean
 		isCancelled: boolean
 		isTest: boolean
+		isAutoChecked?: boolean
 	}
 	isEditing: boolean
 	onToggleComplete: (id: string) => void
@@ -76,6 +77,10 @@ interface LessonRowProps {
 	onUpdate: (id: string, updates: any) => void
 	onRowClick: (lesson: any) => void
 	hiddenNum: boolean
+	token: string
+	calendarDay: string
+	calendarMonth: string
+	calendarYear: string
 }
 
 const LessonRow: React.FC<LessonRowProps> = ({
@@ -87,6 +92,10 @@ const LessonRow: React.FC<LessonRowProps> = ({
 	onUpdate,
 	onRowClick,
 	hiddenNum,
+	token, // Добавляем пропсы
+	calendarDay, // Добавляем пропсы
+	calendarMonth, // Добавляем пропсы
+	calendarYear, // Добавляем пропсы
 }) => {
 	const [timePickerOpen, setTimePickerOpen] = useState(false)
 	const [timePickerPosition, setTimePickerPosition] = useState({x: 0, y: 0})
@@ -102,25 +111,30 @@ const LessonRow: React.FC<LessonRowProps> = ({
 		}
 	}
 
-	const handleTimeRangeSelect = (
-		ranges: {startTime: string; endTime: string}[],
-	) => {
-		if (ranges.length > 0) {
-			const [selectedRange] = ranges
-			const [startHours, startMinutes] = selectedRange.startTime
-				.split(':')
-				.map(Number)
-			const [endHours, endMinutes] = selectedRange.endTime
-				.split(':')
-				.map(Number)
+	const handleTimeRangeSelect = useCallback(
+		(ranges: {startTime: string; endTime: string}[]) => {
+			if (ranges.length > 0) {
+				const [selectedRange] = ranges
+				const [startHours, startMinutes] = selectedRange.startTime
+					.split(':')
+					.map(Number)
+				const [endHours, endMinutes] = selectedRange.endTime
+					.split(':')
+					.map(Number)
 
-			onUpdate(lesson.id, {
-				startTime: {hour: startHours, minute: startMinutes},
-				endTime: {hour: endHours, minute: endMinutes},
-			})
-		}
-		setTimePickerOpen(false)
-	}
+				onUpdate(lesson.id, {
+					startTime: {hour: startHours, minute: startMinutes},
+					endTime: {hour: endHours, minute: endMinutes},
+					day: calendarDay,
+					month: calendarMonth,
+					year: calendarYear,
+					token: token,
+				})
+				setTimePickerOpen(false)
+			}
+		},
+		[lesson.id, onUpdate, calendarDay, calendarMonth, calendarYear, token],
+	)
 
 	return (
 		<>
@@ -298,7 +312,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 						<Checkbox
 							checked={lesson.isCompleted}
 							onCheckedChange={() => onToggleComplete(lesson.id)}
-							disabled={lesson.isCancelled}
+							disabled={lesson.isCancelled || lesson.isAutoChecked} // Добавляем проверку isAutoChecked
 							className="h-5 w-5"
 						/>
 					</div>
@@ -326,6 +340,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 			{/* TimePicker Portal */}
 			{timePickerOpen && (
 				<TimeRangePicker
+					singleRange={true}
 					onTimeRangeSelect={handleTimeRangeSelect}
 					onClose={() => setTimePickerOpen(false)}
 					position={timePickerPosition}
@@ -562,20 +577,51 @@ const DayCalendarPopUp = ({
 
 	const handleLessonUpdate = useCallback(
 		(lessonId, updates) => {
+			// Обновляем локальное состояние
 			setStudents((prevStudents) =>
-				prevStudents.map((student) =>
-					student.id === lessonId ? {...student, ...updates} : student,
-				),
+				prevStudents.map((student) => {
+					if (student.id === lessonId) {
+						const updatedStudent = {...student}
+
+						// Обновляем все поля, которые пришли в updates
+						if (updates.startTime) {
+							updatedStudent.startTime = updates.startTime
+						}
+						if (updates.endTime) {
+							updatedStudent.endTime = updates.endTime
+						}
+						if (updates.studentName) {
+							updatedStudent.nameStudent = updates.studentName
+						}
+						if (updates.subject) {
+							updatedStudent.itemName = updates.subject
+						}
+						if (updates.price) {
+							updatedStudent.costOneLesson = updates.price
+						}
+						if (updates.type) {
+							updatedStudent.typeLesson = updates.type
+						}
+						// Добавляем обработку isChecked
+						if (updates.isChecked !== undefined) {
+							updatedStudent.tryLessonCheck = updates.isChecked
+						}
+
+						return updatedStudent
+					}
+					return student
+				}),
 			)
 
-			// Notify other components about the change
-			socket.emit('studentScheduleChanged', {
+			// Отправляем обновления на сервер с включением isChecked
+			socket.emit('updateStudentSchedule', {
 				id: lessonId,
 				...updates,
 				day: calendarNowPopupDay,
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
 				token,
+				isChecked: updates.isChecked,
 			})
 
 			dispatch({type: 'SET_UPDATE_CARD', payload: true})
@@ -754,9 +800,8 @@ const DayCalendarPopUp = ({
 
 									{/* Regular Lessons */}
 									{students.map((lesson, index) => (
-										<>
+										<React.Fragment key={lesson.id}>
 											<LessonRow
-												key={lesson.id}
 												lesson={{
 													...lesson,
 													startTime: lesson.startTime,
@@ -767,6 +812,7 @@ const DayCalendarPopUp = ({
 													isCompleted: lesson.tryLessonCheck,
 													isCancelled: lesson.isCancel,
 													isTest: lesson.isTrial,
+													isAutoChecked: lesson.isAutoChecked,
 												}}
 												isEditing={editMode}
 												onToggleComplete={handleLessonComplete}
@@ -779,11 +825,15 @@ const DayCalendarPopUp = ({
 														: () => handleOpenStudentCard(lesson.studentId)
 												}
 												hiddenNum={hiddenNum}
+												token={token}
+												calendarDay={calendarNowPopupDay}
+												calendarMonth={calendarNowPopupMonth}
+												calendarYear={calendarNowPopupYear}
 											/>
 											{index < students.length - 1 && (
 												<Separator className="my-2" />
 											)}
-										</>
+										</React.Fragment>
 									))}
 
 									{/* New Lesson Form */}
@@ -802,6 +852,10 @@ const DayCalendarPopUp = ({
 													setEditingNewLesson((prev) => ({...prev, ...updates}))
 												}
 												hiddenNum={hiddenNum}
+												token={token}
+												calendarDay={calendarNowPopupDay}
+												calendarMonth={calendarNowPopupMonth}
+												calendarYear={calendarNowPopupYear}
 											/>
 										</motion.div>
 									)}

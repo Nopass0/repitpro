@@ -10,7 +10,6 @@ import {
   getByGroupScheduleId,
 } from "./calendar/calendar";
 import {
-  cancelLesson,
   deleteAudio,
   deleteStudent,
   getAllIdStudents,
@@ -66,8 +65,12 @@ import {
 } from "./cards/links";
 import {
   createStudentSchedule,
+  getScheduleSuggestions,
   getStudentsByDate,
+  updateLessonPaymentStatus,
   updateStudentSchedule,
+  cancelLesson,
+  getAllStudentSchedules,
 } from "cards/student/schedule";
 
 io.on("connection", (socket) => {
@@ -91,6 +94,13 @@ io.on("connection", (socket) => {
   socket.on("getTableData", (data) => getTableData(data, socket));
   socket.on("deleteStudent", (data) => deleteStudent(data, socket));
   socket.on("studentToArhive", (data) => studentToArhive(data, socket));
+  socket.on("getScheduleSuggestions", (data) =>
+    getScheduleSuggestions(data, socket),
+  );
+  socket.on("cancelLesson", (data) => cancelLesson(data, socket));
+  socket.on("updateLessonPaymentStatus", (data) =>
+    updateLessonPaymentStatus(data, socket),
+  );
 
   socket.on("clientToArhive", (data) => clientToArhive(data, socket));
   socket.on("deleteClient", (data) => deleteClient(data, socket));
@@ -103,6 +113,9 @@ io.on("connection", (socket) => {
   socket.on("getClientById", (data) => getClientById(data, socket));
   socket.on("getGroupsByDate", (data) => getGroupsByDate(data, socket));
   socket.on("getClientTableData", (token) => getClientTableData(token, socket));
+  socket.on("getAllStudentSchedules", (data) =>
+    getAllStudentSchedules(data, socket),
+  );
 
   socket.on("getStudentFinanceData", (data) =>
     getStudentFinanceData(data, socket),
@@ -140,8 +153,6 @@ io.on("connection", (socket) => {
   socket.on("getLinkById", (data) => getLinkById(data, socket));
   socket.on("getLinksByUser", (token) => getLinksByUser(token, socket));
   socket.on("getLinksByLinkedId", (data) => getLinksByLinkedId(data, socket));
-
-  socket.on("cancelLesson", (data) => cancelLesson(data, socket));
 
   // socket.on("getAllStatisticsData", (data) =>
   //   getAllStatisticsData(data, socket)

@@ -285,26 +285,18 @@ export async function updateStudentSchedule(
   socket: Socket,
 ): Promise<StudentSchedule | null> {
   try {
-    // 1. Validate input data
-    const data = await UpdateStudentScheduleSchema.parseAsync({
-      ...rawData,
-      lessonsPrice:
-        rawData.lessonsPrice !== undefined
-          ? String(rawData.lessonsPrice)
-          : undefined,
-      typeLesson:
-        rawData.typeLesson !== undefined
-          ? String(rawData.typeLesson)
-          : undefined,
-      isChecked:
-        rawData.isChecked !== undefined
-          ? typeof rawData.isChecked === "string"
-            ? rawData.isChecked === "true"
-            : Boolean(rawData.isChecked)
-          : undefined,
-    });
+    // Создаем объект только с теми полями, которые явно были переданы
+    const updateFields = Object.keys(rawData).reduce((acc, key) => {
+      if (rawData[key] !== undefined) {
+        acc[key] = rawData[key];
+      }
+      return acc;
+    }, {});
 
-    // 2. Verify token
+    // Валидируем только переданные поля
+    const data = await UpdateStudentScheduleSchema.parseAsync(updateFields);
+
+    // Verify token
     const token_ = await db.token.findFirst({
       where: { token: data.token },
     });
@@ -313,7 +305,7 @@ export async function updateStudentSchedule(
       throw new Error("Invalid token");
     }
 
-    // 3. Get current schedule
+    // Get current schedule
     const currentSchedule = await db.studentSchedule.findUnique({
       where: { id: data.id },
       include: {
@@ -327,68 +319,96 @@ export async function updateStudentSchedule(
       throw new Error("Schedule not found");
     }
 
-    // 4. Prepare update data
+    // Prepare update data - только для переданных полей
     const updateData: StudentScheduleUpdateInput = {};
 
-    // Handle files
-    if (data.homeFiles?.length) {
-      updateData.homeFiles = await handleFileUploads(
-        data.homeFiles,
-        token_.userId,
-        "home",
-      );
+    // Обрабатываем только те поля, которые явно были переданы
+    if (data.lessonsPrice !== undefined) {
+      updateData.lessonsPrice = Number(data.lessonsPrice);
     }
-    if (data.classFiles?.length) {
-      updateData.classFiles = await handleFileUploads(
-        data.classFiles,
-        token_.userId,
-        "class",
-      );
+    if (data.typeLesson !== undefined) {
+      updateData.typeLesson = Number(data.typeLesson);
     }
-    if (data.homeAudios?.length) {
-      updateData.homeAudios = await handleFileUploads(
-        data.homeAudios,
-        token_.userId,
-        "home/audio",
-      );
+    if (data.isChecked !== undefined) {
+      updateData.isChecked = data.isChecked;
     }
-    if (data.classAudios?.length) {
-      updateData.classAudios = await handleFileUploads(
-        data.classAudios,
-        token_.userId,
-        "class/audio",
-      );
+    if (data.itemName !== undefined) {
+      updateData.itemName = data.itemName;
+    }
+    if (data.studentName !== undefined) {
+      updateData.studentName = data.studentName;
+    }
+    if (data.homeWork !== undefined) {
+      updateData.homeWork = data.homeWork;
+    }
+    if (data.classWork !== undefined) {
+      updateData.classWork = data.classWork;
+    }
+    if (data.address !== undefined) {
+      updateData.address = data.address;
+    }
+    if (data.homeStudentsPoints !== undefined) {
+      updateData.homeStudentsPoints = data.homeStudentsPoints;
+    }
+    if (data.classStudentsPoints !== undefined) {
+      updateData.classStudentsPoints = data.classStudentsPoints;
     }
 
-    // Handle other fields
-    const fieldsToUpdate = {
-      lessonsPrice:
-        data.lessonsPrice !== undefined ? Number(data.lessonsPrice) : undefined,
-      typeLesson:
-        data.typeLesson !== undefined ? Number(data.typeLesson) : undefined,
-      isChecked: data.isChecked,
-      itemName: data.itemName,
-      studentName: data.studentName,
-      homeWork: data.homeWork,
-      classWork: data.classWork,
-      address: data.address,
-      homeStudentsPoints: data.homeStudentsPoints,
-      classStudentsPoints: data.classStudentsPoints,
-    };
-
-    // Add only defined fields to updateData
-    Object.entries(fieldsToUpdate).forEach(([key, value]) => {
-      if (value !== undefined) {
-        updateData[key] = value;
-      }
-    });
-
-    // Handle timelines
+    // Обрабатываем время только если оно явно передано
     if (data.startTime || data.endTime) {
-      updateData.timeLinesArray = await createTimeLineArray(data);
+      const timeUpdates: any = {};
+
+      if (data.startTime) {
+        timeUpdates.startTime = {
+          hour: Number(data.startTime.hour),
+          minute: Number(data.startTime.minute),
+        };
+      }
+
+      if (data.endTime) {
+        timeUpdates.endTime = {
+          hour: Number(data.endTime.hour),
+          minute: Number(data.endTime.minute),
+        };
+      }
+
+      // Обновляем timeLinesArray только если было изменено время
+      if (Object.keys(timeUpdates).length > 0) {
+        const dayOfWeekIndex = new Date(
+          Number(data.year),
+          Number(data.month) - 1,
+          Number(data.day),
+        ).getDay();
+
+        const currentTimeLinesArray = Array.isArray(
+          currentSchedule.timeLinesArray,
+        )
+          ? [...currentSchedule.timeLinesArray]
+          : Array(7)
+              .fill({})
+              .map((_, index) => ({
+                id: index + 1,
+                day: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"][index],
+                startTime: currentSchedule.startTime || { hour: 0, minute: 0 },
+                endTime: currentSchedule.endTime || { hour: 0, minute: 0 },
+                active: false,
+              }));
+
+        // Обновляем только переданные значения времени
+        currentTimeLinesArray[dayOfWeekIndex] = {
+          ...currentTimeLinesArray[dayOfWeekIndex],
+          ...timeUpdates,
+          active: true,
+        };
+
+        updateData.timeLinesArray = currentTimeLinesArray;
+      }
+
+      // Добавляем обновления времени в основные поля
+      Object.assign(updateData, timeUpdates);
     }
 
-    // 5. Update schedule
+    // Update schedule only with provided fields
     const updatedSchedule = await db.studentSchedule.update({
       where: { id: data.id },
       data: updateData,
@@ -401,7 +421,7 @@ export async function updateStudentSchedule(
       },
     });
 
-    // 6. Update history if needed
+    // Update history if needed
     if (updatedSchedule.item?.group) {
       const updateDate = new Date(
         Number(data.year),
@@ -420,7 +440,6 @@ export async function updateStudentSchedule(
       });
     }
 
-    // 7. Send response
     socket.emit(`updateStudentSchedule_${data.id}`, {
       success: true,
       updatedSchedule,
@@ -479,24 +498,48 @@ function getIsPaidStatusForDate(
   return historyLessons.some(matchLesson);
 }
 
+// Функция для валидации объекта времени
+function ensureValidTimeObject(timeObj: any): { hour: number; minute: number } {
+  if (!timeObj || typeof timeObj !== "object") {
+    return { hour: 0, minute: 0 };
+  }
+
+  const hour =
+    typeof timeObj.hour === "number"
+      ? Math.min(Math.max(0, timeObj.hour), 23)
+      : 0;
+  const minute =
+    typeof timeObj.minute === "number"
+      ? Math.min(Math.max(0, timeObj.minute), 59)
+      : 0;
+
+  return { hour, minute };
+}
+
 async function processScheduleForGroup(
   schedule: any,
   dayOfWeekIndex: number,
   currentDate: Date,
 ) {
   const { item } = schedule;
-  const timeLinesArray = schedule.timeLinesArray;
-  const daySchedule = timeLinesArray[dayOfWeekIndex];
+  const timeLinesArray = Array.isArray(schedule.timeLinesArray)
+    ? schedule.timeLinesArray
+    : [];
+  const daySchedule = timeLinesArray[dayOfWeekIndex] || {};
+
+  // Берем время напрямую из полей startTime и endTime
+  const startTime = ensureValidTimeObject(schedule.startTime);
+  const endTime = ensureValidTimeObject(schedule.endTime);
 
   const [homeFiles, classFiles, homeAudios, classAudios] = await Promise.all([
-    getFilesForSchedule(schedule.homeFiles, "home"),
-    getFilesForSchedule(schedule.classFiles, "class"),
-    getFilesForSchedule(schedule.homeAudios, "home/audio"),
-    getFilesForSchedule(schedule.classAudios, "class/audio"),
+    getFilesForSchedule(schedule.homeFiles || [], "home"),
+    getFilesForSchedule(schedule.classFiles || [], "class"),
+    getFilesForSchedule(schedule.homeAudios || [], "home/audio"),
+    getFilesForSchedule(schedule.classAudios || [], "class/audio"),
   ]);
 
   const realGroup = await db.group.findFirst({
-    where: { id: item.group.id },
+    where: { id: item.group?.id },
     include: { students: true },
   });
 
@@ -504,15 +547,16 @@ async function processScheduleForGroup(
     throw new Error("Group not found");
   }
 
-  const students = realGroup.students;
-  let homeStudentsPoints = schedule.homeStudentsPoints;
-  let classStudentsPoints = schedule.classStudentsPoints;
+  const students = realGroup.students || [];
+  let homeStudentsPoints = Array.isArray(schedule.homeStudentsPoints)
+    ? schedule.homeStudentsPoints
+    : [];
+  let classStudentsPoints = Array.isArray(schedule.classStudentsPoints)
+    ? schedule.classStudentsPoints
+    : [];
 
-  // Обработка points
-  if (
-    !Array.isArray(homeStudentsPoints) ||
-    students.length !== homeStudentsPoints.length
-  ) {
+  // Ensure points arrays match students
+  if (students.length !== homeStudentsPoints.length) {
     homeStudentsPoints = students.map((student) => ({
       studentId: student.id,
       studentName: student.nameStudent,
@@ -520,10 +564,7 @@ async function processScheduleForGroup(
     }));
   }
 
-  if (
-    !Array.isArray(classStudentsPoints) ||
-    students.length !== classStudentsPoints.length
-  ) {
+  if (students.length !== classStudentsPoints.length) {
     classStudentsPoints = students.map((student) => ({
       studentId: student.id,
       studentName: student.nameStudent,
@@ -531,10 +572,10 @@ async function processScheduleForGroup(
     }));
   }
 
-  // Получаем isPaid для каждого студента
+  // Get payment status for students
   const studentsWithPaymentStatus = students.map((student) => {
     const isPaid = getIsPaidStatusForDate(
-      realGroup.historyLessons,
+      realGroup.historyLessons || [],
       currentDate,
       student.id,
       schedule.itemName,
@@ -542,39 +583,40 @@ async function processScheduleForGroup(
 
     return {
       id: student.id,
-      nameStudent: student.nameStudent,
-      costOneLesson: student.costOneLesson,
-      prePay: student.prePay || [],
-      targetLessonStudent: student.targetLessonStudent,
-      todayProgramStudent: student.todayProgramStudent,
+      nameStudent: student.nameStudent || "",
+      costOneLesson: student.costOneLesson || "0",
+      prePay: Array.isArray(student.prePay) ? student.prePay : [],
+      targetLessonStudent: student.targetLessonStudent || "",
+      todayProgramStudent: student.todayProgramStudent || "",
       isPaid,
     };
   });
 
   return {
-    id: schedule.id,
-    itemName: schedule.itemName,
-    nameStudent: item.group.groupName,
-    typeLesson: schedule.typeLesson,
-    homeFiles,
-    classFiles,
-    homeAudios,
-    classAudios,
-    homeWork: schedule.homeWork,
-    lessonPrice: schedule.lessonsPrice,
-    lessonCount: schedule.lessonsCount,
-    place: item.placeLesson,
-    isCancel: schedule.isCancel,
-    classWork: schedule.classWork,
-    isCheck: schedule.isChecked,
-    tryLessonCheck: item.tryLessonCheck,
-    startTime: daySchedule?.startTime,
-    endTime: daySchedule?.endTime,
-    tryLessonCost: item.tryLessonCost,
+    id: schedule.id || "",
+    itemName: schedule.itemName || "",
+    nameStudent: item.group?.groupName || "",
+    typeLesson: schedule.typeLesson || 0,
+    homeFiles: homeFiles || [],
+    classFiles: classFiles || [],
+    homeAudios: homeAudios || [],
+    classAudios: classAudios || [],
+    homeWork: schedule.homeWork || "",
+    lessonPrice: schedule.lessonsPrice || 0,
+    lessonCount: schedule.lessonsCount || 0,
+    place: item.placeLesson || "",
+    isCancel: Boolean(schedule.isCancel),
+    classWork: schedule.classWork || "",
+    isCheck: Boolean(schedule.isChecked),
+    tryLessonCheck: Boolean(item.tryLessonCheck),
+    startTime,
+    endTime,
+    isAutoChecked: schedule.isAutoChecked || false,
+    tryLessonCost: item.tryLessonCost || "0",
     homeStudentsPoints,
     classStudentsPoints,
-    groupName: item.group.groupName,
-    groupId: schedule.groupId,
+    groupName: item.group?.groupName || "",
+    groupId: schedule.groupId || "",
     students: studentsWithPaymentStatus,
     type: "group",
   };
@@ -587,14 +629,20 @@ async function processScheduleForIndividual(
 ) {
   const { item } = schedule;
   const student = item.group?.students?.[0];
-  const timeLinesArray = schedule.timeLinesArray;
-  const daySchedule = timeLinesArray[dayOfWeekIndex];
+  const timeLinesArray = Array.isArray(schedule.timeLinesArray)
+    ? schedule.timeLinesArray
+    : [];
+  const daySchedule = timeLinesArray[dayOfWeekIndex] || {};
+
+  // Берем время напрямую из полей startTime и endTime
+  const startTime = ensureValidTimeObject(schedule.startTime);
+  const endTime = ensureValidTimeObject(schedule.endTime);
 
   const [homeFiles, classFiles, homeAudios, classAudios] = await Promise.all([
-    getFilesForSchedule(schedule.homeFiles, "home"),
-    getFilesForSchedule(schedule.classFiles, "class"),
-    getFilesForSchedule(schedule.homeAudios, "home/audio"),
-    getFilesForSchedule(schedule.classAudios, "class/audio"),
+    getFilesForSchedule(schedule.homeFiles || [], "home"),
+    getFilesForSchedule(schedule.classFiles || [], "class"),
+    getFilesForSchedule(schedule.homeAudios || [], "home/audio"),
+    getFilesForSchedule(schedule.classAudios || [], "class/audio"),
   ]);
 
   const history = await db.group.findMany({
@@ -602,13 +650,14 @@ async function processScheduleForIndividual(
     select: { historyLessons: true },
   });
 
+  // Initialize points arrays with proper structure
   let homeStudentsPoints = [];
   let classStudentsPoints = [];
 
   if (student) {
     const studentPoint = {
       studentId: student.id,
-      studentName: student.nameStudent,
+      studentName: student.nameStudent || "",
       points: 0,
     };
 
@@ -633,44 +682,50 @@ async function processScheduleForIndividual(
 
   const isPaid = history?.[0]
     ? getIsPaidStatusForDate(
-        history[0].historyLessons,
+        history[0].historyLessons || [],
         currentDate,
         undefined,
         schedule.itemName,
       )
     : false;
 
+  console.log("StartTime/EndTime/Schedule", startTime, endTime, schedule);
+
   return {
-    id: schedule.id,
-    nameStudent: student ? student.nameStudent : schedule.studentName,
-    costOneLesson: schedule.lessonsPrice,
+    id: schedule.id || "",
+    nameStudent: student
+      ? student.nameStudent || ""
+      : schedule.studentName || "",
+    costOneLesson: schedule.lessonsPrice || "0",
     studentId: student?.id || "",
-    itemName: schedule.itemName,
-    typeLesson: schedule.typeLesson,
-    homeFiles,
-    classFiles,
-    homeAudios,
-    classAudios,
-    homeWork: schedule.homeWork,
-    place: item.placeLesson,
-    prePayDate: student?.prePayDate ?? null,
-    prePayCost: student?.prePayCost ?? null,
-    lessonPrice: schedule.lessonsPrice,
-    lessonCount: schedule.lessonsCount,
-    isTrial: schedule.isTrial,
-    classWork: schedule.classWork,
+    itemName: schedule.itemName || "",
+    typeLesson: schedule.typeLesson || 0,
+    homeFiles: homeFiles || [],
+    classFiles: classFiles || [],
+    homeAudios: homeAudios || [],
+    classAudios: classAudios || [],
+    homeWork: schedule.homeWork || "",
+    place: item.placeLesson || "",
+    prePayDate: student?.prePayDate || null,
+    prePayCost: student?.prePayCost || null,
+    lessonPrice: schedule.lessonsPrice || 0,
+    lessonCount: schedule.lessonsCount || 0,
+    isTrial: Boolean(schedule.isTrial),
+    isAutoChecked: schedule.isAutoChecked || false,
+
+    classWork: schedule.classWork || "",
     homeStudentsPoints,
     classStudentsPoints,
-    isCheck: schedule.isChecked,
-    isCancel: schedule.isCancel,
-    tryLessonCheck: item.tryLessonCheck,
-    tryLessonCost: item.tryLessonCost,
-    prePay: student?.prePay || [],
+    isCheck: Boolean(schedule.isChecked),
+    isCancel: Boolean(schedule.isCancel),
+    tryLessonCheck: Boolean(item.tryLessonCheck),
+    tryLessonCost: item.tryLessonCost || "0",
+    prePay: Array.isArray(student?.prePay) ? student.prePay : [],
     history: history || null,
-    startTime: daySchedule?.startTime,
-    endTime: daySchedule?.endTime,
+    startTime,
+    endTime,
     groupName: item.group?.groupName || "",
-    groupId: schedule.groupId,
+    groupId: schedule.groupId || "",
     type: "student",
     isPaid,
   };
@@ -681,8 +736,9 @@ export async function getStudentsByDate(
   socket: Socket,
 ): Promise<void> {
   try {
-    const { day, month, year, token, isGroup } = data;
+    const { day, month, year, token } = data;
 
+    // Проверяем токен
     const token_ = await db.token.findFirst({ where: { token } });
     if (!token_?.userId) {
       socket.emit("getStudentsByDate", { error: "Invalid token" });
@@ -700,52 +756,12 @@ export async function getStudentsByDate(
         userId: token_.userId,
         clientId: null,
       },
-      select: {
-        id: true,
-        studentName: true,
-        lessonsPrice: true,
-        itemName: true,
-        timeLinesArray: true,
-        typeLesson: true,
-        isChecked: true,
-        homeFiles: true,
-        classFiles: true,
-        lessonsCount: true,
-        homeWork: true,
-        classWork: true,
-        isCancel: true,
-        homeStudentsPoints: true,
-        classStudentsPoints: true,
-        groupId: true,
-        clientId: true,
-        homeAudios: true,
-        classAudios: true,
-        isTrial: true,
+      include: {
         item: {
-          select: {
-            tryLessonCheck: true,
-            tryLessonCost: true,
-            todayProgramStudent: true,
-            targetLesson: true,
-            programLesson: true,
-            placeLesson: true,
-            timeLesson: true,
+          include: {
             group: {
               include: {
-                students: {
-                  select: {
-                    id: true,
-                    nameStudent: true,
-                    costOneLesson: true,
-                    tryLessonCheck: true,
-                    prePay: true,
-                    prePayCost: true,
-                    prePayDate: true,
-                    tryLessonCost: true,
-                    targetLessonStudent: true,
-                    todayProgramStudent: true,
-                  },
-                },
+                students: true,
               },
             },
           },
@@ -753,34 +769,276 @@ export async function getStudentsByDate(
       },
     });
 
-    if (isGroup) {
-      const groupsData = [];
-      let totalPrice = 0;
+    // Обработка данных
+    const processedData = await Promise.all(
+      studentSchedules.map(async (schedule) => {
+        if (schedule.item?.group?.students?.length > 1) {
+          return processScheduleForGroup(schedule, dayOfWeekIndex, currentDate);
+        } else {
+          return processScheduleForIndividual(
+            schedule,
+            dayOfWeekIndex,
+            currentDate,
+          );
+        }
+      }),
+    );
 
-      for (const schedule of studentSchedules) {
-        const groupData = await processScheduleForGroup(
-          schedule,
-          dayOfWeekIndex,
-          currentDate,
-        );
-        totalPrice += schedule.lessonsPrice;
-        groupsData.push(groupData);
-      }
-
-      groupsData.push({ totalPrice });
-      socket.emit("getStudentsByDate", groupsData);
-    } else {
-      const results = await Promise.all(
-        studentSchedules.map((schedule) =>
-          processScheduleForIndividual(schedule, dayOfWeekIndex, currentDate),
-        ),
-      );
-      socket.emit("getStudentsByDate", results);
-    }
+    // Отправляем обработанные данные
+    socket.emit("getStudentsByDate", processedData);
   } catch (error) {
     console.error("Error in getStudentsByDate:", error);
-    socket.emit("getStudentsByDate", {
+    socket.emit("getStudentsByDate", { error: "Failed to get students" });
+  }
+}
+
+export async function getScheduleSuggestions(
+  data: { token: string },
+  socket: Socket,
+): Promise<void> {
+  try {
+    const token_ = await db.token.findFirst({
+      where: { token: data.token },
+    });
+
+    if (!token_?.userId) {
+      socket.emit("getScheduleSuggestions", { error: "Invalid token" });
+      return;
+    }
+
+    // Get all unique students
+    const students = await db.student.findMany({
+      where: {
+        userId: token_.userId,
+        isArchived: false,
+      },
+      select: {
+        id: true,
+        nameStudent: true,
+        costOneLesson: true,
+        items: {
+          select: {
+            itemName: true,
+          },
+        },
+      },
+    });
+
+    // Get all unique subjects
+    const schedules = await db.studentSchedule.findMany({
+      where: {
+        userId: token_.userId,
+      },
+      select: {
+        itemName: true,
+      },
+      distinct: ["itemName"],
+    });
+
+    const uniqueSubjects = new Set<string>();
+
+    // Add subjects from schedules
+    schedules.forEach((schedule) => {
+      if (schedule.itemName) {
+        uniqueSubjects.add(schedule.itemName);
+      }
+    });
+
+    // Add subjects from student items
+    students.forEach((student) => {
+      student.items?.forEach((item) => {
+        if (item.itemName) {
+          uniqueSubjects.add(item.itemName);
+        }
+      });
+    });
+
+    socket.emit("getScheduleSuggestions", {
+      students: students.map((s) => ({
+        id: s.id,
+        name: s.nameStudent,
+        costOneLesson: s.costOneLesson,
+      })),
+      subjects: Array.from(uniqueSubjects),
+    });
+  } catch (error) {
+    console.error("Error in getScheduleSuggestions:", error);
+    socket.emit("getScheduleSuggestions", {
       error: error instanceof Error ? error.message : "Unknown error occurred",
     });
+  }
+}
+
+export async function cancelLesson(
+  data: { id: string; token: string },
+  socket: Socket,
+): Promise<void> {
+  try {
+    const token_ = await db.token.findFirst({
+      where: { token: data.token },
+    });
+
+    if (!token_?.userId) {
+      socket.emit("cancelLesson", { error: "Invalid token" });
+      return;
+    }
+
+    const lesson = await db.studentSchedule.update({
+      where: {
+        id: data.id,
+        userId: token_.userId,
+      },
+      data: {
+        isCancel: true,
+      },
+    });
+
+    if (lesson.groupId) {
+      // Update group history
+      const group = await db.group.findUnique({
+        where: { id: lesson.groupId },
+      });
+
+      if (group && group.historyLessons) {
+        const historyLessons = Array.isArray(group.historyLessons)
+          ? group.historyLessons
+          : [];
+        const lessonDate = new Date(
+          Number(lesson.year),
+          Number(lesson.month) - 1,
+          Number(lesson.day),
+        );
+
+        const updatedHistory = historyLessons.map((lessonHistory) => {
+          if (Array.isArray(lessonHistory)) {
+            return lessonHistory.map((entry) => {
+              if (compareOnlyDates(entry.date, lessonDate)) {
+                return { ...entry, isCancel: true };
+              }
+              return entry;
+            });
+          }
+          if (compareOnlyDates(lessonHistory.date, lessonDate)) {
+            return { ...lessonHistory, isCancel: true };
+          }
+          return lessonHistory;
+        });
+
+        await db.group.update({
+          where: { id: group.id },
+          data: { historyLessons: updatedHistory },
+        });
+      }
+    }
+
+    socket.emit("cancelLesson", { success: true, lessonId: data.id });
+  } catch (error) {
+    console.error("Error in cancelLesson:", error);
+    socket.emit("cancelLesson", {
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+}
+
+export async function updateLessonPaymentStatus(
+  data: { id: string; token: string; isPaid: boolean },
+  socket: Socket,
+): Promise<void> {
+  try {
+    const token_ = await db.token.findFirst({
+      where: { token: data.token },
+    });
+
+    if (!token_?.userId) {
+      socket.emit("updateLessonPaymentStatus", { error: "Invalid token" });
+      return;
+    }
+
+    const lesson = await db.studentSchedule.findFirst({
+      where: {
+        id: data.id,
+        userId: token_.userId,
+      },
+      include: {
+        item: {
+          include: {
+            group: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson) {
+      socket.emit("updateLessonPaymentStatus", { error: "Lesson not found" });
+      return;
+    }
+
+    // Update the lesson payment status
+    await db.studentSchedule.update({
+      where: { id: data.id },
+      data: { isChecked: data.isPaid },
+    });
+
+    // Update history lessons if group exists
+    if (lesson.item?.group) {
+      const lessonDate = new Date(
+        Number(lesson.year),
+        Number(lesson.month) - 1,
+        Number(lesson.day),
+      );
+      const updatedHistory = await updateHistoryInGroup(
+        lesson.item.group,
+        { id: data.id, isChecked: data.isPaid, token: data.token },
+        lessonDate,
+      );
+
+      await db.group.update({
+        where: { id: lesson.item.group.id },
+        data: { historyLessons: updatedHistory },
+      });
+    }
+
+    socket.emit("updateLessonPaymentStatus", {
+      success: true,
+      lessonId: data.id,
+      isPaid: data.isPaid,
+    });
+  } catch (error) {
+    console.error("Error in updateLessonPaymentStatus:", error);
+    socket.emit("updateLessonPaymentStatus", {
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+}
+
+export async function getAllStudentSchedules(
+  data: { studentId: string; token: string },
+  socket: Socket,
+): Promise<void> {
+  try {
+    const token_ = await db.token.findFirst({
+      where: { token: data.token },
+    });
+
+    if (!token_) {
+      throw new Error("Invalid token");
+    }
+
+    const schedules = await db.studentSchedule.findMany({
+      where: {
+        studentId: data.studentId,
+        userId: token_.userId,
+      },
+      orderBy: [{ year: "desc" }, { month: "desc" }, { day: "desc" }],
+      // Добавляем включение связанных данных, если они нужны
+      include: {
+        item: true,
+      },
+    });
+
+    socket.emit("getAllStudentSchedules", schedules);
+  } catch (error) {
+    console.error("Error getting student schedules:", error);
+    socket.emit("getAllStudentSchedules", { error: "Failed to get schedules" });
   }
 }
