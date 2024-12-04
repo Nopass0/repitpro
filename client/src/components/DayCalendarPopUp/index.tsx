@@ -308,9 +308,9 @@ const LessonRow: React.FC<LessonRowProps> = ({
 					</div>
 
 					{/* Checkbox */}
-					<div className="border-r h-full flex items-center justify-center">
+					<div className="border-r h-full bg-green-100 rounded-md flex items-center justify-center">
 						<Checkbox
-							checked={lesson.isCompleted}
+							checked={lesson.isPaid}
 							onCheckedChange={() => onToggleComplete(lesson.id)}
 							disabled={lesson.isCancelled || lesson.isAutoChecked} // Добавляем проверку isAutoChecked
 							className="h-5 w-5"
