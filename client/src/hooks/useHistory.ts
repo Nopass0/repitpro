@@ -15,7 +15,6 @@ interface HistoryLesson {
 	isCancel: boolean
 	isAutoChecked?: boolean // добавляем флаг автоматической оплаты
 	timeSlot: {
-		// добавляем временной промежуток
 		startTime: TimeSlot
 		endTime: TimeSlot
 	}
@@ -56,6 +55,13 @@ interface Item {
 	startLesson: Date
 	endLesson: Date
 	timeLinesArray: Timeline[]
+	tryLessonCheck?: boolean
+	trialLessonDate?: string
+	trialLessonTime?: {
+		startTime: TimeSlot
+		endTime: TimeSlot
+	}
+	tryLessonCost?: string
 }
 
 interface PrePay {
@@ -94,11 +100,12 @@ export const useHistory = (
 		(HistoryLesson | (PrePay & {type: 'prepayment'}))[]
 	>([])
 	const [balance, setBalance] = useState<number>(0)
+	const [items, setItems] = useState<Item[]>([])
 
 	const addPrePay = (
 		prePayCost: string,
 		prePayDate: Date,
-		prePayId: number,
+		prePayId?: number,
 	) => {
 		const newPrePay = {
 			cost: prePayCost,
@@ -111,13 +118,13 @@ export const useHistory = (
 		// Немедленно обновляем комбинированную историю
 		updateCombinedHistory(history, newPrePayList)
 		updatePaymentStatuses(history, newPrePayList)
-		calculateBalance(history, newPrePayList)
+		calculateBalance()
 	}
 
 	const deletePrePay = (id: number) => {
 		const newPrePayList = prePay.filter((item) => item.id !== id)
 		setPrePay(newPrePayList)
-		calculateBalance(history, newPrePayList)
+		calculateBalance()
 	}
 
 	const editPrePay = (id: number, newDate: Date, newCost: string) => {
@@ -125,7 +132,7 @@ export const useHistory = (
 			item.id === id ? {...item, date: new Date(newDate), cost: newCost} : item,
 		)
 		setPrePay(newPrePayList)
-		calculateBalance(history, newPrePayList)
+		calculateBalance()
 	}
 
 	// Функция для обработки существующей истории с сервера
@@ -141,7 +148,7 @@ export const useHistory = (
 		}))
 
 		setHistory(updatedHistory)
-		updateCombinedHistory(updatedHistory, initialPrePay)
+		updateCombinedHistory(updatedHistory, prePay)
 	}
 
 	const updateTimeRanges = (
@@ -168,7 +175,7 @@ export const useHistory = (
 		const historyWithPayments = updatePaymentStatuses(updatedHistory)
 		setHistory(historyWithPayments)
 		updateCombinedHistory(historyWithPayments, prePay)
-		calculateBalance(historyWithPayments)
+		calculateBalance()
 	}
 
 	const updateHistoryOnTimeRangeChange = (
@@ -202,7 +209,7 @@ export const useHistory = (
 	// Функция для генерации новой истории на основе расписания
 	const generateNewHistory = (items: Item[]): HistoryLesson[] => {
 		const now = new Date()
-		let newHistory: HistoryLesson[] = []
+		const newHistory: HistoryLesson[] = []
 
 		items.forEach((item) => {
 			// Сначала добавляем пробное занятие
@@ -214,7 +221,7 @@ export const useHistory = (
 					date: trialDate,
 					itemName: item.itemName,
 					isDone: isLessonDone(trialDate, timeSlot.startTime),
-					price: item.tryLessonCost,
+					price: item.tryLessonCost || '0',
 					isPaid: false,
 					isCancel: false,
 					isAutoChecked: false,
@@ -247,7 +254,7 @@ export const useHistory = (
 								date: lessonDate,
 								itemName: item.itemName,
 								isDone: isLessonDone(lessonDate, timeRange.startTime),
-								price: item.costOneLesson,
+								price: item.costOneLesson || '0',
 								isPaid: false,
 								isCancel: false,
 								isAutoChecked: false,
@@ -275,12 +282,12 @@ export const useHistory = (
 	}
 
 	// Вспомогательная функция для проверки валидности временного промежутка
-	const isValidTimeRange = (timeRange: any) => {
+	const isValidTimeRange = (timeRange: TimeRange): boolean => {
 		return (
-			timeRange.startTime?.hour !== 0 ||
-			timeRange.startTime?.minute !== 0 ||
-			timeRange.endTime?.hour !== 0 ||
-			timeRange.endTime?.minute !== 0
+			timeRange.startTime?.hour !== undefined ||
+			timeRange.startTime?.minute !== undefined ||
+			timeRange.endTime?.hour !== undefined ||
+			timeRange.endTime?.minute !== undefined
 		)
 	}
 
@@ -335,13 +342,6 @@ export const useHistory = (
 		})
 
 		return updatedHistory
-	}
-
-	// Вспомогательная функция для сравнения дат
-	const isSameOrBefore = (date1: Date, date2: Date) => {
-		const d1 = new Date(date1)
-		const d2 = new Date(date2)
-		return d1.getTime() <= d2.getTime()
 	}
 
 	// Функция для обновления комбинированной истории
@@ -399,34 +399,30 @@ export const useHistory = (
 	}
 
 	// Функция для расчета текущего баланса
-	const calculateBalance = (history: HistoryLesson[]) => {
-		// Считаем общую сумму всех занятий (включая пробные, исключая отмененные)
-		const totalLessonsAmount = history.reduce((sum, lesson) => {
-			if (!lesson.isCancel) {
-				// Учитываем все неотмененные занятия, включая пробные
-				return sum + Number(lesson.price)
-			}
-			return sum
-		}, 0)
-
-		// Начинаем с отрицательного баланса
-		let currentBalance = -totalLessonsAmount
-
+	const calculateBalance = () => {
 		// Добавляем все предоплаты
-		const totalPrePay = prePay.reduce(
+		let currentBalance = prePay.reduce(
 			(sum, payment) => sum + Number(payment.cost),
 			0,
 		)
-		currentBalance += totalPrePay
 
-		// Добавляем суммы за все прошедшие оплаченные занятия (включая пробные)
-		const completedPaidLessons = history.reduce((sum, lesson) => {
-			if (lesson.isDone && lesson.isPaid && !lesson.isCancel) {
+		// Вычитаем суммы за все прошедшие занятия, которые не оплачены
+		const unpaidCompletedLessons = history.reduce((sum, lesson) => {
+			if (lesson.isDone && !lesson.isPaid && !lesson.isCancel) {
 				return sum + Number(lesson.price)
 			}
 			return sum
 		}, 0)
-		currentBalance += completedPaidLessons
+		currentBalance -= unpaidCompletedLessons
+
+		// Добавляем сумму для занятий, которые пользователь отметил как оплаченные вручную
+		const manuallyPaidLessons = history.reduce((sum, lesson) => {
+			if (lesson.isPaid && lesson.isAutoChecked === false && !lesson.isCancel) {
+				return sum + Number(lesson.price)
+			}
+			return sum
+		}, 0)
+		currentBalance += manuallyPaidLessons
 
 		setBalance(currentBalance)
 	}
@@ -439,10 +435,11 @@ export const useHistory = (
 		}
 
 		const newHistory = generateNewHistory(items)
-		const updatedHistory = updatePaymentStatuses(newHistory, prePay)
+		const updatedHistory = updatePaymentStatuses(newHistory)
 		setHistory(updatedHistory)
 		updateCombinedHistory(updatedHistory, prePay)
-		calculateBalance(updatedHistory, prePay)
+		setItems(items)
+		calculateBalance()
 	}
 
 	// Эффект для начальной инициализации
@@ -454,7 +451,7 @@ export const useHistory = (
 
 	// Эффект для обновления баланса при изменении истории или предоплат
 	useEffect(() => {
-		calculateBalance(history, prePay)
+		calculateBalance()
 	}, [history, prePay])
 
 	return {
