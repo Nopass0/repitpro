@@ -436,6 +436,10 @@ const DayCalendarPopUp = ({
 	const [editingNewLesson, setEditingNewLesson] = useState(null)
 	const [pagePopup, setPagePopup] = useState(EPagePopUpExit.None)
 
+	const currentOpenedStudent = useSelector(
+		(state: any) => state.currentOpenedStudent,
+	)
+
 	// Statistics
 	const statistics = useMemo(() => {
 		const activeStudents = students.filter((student) => !student.isCancel)
@@ -680,8 +684,16 @@ const DayCalendarPopUp = ({
 							})
 
 							socket.once(`updateStudentSchedule_${student.id}`, (response) => {
-								if (response.success) resolve(response)
-								else reject(new Error('Failed to update student schedule'))
+								if (response.success) {
+									socket.emit('getAllStudentSchedules', {
+										studentId: currentOpenedStudent,
+										token: token,
+									})
+									console.log('update card', student)
+
+									handleOpenStudentCard(currentOpenedStudent)
+									resolve(response)
+								} else reject(new Error('Failed to update student schedule'))
 							})
 
 							setTimeout(() => reject(new Error('Update timeout')), 5000)

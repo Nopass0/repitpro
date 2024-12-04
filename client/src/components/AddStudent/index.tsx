@@ -130,57 +130,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [updateCard, currentOpenedStudent])
 
-	// ! useEffect для обновления combinedHistory
-	// useEffect(() => {
-	// 	const combined = [
-	// 		...historyLesson.map((lesson) => ({
-	// 			...lesson,
-	// 			type: 'lesson',
-	// 			date: new Date(lesson.date),
-	// 		})),
-	// 		...(Array.isArray(prePayList) ? prePayList : []).map((prepay) => ({
-	// 			...prepay,
-	// 			type: 'prepayment',
-	// 			date: new Date(prepay.date),
-	// 			isCancel: false,
-	// 		})),
-	// 	]
-
-	// 	const sorted = combined.sort((a, b) => {
-	// 		const dateA = new Date(a.date)
-	// 		const dateB = new Date(b.date)
-
-	// 		// Сравниваем только дату (день, месяц, год), игнорируя время
-	// 		const dateComparisonWithoutTime =
-	// 			new Date(
-	// 				dateB.getFullYear(),
-	// 				dateB.getMonth(),
-	// 				dateB.getDate(),
-	// 			).getTime() -
-	// 			new Date(
-	// 				dateA.getFullYear(),
-	// 				dateA.getMonth(),
-	// 				dateA.getDate(),
-	// 			).getTime()
-
-	// 		if (dateComparisonWithoutTime === 0) {
-	// 			// Если даты (день, месяц, год) совпадают
-	// 			if (a.type !== b.type) {
-	// 				// Занятия идут перед предоплатами
-	// 				return a.type === 'lesson' ? -1 : 1
-	// 			} else {
-	// 				// Если типы одинаковые, сортируем по времени в обратном порядке
-	// 				return dateB.getTime() - dateA.getTime()
-	// 			}
-	// 		}
-
-	// 		// Если даты разные, сортируем в обратном хронологическом порядке
-	// 		return dateComparisonWithoutTime
-	// 	})
-
-	// 	setCombinedHistory(sorted)
-	// }, [historyLesson, prePayList])
-
 	const handleAddAudio = (
 		file: any,
 		name: string,
@@ -1423,22 +1372,22 @@ const AddStudent = ({}: IAddStudent) => {
 			setMediaFiles(data.students[0].mediaFiles || [])
 
 			// Преобразуем даты и добавляем isCancel если его нет
-			let dateHistory = data.historyLessons.map((i) => {
-				const lessonDate = new Date(i.date)
-				const now = new Date()
+			// let dateHistory = data.historyLessons.map((i) => {
+			// 	const lessonDate = new Date(i.date)
+			// 	const now = new Date()
 
-				return {
-					...i,
-					date: new Date(i.date),
-					isCancel: i.isCancel || false,
-					// Если это новый студент или новое занятие, устанавливаем isDone
-					isDone: i.isDone !== undefined ? i.isDone : lessonDate < now,
-					// Сохраняем isPaid с сервера если есть, иначе false
-					isPaid: i.isPaid || false,
-				}
-			})
-			console.log('Initial history lessons:', dateHistory)
-			setHistoryLesson(dateHistory)
+			// 	return {
+			// 		...i,
+			// 		date: new Date(i.date),
+			// 		isCancel: i.isCancel || false,
+			// 		// Если это новый студент или новое занятие, устанавливаем isDone
+			// 		isDone: i.isDone !== undefined ? i.isDone : lessonDate < now,
+			// 		// Сохраняем isPaid с сервера если есть, иначе false
+			// 		isPaid: i.isPaid || false,
+			// 	}
+			// })
+			// console.log('Initial history lessons:', dateHistory)
+			// setHistoryLesson(dateHistory)
 
 			// Обработка предоплат
 			const prePay = data.students[0].prePay || []
@@ -1448,63 +1397,59 @@ const AddStudent = ({}: IAddStudent) => {
 	}, [data])
 
 	useEffect(() => {
-		if (data && currentOpenedStudent) {
-			socket.emit('getAllStudentSchedules', {
-				studentId: currentOpenedStudent,
-				token: token,
+		socket.on('getAllStudentSchedules', (schedules) => {
+			console.log('getAllStudentSchedules', schedules)
+			// Преобразуем расписания в формат истории
+			const historyFromSchedules = schedules.map((schedule) => {
+				const lessonDate = new Date(
+					Number(schedule.year),
+					Number(schedule.month) - 1,
+					Number(schedule.day),
+				)
+
+				return {
+					date: lessonDate,
+					itemName: schedule.itemName,
+					price: schedule.lessonsPrice,
+					isDone: schedule.isAutoChecked || schedule.isChecked,
+					isPaid: schedule.isPaid,
+					isCancel: schedule.isCancel,
+					typeLesson: schedule.typeLesson,
+					studentName: schedule.studentName,
+					studentId: schedule.studentId,
+				}
 			})
 
-			socket.once('getAllStudentSchedules', (schedules) => {
-				// Преобразуем расписания в формат истории
-				const historyFromSchedules = schedules.map((schedule) => {
-					const lessonDate = new Date(
-						Number(schedule.year),
-						Number(schedule.month) - 1,
-						Number(schedule.day),
-					)
-
-					return {
-						date: lessonDate,
-						itemName: schedule.itemName,
-						price: schedule.lessonsPrice,
-						isDone: schedule.workStages?.isDone || false,
-						isPaid: schedule.isPaid || false, // используем isPaid вместо isChecked
-						isCancel: schedule.isCancel,
-						isAutoChecked: schedule.isAutoChecked,
-						timeSlot: {
-							startTime: schedule.startTime || {hour: 0, minute: 0},
-							endTime: schedule.endTime || {hour: 0, minute: 0},
-						},
-						isTrial: schedule.isTrial,
-					}
-				})
-
-				// Фильтруем дубликаты, оставляя уникальные записи по дате и itemName
-				const uniqueHistory = historyFromSchedules.filter(
-					(lesson, index, array) => {
-						return (
-							index ===
-							array.findIndex(
-								(l) =>
-									l.date.getTime() === lesson.date.getTime() &&
-									l.itemName === lesson.itemName &&
-									l.price === lesson.price,
-							)
+			// Фильтруем дубликаты, оставляя уникальные записи по дате и itemName
+			const uniqueHistory = historyFromSchedules.filter(
+				(lesson, index, array) => {
+					return (
+						index ===
+						array.findIndex(
+							(l) =>
+								l.date.getTime() === lesson.date.getTime() &&
+								l.itemName === lesson.itemName &&
+								l.price === lesson.price &&
+								l.isPaid === lesson.isPaid &&
+								l.isCancel === lesson.isCancel,
 						)
-					},
-				)
+					)
+				},
+			)
 
-				// Сортируем по дате
-				const sortedHistory = uniqueHistory.sort(
-					(a, b) => b.date.getTime() - a.date.getTime(),
-				)
+			// Сортируем по дате
+			const sortedHistory = uniqueHistory.sort(
+				(a, b) => b.date.getTime() - a.date.getTime(),
+			)
 
-				// Устанавливаем историю
-				console.log('History', historyFromSchedules)
-				// setHistoryLesson(sortedHistory)
-			})
+			// Обновляем историю
+			setHistoryLesson(sortedHistory)
+		})
+
+		return () => {
+			socket.off('getAllStudentSchedules')
 		}
-	}, [data, currentOpenedStudent])
+	}, [socket])
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -1556,6 +1501,15 @@ const AddStudent = ({}: IAddStudent) => {
 			}
 		}
 	}, [open])
+
+	useEffect(() => {
+		if (currentOpenedStudent && token) {
+			socket.emit('getAllStudentSchedules', {
+				studentId: currentOpenedStudent,
+				token: token,
+			})
+		}
+	}, [currentOpenedStudent, token])
 
 	const handleAddStudentExit = () => {
 		console.log('addStudent')
