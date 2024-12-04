@@ -36,8 +36,8 @@ import {
 
 const daysInMonth = (date: Date) => {
 	const res = new Date(date.getFullYear(), date.getMonth() + 2, 0).getDate()
-	console.log('Date', res)
-	console.log('Days in month', res)
+	// console.log('Date', res)
+	// console.log('Days in month', res)
 	return res
 }
 
@@ -153,14 +153,13 @@ export const Calendar = ({className, cells}: ICalendar) => {
 
 	socket.once('getMonth', (data) => {
 		setCurrentCells(data)
-		// console.log(data)
+
+		console.log(data)
 	})
 
 	useEffect(() => {
 		socket.emit('getMonth', {currentMonth, currentYear, token: token})
-	}, [])
-
-	// Ваш импорт и код до возвращения компонента
+	}, [currentMonth, currentYear, token])
 
 	const isDateFuture = (day, month, year) => {
 		const today = new Date()
@@ -286,7 +285,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 		})
 	}, [])
 	socket.once('getClientsByDate', (data: any) => {
-		console.log('getClientsByDate', data)
+		// console.log('getClientsByDate', data)
 		setClients(data)
 	})
 
@@ -302,6 +301,7 @@ export const Calendar = ({className, cells}: ICalendar) => {
 			currentLeftMenu === ELeftMenuPage.MainPage &&
 			pagePopup !== PagePopup.DayCalendar
 		) {
+			console.log('currentLeftMenu', String(new Date(Date.now()).getDate()))
 			dispatch({
 				type: 'SET_CALENDAR_NOW_POPUP',
 				payload: {
@@ -506,13 +506,10 @@ export const Calendar = ({className, cells}: ICalendar) => {
 												// )
 												if (!isEditDayPopUp) {
 													const selectedMonth = (() => {
-														if (currentPartOfMonth === 0) {
-															return currentMonth === 0 ? 11 : currentMonth - 1
-														} else if (currentPartOfMonth === 2) {
-															return currentMonth === 11 ? 0 : currentMonth + 1
-														} else {
-															return currentMonth
-														}
+														const month = currentMonth + currentPartOfMonth - 1
+														if (month < 0) return 11 // Предыдущий год
+														if (month > 11) return 0 // Следующий год
+														return month
 													})()
 
 													const selectedYear = (() => {
@@ -523,14 +520,19 @@ export const Calendar = ({className, cells}: ICalendar) => {
 															return currentYear - 1
 														} else if (
 															currentPartOfMonth === 2 &&
-															currentMonth === 11
+															currentMonth === 12
 														) {
 															return currentYear + 1
 														} else {
 															return currentYear
 														}
 													})()
-
+													console.log(
+														'SET_CALENDAR_NOW_POPUP',
+														day,
+														cellMonth,
+														selectedYear,
+													)
 													dispatch({
 														type: 'SET_CALENDAR_NOW_POPUP',
 														payload: {

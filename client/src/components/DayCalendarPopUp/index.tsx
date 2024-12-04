@@ -522,7 +522,7 @@ const DayCalendarPopUp = ({
 		const newDate =
 			direction === 'next' ? addDays(currentDate, 1) : subDays(currentDate, 1)
 
-		const newDay = String(newDate.getDate()).padStart(2, '0')
+		const newDay = String(newDate.getDate())
 		const newMonth = String(newDate.getMonth() + 1).padStart(2, '0')
 		const newYear = String(newDate.getFullYear())
 

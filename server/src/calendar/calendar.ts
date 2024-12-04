@@ -24,12 +24,12 @@ export const calendar = async (data, socket) => {
     let startDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() - 1,
-      1
+      0,
     );
     let endDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() + 1,
-      0
+      0,
     );
 
     // Получение данных из таблицы StudentSchedule
@@ -48,13 +48,13 @@ export const calendar = async (data, socket) => {
       const date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
-        parseInt(schedule.day)
+        parseInt(schedule.day),
       );
       const existingCell = acc.find(
         (cell) =>
           cell.day === schedule.day &&
           cell.month === schedule.month &&
-          cell.year === schedule.year
+          cell.year === schedule.year,
       );
 
       if (existingCell) {
@@ -125,7 +125,7 @@ export const getByGroupId = async (data, socket) => {
       schedule.date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
-        parseInt(schedule.day)
+        parseInt(schedule.day),
       );
     });
     studentScheduleJSON.sort((a, b) => {
@@ -166,7 +166,7 @@ export const getByClientScheduleId = async (data, socket) => {
       schedule.date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
-        parseInt(schedule.day)
+        parseInt(schedule.day),
       );
     });
     clientScheduleJSON.sort((a, b) => {
@@ -204,7 +204,7 @@ export const getByGroupScheduleId = async (data, socket) => {
       schedule.date = new Date(
         parseInt(schedule.year),
         parseInt(schedule.month) - 1,
-        parseInt(schedule.day)
+        parseInt(schedule.day),
       );
     });
     groupScheduleJSON.sort((a, b) => {
