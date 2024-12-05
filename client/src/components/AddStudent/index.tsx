@@ -158,27 +158,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	function handlePrePayDelete(id) {
-		deletePrePay(id) // используем функцию из хука
-		setPrePayList((prevList) => {
-			const deletedPrepay = prevList.find((item) => item.id === id)
-			if (!deletedPrepay) return prevList
-			return prevList.filter((item) => item.id !== id)
-		})
-	}
-
-	function handlePrePayEdit(id, newDate, newCost) {
-		editPrePay(id, newDate, newCost) // используем функцию из хука
-		setPrePayList((prevList) => {
-			return prevList.map((item) =>
-				item.id === id
-					? {...item, date: new Date(newDate), cost: newCost}
-					: item,
-			)
-		})
-		setEditId(null)
-	}
-
 	const startEditing = (id: number) => {
 		setEditId(id)
 	}
@@ -640,6 +619,19 @@ const AddStudent = ({}: IAddStudent) => {
 
 	const [lessonDuration, setLessonDuration] = useState()
 
+	const {
+		combinedHistory,
+		balance,
+		updateHistory,
+		addPrePay,
+		deletePrePay,
+		editPrePay,
+	} = useHistory(
+		data?.historyLessons || [],
+		data?.students?.[0]?.prePay || prePayList || [],
+		!!currentOpenedStudent,
+	)
+
 	const handleClick_delete = (itemIndex: number, id: number) => {
 		// Сначала обновляем timeLinesArray в items
 		setItems((prevItems) =>
@@ -752,6 +744,52 @@ const AddStudent = ({}: IAddStudent) => {
 
 		setShowEndTimePicker(-1)
 	}
+
+	function handlePrePayDelete(id) {
+		// First delete from the hook's state
+		deletePrePay(id)
+
+		// Update the local prePayList state
+		setPrePayList((prevList) => prevList.filter((item) => item.id !== id))
+
+		// Force update of combinedHistory by triggering updateHistory
+		updateHistory(items)
+
+		// Reset any editing states
+		setEditId(null)
+		setDeletedId(null)
+	}
+
+	function handlePrePayEdit(id, newDate, newCost) {
+		// Update in the hook's state
+		editPrePay(id, newDate, newCost)
+
+		// Update local prePayList state
+		setPrePayList((prevList) => {
+			return prevList.map((item) =>
+				item.id === id
+					? {...item, date: new Date(newDate), cost: newCost}
+					: item,
+			)
+		})
+
+		// Force update of combinedHistory by triggering updateHistory
+		updateHistory(items)
+
+		// Reset editing state
+		setEditId(null)
+	}
+
+	useEffect(() => {
+		if (prePayList) {
+			// Calculate total prepayment sum
+			// const sum = prePayList.reduce((acc, item) => acc + Number(item.cost), 0);
+			// setPrePayCost(sum.toString());
+
+			// Ensure combined history is updated
+			updateHistory(items)
+		}
+	}, [prePayList])
 
 	const closeTimePicker = (index: number, id: number) => {
 		setItems((prevItems) =>
@@ -1261,19 +1299,6 @@ const AddStudent = ({}: IAddStudent) => {
 	// 	setAllLessonsPrice(countLessonsPrice)
 	// 	setHistoryLesson(updatedHistoryLessons)
 	// }, [items, prePayList, currentItemIndex])
-
-	const {
-		combinedHistory,
-		balance,
-		updateHistory,
-		addPrePay,
-		deletePrePay,
-		editPrePay,
-	} = useHistory(
-		data?.historyLessons || [],
-		data?.students?.[0]?.prePay || prePayList || [],
-		!!currentOpenedStudent,
-	)
 
 	// Используем баланс для отображения
 	useEffect(() => {

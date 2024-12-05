@@ -278,26 +278,7 @@ export const useHistory = (
 		const now = new Date()
 		const lessonDateTime = new Date(lessonDate)
 		lessonDateTime.setHours(timeSlot.hour, timeSlot.minute)
-		// Если это прошлый день - занятие завершено
-		if (lessonDateTime < now && lessonDateTime.getDate() < now.getDate()) {
-			return true
-		}
-
-		// Если это сегодня - проверяем по времени окончания
-		if (lessonDateTime.getDate() === now.getDate()) {
-			const currentHour = now.getHours()
-			const currentMinute = now.getMinutes()
-
-			// Сравниваем с текущим временем
-			if (currentHour > timeSlot.hour) {
-				return true
-			}
-			if (currentHour === timeSlot.hour && currentMinute >= timeSlot.minute) {
-				return true
-			}
-		}
-
-		return false
+		return lessonDateTime < now
 	}
 
 	// Вспомогательная функция для проверки валидности временного промежутка
@@ -419,33 +400,30 @@ export const useHistory = (
 
 	// Функция для расчета текущего баланса с учетом всех особенностей
 	const calculateBalance = () => {
-		const now = new Date()
+		const today = new Date()
 		let currentBalance = 0
 
-		// 1. Обработка всех прошедших дней и сегодняшнего дня
+		//get today hour and minute
+		const todayHour = today.getHours()
+		const todayMinute = today.getMinutes()
+
+		// 1. Обработка всех прошедших дней (вычитаем стоимость)
 		history.forEach((lesson) => {
 			const lessonDate = new Date(lesson.date)
-
-			// Проверяем прошел ли день занятия
-			if (
-				lessonDate < now &&
-				lessonDate.getDate() < now.getDate() &&
-				!lesson.isCancel
-			) {
-				currentBalance -= Number(lesson.price)
-				return
-			}
-
-			// Проверяем сегодняшнее занятие по времени окончания
-			if (lessonDate.getDate() === now.getDate() && !lesson.isCancel) {
-				const currentHour = now.getHours()
-				const currentMinute = now.getMinutes()
-				const endTime = lesson.timeSlot.endTime
-
-				if (
-					currentHour > endTime.hour ||
-					(currentHour === endTime.hour && currentMinute >= endTime.minute)
-				) {
+			// Если день прошел и занятие не отменено
+			if (lessonDate < today && !lesson.isCancel) {
+				// if current date (only date not time) is equal to lesson date (only date not time)
+				if (lessonDate.getDate() === today.getDate()) {
+					// First compare hours
+					if (todayHour > lesson.timeSlot.endTime.hour) {
+						currentBalance -= Number(lesson.price)
+					} else if (todayHour === lesson.timeSlot.endTime.hour) {
+						// If hours are equal, then compare minutes
+						if (todayMinute >= lesson.timeSlot.endTime.minute) {
+							currentBalance -= Number(lesson.price)
+						}
+					}
+				} else {
 					currentBalance -= Number(lesson.price)
 				}
 			}
@@ -454,7 +432,7 @@ export const useHistory = (
 		// 2. Добавляем все предоплаты до текущего момента
 		prePay.forEach((payment) => {
 			const paymentDate = new Date(payment.date)
-			if (paymentDate <= now) {
+			if (paymentDate <= today) {
 				currentBalance += Number(payment.cost)
 			}
 		})
