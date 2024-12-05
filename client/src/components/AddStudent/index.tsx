@@ -1513,7 +1513,7 @@ const AddStudent = ({}: IAddStudent) => {
 					date: lessonDate,
 					itemName: schedule.itemName,
 					price: schedule.lessonsPrice,
-					isDone: false, // Временное значение
+					isDone: false, // Будет установлено через isLessonDone
 					isPaid: schedule.isPaid,
 					isCancel: schedule.isCancel,
 					isAutoChecked: schedule.isAutoChecked,
@@ -1540,21 +1540,18 @@ const AddStudent = ({}: IAddStudent) => {
 				},
 			)
 			console.log('\nuniqueHistory\n', uniqueHistory)
-
-			// Сначала сортируем по дате
-			const sortedHistory = uniqueHistory.sort(
-				(a, b) => b.date.getTime() - a.date.getTime(),
-			)
-
-			// Затем обновляем isDone для отсортированного массива
-			const historyWithDoneStatus = sortedHistory.map((lesson) => ({
+			// Обновляем isDone для каждого урока на основе времени окончания
+			const historyWithDoneStatus = uniqueHistory.map((lesson) => ({
 				...lesson,
 				isDone: isLessonDone(lesson.date, lesson.timeSlot.endTime),
 			}))
-
-			console.log('\nhistoryWithDoneStatus\n', historyWithDoneStatus)
+			// Сортируем по дате (новые сверху)
+			const sortedHistory = historyWithDoneStatus.sort(
+				(a, b) => b.date.getTime() - a.date.getTime(),
+			)
+			console.log('\nsortedHistory\n', sortedHistory)
 			// Обновляем хук useHistory
-			updateHistory(historyWithDoneStatus)
+			updateHistory(sortedHistory)
 		})
 		return () => {
 			socket.off('getAllStudentSchedules')
