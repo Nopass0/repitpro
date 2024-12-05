@@ -1393,12 +1393,80 @@ const AddStudent = ({}: IAddStudent) => {
 			const prePay = data.students[0].prePay || []
 			console.log('Initial prepay list:', prePay)
 			setPrePayList(prePay)
+
+			if (data.students[0].prePay?.length > 0) {
+				// Сортируем предоплаты по дате
+				const sortedPrePay = [...data.students[0].prePay].sort(
+					(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+				)
+
+				// Добавляем каждую предоплату через метод хука
+				sortedPrePay.forEach((payment) => {
+					addPrePay(payment.cost.toString(), new Date(payment.date), payment.id)
+				})
+			}
 		}
 	}, [data])
 
+	// useEffect(() => {
+	// 	socket.on('getAllStudentSchedules', (schedules) => {
+	// 		console.log('getAllStudentSchedules 123', schedules)
+	// 		// Преобразуем расписания в формат истории
+	// 		const historyFromSchedules = schedules.map((schedule) => {
+	// 			const lessonDate = new Date(
+	// 				Number(schedule.year),
+	// 				Number(schedule.month) - 1,
+	// 				Number(schedule.day),
+	// 			)
+
+	// 			return {
+	// 				date: lessonDate,
+	// 				itemName: schedule.itemName,
+	// 				price: schedule.lessonsPrice,
+	// 				isDone: schedule.isAutoChecked || schedule.isChecked,
+	// 				isPaid: schedule.isPaid,
+	// 				isCancel: schedule.isCancel,
+	// 				typeLesson: schedule.typeLesson,
+	// 				studentName: schedule.studentName,
+	// 				studentId: schedule.studentId,
+	// 			}
+	// 		})
+
+	// 		console.log('HL: ', prePayList)
+
+	// 		// Фильтруем дубликаты, оставляя уникальные записи по дате и itemName
+	// 		const uniqueHistory = historyFromSchedules.filter(
+	// 			(lesson, index, array) => {
+	// 				return (
+	// 					index ===
+	// 					array.findIndex(
+	// 						(l) =>
+	// 							l.date.getTime() === lesson.date.getTime() &&
+	// 							l.itemName === lesson.itemName &&
+	// 							l.price === lesson.price &&
+	// 							l.isPaid === lesson.isPaid &&
+	// 							l.isCancel === lesson.isCancel,
+	// 					)
+	// 				)
+	// 			},
+	// 		)
+
+	// 		// Сортируем по дате
+	// 		const sortedHistory = uniqueHistory.sort(
+	// 			(a, b) => b.date.getTime() - a.date.getTime(),
+	// 		)
+
+	// 		// Обновляем историю
+	// 		setHistoryLesson(sortedHistory)
+	// 	})
+
+	// 	return () => {
+	// 		socket.off('getAllStudentSchedules')
+	// 	}
+	// }, [socket])
+
 	useEffect(() => {
 		socket.on('getAllStudentSchedules', (schedules) => {
-			console.log('getAllStudentSchedules', schedules)
 			// Преобразуем расписания в формат истории
 			const historyFromSchedules = schedules.map((schedule) => {
 				const lessonDate = new Date(
@@ -1407,20 +1475,34 @@ const AddStudent = ({}: IAddStudent) => {
 					Number(schedule.day),
 				)
 
+				// Добавляем timeSlot, который нужен для корректной работы isDone
+				const timeSlot = {
+					startTime: {
+						hour: schedule.startHour || 0,
+						minute: schedule.startMinute || 0,
+					},
+					endTime: {
+						hour: schedule.endHour || 0,
+						minute: schedule.endMinute || 0,
+					},
+				}
+
 				return {
 					date: lessonDate,
 					itemName: schedule.itemName,
 					price: schedule.lessonsPrice,
-					isDone: schedule.isAutoChecked || schedule.isChecked,
+					isDone: false, // Будет установлено через isLessonDone
 					isPaid: schedule.isPaid,
 					isCancel: schedule.isCancel,
+					isAutoChecked: schedule.isAutoChecked,
+					timeSlot: timeSlot,
 					typeLesson: schedule.typeLesson,
 					studentName: schedule.studentName,
 					studentId: schedule.studentId,
 				}
 			})
 
-			// Фильтруем дубликаты, оставляя уникальные записи по дате и itemName
+			// Фильтруем дубликаты
 			const uniqueHistory = historyFromSchedules.filter(
 				(lesson, index, array) => {
 					return (
@@ -1437,19 +1519,25 @@ const AddStudent = ({}: IAddStudent) => {
 				},
 			)
 
-			// Сортируем по дате
-			const sortedHistory = uniqueHistory.sort(
+			// Обновляем isDone для каждого урока на основе времени окончания
+			const historyWithDoneStatus = uniqueHistory.map((lesson) => ({
+				...lesson,
+				isDone: isLessonDone(lesson.date, lesson.timeSlot.endTime),
+			}))
+
+			// Сортируем по дате (новые сверху)
+			const sortedHistory = historyWithDoneStatus.sort(
 				(a, b) => b.date.getTime() - a.date.getTime(),
 			)
 
-			// Обновляем историю
-			setHistoryLesson(sortedHistory)
+			// Обновляем хук useHistory
+			updateHistory(sortedHistory)
 		})
 
 		return () => {
 			socket.off('getAllStudentSchedules')
 		}
-	}, [socket])
+	}, [socket, prePayList])
 
 	useEffect(() => {
 		setTimeout(() => {
