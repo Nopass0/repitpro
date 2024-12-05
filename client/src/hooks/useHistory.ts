@@ -78,6 +78,7 @@ interface UseHistoryResult {
 	deletePrePay: (id: number) => void
 	editPrePay: (id: number, newDate: Date, newCost: string) => void
 	isLessonDone: (lessonDate: Date, timeSlot: TimeSlot) => boolean
+	updateCombinedHistory: (history: HistoryLesson[], prePay: PrePay[]) => void
 	updateTimeRanges: (
 		itemIndex: number,
 		dayOfWeek: number,
@@ -484,5 +485,6 @@ export const useHistory = (
 		deletePrePay,
 		editPrePay,
 		updateTimeRanges,
+		updateCombinedHistory,
 	}
 }
