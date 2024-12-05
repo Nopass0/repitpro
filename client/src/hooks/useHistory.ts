@@ -398,34 +398,37 @@ export const useHistory = (
 		setCombinedHistory(sorted)
 	}
 
-	// Функция для расчета текущего баланса
+	// Функция для расчета текущего баланса с учетом всех особенностей
 	const calculateBalance = () => {
-		// Добавляем все предоплаты
-		let currentBalance = prePay.reduce(
-			(sum, payment) => sum + Number(payment.cost),
-			0,
-		)
+  const today = new Date()
+  let currentBalance = 0
 
-		// Вычитаем суммы за все прошедшие занятия, которые не оплачены
-		const unpaidCompletedLessons = history.reduce((sum, lesson) => {
-			if (lesson.isDone && !lesson.isPaid && !lesson.isCancel) {
-				return sum + Number(lesson.price)
-			}
-			return sum
-		}, 0)
-		currentBalance -= unpaidCompletedLessons
+  // 1. Обработка всех прошедших дней (вычитаем стоимость)
+  history.forEach(lesson => {
+    const lessonDate = new Date(lesson.date)
+    // Если день прошел и занятие не отменено
+    if (lessonDate < today && !lesson.isCancel) {
+      currentBalance -= Number(lesson.price)
+    }
+  })
 
-		// Добавляем сумму для занятий, которые пользователь отметил как оплаченные вручную
-		const manuallyPaidLessons = history.reduce((sum, lesson) => {
-			if (lesson.isPaid && lesson.isAutoChecked === false && !lesson.isCancel) {
-				return sum + Number(lesson.price)
-			}
-			return sum
-		}, 0)
-		currentBalance += manuallyPaidLessons
+  // 2. Добавляем все предоплаты до текущего момента
+  prePay.forEach(payment => {
+    const paymentDate = new Date(payment.date)
+    if (paymentDate <= today) {
+      currentBalance += Number(payment.cost)
+    }
+  })
 
-		setBalance(currentBalance)
-	}
+  // 3. Обрабатываем все isPaid: true, где isAutoChecked: false
+  history.forEach(lesson => {
+    if (lesson.isPaid && !lesson.isAutoChecked && !lesson.isCancel) {
+      currentBalance += Number(lesson.price)
+    }
+  })
+
+  setBalance(currentBalance)
+}
 
 	// Функция для обновления истории
 	const updateHistory = (items: Item[]) => {
