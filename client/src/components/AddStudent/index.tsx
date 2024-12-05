@@ -1489,13 +1489,8 @@ const AddStudent = ({}: IAddStudent) => {
 	// 	}
 	// }, [socket])
 
-	const [isFirstLoad, setIsFirstLoad] = useState(true)
-
 	useEffect(() => {
 		socket.on('getAllStudentSchedules', (schedules) => {
-			// Если это не первая загрузка, просто выходим
-			if (!isFirstLoad) return
-
 			// Преобразуем расписания в формат истории
 			const historyFromSchedules = schedules.map((schedule) => {
 				const lessonDate = new Date(
@@ -1503,6 +1498,7 @@ const AddStudent = ({}: IAddStudent) => {
 					Number(schedule.month) - 1,
 					Number(schedule.day),
 				)
+				// Добавляем timeSlot, который нужен для корректной работы isDone
 				const timeSlot = {
 					startTime: {
 						hour: schedule.startHour || 0,
@@ -1517,7 +1513,7 @@ const AddStudent = ({}: IAddStudent) => {
 					date: lessonDate,
 					itemName: schedule.itemName,
 					price: schedule.lessonsPrice,
-					isDone: false,
+					isDone: false, // Временное значение
 					isPaid: schedule.isPaid,
 					isCancel: schedule.isCancel,
 					isAutoChecked: schedule.isAutoChecked,
@@ -1527,11 +1523,10 @@ const AddStudent = ({}: IAddStudent) => {
 					studentId: schedule.studentId,
 				}
 			})
-
-			// Фильтруем дубликаты и проверяем наличие в prePayList
+			// Фильтруем дубликаты
 			const uniqueHistory = historyFromSchedules.filter(
 				(lesson, index, array) => {
-					const isUnique =
+					return (
 						index ===
 						array.findIndex(
 							(l) =>
@@ -1541,38 +1536,30 @@ const AddStudent = ({}: IAddStudent) => {
 								l.isPaid === lesson.isPaid &&
 								l.isCancel === lesson.isCancel,
 						)
-
-					const existsInPrePayList = prePayList.some(
-						(prePay) =>
-							new Date(prePay.date).getTime() === lesson.date.getTime(),
 					)
-
-					return isUnique && !existsInPrePayList
 				},
 			)
-
 			console.log('\nuniqueHistory\n', uniqueHistory)
 
+			// Сначала сортируем по дате
 			const sortedHistory = uniqueHistory.sort(
 				(a, b) => b.date.getTime() - a.date.getTime(),
 			)
 
+			// Затем обновляем isDone для отсортированного массива
 			const historyWithDoneStatus = sortedHistory.map((lesson) => ({
 				...lesson,
 				isDone: isLessonDone(lesson.date, lesson.timeSlot.endTime),
 			}))
 
-			console.log('\nsortedHistory\n', historyWithDoneStatus)
+			console.log('\nhistoryWithDoneStatus\n', historyWithDoneStatus)
+			// Обновляем хук useHistory
 			updateHistory(historyWithDoneStatus)
-
-			// Отмечаем, что первая загрузка завершена
-			setIsFirstLoad(false)
 		})
-
 		return () => {
 			socket.off('getAllStudentSchedules')
 		}
-	}, [socket, prePayList, isFirstLoad])
+	}, [socket, prePayList])
 
 	useEffect(() => {
 		setTimeout(() => {
