@@ -626,6 +626,7 @@ const AddStudent = ({}: IAddStudent) => {
 		addPrePay,
 		deletePrePay,
 		editPrePay,
+		isLessonDone,
 	} = useHistory(
 		data?.historyLessons || [],
 		data?.students?.[0]?.prePay || prePayList || [],
@@ -1372,6 +1373,8 @@ const AddStudent = ({}: IAddStudent) => {
 		prePayCost,
 	])
 
+	const [processedPrePayIds, setProcessedPrePayIds] = useState<number[]>([])
+
 	useEffect(() => {
 		if (data) {
 			setNameStudent(data.students[0].nameStudent)
@@ -1388,7 +1391,7 @@ const AddStudent = ({}: IAddStudent) => {
 				...item,
 				timeLinesArray: item.timeLinesArray.map((timeline, timelineIndex) => ({
 					...timeline,
-					id: (timelineIndex + 1) * (itemIndex + 1), // Генерируем уникальный id
+					id: (timelineIndex + 1) * (itemIndex + 1),
 				})),
 			}))
 			setItems(itemsWithTimelineIds)
@@ -1396,42 +1399,38 @@ const AddStudent = ({}: IAddStudent) => {
 			setAudios(data.students[0].audiosData)
 			setMediaFiles(data.students[0].mediaFiles || [])
 
-			// Преобразуем даты и добавляем isCancel если его нет
-			// let dateHistory = data.historyLessons.map((i) => {
-			// 	const lessonDate = new Date(i.date)
-			// 	const now = new Date()
-
-			// 	return {
-			// 		...i,
-			// 		date: new Date(i.date),
-			// 		isCancel: i.isCancel || false,
-			// 		// Если это новый студент или новое занятие, устанавливаем isDone
-			// 		isDone: i.isDone !== undefined ? i.isDone : lessonDate < now,
-			// 		// Сохраняем isPaid с сервера если есть, иначе false
-			// 		isPaid: i.isPaid || false,
-			// 	}
-			// })
-			// console.log('Initial history lessons:', dateHistory)
-			// setHistoryLesson(dateHistory)
-
 			// Обработка предоплат
-			const prePay = data.students[0].prePay || []
-			console.log('Initial prepay list:', prePay)
-			setPrePayList(prePay)
-
 			if (data.students[0].prePay?.length > 0) {
-				// Сортируем предоплаты по дате
+				// Сортируем предоплаты по дате перед добавлением
 				const sortedPrePay = [...data.students[0].prePay].sort(
 					(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
 				)
 
-				// Добавляем каждую предоплату через метод хука
-				sortedPrePay.forEach((payment) => {
-					addPrePay(payment.cost.toString(), new Date(payment.date), payment.id)
-				})
+				// Фильтруем только новые предоплаты, которых нет в processedPrePayIds
+				const newPrePays = sortedPrePay.filter(
+					(payment) => !processedPrePayIds.includes(payment.id),
+				)
+
+				// Если есть новые предоплаты, обновляем список
+				if (newPrePays.length > 0) {
+					// Добавляем новые ID в список обработанных
+					setProcessedPrePayIds((prev) => [
+						...prev,
+						...newPrePays.map((payment) => payment.id),
+					])
+
+					// Добавляем только новые предоплаты
+					newPrePays.forEach((payment) => {
+						addPrePay(
+							payment.cost.toString(),
+							new Date(payment.date),
+							payment.id,
+						)
+					})
+				}
 			}
 		}
-	}, [data])
+	}, [data, processedPrePayIds]) // Добавляем processedPrePayIds в зависимости
 
 	// useEffect(() => {
 	// 	socket.on('getAllStudentSchedules', (schedules) => {
@@ -1490,8 +1489,13 @@ const AddStudent = ({}: IAddStudent) => {
 	// 	}
 	// }, [socket])
 
+	const [isFirstLoad, setIsFirstLoad] = useState(true)
+
 	useEffect(() => {
 		socket.on('getAllStudentSchedules', (schedules) => {
+			// Если это не первая загрузка, просто выходим
+			if (!isFirstLoad) return
+
 			// Преобразуем расписания в формат истории
 			const historyFromSchedules = schedules.map((schedule) => {
 				const lessonDate = new Date(
@@ -1499,8 +1503,6 @@ const AddStudent = ({}: IAddStudent) => {
 					Number(schedule.month) - 1,
 					Number(schedule.day),
 				)
-
-				// Добавляем timeSlot, который нужен для корректной работы isDone
 				const timeSlot = {
 					startTime: {
 						hour: schedule.startHour || 0,
@@ -1511,12 +1513,11 @@ const AddStudent = ({}: IAddStudent) => {
 						minute: schedule.endMinute || 0,
 					},
 				}
-
 				return {
 					date: lessonDate,
 					itemName: schedule.itemName,
 					price: schedule.lessonsPrice,
-					isDone: false, // Будет установлено через isLessonDone
+					isDone: false,
 					isPaid: schedule.isPaid,
 					isCancel: schedule.isCancel,
 					isAutoChecked: schedule.isAutoChecked,
@@ -1527,10 +1528,10 @@ const AddStudent = ({}: IAddStudent) => {
 				}
 			})
 
-			// Фильтруем дубликаты
+			// Фильтруем дубликаты и проверяем наличие в prePayList
 			const uniqueHistory = historyFromSchedules.filter(
 				(lesson, index, array) => {
-					return (
+					const isUnique =
 						index ===
 						array.findIndex(
 							(l) =>
@@ -1540,29 +1541,38 @@ const AddStudent = ({}: IAddStudent) => {
 								l.isPaid === lesson.isPaid &&
 								l.isCancel === lesson.isCancel,
 						)
+
+					const existsInPrePayList = prePayList.some(
+						(prePay) =>
+							new Date(prePay.date).getTime() === lesson.date.getTime(),
 					)
+
+					return isUnique && !existsInPrePayList
 				},
 			)
 
-			// Обновляем isDone для каждого урока на основе времени окончания
-			const historyWithDoneStatus = uniqueHistory.map((lesson) => ({
+			console.log('\nuniqueHistory\n', uniqueHistory)
+
+			const sortedHistory = uniqueHistory.sort(
+				(a, b) => b.date.getTime() - a.date.getTime(),
+			)
+
+			const historyWithDoneStatus = sortedHistory.map((lesson) => ({
 				...lesson,
 				isDone: isLessonDone(lesson.date, lesson.timeSlot.endTime),
 			}))
 
-			// Сортируем по дате (новые сверху)
-			const sortedHistory = historyWithDoneStatus.sort(
-				(a, b) => b.date.getTime() - a.date.getTime(),
-			)
+			console.log('\nsortedHistory\n', historyWithDoneStatus)
+			updateHistory(historyWithDoneStatus)
 
-			// Обновляем хук useHistory
-			updateHistory(sortedHistory)
+			// Отмечаем, что первая загрузка завершена
+			setIsFirstLoad(false)
 		})
 
 		return () => {
 			socket.off('getAllStudentSchedules')
 		}
-	}, [socket, prePayList])
+	}, [socket, prePayList, isFirstLoad])
 
 	useEffect(() => {
 		setTimeout(() => {
