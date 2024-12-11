@@ -60,15 +60,18 @@ const PrepaymentComponent = ({student, currentDate}) => {
 
 	return (
 		<div className={s.PrePay}>
-			<p onClick={() => console.log('lastPrePay', student, lastPrePay, sortedHistory)}>
+			<p
+				onClick={() =>
+					console.log('lastPrePay', student, lastPrePay, sortedHistory)
+				}>
 				{/* {lastPrePay
 					? `${lastPrePay.cost || 0} ₽ (${new Date(lastPrePay.date).toLocaleDateString()})`
 					: 'Нет предоплат'} */}
-					{student && `${student.costOneLesson}₽` }
+				{student && `${student.costOneLesson}₽`}
 			</p>
 			<div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
 				<CheckBox checked={todayLesson?.isPaid || false} size="16px" />
-				<p>Предоплата, остаток {remainingPrePay.toFixed(0)} ₽</p>
+				<p>Баланс, остаток {remainingPrePay.toFixed(0)} ₽</p>
 			</div>
 		</div>
 	)

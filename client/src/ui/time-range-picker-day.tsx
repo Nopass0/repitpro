@@ -17,6 +17,13 @@ interface TimeRangePickerProps {
 	onClose: () => void
 	className?: string
 	busySlots?: string[]
+	busyOnlineSlots?: {
+		day: string
+		freeTime: {
+			startTime: {hour: number; minute: number}
+			endTime: {hour: number; minute: number}
+		}[]
+	}[]
 	existingRanges?: TimeRange[]
 	position?: {x: number; y: number}
 	singleRange?: boolean
@@ -38,6 +45,7 @@ const TimeRangePicker: React.FC<TimeRangePickerProps> = ({
 	onClose,
 	className,
 	busySlots = [],
+	busyOnlineSlots = [],
 	existingRanges = [],
 	position,
 	singleRange = false,
@@ -146,6 +154,59 @@ const TimeRangePicker: React.FC<TimeRangePickerProps> = ({
 
 	// Определяем, показывать ли список выбранных слотов
 	const showRangesList = !singleRange && ranges.length > 0
+
+	// Определяем занятые слоты для текущего дня
+	const [busyDaySlots, setBusyDaySlots] = useState<
+		{startTime: string; endTime: string}[]
+	>([])
+
+	useEffect(() => {
+		const today = new Date()
+			.toLocaleDateString('ru-RU', {weekday: 'short'})
+			.toUpperCase()
+		const daySlots =
+			busyOnlineSlots.find((slot) => slot.day === today)?.freeTime || []
+		setBusyDaySlots(
+			daySlots
+				.map((slot) => ({
+					startTime: `${String(slot.startTime.hour).padStart(2, '0')}:${String(slot.startTime.minute).padStart(2, '0')}`,
+					endTime: `${String(slot.endTime.hour).padStart(2, '0')}:${String(slot.endTime.minute).padStart(2, '0')}`,
+				}))
+				.filter(
+					(slot) => !busySlots.includes(`${slot.startTime}-${slot.endTime}`),
+				),
+		)
+	}, [busyOnlineSlots, busySlots])
+
+	useEffect(() => {
+		const currentTime = formatTime(step === 'start' ? startTime : endTime)
+		const busySlot = busyDaySlots.find((busySlot) => {
+			return currentTime >= busySlot.startTime && currentTime < busySlot.endTime
+		})
+
+		if (busySlot) {
+			setStateAfterBusySlot(busySlot, step === 'start')
+		}
+	}, [startTime, endTime, step, busyDaySlots])
+
+	const setStateAfterBusySlot = (
+		busySlot: {startTime: string; endTime: string},
+		isStart: boolean,
+	) => {
+		const [busyStartHours, busyStartMinutes] = busySlot.startTime
+			.split(':')
+			.map(Number)
+		const [busyEndHours, busyEndMinutes] = busySlot.endTime
+			.split(':')
+			.map(Number)
+
+		const setState = isStart ? setStartTime : setEndTime
+		if (isStart) {
+			setState({hours: busyEndHours, minutes: busyEndMinutes})
+		} else {
+			setState({hours: busyStartHours, minutes: busyStartMinutes})
+		}
+	}
 
 	return createPortal(
 		<AnimatePresence>
@@ -301,6 +362,31 @@ const TimeRangePicker: React.FC<TimeRangePickerProps> = ({
 							</div>
 						)}
 					</Card>
+					{busyDaySlots.length > 0 && (
+						<Card
+							className={cn(
+								'w-64 p-3 shadow-lg bg-white border-red-500',
+								className,
+							)}
+							style={{position: 'absolute', left: '72px'}}>
+							<div className="flex items-center justify-between mb-3">
+								<div className="flex items-center text-sm text-gray-600">
+									<span>Занятые слоты</span>
+								</div>
+							</div>
+							<div className="space-y-2">
+								{busyDaySlots.map((slot, index) => (
+									<div
+										key={index}
+										className="flex items-center justify-between bg-gray-50 rounded-md p-2">
+										<span className="text-sm">
+											{slot.startTime} - {slot.endTime}
+										</span>
+									</div>
+								))}
+							</div>
+						</Card>
+					)}
 				</motion.div>
 			</motion.div>
 		</AnimatePresence>,

@@ -17,11 +17,10 @@ import {
   getStudentList,
   getTableData,
   studentToArhive,
-  updateStudentAndItems,
 
   // updateStudents,
 } from "./cards/student";
-
+import { updateStudentAndItems } from "./cards/student/update";
 import { addStudent } from "./cards/student/add";
 import { getUserData, setUserData, uploadUsersFiles } from "./auth/user";
 import {

@@ -3,6 +3,16 @@ import s from './index.module.scss'
 import Arrow, {ArrowType} from '../../assets/arrow'
 import CloseIcon from '@mui/icons-material/Close'
 
+interface TimeSlot {
+	startTime: {hour: number; minute: number}
+	endTime: {hour: number; minute: number}
+}
+
+interface BusyOnlineSlot {
+	day: string
+	busyTime: TimeSlot[]
+}
+
 interface TimePickerProps {
 	onTimeChange: (
 		startHours: number,
@@ -13,9 +23,10 @@ interface TimePickerProps {
 	title: string
 	onExit?: () => void
 	addBlock?: boolean
-	freeSlots: any
+	freeSlots: TimeSlot[]
 	currentDay: string
 	lessonDuration?: number
+	busyOnlineSlots: BusyOnlineSlot[]
 }
 
 const TimePicker: React.FC<TimePickerProps> = ({
@@ -26,6 +37,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	freeSlots,
 	currentDay,
 	lessonDuration,
+	busyOnlineSlots,
 }) => {
 	const [selectedHours, setSelectedHours] = useState<number>(8)
 	const [selectedMinutes, setSelectedMinutes] = useState<number>(0)
@@ -34,8 +46,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	const [isSelectingEndTime, setIsSelectingEndTime] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>('')
 
-	const occupiedSlotsForDay =
-		freeSlots?.find((slot) => slot.day === currentDay)?.freeTime || []
+	const occupiedSlotsForDay = freeSlots || []
+	const busySlotsForDay =
+		busyOnlineSlots?.find((slot) => slot.day === currentDay)?.busyTime || []
 
 	const isIntervalAvailable = (
 		startHours: number,
@@ -49,7 +62,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		if (startTime < 8 * 60 || endTime > 22 * 60) return false
 		if (endTime <= startTime) return false
 
-		return !occupiedSlotsForDay.some((slot) => {
+		const isBusy = busySlotsForDay.some((slot) => {
 			const slotStart = slot.startTime.hour * 60 + slot.startTime.minute
 			const slotEnd = slot.endTime.hour * 60 + slot.endTime.minute
 
@@ -59,6 +72,8 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				(startTime <= slotStart && endTime >= slotEnd)
 			)
 		})
+
+		return !isBusy
 	}
 
 	const normalizeTime = (hours: number, minutes: number): [number, number] => {
@@ -155,7 +170,14 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				setEndMinutes(newEndMinutes)
 				setErrorMessage('')
 			} else {
-				setErrorMessage('Выбранное время пересекается с занятым слотом')
+				const nextAvailableTime = findNextAvailableTime(
+					endHours,
+					endMinutes,
+					minutesIncrement > 0 ? 5 : -5,
+				)
+				setEndHours(nextAvailableTime[0])
+				setEndMinutes(nextAvailableTime[1])
+				setErrorMessage('')
 			}
 		} else {
 			const [newHours, newMinutes] = normalizeTime(
@@ -177,7 +199,20 @@ const TimePicker: React.FC<TimePickerProps> = ({
 				setEndMinutes(newEndMinutes)
 				setErrorMessage('')
 			} else {
-				setErrorMessage('Выбранное время пересекается с занятым слотом')
+				const nextAvailableTime = findNextAvailableTime(
+					selectedHours,
+					selectedMinutes,
+					minutesIncrement > 0 ? 5 : -5,
+				)
+				setSelectedHours(nextAvailableTime[0])
+				setSelectedMinutes(nextAvailableTime[1])
+				setEndHours(
+					calculateEndTime(nextAvailableTime[0], nextAvailableTime[1])[0],
+				)
+				setEndMinutes(
+					calculateEndTime(nextAvailableTime[0], nextAvailableTime[1])[1],
+				)
+				setErrorMessage('')
 			}
 		}
 	}
@@ -185,8 +220,8 @@ const TimePicker: React.FC<TimePickerProps> = ({
 	useEffect(() => {
 		const initializeTime = () => {
 			// Начинаем с 8:00
-			let initHours = 8
-			let initMinutes = 0
+			const initHours = 8
+			const initMinutes = 0
 
 			const [newHours, newMinutes] = findNextAvailableTime(
 				initHours,
@@ -202,7 +237,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
 		}
 
 		initializeTime()
-	}, [currentDay, freeSlots, lessonDuration])
+	}, [currentDay, freeSlots, busyOnlineSlots, lessonDuration])
 
 	const handleSave = () => {
 		if (isSelectingEndTime) {
@@ -226,6 +261,22 @@ const TimePicker: React.FC<TimePickerProps> = ({
 
 	const getSortedOccupiedSlots = () => {
 		return [...occupiedSlotsForDay]
+			.sort((a, b) => {
+				const timeA = a.startTime.hour * 60 + a.startTime.minute
+				const timeB = b.startTime.hour * 60 + b.startTime.minute
+				return timeA - timeB
+			})
+			.filter(
+				(slot) =>
+					slot.startTime.hour !== 0 ||
+					slot.startTime.minute !== 0 ||
+					slot.endTime.hour !== 0 ||
+					slot.endTime.minute !== 0,
+			)
+	}
+
+	const getSortedBusySlots = () => {
+		return [...busySlotsForDay]
 			.sort((a, b) => {
 				const timeA = a.startTime.hour * 60 + a.startTime.minute
 				const timeB = b.startTime.hour * 60 + b.startTime.minute
@@ -297,23 +348,50 @@ const TimePicker: React.FC<TimePickerProps> = ({
 					{isSelectingEndTime ? 'Сохранить' : 'Далее'}
 				</button>
 			</div>
-			{addBlock && getSortedOccupiedSlots().length > 0 && (
-				<div className={s.freeSlotContainer}>
-					<h2 className={s.freeSlotTitle}>Занятые слоты на {currentDay}:</h2>
-					<div className={s.freeSlotList}>
-						{getSortedOccupiedSlots().map((slot, index) => (
-							<div key={index} className={s.occupiedSlot}>
-								{`${slot.startTime.hour.toString().padStart(2, '0')}:${slot.startTime.minute
-									.toString()
-									.padStart(2, '0')} - 
-                ${slot.endTime.hour.toString().padStart(2, '0')}:${slot.endTime.minute
-									.toString()
-									.padStart(2, '0')}`}
-							</div>
-						))}
+			{addBlock &&
+				(getSortedOccupiedSlots().length > 0 ||
+					getSortedBusySlots().length > 0) && (
+					<div className={s.freeSlotContainer}>
+						{getSortedOccupiedSlots().length > 0 && (
+							<>
+								<h2 className={s.freeSlotTitle}>
+									Свободные слоты на {currentDay}:
+								</h2>
+								<div className={s.freeSlotList}>
+									{getSortedOccupiedSlots().map((slot, index) => (
+										<div key={index} className={s.occupiedSlot}>
+											{`${slot.startTime.hour.toString().padStart(2, '0')}:${slot.startTime.minute
+												.toString()
+												.padStart(2, '0')} -
+																								${slot.endTime.hour.toString().padStart(2, '0')}:${slot.endTime.minute
+																									.toString()
+																									.padStart(2, '0')}`}
+										</div>
+									))}
+								</div>
+							</>
+						)}
+						{getSortedBusySlots().length > 0 && (
+							<>
+								<h2 className={s.freeSlotTitle}>
+									Занятые слоты на {currentDay}:
+								</h2>
+								<div className={s.freeSlotList}>
+									{getSortedBusySlots().map((slot, index) => (
+										<div key={index} className={s.occupiedSlot}>
+											{`${slot.startTime.hour.toString().padStart(2, '0')}:${slot.startTime.minute
+												.toString()
+												.padStart(2, '0')} -
+																								${slot.endTime.hour.toString().padStart(2, '0')}:${slot.endTime.minute
+																									.toString()
+																									.padStart(2, '0')}`}
+										</div>
+									))}
+								</div>
+							</>
+						)}
 					</div>
-				</div>
-			)}
+				)}
 		</div>
 	)
 }

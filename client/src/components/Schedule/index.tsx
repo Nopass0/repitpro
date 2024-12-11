@@ -12,6 +12,7 @@ const Schedule = ({
 	changeItemValue,
 	isEditMode,
 	freeSlots,
+	busyOnlineSlots,
 }) => {
 	const weekDays = [
 		{day: 'Пн', index: 0, isWeekend: false},
@@ -262,6 +263,7 @@ const Schedule = ({
 						existingRanges={selectedRanges}
 						position={position}
 						busySlots={freeSlots[activeDay]}
+						busyOnlineSlots={busyOnlineSlots && busyOnlineSlots[activeDay]}
 					/>
 				)}
 			</AnimatePresence>

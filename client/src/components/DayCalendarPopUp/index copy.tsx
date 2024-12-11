@@ -177,6 +177,12 @@ const DayCalendarPopUp = ({
 	const [currentDate] = useState(new Date())
 	const currentMonth = useSelector((state: any) => state.currentMonth)
 	const currentYear = useSelector((state: any) => state.currentYear)
+	const currentOpenedStudent = useSelector(
+		(state: any) => state.currentOpenedStudent,
+	)
+	const currentScheduleDay = useSelector(
+		(state: any) => state.currentScheduleDay,
+	)
 	const details = useSelector((state: any) => state.details)
 	const isEditDayPopUp = useSelector((state: any) => state.isEditDayPopUp)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
@@ -303,6 +309,8 @@ const DayCalendarPopUp = ({
 			month: calendarNowPopupMonth,
 			year: calendarNowPopupYear,
 			token: token,
+			studentId: currentOpenedStudent, // Добавьте это поле
+			scheduleId: currentScheduleDay, // Добавьте это поле
 		}
 
 		socket.emit('getStudentsByDate', params)
@@ -692,6 +700,8 @@ const DayCalendarPopUp = ({
 				month: calendarNowPopupMonth,
 				year: calendarNowPopupYear,
 				token: token,
+				studentId: currentOpenedStudent, // Добавьте это поле
+				scheduleId: currentScheduleDay, // Добавьте это поле
 			})
 
 			socket.emit('getClientsByDate', {
