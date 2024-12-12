@@ -561,6 +561,14 @@ export async function addStudent(
       }, TIMEOUT);
     });
 
+    const prePayments = validatedData.combinedHistory
+      .filter((entry) => entry.type === "prepayment")
+      .map((prepay) => ({
+        id: prepay.id,
+        cost: prepay.cost,
+        date: new Date(prepay.date),
+      }));
+
     const addStudentPromise = async (): Promise<GroupWithRelations> => {
       const userId = await validateToken(validatedData.token);
       await checkExistingStudent(validatedData, userId);
@@ -582,6 +590,7 @@ export async function addStudent(
                   endLesson: item.endLesson ? new Date(item.endLesson) : null,
                   tryLessonCheck: item.tryLessonCheck,
                   tryLessonCost: item.tryLessonCost,
+
                   trialLessonDate: item.trialLessonDate
                     ? new Date(item.trialLessonDate)
                     : null,
@@ -606,7 +615,7 @@ export async function addStudent(
                     contactFace: validatedData.contactFace,
                     phoneNumber: validatedData.phoneNumber,
                     email: validatedData.email,
-                    prePay: validatedData.prePay,
+
                     address: "",
                     linkStudent: validatedData.linkStudent,
                     costStudent: validatedData.costStudent,
@@ -616,6 +625,8 @@ export async function addStudent(
                       ? new Date(validatedData.prePayDate)
                       : null,
                     selectedDate: null,
+                    prePay: prePayments,
+
                     storyLesson: "",
                     costOneLesson: validatedData.costOneLesson,
                     targetLessonStudent: "",

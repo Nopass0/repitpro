@@ -360,45 +360,42 @@ export async function updateStudentAndItems(
   data: StudentUpdateData,
   socket: any,
 ) {
-  console.log("Starting backend update...");
-  const prisma = db;
-
   try {
-    // Get userId from token
+    // Проверяем токен и получаем userId
     const userId = await getUserId(data.token);
-    console.log("Got userId:", userId);
 
-    const existingStudent = await prisma.student.findUnique({
+    // Получаем существующего студента
+    const existingStudent = await db.student.findUnique({
       where: {
         id: data.id,
         userId,
       },
-      include: { group: true },
+      include: {
+        group: {
+          include: {
+            items: true,
+          },
+        },
+      },
     });
 
     if (!existingStudent) {
       throw createError(ErrorCode.NOT_FOUND, "Student not found");
     }
 
-    console.log("Processing files...");
+    // Обрабатываем файлы
     const existingFiles = existingStudent.files || [];
-    const newFiles = await handleFileUploads(
-      data.files,
-      userId,
-      "student/file",
-    );
-    const newAudios = await handleFileUploads(
-      data.audios,
-      userId,
-      "student/audio",
-    );
+    const [newFiles, newAudios] = await Promise.all([
+      handleFileUploads(data.files, userId, "student/file"),
+      handleFileUploads(data.audios, userId, "student/audio"),
+    ]);
     const allFiles = [
       ...new Set([...existingFiles, ...newFiles, ...newAudios]),
     ];
 
-    console.log("Starting transaction...");
-    const result = await prisma.$transaction(async (tx) => {
-      // Update student
+    // Выполняем все обновления в транзакции
+    const result = await db.$transaction(async (tx) => {
+      // 1. Обновляем студента
       const updatedStudent = await tx.student.update({
         where: { id: data.id },
         data: {
@@ -410,57 +407,169 @@ export async function updateStudentAndItems(
           prePayDate: data.prePayDate,
           costOneLesson: data.costOneLesson,
           commentStudent: data.commentStudent,
-          prePay: data.prePay,
+          prePay: data.combinedHistory
+            .filter((item) => item.type === "prepayment")
+            .map(({ id, cost, date }) => ({ id, cost, date })),
           linkStudent: data.linkStudent,
           costStudent: data.costStudent,
           files: allFiles,
         },
       });
 
-      // Update group
-      await tx.group.update({
-        where: { id: existingStudent.groupId },
+      // 2. Обновляем предметы
+      const itemsToUpdate = data.items.map((item) => ({
+        ...item,
+        startLesson: new Date(item.startLesson),
+        endLesson: new Date(item.endLesson),
+      }));
+
+      const existingItemIds = existingStudent.group.items.map(
+        (item) => item.id,
+      );
+      const updatedItemIds = [];
+
+      // Обновляем или создаем предметы
+      for (const item of itemsToUpdate) {
+        const itemData = {
+          itemName: item.itemName,
+          tryLessonCheck: item.tryLessonCheck,
+          tryLessonCost: item.tryLessonCost,
+          todayProgramStudent: item.todayProgramStudent,
+          targetLesson: item.targetLesson,
+          programLesson: item.programLesson,
+          typeLesson: Number(item.typeLesson),
+          placeLesson: item.placeLesson,
+          timeLesson: item.timeLesson,
+          valueMuiSelectArchive: item.valueMuiSelectArchive,
+          startLesson: item.startLesson,
+          endLesson: item.endLesson,
+          nowLevel: item.nowLevel,
+          costOneLesson: item.costOneLesson,
+          lessonDuration: item.lessonDuration,
+          timeLinesArray: item.timeLinesArray,
+          commentItem: item.commentItem || "",
+          userId,
+          groupId: existingStudent.group.id,
+        };
+
+        if (item.id && existingItemIds.includes(item.id)) {
+          const updated = await tx.item.update({
+            where: { id: item.id },
+            data: itemData,
+          });
+          updatedItemIds.push(updated.id);
+        } else {
+          const created = await tx.item.create({
+            data: itemData,
+          });
+          updatedItemIds.push(created.id);
+        }
+      }
+
+      // Удаляем неиспользуемые предметы
+      if (existingItemIds.length > 0) {
+        await tx.item.deleteMany({
+          where: {
+            id: {
+              in: existingItemIds.filter((id) => !updatedItemIds.includes(id)),
+            },
+          },
+        });
+      }
+
+      // 3. Обновляем группу и историю
+      const historyLessons = data.combinedHistory
+        .filter((item) => item.type === "lesson")
+        .map((lesson) => ({
+          date: new Date(lesson.date),
+          itemName: lesson.itemName,
+          price: lesson.price,
+          isPaid: lesson.isPaid || false,
+          isDone: lesson.isDone || false,
+          isCancel: lesson.isCancel || false,
+          isAutoChecked: lesson.isAutoChecked || false,
+          timeSlot: lesson.timeSlot || null,
+          isTrial: lesson.isTrial || false,
+        }));
+
+      const updatedGroup = await tx.group.update({
+        where: { id: existingStudent.group.id },
         data: {
-          historyLessons: data.historyLessons,
+          historyLessons,
+        },
+        include: { items: true },
+      });
+
+      // 4. Обновляем расписание
+      const existingSchedules = await tx.studentSchedule.findMany({
+        where: {
+          OR: [{ studentId: data.id }, { groupId: existingStudent.group.id }],
         },
       });
 
-      // Update items
-      const updatedItemIds = await updateGroupItems(
-        existingStudent.groupId,
-        data.items,
-        userId, // Используем userId из токена
-      );
+      // Создаем/обновляем расписания из истории уроков
+      for (const lesson of historyLessons) {
+        const lessonDate = new Date(lesson.date);
+        const scheduleData = {
+          day: lessonDate.getDate().toString(),
+          month: (lessonDate.getMonth() + 1).toString(),
+          year: lessonDate.getFullYear().toString(),
+          groupId: existingStudent.group.id,
+          studentId: data.id,
+          workCount: 0,
+          lessonsCount: 1,
+          lessonsPrice: Number(lesson.price),
+          workPrice: 0,
+          itemName: lesson.itemName,
+          studentName: data.nameStudent,
+          isPaid: lesson.isPaid,
+          isCancel: lesson.isCancel,
+          isAutoChecked: lesson.isAutoChecked,
+          isTrial: lesson.isTrial,
+          startTime: lesson.timeSlot?.startTime || null,
+          endTime: lesson.timeSlot?.endTime || null,
+          userId,
+          itemId: updatedItemIds[0], // Привязываем к первому предмету
+          isChecked: lesson.isDone,
+        };
 
-      // Create schedules from history
-      await createScheduleFromHistory(
-        existingStudent.groupId,
-        existingStudent.id,
-        data.combinedHistory,
-        data.nameStudent,
-        userId, // Используем userId из токена
-        data.items,
-      );
+        const existingSchedule = existingSchedules.find(
+          (s) =>
+            s.day === scheduleData.day &&
+            s.month === scheduleData.month &&
+            s.year === scheduleData.year &&
+            s.itemName === scheduleData.itemName,
+        );
 
-      // Process payments
-      await processPayments(data.combinedHistory, existingStudent.groupId);
+        if (existingSchedule) {
+          await tx.studentSchedule.update({
+            where: { id: existingSchedule.id },
+            data: scheduleData,
+          });
+        } else {
+          await tx.studentSchedule.create({
+            data: scheduleData,
+          });
+        }
+      }
 
-      console.log("Transaction completed");
-      return updatedStudent;
+      // Возвращаем обновленные данные
+      return {
+        success: true,
+        student: updatedStudent,
+        group: updatedGroup,
+        combinedHistory: data.combinedHistory,
+      };
     });
 
-    console.log("Emitting success response...");
-    socket.emit("updateStudentAndItems", {
-      success: true,
-      data: result,
-    });
-
+    socket.emit("updateStudentAndItems", result);
     return result;
   } catch (error) {
-    console.error("Backend error:", error);
+    console.error("Error updating student and items:", error);
     socket.emit("updateStudentAndItems", {
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     });
+    throw error;
   }
 }

@@ -263,7 +263,7 @@ const Schedule = ({
 						existingRanges={selectedRanges}
 						position={position}
 						busySlots={freeSlots[activeDay]}
-						busyOnlineSlots={busyOnlineSlots && busyOnlineSlots[activeDay]}
+						busyOnlineSlots={busyOnlineSlots[activeDay]}
 					/>
 				)}
 			</AnimatePresence>

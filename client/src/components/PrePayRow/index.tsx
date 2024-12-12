@@ -18,6 +18,7 @@ interface IPrePayRow {
 	finishEditing: () => void
 	onAcceptDelete: () => void
 	isDeleted: boolean
+	isEdit: boolean
 	finishDelete: () => void
 }
 
@@ -29,6 +30,7 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 	onEdit,
 	isEditing,
 	onEditDone,
+	isEdit,
 	finishEditing,
 	onAcceptDelete,
 	isDeleted,
@@ -108,25 +110,31 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 							</p>
 							{!isDeleted ? (
 								<>
-									<button onClick={onEdit}>
-										<EditIcon />
-									</button>
-									<button onClick={onAcceptDelete}>
-										<DeleteIcon color="error" />
-									</button>
+									{!isEdit && (
+										<>
+											<button onClick={onEdit}>
+												<EditIcon />
+											</button>
+											<button onClick={onAcceptDelete}>
+												<DeleteIcon color="error" />
+											</button>
+										</>
+									)}
 								</>
 							) : (
 								<>
-									<button
-										onClick={() => {
-											onDelete()
-											finishDelete()
-										}}>
-										<CheckCircleIcon color="success" />
-									</button>
-									<button onClick={finishDelete}>
-										<CancelIcon color="error" />
-									</button>
+									<>
+										<button
+											onClick={() => {
+												onDelete()
+												finishDelete()
+											}}>
+											<CheckCircleIcon color="success" />
+										</button>
+										<button onClick={finishDelete}>
+											<CancelIcon color="error" />
+										</button>
+									</>
 								</>
 							)}
 						</>
@@ -160,12 +168,17 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 								defaultValue={cost}
 							/>
 							<p>₽</p>
-							<button style={{marginLeft: '5px'}} onClick={handleSave}>
-								<CheckCircleIcon color="success" />
-							</button>
-							<button onClick={finishEditing}>
-								<CancelIcon color="error" />
-							</button>
+
+							{isEditing && (
+								<>
+									<button style={{marginLeft: '5px'}} onClick={handleSave}>
+										<CheckCircleIcon color="success" />
+									</button>
+									<button onClick={finishEditing}>
+										<CancelIcon color="error" />
+									</button>
+								</>
+							)}
 						</div>
 					)}
 				</div>

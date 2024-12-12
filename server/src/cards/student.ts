@@ -286,9 +286,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
 
   try {
     const token_ = await db.token.findFirst({
-      where: {
-        token,
-      },
+      where: { token },
     });
 
     if (!token_) {
@@ -339,7 +337,9 @@ export async function getGroupByStudentId(data: any, socket: any) {
       );
 
       return {
+        id: schedule.id,
         date: lessonDate,
+        type: 'lesson',
         itemName: schedule.itemName || "",
         isDone: new Date() > lessonDate,
         price: schedule.lessonsPrice.toString(),
@@ -353,6 +353,22 @@ export async function getGroupByStudentId(data: any, socket: any) {
         isTrial: schedule.isTrial || false,
       };
     });
+
+    // Format prepayments
+    const prepayments = (student.group.students[0].prePay || []).map((prepay) => ({
+      id: prepay.id,
+      type: 'prepayment',
+      date: new Date(prepay.date),
+      cost: String(prepay.cost),
+      isDone: true,
+      isPaid: true,
+      isCancel: false
+    }));
+
+    // Combine and sort history
+    const combinedHistory = [...historyLessons, ...prepayments].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
 
     // Get files
     const files = await db.file.findMany({
@@ -397,7 +413,7 @@ export async function getGroupByStudentId(data: any, socket: any) {
       buffer: audiosBuffers[index],
     }));
 
-    // Преобразуем items для правильной передачи
+    // Transform items for correct transmission
     const transformedItems = student.group.items.map(item => ({
       ...item,
       startLesson: new Date(item.startLesson),
@@ -424,6 +440,8 @@ export async function getGroupByStudentId(data: any, socket: any) {
           historyLessons: historyLessons,
         },
       ],
+      // Add combined history to the root of the group object
+      combinedHistory: combinedHistory
     };
 
     console.log('Sending group data:', JSON.stringify(group, null, 2));

@@ -19,6 +19,7 @@ interface HistoryLesson {
 		endTime: TimeSlot
 	}
 	isTrial?: boolean
+	type?: 'lesson'
 }
 
 interface TimeRange {
@@ -56,7 +57,7 @@ interface Item {
 	endLesson: Date
 	timeLinesArray: Timeline[]
 	tryLessonCheck?: boolean
-	trialLessonDate?: string
+	trialLessonDate?: Date
 	trialLessonTime?: {
 		startTime: TimeSlot
 		endTime: TimeSlot
@@ -68,6 +69,7 @@ interface PrePay {
 	cost: string
 	date: Date
 	id: number
+	type?: 'prepayment'
 }
 
 interface UseHistoryResult {
@@ -78,11 +80,7 @@ interface UseHistoryResult {
 	deletePrePay: (id: number) => void
 	editPrePay: (id: number, newDate: Date, newCost: string) => void
 	updateCombinedHistory: (history: HistoryLesson[], prePay: PrePay[]) => void
-	updateTimeRanges: (
-		itemIndex: number,
-		dayOfWeek: number,
-		newTimeRanges: TimeRange[],
-	) => void
+	putCombinedHistory: (combinedHistory: (HistoryLesson | PrePayment)[]) => void
 }
 
 const getDay = (date: Date): number => {
@@ -109,9 +107,10 @@ export const useHistory = (
 	>([])
 	const [balance, setBalance] = useState<number>(0)
 	const [initialized, setInitialized] = useState(false)
-	const [items, setItems] = useState<Item[]>([])
 
-	// Refs for tracking changes
+	// Refs for tracking changes and preventing duplicate updates
+	const updateSourceRef = useRef<'socket' | 'items' | 'initial' | null>(null)
+	const lastUpdateRef = useRef<string>('')
 	const prevHistoryRef = useRef(JSON.stringify(history))
 	const prevPrePayRef = useRef(JSON.stringify(prePay))
 
@@ -152,53 +151,42 @@ export const useHistory = (
 				isDone: isLessonEndTimeInPast(lesson),
 				isPaid: false,
 				isAutoChecked: false,
+				type: 'lesson' as const,
 			}))
 
-			// Add past and today's prepayments to balance
+			// Add prepayments to balance and apply to lessons
 			sortedPrepayments.forEach((prepay) => {
 				const prepayDate = new Date(prepay.date)
 				const isToday = prepayDate.toDateString() === now.toDateString()
 				const isPast = prepayDate < now
 
 				if (isPast || isToday) {
-					currentBalance += Number(prepay.cost)
+					const prepayAmount = Number(prepay.cost)
+					currentBalance += prepayAmount
+
+					// Apply prepayment to unpaid lessons
+					let remainingAmount = prepayAmount
+					processedLessons.forEach((lesson) => {
+						if (
+							!lesson.isCancel &&
+							!lesson.isPaid &&
+							new Date(lesson.date) >= prepayDate
+						) {
+							const lessonCost = Number(lesson.price)
+							if (remainingAmount >= lessonCost) {
+								lesson.isPaid = true
+								lesson.isAutoChecked = true
+								remainingAmount -= lessonCost
+							}
+						}
+					})
 				}
 			})
 
 			// Subtract completed lessons from balance
 			processedLessons.forEach((lesson) => {
-				if (lesson.isCancel) return
-
-				if (lesson.isDone) {
+				if (!lesson.isCancel && lesson.isDone) {
 					currentBalance -= Number(lesson.price)
-				}
-			})
-
-			// Apply prepayments to future lessons
-			sortedPrepayments.forEach((prepay) => {
-				let remainingAmount = Number(prepay.cost)
-				const prepayDate = new Date(prepay.date)
-
-				// Find all lessons after this prepayment
-				processedLessons
-					.filter((lesson) => {
-						const lessonDate = new Date(lesson.date)
-						return lessonDate > prepayDate && !lesson.isCancel && !lesson.isPaid
-					})
-					.forEach((lesson) => {
-						const lessonCost = Number(lesson.price)
-						if (remainingAmount >= lessonCost) {
-							lesson.isPaid = true
-							lesson.isAutoChecked = true
-							remainingAmount -= lessonCost
-						}
-					})
-			})
-
-			// Handle manual payments
-			processedLessons.forEach((lesson) => {
-				if (lesson.isPaid && !lesson.isAutoChecked) {
-					currentBalance += Number(lesson.price)
 				}
 			})
 
@@ -210,6 +198,20 @@ export const useHistory = (
 	// Update combined history function
 	const updateCombinedHistory = useCallback(
 		(historyData: HistoryLesson[], prePayData: PrePay[]) => {
+			// Create unique key for current update
+			const updateKey = JSON.stringify({
+				history: historyData,
+				prepay: prePayData,
+			})
+
+			// Skip if this is the same update
+			if (lastUpdateRef.current === updateKey) {
+				return
+			}
+
+			lastUpdateRef.current = updateKey
+
+			// Validate input data
 			if (!Array.isArray(historyData) || !Array.isArray(prePayData)) {
 				console.warn('Invalid data:', {historyData, prePayData})
 				return
@@ -218,18 +220,17 @@ export const useHistory = (
 			const {processedLessons, currentBalance} =
 				processLessonsAndCalculateBalance(historyData, prePayData)
 
-			// Format lessons for display
+			// Format history lessons
 			const validHistory = processedLessons.map((lesson) => ({
 				...lesson,
 				date: new Date(lesson.date),
-				type: 'lesson' as const,
 				timeSlot: {
 					startTime: lesson.timeSlot?.startTime || {hour: 0, minute: 0},
 					endTime: lesson.timeSlot?.endTime || {hour: 0, minute: 0},
 				},
 			}))
 
-			// Format prepayments for display
+			// Format prepayments
 			const validPrePay = prePayData.map((payment) => ({
 				...payment,
 				date: new Date(payment.date),
@@ -240,7 +241,7 @@ export const useHistory = (
 				cost: String(payment.cost),
 			}))
 
-			// Combine and sort by date (newest first)
+			// Combine and sort by date (descending)
 			const combined = [...validHistory, ...validPrePay].sort(
 				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 			)
@@ -250,101 +251,6 @@ export const useHistory = (
 		},
 		[processLessonsAndCalculateBalance],
 	)
-
-	// Prepayment management functions
-	const addPrePay = useCallback(
-		(prePayCost: string, prePayDate: Date, prePayId?: number) => {
-			const newPrePay = {
-				cost: prePayCost,
-				date: prePayDate,
-				id: prePayId || Date.now(),
-			}
-
-			setPrePay((prev) => {
-				const newList = [...prev, newPrePay]
-				return newList
-			})
-		},
-		[],
-	)
-
-	const deletePrePay = useCallback((id: number) => {
-		setPrePay((prev) => {
-			const newList = prev.filter((item) => item.id !== id)
-			return newList
-		})
-	}, [])
-
-	const editPrePay = useCallback(
-		(id: number, newDate: Date, newCost: string) => {
-			setPrePay((prev) => {
-				const newList = prev.map((item) =>
-					item.id === id
-						? {...item, date: new Date(newDate), cost: newCost}
-						: item,
-				)
-				return newList
-			})
-		},
-		[],
-	)
-
-	// Initial setup for existing card
-	useEffect(() => {
-		if (!initialized && isExistingCard) {
-			const formattedHistory = (initialHistory || []).map((lesson) => ({
-				...lesson,
-				date: new Date(lesson.date),
-				timeSlot: {
-					startTime: lesson.timeSlot?.startTime || {hour: 0, minute: 0},
-					endTime: lesson.timeSlot?.endTime || {hour: 0, minute: 0},
-				},
-				isDone: isLessonEndTimeInPast(lesson),
-				isPaid: lesson.isPaid || false,
-				isCancel: lesson.isCancel || false,
-				isAutoChecked: lesson.isAutoChecked || false,
-				price: lesson.price || '0',
-			}))
-
-			const formattedPrePay = (initialPrePay || []).map((prepay) => ({
-				...prepay,
-				date: new Date(prepay.date),
-				id: prepay.id || Date.now(),
-				cost: String(prepay.cost),
-			}))
-
-			setHistory(formattedHistory)
-			setPrePay(formattedPrePay)
-			updateCombinedHistory(formattedHistory, formattedPrePay)
-			setInitialized(true)
-		}
-	}, [
-		isExistingCard,
-		initialHistory,
-		initialPrePay,
-		initialized,
-		isLessonEndTimeInPast,
-		updateCombinedHistory,
-	])
-
-	// Update when data changes
-	useEffect(() => {
-		if (initialized) {
-			const historyStr = JSON.stringify(history)
-			const prePayStr = JSON.stringify(prePay)
-
-			if (
-				prevHistoryRef.current !== historyStr ||
-				prevPrePayRef.current !== prePayStr
-			) {
-				const currentPrePay = [...prePay]
-				updateCombinedHistory(history, currentPrePay)
-
-				prevHistoryRef.current = historyStr
-				prevPrePayRef.current = prePayStr
-			}
-		}
-	}, [history, prePay, initialized, updateCombinedHistory])
 
 	// Generate new history from schedule
 	const generateNewHistory = useCallback((items: Item[]): HistoryLesson[] => {
@@ -383,58 +289,183 @@ export const useHistory = (
 								endTime: timeRange.endTime,
 							},
 							isTrial: false,
+							type: 'lesson',
 						})
 					})
 				}
 			})
+
+			// Handle trial lesson if exists
+			if (item.tryLessonCheck && item.trialLessonDate && item.trialLessonTime) {
+				newHistory.push({
+					date: new Date(item.trialLessonDate),
+					itemName: item.itemName,
+					isDone: false,
+					price: item.tryLessonCost || '0',
+					isPaid: false,
+					isCancel: false,
+					isAutoChecked: false,
+					timeSlot: item.trialLessonTime,
+					isTrial: true,
+					type: 'lesson',
+				})
+			}
 		})
 
 		return newHistory.sort((a, b) => a.date.getTime() - b.date.getTime())
 	}, [])
 
-	// Update history function
+	// Update history without overwriting prepayments
 	const updateHistory = useCallback(
 		(items: Item[]) => {
-			const newHistory = generateNewHistory(items)
-			const currentPrePay = [...prePay]
+			if (updateSourceRef.current === 'socket') return
 
-			if (JSON.stringify(history) !== JSON.stringify(newHistory)) {
-				setHistory(newHistory)
-				setItems(items)
-				updateCombinedHistory(newHistory, currentPrePay)
-			}
+			const newHistory = generateNewHistory(items)
+			setHistory(newHistory)
+			updateCombinedHistory(newHistory, prePay)
+			return newHistory // Возвращаем новую историю для использования в других местах
 		},
-		[generateNewHistory, updateCombinedHistory, history, prePay],
+		[generateNewHistory, prePay, updateCombinedHistory],
 	)
 
-	// Update time ranges
-	const updateTimeRanges = useCallback(
-		(itemIndex: number, dayOfWeek: number, newTimeRanges: TimeRange[]) => {
-			setItems((prevItems) => {
-				const newItems = [...prevItems]
-				if (!newItems[itemIndex]) return prevItems
+	// Функция добавления предоплаты
+	const addPrePay = useCallback(
+		(prePayCost: string, prePayDate: Date, prePayId?: number) => {
+			const newPrePay: PrePay = {
+				id: prePayId || Date.now(),
+				type: 'prepayment',
+				cost: prePayCost,
+				date: prePayDate,
+				isDone: true,
+				isPaid: true,
+				isCancel: false,
+			}
 
-				newItems[itemIndex] = {
-					...newItems[itemIndex],
-					timeLinesArray: newItems[itemIndex].timeLinesArray.map(
-						(timeline, idx) =>
-							idx === dayOfWeek
-								? {...timeline, timeRanges: newTimeRanges}
-								: timeline,
-					),
-				}
-
-				const newHistory = generateNewHistory(newItems)
-				const currentPrePay = [...prePay]
-
-				setHistory(newHistory)
-				updateCombinedHistory(newHistory, currentPrePay)
-
-				return newItems
+			setPrePay((prev) => {
+				const newList = [...prev, newPrePay]
+				updateCombinedHistory(history, newList)
+				return newList
 			})
 		},
-		[generateNewHistory, updateCombinedHistory, prePay],
+		[history],
 	)
+
+	// Функция удаления предоплаты
+	const deletePrePay = useCallback(
+		(id: number) => {
+			setPrePay((prev) => {
+				const newList = prev.filter((item) => item.id !== id)
+				updateCombinedHistory(history, newList)
+				return newList
+			})
+		},
+		[history],
+	)
+
+	// Функция редактирования предоплаты
+	const editPrePay = useCallback(
+		(id: number, newDate: Date, newCost: string) => {
+			setPrePay((prev) => {
+				const newList = prev.map((item) =>
+					item.id === id ? {...item, date: newDate, cost: newCost} : item,
+				)
+				updateCombinedHistory(history, newList)
+				return newList
+			})
+		},
+		[history],
+	)
+
+	// Initial setup for existing card
+	useEffect(() => {
+		if (isExistingCard) {
+			const formattedHistory = initialHistory.map((lesson) => ({
+				...lesson,
+				date: new Date(lesson.date),
+				type: 'lesson' as const,
+			}))
+
+			const formattedPrePay = initialPrePay.map((prepay) => ({
+				...prepay,
+				date: new Date(prepay.date),
+				type: 'prepayment' as const,
+				isDone: true,
+				isPaid: true,
+				isCancel: false,
+			}))
+
+			setHistory(formattedHistory)
+			setPrePay(formattedPrePay)
+			updateCombinedHistory(formattedHistory, formattedPrePay)
+		}
+	}, [isExistingCard, initialHistory, initialPrePay])
+
+	const putCombinedHistory = useCallback(
+		(serverCombinedHistory: (HistoryLesson | PrePay)[]) => {
+			const lessons = serverCombinedHistory
+				.filter((entry): entry is HistoryLesson => entry.type === 'lesson')
+				.map((lesson) => ({
+					...lesson,
+					date: new Date(lesson.date),
+				}))
+
+			const prepayments = serverCombinedHistory
+				.filter((entry): entry is PrePay => entry.type === 'prepayment')
+				.map((prepay) => ({
+					...prepay,
+					date: new Date(prepay.date),
+				}))
+
+			setHistory(lessons)
+			setPrePay(prepayments)
+			setCombinedHistory(serverCombinedHistory)
+
+			// Пересчитываем баланс
+			calculateBalance(lessons, prepayments)
+		},
+		[],
+	)
+
+	const calculateBalance = useCallback(
+		(lessons: HistoryLesson[], prepayments: PrePay[]) => {
+			let currentBalance = 0
+			const now = new Date()
+
+			// Добавляем все предоплаты
+			prepayments.forEach((prepay) => {
+				if (prepay.date <= now) {
+					currentBalance += Number(prepay.cost)
+				}
+			})
+
+			// Вычитаем стоимость прошедших уроков
+			lessons.forEach((lesson) => {
+				if (lesson.isDone && !lesson.isCancel) {
+					currentBalance -= Number(lesson.price)
+				}
+			})
+
+			setBalance(currentBalance)
+		},
+		[],
+	)
+
+	// Update when data changes
+	useEffect(() => {
+		if (initialized) {
+			const historyStr = JSON.stringify(history)
+			const prePayStr = JSON.stringify(prePay)
+
+			if (
+				prevHistoryRef.current !== historyStr ||
+				prevPrePayRef.current !== prePayStr
+			) {
+				updateCombinedHistory(history, prePay)
+				prevHistoryRef.current = historyStr
+				prevPrePayRef.current = prePayStr
+			}
+		}
+	}, [history, prePay, initialized, updateCombinedHistory])
 
 	return {
 		combinedHistory,
@@ -443,8 +474,8 @@ export const useHistory = (
 		addPrePay,
 		deletePrePay,
 		editPrePay,
-		updateTimeRanges,
 		updateCombinedHistory,
+		putCombinedHistory,
 	}
 }
 
