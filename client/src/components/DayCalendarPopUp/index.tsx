@@ -94,6 +94,8 @@ const LessonRow: React.FC<LessonRowProps> = ({
   calendarMonth,
   calendarYear,
 }) => {
+  const [studentSuggestions, setStudentSuggestions] = useState([]);
+  const [subjectSuggestions, setSubjectSuggestions] = useState([]);
   const [timePickerOpen, setTimePickerOpen] = useState(false)
   const [timePickerPosition, setTimePickerPosition] = useState({x: 0, y: 0})
 
@@ -103,6 +105,26 @@ const LessonRow: React.FC<LessonRowProps> = ({
       onIconClick(lesson)
     }
   }
+
+  useEffect(() => {
+    if (isEditing) {
+      // Загружаем список студентов
+      socket.emit('getStudentSuggestions', { token });
+      socket.once('getStudentSuggestions', (response) => {
+        if (response.students) {
+          setStudentSuggestions(response.students);
+        }
+      });
+
+      // Загружаем список предметов
+      socket.emit('getSubjectSuggestions', { token });
+      socket.once('getSubjectSuggestions', (response) => {
+        if (response.subjects) {
+          setSubjectSuggestions(response.subjects);
+        }
+      });
+    }
+  }, [isEditing, token]);
 
   const handleTimeClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isEditing) {
@@ -135,6 +157,47 @@ const LessonRow: React.FC<LessonRowProps> = ({
     },
     [lesson.id, onUpdate, calendarDay, calendarMonth, calendarYear, token],
   )
+
+  // Обработчик смены студента
+  const handleStudentChange = (studentId: string) => {
+    const student = studentSuggestions.find(s => s.id === studentId);
+    if (student) {
+      onUpdate(lesson.id, {
+        studentId: student.id,
+        studentName: student.nameStudent,
+        // Передаем только id и имя, цену не трогаем
+        action: 'updateStudent' // Добавляем тип действия
+      });
+    }
+  };
+
+  // Обработчик изменения цены
+  const handlePriceChange = (newPrice: string) => {
+    // Убираем все нечисловые символы, кроме точки
+    const cleanPrice = newPrice.replace(/[^\d.]/g, '');
+    onUpdate(lesson.id, {
+      lessonsPrice: cleanPrice,
+      action: 'updatePrice' // Добавляем тип действия
+    });
+  };
+
+  // Обработчик изменения предмета
+  const handleSubjectChange = (newSubject: string) => {
+    onUpdate(lesson.id, {
+      itemName: newSubject,
+      action: 'updateSubject' // Добавляем тип действия
+    });
+  };
+
+  // Обработчик изменения статуса выполнения
+  const handleCompletionChange = () => {
+    if (!lesson.isAutoChecked) {
+      onUpdate(lesson.id, {
+        isChecked: !lesson.isCompleted,
+        action: 'updateCompletion' // Добавляем тип действия
+      });
+    }
+  };
 
   return (
     <div
@@ -235,14 +298,20 @@ const LessonRow: React.FC<LessonRowProps> = ({
         {/* Student Name */}
         <div className="border-r h-full flex items-center px-3">
           {isEditing ? (
-            <Input
-              value={lesson.studentName}
-              onChange={(e) =>
-                onUpdate(lesson.id, { studentName: e.target.value })
-              }
-              placeholder="Имя ученика"
-              className="h-9 text-base cursor-text w-full text-center"
-            />
+            <Select
+               value={lesson.studentId || ''} // Используем id вместо имени
+               onValueChange={handleStudentChange}>
+               <SelectTrigger>
+                 <SelectValue>{lesson.studentName}</SelectValue>
+               </SelectTrigger>
+               <SelectContent>
+                 {studentSuggestions.map((student) => (
+                   <SelectItem key={student.id} value={student.id}>
+                     {student.nameStudent}
+                   </SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
           ) : (
             <div className="font-medium cursor-pointer truncate w-full text-base text-center">
               {lesson.studentName}
@@ -253,12 +322,22 @@ const LessonRow: React.FC<LessonRowProps> = ({
         {/* Subject */}
         <div className="border-r h-full flex items-center px-3">
           {isEditing ? (
-            <Input
+            <Select
               value={lesson.subject}
-              onChange={(e) => onUpdate(lesson.id, { subject: e.target.value })}
-              placeholder="Предмет"
-              className="h-9 text-base cursor-text w-full text-center"
-            />
+              onValueChange={(subject) =>
+                onUpdate(lesson.id, { itemName: subject })
+              }>
+              <SelectTrigger>
+                <SelectValue>{lesson.subject}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {subjectSuggestions.map((subject) => (
+                  <SelectItem key={subject} value={subject}>
+                    {subject}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ) : (
             <div className="text-gray-600 truncate w-full text-base text-center">
               {lesson.subject}
@@ -270,9 +349,16 @@ const LessonRow: React.FC<LessonRowProps> = ({
         <div className="border-r h-full flex items-center justify-center px-3">
           {isEditing ? (
             <Input
-              type="number"
+              type="text" // Меняем на text для лучшего контроля ввода
               value={lesson.price}
-              onChange={(e) => onUpdate(lesson.id, { price: e.target.value })}
+              onChange={(e) => handlePriceChange(e.target.value)}
+              onBlur={() => {
+                // При потере фокуса форматируем число
+                const formatted = parseFloat(lesson.price).toFixed(2);
+                if (!isNaN(formatted)) {
+                  handlePriceChange(formatted);
+                }
+              }}
               className="h-9 text-base cursor-text w-full text-center"
               disabled={hiddenNum}
             />
@@ -287,7 +373,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
         <div className="border-r h-full bg-green-100 rounded-md flex items-center justify-center">
           <Checkbox
             checked={lesson.isCompleted}
-            onCheckedChange={() => onToggleComplete(lesson.id)}
+            onCheckedChange={handleCompletionChange}
             disabled={lesson.isCancelled || lesson.isAutoChecked}
             className="h-5 w-5"
           />

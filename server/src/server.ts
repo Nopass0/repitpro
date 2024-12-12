@@ -70,6 +70,8 @@ import {
   updateStudentSchedule,
   cancelLesson,
   getAllStudentSchedules,
+  getStudentSuggestions,
+  getSubjectSuggestions,
 } from "cards/student/schedule";
 
 io.on("connection", (socket) => {
@@ -156,6 +158,14 @@ io.on("connection", (socket) => {
   // socket.on("getAllStatisticsData", (data) =>
   //   getAllStatisticsData(data, socket)
   // );
+  //
+
+  socket.on("getStudentSuggestions", (data) =>
+    getStudentSuggestions(data, socket),
+  );
+  socket.on("getSubjectSuggestions", (data) =>
+    getSubjectSuggestions(data, socket),
+  );
 
   // socket.on("updateStudents", (data) => updateStudents(data, socket));
   socket.on("updateStudentAndItems", (data) =>
