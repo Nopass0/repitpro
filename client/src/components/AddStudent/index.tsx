@@ -1368,28 +1368,282 @@ const AddStudent = ({}: IAddStudent) => {
 	}
 	const [isLoading, setIsLoading] = useState(true)
 
+	interface TimeSlot {
+		hour: number
+		minute: number
+	}
+
+	interface TimeRange {
+		startTime: TimeSlot
+		endTime: TimeSlot
+	}
+
+	const prevItemsRef = useRef<string | null>(null)
+	const memoizedItems = useMemo(() => items, [JSON.stringify(items)])
+
 	const updateSourceRef = useRef<'socket' | 'items' | 'initial' | null>(null)
 
-	useEffect(() => {
-		if (!isEditMode && items.length > 0) {
-			// Только для нового студента
-			// Проверяем, что у предмета есть хотя бы основные данные
-			const hasValidItems = items.some(
-				(item) =>
-					item.itemName &&
-					item.costOneLesson &&
-					item.timeLinesArray?.some(
-						(timeline) =>
-							timeline.startTime?.hour !== 0 ||
-							timeline.startTime?.minute !== 0 ||
-							timeline.endTime?.hour !== 0 ||
-							timeline.endTime?.minute !== 0,
-					),
+	const syncScheduleWithHistory = (
+		oldItems: Item[],
+		newItems: Item[],
+		currentHistory: HistoryLesson[],
+	): HistoryLesson[] => {
+		const getDayOfWeek = (date: Date): number => {
+			const day = date.getDay()
+			return day === 0 ? 6 : day - 1 // Convert to 0-6 where 0 is Monday
+		}
+
+		const isTimeInRange = (
+			lessonTime: TimeSlot,
+			rangeStart: TimeSlot,
+			rangeEnd: TimeSlot,
+		): boolean => {
+			const lessonMinutes = lessonTime.hour * 60 + lessonTime.minute
+			const rangeStartMinutes = rangeStart.hour * 60 + rangeStart.minute
+			const rangeEndMinutes = rangeEnd.hour * 60 + rangeEnd.minute
+			return (
+				lessonMinutes >= rangeStartMinutes && lessonMinutes < rangeEndMinutes
+			)
+		}
+
+		const isTimeSlotChanged = (
+			oldTimeSlot: TimeRange,
+			newTimeSlot: TimeRange,
+		): boolean => {
+			return (
+				oldTimeSlot.startTime.hour !== newTimeSlot.startTime.hour ||
+				oldTimeSlot.startTime.minute !== newTimeSlot.startTime.minute ||
+				oldTimeSlot.endTime.hour !== newTimeSlot.endTime.hour ||
+				oldTimeSlot.endTime.minute !== newTimeSlot.endTime.minute
+			)
+		}
+
+		let updatedHistory = [...currentHistory]
+
+		// Process each item to find schedule changes
+		newItems.forEach((newItem) => {
+			const oldItem = oldItems.find(
+				(item) => item.itemName === newItem.itemName,
+			)
+			if (!oldItem) return
+
+			// Check each day's schedule
+			newItem.timeLinesArray.forEach((newTimeLine, dayIndex) => {
+				const oldTimeLine = oldItem.timeLinesArray[dayIndex]
+				const oldTimeRanges = oldTimeLine.timeRanges || []
+				const newTimeRanges = newTimeLine.timeRanges || []
+
+				// Find lessons for this item and day of week
+				updatedHistory = updatedHistory.filter((lesson) => {
+					if (lesson.itemName !== newItem.itemName) return true
+
+					const lessonDate = new Date(lesson.date)
+					if (getDayOfWeek(lessonDate) !== dayIndex) return true
+
+					// Check if lesson time falls within any of the new time ranges
+					const lessonStartTime = lesson.timeSlot.startTime
+					let keepLesson = false
+
+					for (const newRange of newTimeRanges) {
+						if (
+							isTimeInRange(
+								lessonStartTime,
+								newRange.startTime,
+								newRange.endTime,
+							)
+						) {
+							keepLesson = true
+							break
+						}
+					}
+
+					return keepLesson
+				})
+
+				// Add new lessons for added or modified time ranges
+				newTimeRanges.forEach((newRange) => {
+					const isNewOrModified = !oldTimeRanges.some(
+						(oldRange) => !isTimeSlotChanged(oldRange, newRange),
+					)
+
+					if (isNewOrModified) {
+						// Generate new lessons for this time range
+						let currentDate = new Date(newItem.startLesson)
+						const endDate = new Date(newItem.endLesson)
+
+						while (currentDate <= endDate) {
+							if (getDayOfWeek(currentDate) === dayIndex) {
+								const lessonDate = new Date(currentDate)
+								lessonDate.setHours(
+									newRange.startTime.hour,
+									newRange.startTime.minute,
+								)
+
+								// Check if lesson doesn't already exist
+								const lessonExists = updatedHistory.some(
+									(lesson) =>
+										lesson.itemName === newItem.itemName &&
+										lesson.date.getTime() === lessonDate.getTime() &&
+										isTimeInRange(
+											lesson.timeSlot.startTime,
+											newRange.startTime,
+											newRange.endTime,
+										),
+								)
+
+								if (!lessonExists) {
+									updatedHistory.push({
+										date: lessonDate,
+										itemName: newItem.itemName,
+										isDone: lessonDate < new Date(),
+										price: newItem.costOneLesson,
+										isPaid: false,
+										isCancel: false,
+										type: 'lesson',
+										timeSlot: {
+											startTime: {...newRange.startTime},
+											endTime: {...newRange.endTime},
+										},
+									})
+								}
+							}
+							currentDate = addDays(currentDate, 1)
+						}
+					}
+				})
+			})
+		})
+
+		// Sort updated history by date
+		return updatedHistory.sort((a, b) => a.date.getTime() - b.date.getTime())
+	}
+
+	const generateInitialLessons = (items: IItemCard[]): HistoryLesson[] => {
+		const now = new Date()
+		const lessons: HistoryLesson[] = []
+
+		items.forEach((item) => {
+			if (!item.itemName || !item.costOneLesson || !item.timeLinesArray) return
+
+			// Add regular lessons
+			const differenceDays = differenceInDays(item.endLesson, item.startLesson)
+			const dateRange = Array.from({length: differenceDays + 1}, (_, i) =>
+				addDays(new Date(item.startLesson), i),
 			)
 
+			dateRange.forEach((date) => {
+				const dayOfWeek = getDay(date)
+				const daySchedule = item.timeLinesArray[dayOfWeek]
+
+				if (daySchedule?.timeRanges?.length) {
+					daySchedule.timeRanges.forEach((timeRange) => {
+						const lessonDate = new Date(date)
+						lessonDate.setHours(
+							timeRange.startTime.hour,
+							timeRange.startTime.minute,
+						)
+
+						lessons.push({
+							date: lessonDate,
+							itemName: item.itemName,
+							isDone: lessonDate < now,
+							price: item.costOneLesson,
+							isPaid: false,
+							isCancel: false,
+							type: 'lesson',
+							timeSlot: {
+								startTime: {...timeRange.startTime},
+								endTime: {...timeRange.endTime},
+							},
+						})
+					})
+				}
+			})
+
+			// Add trial lesson if configured
+			if (item.tryLessonCheck && item.trialLessonDate && item.trialLessonTime) {
+				lessons.push({
+					date: new Date(item.trialLessonDate),
+					itemName: item.itemName,
+					isDone: item.trialLessonDate < now,
+					price: item.tryLessonCost || item.costOneLesson,
+					isPaid: false,
+					isCancel: false,
+					type: 'lesson',
+					timeSlot: {
+						startTime: {...item.trialLessonTime.startTime},
+						endTime: {...item.trialLessonTime.endTime},
+					},
+					isTrial: true,
+				})
+			}
+		})
+
+		return lessons.sort((a, b) => a.date.getTime() - b.date.getTime())
+	}
+
+	useEffect(() => {
+		// Skip if in edit mode or no items
+		if (!isEditMode && items.length > 0) {
+			// Validate items have required data
+			const hasValidItems = items.some((item) => {
+				// Check basic item data
+				const hasBasicData = Boolean(item.itemName && item.costOneLesson)
+
+				// Check if any timeline has valid time slots
+				const hasValidTimeSlots = item.timeLinesArray?.some((timeline) => {
+					// Check start time
+					const hasValidStartTime = Boolean(
+						(timeline.startTime?.hour && timeline.startTime.hour !== 0) ||
+							(timeline.startTime?.minute && timeline.startTime.minute !== 0),
+					)
+
+					// Check end time
+					const hasValidEndTime = Boolean(
+						(timeline.endTime?.hour && timeline.endTime.hour !== 0) ||
+							(timeline.endTime?.minute && timeline.endTime.minute !== 0),
+					)
+
+					// Check timeRanges if they exist
+					const hasValidTimeRanges = timeline.timeRanges?.some((range) => {
+						const validStart =
+							range.startTime.hour !== 0 || range.startTime.minute !== 0
+						const validEnd =
+							range.endTime.hour !== 0 || range.endTime.minute !== 0
+						return validStart && validEnd
+					})
+
+					return (hasValidStartTime && hasValidEndTime) || hasValidTimeRanges
+				})
+
+				return hasBasicData && hasValidTimeSlots
+			})
+
 			if (hasValidItems) {
-				// Используем updateHistory вместо generateNewHistory
-				updateHistory(items)
+				try {
+					// Generate initial history lessons
+					const initialLessons = generateInitialLessons(items)
+
+					// Update history using the hook's function
+					updateHistory(
+						items.map((item) => ({
+							...item,
+							startLesson: new Date(item.startLesson),
+							endLesson: new Date(item.endLesson),
+							timeLinesArray: item.timeLinesArray.map((timeline) => ({
+								...timeline,
+								timeRanges: timeline.timeRanges || [
+									{
+										startTime: timeline.startTime,
+										endTime: timeline.endTime,
+									},
+								],
+							})),
+						})),
+					)
+				} catch (error) {
+					console.error('Error updating history:', error)
+				}
 			}
 		}
 	}, [items, isEditMode, updateHistory])
@@ -1492,8 +1746,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}, 300),
 		[],
 	)
-
-	const memoizedItems = useMemo(() => items, [JSON.stringify(items)])
 
 	useEffect(() => {
 		if (memoizedItems.length > 0) {

@@ -134,79 +134,58 @@ export const useHistory = (
 	const processLessonsAndCalculateBalance = useCallback(
 		(lessons: HistoryLesson[], prepayments: PrePay[]) => {
 			const now = new Date()
-			now.setHours(0, 0, 0, 0) // Reset time part for accurate date comparison
+			let currentBalance = 0
 
-			// Sort lessons chronologically
+			// Sort lessons and prepayments by date
 			const sortedLessons = [...lessons].sort(
 				(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
 			)
 
-			// Sort prepayments chronologically
 			const sortedPrepayments = [...prepayments].sort(
 				(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
 			)
 
-			let currentBalance = 0
+			// Process lessons with initial flags
+			const processedLessons = sortedLessons.map((lesson) => ({
+				...lesson,
+				isDone: isLessonEndTimeInPast(lesson),
+				isPaid: false,
+				isAutoChecked: false,
+				type: 'lesson' as const,
+			}))
 
-			// First pass: mark initial states and handle manual payments
-			const processedLessons = sortedLessons.map((lesson) => {
-				const isManuallyPaid = lesson.isPaid && !lesson.isAutoChecked
-
-				// If lesson is manually paid, add its cost to the balance
-				if (isManuallyPaid && !lesson.isCancel) {
-					currentBalance += Number(lesson.price)
-				}
-
-				return {
-					...lesson,
-					isDone: isLessonEndTimeInPast(lesson),
-					isPaid: isManuallyPaid,
-					isAutoChecked: false,
-				}
-			})
-
-			// Second pass: apply prepayments
-			// For marking lessons as paid (isPaid & isAutoChecked), we process ALL prepayments
+			// Add prepayments to balance and apply to lessons
 			sortedPrepayments.forEach((prepay) => {
 				const prepayDate = new Date(prepay.date)
-				prepayDate.setHours(0, 0, 0, 0)
+				const isToday = prepayDate.toDateString() === now.toDateString()
+				const isPast = prepayDate < now
 
-				// For balance calculation, only consider prepayments up to today
-				if (prepayDate <= now) {
-					currentBalance += Number(prepay.cost)
+				if (isPast || isToday) {
+					const prepayAmount = Number(prepay.cost)
+					currentBalance += prepayAmount
+
+					// Apply prepayment to unpaid lessons
+					let remainingAmount = prepayAmount
+					processedLessons.forEach((lesson) => {
+						if (
+							!lesson.isCancel &&
+							!lesson.isPaid &&
+							new Date(lesson.date) >= prepayDate
+						) {
+							const lessonCost = Number(lesson.price)
+							if (remainingAmount >= lessonCost) {
+								lesson.isPaid = true
+								lesson.isAutoChecked = true
+								remainingAmount -= lessonCost
+							}
+						}
+					})
 				}
-
-				let remainingAmount = Number(prepay.cost)
-
-				// Apply prepayment to unpaid lessons that come after the prepayment date
-				processedLessons.forEach((lesson) => {
-					const lessonDate = new Date(lesson.date)
-					lessonDate.setHours(0, 0, 0, 0)
-
-					// Skip if:
-					// 1. Lesson is cancelled
-					// 2. Lesson is already paid (manually or automatically)
-					// 3. Lesson date is before prepayment date
-					// 4. Not enough remaining amount
-					if (
-						lesson.isCancel ||
-						lesson.isPaid ||
-						lessonDate < prepayDate ||
-						remainingAmount < Number(lesson.price)
-					) {
-						return
-					}
-
-					// Apply payment status (even for future prepayments)
-					remainingAmount -= Number(lesson.price)
-					lesson.isPaid = true
-					lesson.isAutoChecked = true
-				})
 			})
 
-			// Third pass: subtract costs of completed unpaid lessons from balance
+			// Subtract completed lessons from balance
 			processedLessons.forEach((lesson) => {
-				if (!lesson.isCancel && lesson.isDone && !lesson.isPaid) {
+				if (!lesson.isCancel && lesson.isDone) {
 					currentBalance -= Number(lesson.price)
 				}
 			})
@@ -219,14 +198,20 @@ export const useHistory = (
 	// Update combined history function
 	const updateCombinedHistory = useCallback(
 		(historyData: HistoryLesson[], prePayData: PrePay[]) => {
+			// Create unique key for current update
 			const updateKey = JSON.stringify({
 				history: historyData,
 				prepay: prePayData,
 			})
 
-			if (lastUpdateRef.current === updateKey) return
+			// Skip if this is the same update
+			if (lastUpdateRef.current === updateKey) {
+				return
+			}
+
 			lastUpdateRef.current = updateKey
 
+			// Validate input data
 			if (!Array.isArray(historyData) || !Array.isArray(prePayData)) {
 				console.warn('Invalid data:', {historyData, prePayData})
 				return
@@ -256,7 +241,7 @@ export const useHistory = (
 				cost: String(payment.cost),
 			}))
 
-			// Combine and sort by date (newest first)
+			// Combine and sort by date (descending)
 			const combined = [...validHistory, ...validPrePay].sort(
 				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 			)
