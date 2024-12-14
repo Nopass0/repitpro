@@ -96,19 +96,18 @@ const LessonRow: React.FC<LessonRowProps> = ({
 }) => {
   const [studentSuggestions, setStudentSuggestions] = useState([]);
   const [subjectSuggestions, setSubjectSuggestions] = useState([]);
-  const [timePickerOpen, setTimePickerOpen] = useState(false)
-  const [timePickerPosition, setTimePickerPosition] = useState({x: 0, y: 0})
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
+  const [timePickerPosition, setTimePickerPosition] = useState({ x: 0, y: 0 });
+  const [localPrice, setLocalPrice] = useState(lesson.price?.toString() || "0");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleIconClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!isEditing) {
-      onIconClick(lesson)
-    }
-  }
+  useEffect(() => {
+    setLocalPrice(lesson.price?.toString() || "0");
+  }, [lesson.price]);
 
   useEffect(() => {
     if (isEditing) {
-      // Загружаем список студентов
+      // Load student suggestions
       socket.emit('getStudentSuggestions', { token });
       socket.once('getStudentSuggestions', (response) => {
         if (response.students) {
@@ -116,7 +115,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
         }
       });
 
-      // Загружаем список предметов
+      // Load subject suggestions
       socket.emit('getSubjectSuggestions', { token });
       socket.once('getSubjectSuggestions', (response) => {
         if (response.subjects) {
@@ -124,77 +123,93 @@ const LessonRow: React.FC<LessonRowProps> = ({
         }
       });
     }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, [isEditing, token]);
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isEditing) {
+      onIconClick(lesson);
+    }
+  };
 
   const handleTimeClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isEditing) {
-      const rect = e.currentTarget.getBoundingClientRect()
+      const rect = e.currentTarget.getBoundingClientRect();
       setTimePickerPosition({
         x: rect.left,
         y: rect.bottom + window.scrollY + 5,
-      })
-      setTimePickerOpen(true)
+      });
+      setTimePickerOpen(true);
     }
-  }
+  };
 
   const handleTimeRangeSelect = useCallback(
     (ranges: { startTime: string; endTime: string }[]) => {
       if (ranges.length > 0) {
-        const [selectedRange] = ranges
-        const [startHours, startMinutes] = selectedRange.startTime.split(':').map(Number)
-        const [endHours, endMinutes] = selectedRange.endTime.split(':').map(Number)
+        const [selectedRange] = ranges;
+        const [startHours, startMinutes] = selectedRange.startTime.split(':').map(Number);
+        const [endHours, endMinutes] = selectedRange.endTime.split(':').map(Number);
 
         onUpdate(lesson.id, {
           startTime: { hour: startHours, minute: startMinutes },
           endTime: { hour: endHours, minute: endMinutes },
+          action: 'updateTime',
           day: calendarDay,
           month: calendarMonth,
           year: calendarYear,
-          token: token,
-        })
-        setTimePickerOpen(false)
+        });
+        setTimePickerOpen(false);
       }
     },
-    [lesson.id, onUpdate, calendarDay, calendarMonth, calendarYear, token],
-  )
+    [lesson.id, onUpdate, calendarDay, calendarMonth, calendarYear],
+  );
 
-  // Обработчик смены студента
+  const handlePriceChange = (value: string) => {
+    // Allow only numbers and decimal point
+    const cleanPrice = value.replace(/[^\d.]/g, '');
+    setLocalPrice(cleanPrice);
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    timerRef.current = setTimeout(() => {
+      onUpdate(lesson.id, {
+        lessonsPrice: cleanPrice,
+        action: 'updatePrice'
+      });
+    }, 300);
+  };
+
   const handleStudentChange = (studentId: string) => {
     const student = studentSuggestions.find(s => s.id === studentId);
     if (student) {
       onUpdate(lesson.id, {
         studentId: student.id,
         studentName: student.nameStudent,
-        // Передаем только id и имя, цену не трогаем
-        action: 'updateStudent' // Добавляем тип действия
+        action: 'updateStudent'
       });
     }
   };
 
-  // Обработчик изменения цены
-  const handlePriceChange = (newPrice: string) => {
-    // Убираем все нечисловые символы, кроме точки
-    const cleanPrice = newPrice.replace(/[^\d.]/g, '');
+  const handleSubjectChange = (subject: string) => {
     onUpdate(lesson.id, {
-      lessonsPrice: cleanPrice,
-      action: 'updatePrice' // Добавляем тип действия
+      itemName: subject,
+      action: 'updateSubject'
     });
   };
 
-  // Обработчик изменения предмета
-  const handleSubjectChange = (newSubject: string) => {
-    onUpdate(lesson.id, {
-      itemName: newSubject,
-      action: 'updateSubject' // Добавляем тип действия
-    });
-  };
-
-  // Обработчик изменения статуса выполнения
   const handleCompletionChange = () => {
     if (!lesson.isAutoChecked) {
       onUpdate(lesson.id, {
         isChecked: !lesson.isCompleted,
-        action: 'updateCompletion' // Добавляем тип действия
+        action: 'updateCompletion'
       });
     }
   };
@@ -227,7 +242,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
           {isEditing ? (
             <Select
               value={lesson.type}
-              onValueChange={(value) => onUpdate(lesson.id, { type: value })}>
+              onValueChange={(value) => onUpdate(lesson.id, { type: value, action: 'updateType' })}>
               <SelectTrigger className="w-[40px] h-[40px]">
                 <img
                   src={getIconForType(lesson.type)}
@@ -299,19 +314,19 @@ const LessonRow: React.FC<LessonRowProps> = ({
         <div className="border-r h-full flex items-center px-3">
           {isEditing ? (
             <Select
-               value={lesson.studentId || ''} // Используем id вместо имени
-               onValueChange={handleStudentChange}>
-               <SelectTrigger>
-                 <SelectValue>{lesson.studentName}</SelectValue>
-               </SelectTrigger>
-               <SelectContent>
-                 {studentSuggestions.map((student) => (
-                   <SelectItem key={student.id} value={student.id}>
-                     {student.nameStudent}
-                   </SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
+              value={lesson.studentId || ''}
+              onValueChange={handleStudentChange}>
+              <SelectTrigger>
+                <SelectValue>{lesson.studentName}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {studentSuggestions.map((student) => (
+                  <SelectItem key={student.id} value={student.id}>
+                    {student.nameStudent}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ) : (
             <div className="font-medium cursor-pointer truncate w-full text-base text-center">
               {lesson.studentName}
@@ -324,9 +339,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
           {isEditing ? (
             <Select
               value={lesson.subject}
-              onValueChange={(subject) =>
-                onUpdate(lesson.id, { itemName: subject })
-              }>
+              onValueChange={handleSubjectChange}>
               <SelectTrigger>
                 <SelectValue>{lesson.subject}</SelectValue>
               </SelectTrigger>
@@ -349,13 +362,12 @@ const LessonRow: React.FC<LessonRowProps> = ({
         <div className="border-r h-full flex items-center justify-center px-3">
           {isEditing ? (
             <Input
-              type="text" // Меняем на text для лучшего контроля ввода
-              value={lesson.price}
+              type="text"
+              value={localPrice}
               onChange={(e) => handlePriceChange(e.target.value)}
               onBlur={() => {
-                // При потере фокуса форматируем число
-                const formatted = parseFloat(lesson.price).toFixed(2);
-                if (!isNaN(formatted)) {
+                const formatted = parseFloat(localPrice).toFixed(2);
+                if (!isNaN(formatted as any)) {
                   handlePriceChange(formatted);
                 }
               }}
@@ -372,9 +384,9 @@ const LessonRow: React.FC<LessonRowProps> = ({
         {/* Checkbox */}
         <div className="border-r h-full bg-green-100 rounded-md flex items-center justify-center">
           <Checkbox
-            checked={lesson.isCompleted}
+            checked={!!lesson.isCompleted}
             onCheckedChange={handleCompletionChange}
-            disabled={lesson.isCancelled || lesson.isAutoChecked}
+            disabled={!!lesson.isCancelled || !!lesson.isAutoChecked}
             className="h-5 w-5"
           />
         </div>
@@ -419,8 +431,8 @@ const LessonRow: React.FC<LessonRowProps> = ({
         />
       )}
     </div>
-  )
-}
+  );
+};
 
 // Helper functions
 const formatTime = (time: { hour: number; minute: number }) => {

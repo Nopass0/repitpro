@@ -285,6 +285,7 @@ export async function updateStudentSchedule(
   socket: Socket,
 ): Promise<void> {
   try {
+    // Проверка токена
     const token_ = await db.token.findFirst({
       where: { token: data.token },
     });
@@ -293,12 +294,18 @@ export async function updateStudentSchedule(
       throw new Error("Invalid token");
     }
 
-    // Получаем текущее расписание
+    // Получаем текущее расписание со всеми связями
     const currentSchedule = await db.studentSchedule.findUnique({
       where: { id: data.id },
       include: {
         item: {
-          include: { group: true },
+          include: {
+            group: {
+              include: {
+                students: true,
+              },
+            },
+          },
         },
       },
     });
@@ -307,136 +314,142 @@ export async function updateStudentSchedule(
       throw new Error("Schedule not found");
     }
 
-    // Обновляем только конкретное занятие в зависимости от типа действия
+    // Базовый объект для обновления
     let updateData: any = {};
-    let needRecalculateHistory = false;
+    let needUpdateHistory = false;
 
+    // Обрабатываем разные типы действий
     switch (data.action) {
       case "updateStudent":
-        // При смене студента обновляем только связи
+        // При смене студента обновляем только связи для конкретного занятия
         updateData = {
           studentId: data.studentId,
           studentName: data.studentName,
         };
+        needUpdateHistory = true;
         break;
 
       case "updatePrice":
-        // При изменении цены обновляем цену и флаг для пересчета
-        updateData = {
-          lessonsPrice: Number(data.lessonsPrice),
-        };
-        needRecalculateHistory = true;
+        // При изменении цены только для конкретного занятия
+        const newPrice = parseFloat(data.lessonsPrice);
+        if (!isNaN(newPrice)) {
+          updateData = {
+            lessonsPrice: newPrice,
+          };
+          needUpdateHistory = true;
+        }
         break;
 
       case "updateSubject":
-        // При смене предмета обновляем только для текущего занятия
+        // При смене предмета обновляем только название для конкретного занятия
         updateData = {
           itemName: data.itemName,
         };
+        needUpdateHistory = true;
         break;
 
       case "updateCompletion":
         // При изменении статуса выполнения
         updateData = {
           isChecked: data.isChecked,
+          isAutoChecked: false,
         };
-        needRecalculateHistory = true;
+        needUpdateHistory = true;
+        break;
+
+      case "updateTime":
+        // При обновлении времени
+        updateData = {
+          startTime: data.startTime,
+          endTime: data.endTime,
+        };
+        break;
+
+      case "updateType":
+        // При смене типа занятия только для конкретного занятия
+        updateData = {
+          typeLesson: data.type,
+        };
         break;
     }
 
-    // Обновляем расписание
+    // Обновляем только конкретное занятие в расписании
     const updatedSchedule = await db.studentSchedule.update({
       where: { id: data.id },
       data: updateData,
     });
 
-    // Если нужно пересчитать историю
-    if (needRecalculateHistory && currentSchedule.item?.group) {
-      // Получаем всю группу с историей
-      const group = await db.group.findUnique({
-        where: { id: currentSchedule.item.group.id },
-        include: {
-          students: true,
-        },
-      });
+    // Если нужно обновить историю занятий
+    if (needUpdateHistory && currentSchedule.item?.group) {
+      const group = currentSchedule.item.group;
+      const lessonDate = new Date(
+        Number(currentSchedule.year),
+        Number(currentSchedule.month) - 1,
+        Number(currentSchedule.day),
+      );
 
-      if (group) {
-        // Получаем все предоплаты
-        const prepayments = group.students[0]?.prePay || [];
+      // Получаем текущую историю
+      let historyLessons = Array.isArray(group.historyLessons)
+        ? group.historyLessons
+        : [];
 
-        // Получаем все занятия из истории
-        let historyLessons = group.historyLessons || [];
-
-        // Обновляем конкретное занятие в истории
-        const lessonDate = new Date(
-          Number(currentSchedule.year),
-          Number(currentSchedule.month) - 1,
-          Number(currentSchedule.day),
-        );
-
-        historyLessons = historyLessons.map((lesson) => {
-          if (
-            new Date(lesson.date).getTime() === lessonDate.getTime() &&
-            lesson.itemName === currentSchedule.itemName
-          ) {
-            return {
-              ...lesson,
-              ...updateData,
-            };
-          }
-          return lesson;
-        });
-
-        // Пересчитываем статусы оплаты для всех занятий
-        let remainingPrePayment = 0;
-        const sortedPrepayments = prepayments.sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-        );
-
-        historyLessons = historyLessons.map((lesson) => {
-          const lessonDate = new Date(lesson.date);
-
-          // Добавляем все предоплаты до текущего занятия
-          while (
-            sortedPrepayments.length > 0 &&
-            new Date(sortedPrepayments[0].date) <= lessonDate
-          ) {
-            remainingPrePayment += Number(sortedPrepayments.shift().cost);
-          }
-
-          // Проверяем, можем ли оплатить занятие
-          if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
-            remainingPrePayment -= Number(lesson.price);
-            return { ...lesson, isPaid: true };
-          }
-          return { ...lesson, isPaid: false };
-        });
-
-        // Обновляем историю группы
-        await db.group.update({
-          where: { id: group.id },
-          data: { historyLessons },
-        });
-
-        // Отправляем обновленные данные в открытую карточку студента
-        if (currentSchedule.studentId) {
-          socket.emit("getGroupByStudentId", {
-            token: data.token,
-            studentId: currentSchedule.studentId,
-          });
+      // Обновляем только конкретную запись в истории
+      const updateHistoryEntry = (entry: any) => {
+        if (
+          compareOnlyDates(entry.date, lessonDate) &&
+          entry.itemName === currentSchedule.itemName
+        ) {
+          return {
+            ...entry,
+            price: updateData.lessonsPrice || entry.price,
+            itemName: updateData.itemName || entry.itemName,
+            studentId: updateData.studentId || entry.studentId,
+            studentName: updateData.studentName || entry.studentName,
+            isPaid:
+              updateData.isChecked !== undefined
+                ? updateData.isChecked
+                : entry.isPaid,
+          };
         }
+        return entry;
+      };
+
+      // Обрабатываем как обычный массив, так и массив массивов
+      if (Array.isArray(historyLessons[0])) {
+        historyLessons = historyLessons.map((subArray) =>
+          subArray.map(updateHistoryEntry),
+        );
+      } else {
+        historyLessons = historyLessons.map(updateHistoryEntry);
       }
+
+      // Обновляем историю в группе
+      await db.group.update({
+        where: { id: group.id },
+        data: { historyLessons },
+      });
     }
 
+    // Отправляем успешный результат
     socket.emit(`updateStudentSchedule_${data.id}`, {
       success: true,
       schedule: updatedSchedule,
     });
+
+    // Обновляем общий список если необходимо
+    if (data.action === "updateStudent" || data.action === "updateSubject") {
+      socket.emit("getStudentsByDate", {
+        day: currentSchedule.day,
+        month: currentSchedule.month,
+        year: currentSchedule.year,
+        token: data.token,
+      });
+    }
   } catch (error) {
     console.error("Error updating schedule:", error);
     socket.emit(`updateStudentSchedule_${data.id}`, {
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     });
   }
 }
