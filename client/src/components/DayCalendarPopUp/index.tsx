@@ -206,10 +206,20 @@ const LessonRow: React.FC<LessonRowProps> = ({
   };
 
   const handleCompletionChange = () => {
-    if (!lesson.isAutoChecked) {
+    if (!lesson.isAutoChecked && !lesson.isCancelled) {
       onUpdate(lesson.id, {
-        isChecked: !lesson.isCompleted,
+        isChecked: !Boolean(lesson.isPaid),
         action: 'updateCompletion'
+      });
+
+      socket.emit('updateStudentSchedule', {
+        id: lesson.id,
+        isChecked: !Boolean(lesson.isPaid),
+        action: 'updateCompletion',
+        token,
+        day: calendarDay,
+        month: calendarMonth,
+        year: calendarYear
       });
     }
   };
@@ -330,6 +340,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
           ) : (
             <div className="font-medium cursor-pointer truncate w-full text-base text-center">
               {lesson.studentName}
+
             </div>
           )}
         </div>
@@ -354,6 +365,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
           ) : (
             <div className="text-gray-600 truncate w-full text-base text-center">
               {lesson.subject}
+                { lesson.isPaid}
             </div>
           )}
         </div>
@@ -383,11 +395,15 @@ const LessonRow: React.FC<LessonRowProps> = ({
 
         {/* Checkbox */}
         <div className="border-r h-full bg-green-100 rounded-md flex items-center justify-center">
-          <Checkbox
-            checked={!!lesson.isCompleted}
-            onCheckedChange={handleCompletionChange}
-            disabled={!!lesson.isCancelled || !!lesson.isAutoChecked}
-            className="h-5 w-5"
+          <input
+          type="checkbox"
+            checked={Boolean(lesson.isPaid)}
+            onClick={handleCompletionChange}
+            disabled={lesson.isAutoChecked || lesson.isCancelled}
+            className={cn(
+              "h-5 w-5",
+              lesson.isAutoChecked && "opacity-50 cursor-not-allowed"
+            )}
           />
         </div>
 

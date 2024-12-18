@@ -71,7 +71,7 @@ const PrepaymentComponent = ({student, currentDate}) => {
 			</p>
 			<div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
 				<CheckBox checked={todayLesson?.isPaid || false} size="16px" />
-				<p>Баланс, остаток {remainingPrePay.toFixed(0)} ₽</p>
+				<p>Баланс</p>
 			</div>
 		</div>
 	)

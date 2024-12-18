@@ -4,6 +4,19 @@ import { z } from "zod";
 import { Socket } from "socket.io";
 import { Prisma, StudentSchedule } from "@prisma/client";
 
+// Base schema definitions
+const TimeSchema = z.object({
+  hour: z.number().min(0).max(23),
+  minute: z.number().min(0).max(59),
+});
+
+const StudentPointSchema = z.object({
+  studentId: z.string(),
+  studentName: z.string().optional(),
+  points: z.number().min(0).max(5),
+});
+
+// Schema for creating a new student schedule
 export const createStudentScheduleSchema = z.object({
   token: z.string(),
   day: z.string(),
@@ -16,22 +29,7 @@ export const createStudentScheduleSchema = z.object({
   copyBy: z.string(),
 });
 
-export type CreateStudentScheduleSchemaType = z.infer<
-  typeof createStudentScheduleSchema
->;
-
-// Schema definitions
-const TimeSchema = z.object({
-  hour: z.number().min(0).max(23),
-  minute: z.number().min(0).max(59),
-});
-
-const StudentPointSchema = z.object({
-  studentId: z.string(),
-  studentName: z.string().optional(),
-  points: z.number().min(0).max(5),
-});
-
+// Schema for updating student schedule
 const UpdateStudentScheduleSchema = z.object({
   id: z.string(),
   day: z.string(),
@@ -59,10 +57,64 @@ const UpdateStudentScheduleSchema = z.object({
 
 type StudentScheduleUpdateInput = Prisma.StudentScheduleUpdateInput;
 type UpdateStudentScheduleInput = z.infer<typeof UpdateStudentScheduleSchema>;
+export type CreateStudentScheduleSchemaType = z.infer<
+  typeof createStudentScheduleSchema
+>;
 
+// Helper function to compare dates
+function compareOnlyDates(date1: string | Date, date2: string | Date): boolean {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+}
+
+// Helper function to handle file uploads
+async function handleFileUploads(
+  files: any[],
+  userId: string,
+  type: string,
+): Promise<string[]> {
+  if (!files?.length) return [];
+  return await upload(files, userId, type);
+}
+
+// Helper function to ensure valid time object
+function ensureValidTimeObject(timeObj: any): { hour: number; minute: number } {
+  if (!timeObj || typeof timeObj !== "object") {
+    return { hour: 0, minute: 0 };
+  }
+
+  const hour =
+    typeof timeObj.hour === "number"
+      ? Math.min(Math.max(0, timeObj.hour), 23)
+      : 0;
+  const minute =
+    typeof timeObj.minute === "number"
+      ? Math.min(Math.max(0, timeObj.minute), 59)
+      : 0;
+
+  return { hour, minute };
+}
+
+// Helper function to get files for schedule
+async function getFilesForSchedule(fileIds: string[], extraType: string) {
+  if (!fileIds?.length) return [];
+  return await db.file.findMany({
+    where: {
+      id: { in: fileIds },
+      extraType,
+    },
+  });
+}
+
+// Main function to create student schedule
 export async function createStudentSchedule(
   data: CreateStudentScheduleSchemaType,
-  socket: any,
+  socket: Socket,
 ) {
   const {
     token,
@@ -77,7 +129,7 @@ export async function createStudentSchedule(
   } = data;
 
   try {
-    // Verify token and get userId
+    // Verify token
     const token_ = await db.token.findFirst({
       where: { token },
     });
@@ -89,9 +141,10 @@ export async function createStudentSchedule(
       });
       return;
     }
+
     const userId = token_.userId;
 
-    // Get the original schedule to copy from
+    // Get original schedule
     const originalSchedule = await db.studentSchedule.findFirst({
       where: {
         id: copyBy,
@@ -114,7 +167,7 @@ export async function createStudentSchedule(
       return;
     }
 
-    // Create new schedule with copied data
+    // Create new schedule
     const studentSchedule = await db.studentSchedule.create({
       data: {
         day,
@@ -134,50 +187,11 @@ export async function createStudentSchedule(
         isChecked: false,
         isCancel: false,
         isTrial: originalSchedule.isTrial,
+        isPaid: false,
       },
     });
 
-    // Update history lessons in the group
-    if (originalSchedule.item?.group) {
-      const group = originalSchedule.item.group;
-      const lessonDate = new Date(Number(year), Number(month) - 1, Number(day));
-
-      let updatedHistoryLessons = group.historyLessons;
-      const newHistoryEntry = {
-        date: lessonDate,
-        price: Number(lessonsPrice),
-        itemName,
-        isPaid: false,
-        studentId,
-        studentName,
-      };
-
-      // Handle both array formats (nested arrays for groups, flat array for individual students)
-      if (Array.isArray(group.historyLessons[0])) {
-        // Group format - find appropriate subarray or create new one
-        const studentArrayIndex = updatedHistoryLessons.findIndex(
-          (arr: any[]) =>
-            arr.some((lesson: any) => lesson.studentId === studentId),
-        );
-
-        if (studentArrayIndex !== -1) {
-          updatedHistoryLessons[studentArrayIndex].push(newHistoryEntry);
-        } else {
-          updatedHistoryLessons.push([newHistoryEntry]);
-        }
-      } else {
-        // Individual student format
-        updatedHistoryLessons.push(newHistoryEntry);
-      }
-
-      // Update group with new history
-      await db.group.update({
-        where: { id: group.id },
-        data: { historyLessons: updatedHistoryLessons },
-      });
-    }
-
-    // Send success response with required data
+    // Send success response
     socket.emit("createStudentSchedule", {
       message: "student schedule created successfully",
       created: studentSchedule.id,
@@ -197,318 +211,7 @@ export async function createStudentSchedule(
   }
 }
 
-// Helper functions
-function compareOnlyDates(date1: string | Date, date2: string | Date): boolean {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-}
-
-async function handleFileUploads(
-  files: any[],
-  userId: string,
-  type: string,
-): Promise<string[]> {
-  if (!files?.length) return [];
-  return await upload(files, userId, type);
-}
-
-async function updateHistoryInGroup(
-  group: any,
-  data: UpdateStudentScheduleInput,
-  updateDate: Date,
-) {
-  if (!Array.isArray(group.historyLessons)) return group.historyLessons;
-
-  // Обработка массива или массива массивов
-  const processLessons = (lesson: any) => {
-    const shouldUpdate =
-      compareOnlyDates(lesson.date, updateDate) &&
-      (data.studentId ? lesson.studentId === data.studentId : true);
-
-    if (!shouldUpdate) return lesson;
-
-    const updates: any = { ...lesson };
-
-    if (data.lessonsPrice !== undefined) {
-      updates.price = Number(data.lessonsPrice);
-    }
-    if (data.itemName !== undefined) {
-      updates.itemName = data.itemName;
-    }
-    if (data.isChecked !== undefined) {
-      updates.isPaid = data.isChecked;
-    }
-
-    return updates;
-  };
-
-  if (Array.isArray(group.historyLessons[0])) {
-    return group.historyLessons.map((subArray) => subArray.map(processLessons));
-  }
-
-  return group.historyLessons.map(processLessons);
-}
-
-async function createTimeLineArray(data: UpdateStudentScheduleInput) {
-  const dayOfWeekIndex = new Date(
-    Number(data.year),
-    Number(data.month) - 1,
-    Number(data.day),
-  ).getDay();
-
-  const dayNames = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-
-  return dayNames.map((dayName, index) => ({
-    id: index + 1,
-    day: dayName,
-    active: false,
-    endTime:
-      index === dayOfWeekIndex && data.endTime
-        ? data.endTime
-        : { hour: 0, minute: 0 },
-    startTime:
-      index === dayOfWeekIndex && data.startTime
-        ? data.startTime
-        : { hour: 0, minute: 0 },
-    editingEnd: false,
-    editingStart: false,
-  }));
-}
-
-export async function updateStudentSchedule(
-  data: any,
-  socket: Socket,
-): Promise<void> {
-  try {
-    // Проверка токена
-    const token_ = await db.token.findFirst({
-      where: { token: data.token },
-    });
-
-    if (!token_?.userId) {
-      throw new Error("Invalid token");
-    }
-
-    // Получаем текущее расписание со всеми связями
-    const currentSchedule = await db.studentSchedule.findUnique({
-      where: { id: data.id },
-      include: {
-        item: {
-          include: {
-            group: {
-              include: {
-                students: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!currentSchedule) {
-      throw new Error("Schedule not found");
-    }
-
-    // Базовый объект для обновления
-    let updateData: any = {};
-    let needUpdateHistory = false;
-
-    // Обрабатываем разные типы действий
-    switch (data.action) {
-      case "updateStudent":
-        // При смене студента обновляем только связи для конкретного занятия
-        updateData = {
-          studentId: data.studentId,
-          studentName: data.studentName,
-        };
-        needUpdateHistory = true;
-        break;
-
-      case "updatePrice":
-        // При изменении цены только для конкретного занятия
-        const newPrice = parseFloat(data.lessonsPrice);
-        if (!isNaN(newPrice)) {
-          updateData = {
-            lessonsPrice: newPrice,
-          };
-          needUpdateHistory = true;
-        }
-        break;
-
-      case "updateSubject":
-        // При смене предмета обновляем только название для конкретного занятия
-        updateData = {
-          itemName: data.itemName,
-        };
-        needUpdateHistory = true;
-        break;
-
-      case "updateCompletion":
-        // При изменении статуса выполнения
-        updateData = {
-          isChecked: data.isChecked,
-          isAutoChecked: false,
-        };
-        needUpdateHistory = true;
-        break;
-
-      case "updateTime":
-        // При обновлении времени
-        updateData = {
-          startTime: data.startTime,
-          endTime: data.endTime,
-        };
-        break;
-
-      case "updateType":
-        // При смене типа занятия только для конкретного занятия
-        updateData = {
-          typeLesson: data.type,
-        };
-        break;
-    }
-
-    // Обновляем только конкретное занятие в расписании
-    const updatedSchedule = await db.studentSchedule.update({
-      where: { id: data.id },
-      data: updateData,
-    });
-
-    // Если нужно обновить историю занятий
-    if (needUpdateHistory && currentSchedule.item?.group) {
-      const group = currentSchedule.item.group;
-      const lessonDate = new Date(
-        Number(currentSchedule.year),
-        Number(currentSchedule.month) - 1,
-        Number(currentSchedule.day),
-      );
-
-      // Получаем текущую историю
-      let historyLessons = Array.isArray(group.historyLessons)
-        ? group.historyLessons
-        : [];
-
-      // Обновляем только конкретную запись в истории
-      const updateHistoryEntry = (entry: any) => {
-        if (
-          compareOnlyDates(entry.date, lessonDate) &&
-          entry.itemName === currentSchedule.itemName
-        ) {
-          return {
-            ...entry,
-            price: updateData.lessonsPrice || entry.price,
-            itemName: updateData.itemName || entry.itemName,
-            studentId: updateData.studentId || entry.studentId,
-            studentName: updateData.studentName || entry.studentName,
-            isPaid:
-              updateData.isChecked !== undefined
-                ? updateData.isChecked
-                : entry.isPaid,
-          };
-        }
-        return entry;
-      };
-
-      // Обрабатываем как обычный массив, так и массив массивов
-      if (Array.isArray(historyLessons[0])) {
-        historyLessons = historyLessons.map((subArray) =>
-          subArray.map(updateHistoryEntry),
-        );
-      } else {
-        historyLessons = historyLessons.map(updateHistoryEntry);
-      }
-
-      // Обновляем историю в группе
-      await db.group.update({
-        where: { id: group.id },
-        data: { historyLessons },
-      });
-    }
-
-    // Отправляем успешный результат
-    socket.emit(`updateStudentSchedule_${data.id}`, {
-      success: true,
-      schedule: updatedSchedule,
-    });
-
-    // Обновляем общий список если необходимо
-    if (data.action === "updateStudent" || data.action === "updateSubject") {
-      socket.emit("getStudentsByDate", {
-        day: currentSchedule.day,
-        month: currentSchedule.month,
-        year: currentSchedule.year,
-        token: data.token,
-      });
-    }
-  } catch (error) {
-    console.error("Error updating schedule:", error);
-    socket.emit(`updateStudentSchedule_${data.id}`, {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    });
-  }
-}
-
-async function getFilesForSchedule(fileIds: string[], extraType: string) {
-  if (!fileIds?.length) return [];
-  return await db.file.findMany({
-    where: {
-      id: { in: fileIds },
-      extraType,
-    },
-  });
-}
-
-function getIsPaidStatusForDate(
-  historyLessons: any[] | any[][],
-  targetDate: Date,
-  studentId?: string,
-  itemName?: string,
-): boolean {
-  if (!Array.isArray(historyLessons)) return false;
-
-  const matchLesson = (lesson: any): boolean => {
-    const dateMatches = compareOnlyDates(lesson.date, targetDate);
-    if (!dateMatches) return false;
-
-    if (itemName && lesson.itemName !== itemName) return false;
-    if (studentId && lesson.studentId !== studentId) return false;
-
-    return lesson.isPaid;
-  };
-
-  // Для групп
-  if (Array.isArray(historyLessons[0])) {
-    return historyLessons.some((subArray) => subArray.some(matchLesson));
-  }
-
-  // Для индивидуальных занятий
-  return historyLessons.some(matchLesson);
-}
-
-// Функция для валидации объекта времени
-function ensureValidTimeObject(timeObj: any): { hour: number; minute: number } {
-  if (!timeObj || typeof timeObj !== "object") {
-    return { hour: 0, minute: 0 };
-  }
-
-  const hour =
-    typeof timeObj.hour === "number"
-      ? Math.min(Math.max(0, timeObj.hour), 23)
-      : 0;
-  const minute =
-    typeof timeObj.minute === "number"
-      ? Math.min(Math.max(0, timeObj.minute), 59)
-      : 0;
-
-  return { hour, minute };
-}
-
+// Function to process schedule for group
 async function processScheduleForGroup(
   schedule: any,
   dayOfWeekIndex: number,
@@ -518,12 +221,12 @@ async function processScheduleForGroup(
   const timeLinesArray = Array.isArray(schedule.timeLinesArray)
     ? schedule.timeLinesArray
     : [];
-  const daySchedule = timeLinesArray[dayOfWeekIndex] || {};
 
-  // Берем время напрямую из полей startTime и endTime
+  // Get time values
   const startTime = ensureValidTimeObject(schedule.startTime);
   const endTime = ensureValidTimeObject(schedule.endTime);
 
+  // Get files
   const [homeFiles, classFiles, homeAudios, classAudios] = await Promise.all([
     getFilesForSchedule(schedule.homeFiles || [], "home"),
     getFilesForSchedule(schedule.classFiles || [], "class"),
@@ -565,25 +268,31 @@ async function processScheduleForGroup(
     }));
   }
 
-  // Get payment status for students
-  const studentsWithPaymentStatus = students.map((student) => {
-    const isPaid = getIsPaidStatusForDate(
-      realGroup.historyLessons || [],
-      currentDate,
-      student.id,
-      schedule.itemName,
-    );
+  // Get students with payment status
+  const studentsWithPaymentStatus = await Promise.all(
+    students.map(async (student) => {
+      // Get individual student schedule
+      const studentSchedule = await db.studentSchedule.findFirst({
+        where: {
+          groupId: realGroup.id,
+          studentId: student.id,
+          day: currentDate.getDate().toString(),
+          month: (currentDate.getMonth() + 1).toString(),
+          year: currentDate.getFullYear().toString(),
+        },
+      });
 
-    return {
-      id: student.id,
-      nameStudent: student.nameStudent || "",
-      costOneLesson: student.costOneLesson || "0",
-      prePay: Array.isArray(student.prePay) ? student.prePay : [],
-      targetLessonStudent: student.targetLessonStudent || "",
-      todayProgramStudent: student.todayProgramStudent || "",
-      isPaid,
-    };
-  });
+      return {
+        id: student.id,
+        nameStudent: student.nameStudent || "",
+        costOneLesson: student.costOneLesson || "0",
+        prePay: Array.isArray(student.prePay) ? student.prePay : [],
+        targetLessonStudent: student.targetLessonStudent || "",
+        todayProgramStudent: student.todayProgramStudent || "",
+        isPaid: studentSchedule?.isPaid || false,
+      };
+    }),
+  );
 
   return {
     id: schedule.id || "",
@@ -601,6 +310,7 @@ async function processScheduleForGroup(
     isCancel: Boolean(schedule.isCancel),
     classWork: schedule.classWork || "",
     isCheck: Boolean(schedule.isChecked),
+    isPaid: Boolean(schedule.isPaid),
     tryLessonCheck: Boolean(item.tryLessonCheck),
     startTime,
     endTime,
@@ -615,6 +325,7 @@ async function processScheduleForGroup(
   };
 }
 
+// Function to process schedule for individual student
 async function processScheduleForIndividual(
   schedule: any,
   dayOfWeekIndex: number,
@@ -625,9 +336,7 @@ async function processScheduleForIndividual(
   const timeLinesArray = Array.isArray(schedule.timeLinesArray)
     ? schedule.timeLinesArray
     : [];
-  const daySchedule = timeLinesArray[dayOfWeekIndex] || {};
 
-  // Берем время напрямую из полей startTime и endTime
   const startTime = ensureValidTimeObject(schedule.startTime);
   const endTime = ensureValidTimeObject(schedule.endTime);
 
@@ -638,12 +347,6 @@ async function processScheduleForIndividual(
     getFilesForSchedule(schedule.classAudios || [], "class/audio"),
   ]);
 
-  const history = await db.group.findMany({
-    where: { id: item.group?.id },
-    select: { historyLessons: true },
-  });
-
-  // Initialize points arrays with proper structure
   let homeStudentsPoints = [];
   let classStudentsPoints = [];
 
@@ -673,17 +376,6 @@ async function processScheduleForIndividual(
     }
   }
 
-  const isPaid = history?.[0]
-    ? getIsPaidStatusForDate(
-        history[0].historyLessons || [],
-        currentDate,
-        undefined,
-        schedule.itemName,
-      )
-    : false;
-
-  console.log("StartTime/EndTime/Schedule", startTime, endTime, schedule);
-
   return {
     id: schedule.id || "",
     nameStudent: student
@@ -705,7 +397,6 @@ async function processScheduleForIndividual(
     lessonCount: schedule.lessonsCount || 0,
     isTrial: Boolean(schedule.isTrial),
     isAutoChecked: schedule.isAutoChecked || false,
-
     classWork: schedule.classWork || "",
     homeStudentsPoints,
     classStudentsPoints,
@@ -714,16 +405,16 @@ async function processScheduleForIndividual(
     tryLessonCheck: Boolean(item.tryLessonCheck),
     tryLessonCost: item.tryLessonCost || "0",
     prePay: Array.isArray(student?.prePay) ? student.prePay : [],
-    history: history || null,
     startTime,
     endTime,
     groupName: item.group?.groupName || "",
     groupId: schedule.groupId || "",
     type: "student",
-    isPaid,
+    isPaid: Boolean(schedule.isPaid),
   };
 }
 
+// Function to get students by date
 export async function getStudentsByDate(
   data: any,
   socket: Socket,
@@ -731,7 +422,6 @@ export async function getStudentsByDate(
   try {
     const { day, month, year, token } = data;
 
-    // Проверяем токен
     const token_ = await db.token.findFirst({ where: { token } });
     if (!token_?.userId) {
       socket.emit("getStudentsByDate", { error: "Invalid token" });
@@ -762,7 +452,6 @@ export async function getStudentsByDate(
       },
     });
 
-    // Обработка данных
     const processedData = await Promise.all(
       studentSchedules.map(async (schedule) => {
         if (schedule.item?.group?.students?.length > 1) {
@@ -777,7 +466,7 @@ export async function getStudentsByDate(
       }),
     );
 
-    // Отправляем обработанные данные
+    // Send processed data
     socket.emit("getStudentsByDate", processedData);
   } catch (error) {
     console.error("Error in getStudentsByDate:", error);
@@ -785,6 +474,150 @@ export async function getStudentsByDate(
   }
 }
 
+// Function to update student schedule
+export async function updateStudentSchedule(
+  data: any,
+  socket: Socket,
+): Promise<void> {
+  try {
+    const token_ = await db.token.findFirst({
+      where: { token: data.token },
+    });
+
+    if (!token_?.userId) {
+      throw new Error("Invalid token");
+    }
+
+    // Get current schedule with all relations
+    const currentSchedule = await db.studentSchedule.findUnique({
+      where: { id: data.id },
+      include: {
+        item: {
+          include: {
+            group: true,
+          },
+        },
+      },
+    });
+
+    if (!currentSchedule) {
+      throw new Error("Schedule not found");
+    }
+
+    let updateData: Prisma.StudentScheduleUpdateInput = {};
+
+    switch (data.action) {
+      case "updateCompletion":
+        updateData = {
+          isChecked: data.isChecked,
+          isPaid: data.isChecked,
+          isAutoChecked: false,
+        };
+        break;
+
+      case "updateStudent":
+        updateData = {
+          studentId: data.studentId,
+          studentName: data.studentName,
+        };
+        break;
+
+      case "updatePrice":
+        updateData = {
+          lessonsPrice: parseFloat(data.lessonsPrice),
+        };
+        break;
+
+      case "updateSubject":
+        updateData = {
+          itemName: data.itemName,
+        };
+        break;
+
+      case "updateTime":
+        updateData = {
+          startTime: data.startTime,
+          endTime: data.endTime,
+        };
+        break;
+    }
+
+    // Update the schedule
+    const updatedSchedule = await db.studentSchedule.update({
+      where: { id: data.id },
+      data: updateData,
+    });
+
+    socket.emit(`updateStudentSchedule_${data.id}`, {
+      success: true,
+      schedule: updatedSchedule,
+    });
+  } catch (error) {
+    console.error("Error updating schedule:", error);
+    socket.emit(`updateStudentSchedule_${data.id}`, {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+}
+
+// Function to update lesson payment status
+export async function updateLessonPaymentStatus(
+  data: { id: string; token: string; isPaid: boolean },
+  socket: Socket,
+): Promise<void> {
+  try {
+    const token_ = await db.token.findFirst({
+      where: { token: data.token },
+    });
+
+    if (!token_?.userId) {
+      socket.emit("updateLessonPaymentStatus", { error: "Invalid token" });
+      return;
+    }
+
+    const lesson = await db.studentSchedule.findFirst({
+      where: {
+        id: data.id,
+        userId: token_.userId,
+      },
+      include: {
+        item: {
+          include: {
+            group: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson) {
+      socket.emit("updateLessonPaymentStatus", { error: "Lesson not found" });
+      return;
+    }
+
+    // Update payment status
+    await db.studentSchedule.update({
+      where: { id: data.id },
+      data: {
+        isChecked: data.isPaid,
+        isPaid: data.isPaid,
+      },
+    });
+
+    socket.emit("updateLessonPaymentStatus", {
+      success: true,
+      lessonId: data.id,
+      isPaid: data.isPaid,
+    });
+  } catch (error) {
+    console.error("Error in updateLessonPaymentStatus:", error);
+    socket.emit("updateLessonPaymentStatus", {
+      error: error instanceof Error ? error.message : "Unknown error occurred",
+    });
+  }
+}
+
+// Function to get schedule suggestions
 export async function getScheduleSuggestions(
   data: { token: string },
   socket: Socket,
@@ -862,6 +695,7 @@ export async function getScheduleSuggestions(
   }
 }
 
+// Function to cancel lesson
 export async function cancelLesson(
   data: { id: string; token: string },
   socket: Socket,
@@ -886,44 +720,6 @@ export async function cancelLesson(
       },
     });
 
-    if (lesson.groupId) {
-      // Update group history
-      const group = await db.group.findUnique({
-        where: { id: lesson.groupId },
-      });
-
-      if (group && group.historyLessons) {
-        const historyLessons = Array.isArray(group.historyLessons)
-          ? group.historyLessons
-          : [];
-        const lessonDate = new Date(
-          Number(lesson.year),
-          Number(lesson.month) - 1,
-          Number(lesson.day),
-        );
-
-        const updatedHistory = historyLessons.map((lessonHistory) => {
-          if (Array.isArray(lessonHistory)) {
-            return lessonHistory.map((entry) => {
-              if (compareOnlyDates(entry.date, lessonDate)) {
-                return { ...entry, isCancel: true };
-              }
-              return entry;
-            });
-          }
-          if (compareOnlyDates(lessonHistory.date, lessonDate)) {
-            return { ...lessonHistory, isCancel: true };
-          }
-          return lessonHistory;
-        });
-
-        await db.group.update({
-          where: { id: group.id },
-          data: { historyLessons: updatedHistory },
-        });
-      }
-    }
-
     socket.emit("cancelLesson", { success: true, lessonId: data.id });
   } catch (error) {
     console.error("Error in cancelLesson:", error);
@@ -933,77 +729,7 @@ export async function cancelLesson(
   }
 }
 
-export async function updateLessonPaymentStatus(
-  data: { id: string; token: string; isPaid: boolean },
-  socket: Socket,
-): Promise<void> {
-  try {
-    const token_ = await db.token.findFirst({
-      where: { token: data.token },
-    });
-
-    if (!token_?.userId) {
-      socket.emit("updateLessonPaymentStatus", { error: "Invalid token" });
-      return;
-    }
-
-    const lesson = await db.studentSchedule.findFirst({
-      where: {
-        id: data.id,
-        userId: token_.userId,
-      },
-      include: {
-        item: {
-          include: {
-            group: true,
-          },
-        },
-      },
-    });
-
-    if (!lesson) {
-      socket.emit("updateLessonPaymentStatus", { error: "Lesson not found" });
-      return;
-    }
-
-    // Update the lesson payment status
-    await db.studentSchedule.update({
-      where: { id: data.id },
-      data: { isChecked: data.isPaid },
-    });
-
-    // Update history lessons if group exists
-    if (lesson.item?.group) {
-      const lessonDate = new Date(
-        Number(lesson.year),
-        Number(lesson.month) - 1,
-        Number(lesson.day),
-      );
-      const updatedHistory = await updateHistoryInGroup(
-        lesson.item.group,
-        { id: data.id, isChecked: data.isPaid, token: data.token },
-        lessonDate,
-      );
-
-      await db.group.update({
-        where: { id: lesson.item.group.id },
-        data: { historyLessons: updatedHistory },
-      });
-    }
-
-    socket.emit("updateLessonPaymentStatus", {
-      success: true,
-      lessonId: data.id,
-      isPaid: data.isPaid,
-    });
-  } catch (error) {
-    console.error("Error in updateLessonPaymentStatus:", error);
-    socket.emit("updateLessonPaymentStatus", {
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-    });
-  }
-}
-
+// Function to get all student schedules
 export async function getAllStudentSchedules(
   data: { studentId: string; token: string },
   socket: Socket,
@@ -1023,7 +749,6 @@ export async function getAllStudentSchedules(
         userId: token_.userId,
       },
       orderBy: [{ year: "desc" }, { month: "desc" }, { day: "desc" }],
-      // Добавляем включение связанных данных, если они нужны
       include: {
         item: true,
       },
@@ -1036,7 +761,7 @@ export async function getAllStudentSchedules(
   }
 }
 
-// Эндпоинт для получения списка студентов
+// Function to get student suggestions
 export async function getStudentSuggestions(
   data: { token: string },
   socket: Socket,
@@ -1051,7 +776,6 @@ export async function getStudentSuggestions(
       return;
     }
 
-    // Получаем всех активных студентов
     const students = await db.student.findMany({
       where: {
         userId: token_.userId,
@@ -1073,7 +797,7 @@ export async function getStudentSuggestions(
   }
 }
 
-// Эндпоинт для получения списка предметов
+// Function to get subject suggestions
 export async function getSubjectSuggestions(
   data: { token: string },
   socket: Socket,
@@ -1088,7 +812,7 @@ export async function getSubjectSuggestions(
       return;
     }
 
-    // Получаем все уникальные предметы из расписаний
+    // Get unique subjects from schedules
     const schedules = await db.studentSchedule.findMany({
       where: {
         userId: token_.userId,
@@ -1099,7 +823,7 @@ export async function getSubjectSuggestions(
       distinct: ["itemName"],
     });
 
-    // Получаем все уникальные предметы из items
+    // Get unique subjects from items
     const items = await db.item.findMany({
       where: {
         userId: token_.userId,
@@ -1111,7 +835,7 @@ export async function getSubjectSuggestions(
       distinct: ["itemName"],
     });
 
-    // Объединяем и удаляем дубликаты
+    // Combine and remove duplicates
     const subjects = Array.from(
       new Set([
         ...schedules.map((s) => s.itemName),

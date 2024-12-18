@@ -465,18 +465,46 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	//change item function by name of value
+	// AddStudent/index.tsx
+	const [editedItems, setEditedItems] = useState<Set<string>>(new Set())
+
+	// Модифицируем функцию changeItemValue
 	const changeItemValue = (
 		itemIndex: number,
 		name: string,
 		value: string | boolean | number | Date | null,
 	) => {
-		setItems((items: IItemCard[]) =>
-			items.map((item, index) =>
+		setItems((prevItems: IItemCard[]) => {
+			const newItems = prevItems.map((item, index) =>
 				index === itemIndex ? {...item, [name]: value} : item,
-			),
-		)
+			)
+
+			// Добавляем измененный предмет в список
+			if (isEditMode) {
+				setEditedItems((prev) =>
+					new Set(prev).add(newItems[itemIndex].itemName),
+				)
+			}
+
+			return newItems
+		})
 	}
+
+	// Добавляем эффект для обработки изменений
+	useEffect(() => {
+		if (isEditMode && editedItems.size > 0) {
+			editedItems.forEach((itemName) => {
+				updateHistoryWithChanges(items, itemName)
+			})
+		}
+	}, [items, isEditMode, editedItems])
+
+	// При выходе из режима редактирования очищаем список измененных предметов
+	useEffect(() => {
+		if (!isEditMode) {
+			setEditedItems(new Set())
+		}
+	}, [isEditMode])
 
 	// const sendData = () => {
 	// 	setLoading(true)
@@ -1279,6 +1307,7 @@ const AddStudent = ({}: IAddStudent) => {
 		editPrePay,
 		updateCombinedHistory,
 		putCombinedHistory,
+		updateHistoryWithChanges,
 	} = useHistory(
 		useMemo(() => [], []),
 		useMemo(() => [], []),
@@ -1582,71 +1611,17 @@ const AddStudent = ({}: IAddStudent) => {
 		return lessons.sort((a, b) => a.date.getTime() - b.date.getTime())
 	}
 
+	// В компоненте AddStudent
 	useEffect(() => {
-		// Skip if in edit mode or no items
 		if (!isEditMode && items.length > 0) {
-			// Validate items have required data
-			const hasValidItems = items.some((item) => {
-				// Check basic item data
-				const hasBasicData = Boolean(item.itemName && item.costOneLesson)
-
-				// Check if any timeline has valid time slots
-				const hasValidTimeSlots = item.timeLinesArray?.some((timeline) => {
-					// Check start time
-					const hasValidStartTime = Boolean(
-						(timeline.startTime?.hour && timeline.startTime.hour !== 0) ||
-							(timeline.startTime?.minute && timeline.startTime.minute !== 0),
-					)
-
-					// Check end time
-					const hasValidEndTime = Boolean(
-						(timeline.endTime?.hour && timeline.endTime.hour !== 0) ||
-							(timeline.endTime?.minute && timeline.endTime.minute !== 0),
-					)
-
-					// Check timeRanges if they exist
-					const hasValidTimeRanges = timeline.timeRanges?.some((range) => {
-						const validStart =
-							range.startTime.hour !== 0 || range.startTime.minute !== 0
-						const validEnd =
-							range.endTime.hour !== 0 || range.endTime.minute !== 0
-						return validStart && validEnd
-					})
-
-					return (hasValidStartTime && hasValidEndTime) || hasValidTimeRanges
-				})
-
-				return hasBasicData && hasValidTimeSlots
-			})
-
-			if (hasValidItems) {
-				try {
-					// Generate initial history lessons
-					const initialLessons = generateInitialLessons(items)
-
-					// Update history using the hook's function
-					updateHistory(
-						items.map((item) => ({
-							...item,
-							startLesson: new Date(item.startLesson),
-							endLesson: new Date(item.endLesson),
-							timeLinesArray: item.timeLinesArray.map((timeline) => ({
-								...timeline,
-								timeRanges: timeline.timeRanges || [
-									{
-										startTime: timeline.startTime,
-										endTime: timeline.endTime,
-									},
-								],
-							})),
-						})),
-					)
-				} catch (error) {
-					console.error('Error updating history:', error)
+			// Для новой карточки обновляем историю для всех предметов
+			items.forEach((item) => {
+				if (item.itemName && item.costOneLesson) {
+					updateHistory(items, item.itemName)
 				}
-			}
+			})
 		}
-	}, [items, isEditMode, updateHistory])
+	}, [isEditMode, items, updateHistory])
 
 	useEffect(() => {
 		if (data) {
