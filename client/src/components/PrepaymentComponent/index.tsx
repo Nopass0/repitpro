@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react'
+import React, {useEffect, useMemo} from 'react'
 import CheckBox from '../CheckBox'
 import s from './index.module.scss'
 
@@ -53,6 +53,10 @@ const PrepaymentComponent = ({student, currentDate}) => {
 		[student, currentDate],
 	)
 
+	useEffect(() => {
+		alert(JSON.stringify(student, null, 2))
+	}, [lastPrePay])
+
 	const todayLesson = sortedHistory.find(
 		(lesson) =>
 			new Date(lesson.date).toDateString() === currentDate.toDateString(),
@@ -70,8 +74,8 @@ const PrepaymentComponent = ({student, currentDate}) => {
 				{student && `${student.costOneLesson}₽`}
 			</p>
 			<div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-				<CheckBox checked={todayLesson?.isPaid || false} size="16px" />
-				<p>Баланс</p>
+				<CheckBox checked={student?.isPaid || false} size="16px" />
+				<p>Баланс {remainingPrePay}₽</p>
 			</div>
 		</div>
 	)
