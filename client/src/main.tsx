@@ -200,7 +200,7 @@ function getWHeader(router_element: any, isPrivate: boolean) {
 							window.location.pathname !== '/register' ? (
 								<>
 									<Header />
-									<div className="container">
+									<div className="container-1">
 										<LeftMenu />
 										{[router_element]}
 									</div>

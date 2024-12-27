@@ -12,6 +12,7 @@ import {
   Home,
   Users,
   Video,
+  PlusIcon,
 } from 'lucide-react'
 import {useDispatch, useSelector} from 'react-redux'
 import {Button} from '@/ui/button'
@@ -394,7 +395,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
         </div>
 
         {/* Checkbox */}
-        <div className="border-r h-full bg-green-100 rounded-md flex items-center justify-center">
+        <div className="border-r h-full  rounded-md flex items-center justify-center">
           <input
           type="checkbox"
             checked={Boolean(lesson.isPaid)}
@@ -402,7 +403,8 @@ const LessonRow: React.FC<LessonRowProps> = ({
             disabled={lesson.isAutoChecked || lesson.isCancelled}
             className={cn(
               "h-5 w-5",
-              lesson.isAutoChecked && "opacity-50 cursor-not-allowed"
+              lesson.isAutoChecked && "bg-white border-gray-100 opacity-100 cursor-not-allowed",
+
             )}
           />
         </div>
@@ -417,7 +419,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
               onCopy(lesson)
             }}
             className="h-10 w-10">
-            <Copy className="h-5 w-5" />
+            <PlusIcon className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"

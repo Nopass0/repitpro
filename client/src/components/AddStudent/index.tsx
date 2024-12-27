@@ -1978,7 +1978,7 @@ const AddStudent = ({}: IAddStudent) => {
 										</span>
 									</button>
 								</div> */}
-								<div className="flex items-center bg-zinc-50 justify-between w-full mb-2 p-4 border-4 border-green-500 rounded-lg">
+								<div className="flex items-center bg-zinc-50 justify-between w-full mb-2 p-4 border-[2px] border-solid border-green-500 rounded-lg outline-none ring-0">
 									<div className="flex items-center w-full gap-2 justify-between">
 										<Button variant="ghost" size="icon" onClick={prevStud}>
 											<ChevronLeft className="h-5 w-5" />
@@ -2100,71 +2100,70 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>₽</p>
 								</div>
 								<Line width="100%" className={s.Line} />
-								<div className={s.StudentCard + 'flex flex-col'}>
-									<div className="flex flex-row items-center justify-between w-[80%] p-4">
-										<p className="text-md font-medium">Баланс</p>
-										<span
-											className={
-												balance < 0
-													? 'text-md font-semibold text-red-500'
-													: 'text-md font-semibold text-green-500'
-											}>
-											{balance} ₽
-										</span>
+								<div className={` w-[90%]`}>
+									<div className="flex items-center justify-between w-full p-4 border-b">
+										<div className="flex items-center gap-3">
+											<p className="text-md font-medium">Баланс</p>
+											<span
+												className={`text-md font-semibold ${
+													balance < 0 ? 'text-red-500' : 'text-green-500'
+												}`}>
+												{balance} ₽
+											</span>
+										</div>
+
 										<Button
 											variant="default"
 											size="icon"
 											disabled={isEditMode}
-											className="w-[40%]"
+											className="w-24"
 											onClick={() => setIsBalanceOpen(!isBalanceOpen)}>
-											<>
-												{/* <Plus className="w-4 h-4" /> */}
-												<span>Пополнить</span>
-											</>
+											<span>Пополнить</span>
 										</Button>
 									</div>
 
 									{isBalanceOpen && (
-										<div className="flex flex-row w-full">
+										<div className="p-4 flex items-center gap-3">
 											<MiniCalendar
 												disabled={isEditMode}
 												value={prePayDate}
-												onChange={(newDate) => handlePrePayDate(newDate)}
+												onChange={handlePrePayDate}
 												calendarId="prePay"
 											/>
 
-											<Input
-												num
-												className={s.PrePayCostInput}
-												type="text"
-												value={prePayCostValue}
-												disabled={isEditMode}
-												onChange={(e) => {
-													setPrePayCostValue(e.target.value)
-												}}
-												onKeyDown={(e) => {
-													if (e.key === 'Enter' && prePayCost !== '') {
+											<div className="flex items-center gap-2">
+												<Input
+													num
+													className={`${s.PrePayCostInput} w-24`}
+													type="text"
+													value={prePayCostValue}
+													disabled={isEditMode}
+													onChange={(e) => setPrePayCostValue(e.target.value)}
+													onKeyDown={(e) => {
+														if (e.key === 'Enter' && prePayCost !== '') {
+															addPrePayList(
+																prePayCostValue,
+																prePayDate,
+																prePayList.length,
+															)
+														}
+													}}
+												/>
+
+												<span className="text-gray-600">₽</span>
+
+												<button
+													onClick={() =>
 														addPrePayList(
 															prePayCostValue,
 															prePayDate,
 															prePayList.length,
 														)
 													}
-												}}
-											/>
-
-											<p>₽</p>
-											<button
-												onClick={() =>
-													addPrePayList(
-														prePayCostValue,
-														prePayDate,
-														prePayList.length,
-													)
-												}
-												style={{marginLeft: '10px'}}>
-												<CheckCircleIcon color="success" />
-											</button>
+													className="flex items-center justify-center hover:bg-gray-100 rounded-full p-1">
+													<CheckCircleIcon className="w-6 h-6 text-green-500" />
+												</button>
+											</div>
 										</div>
 									)}
 								</div>
@@ -2324,10 +2323,9 @@ const AddStudent = ({}: IAddStudent) => {
 								className={s.RecordNListen}
 								typeCard="student"
 							/> */}
-							<div className="flex flex-col gap-2 w-full"></div>
-							<div className={s.ItemWrapper}>
-								<div className={s.ItemHeader}>
-									<div className="flex items-center bg-white justify-between w-full mb-2 p-4 border-2 border-green-500 rounded-lg  ">
+							<div className="flex items-center bg-zinc-50 justify-between my-5 p-4 border-2 border-solid border-green-500 rounded-lg outline-none ring-0">
+								<div className="w-full flex justify-center items-center">
+									<div className="flex items-center  justify-between px-4 pt-2 truncate border-2 border-green-500 rounded-lg mb-2">
 										<Button
 											variant="ghost"
 											size="icon"
@@ -2350,14 +2348,16 @@ const AddStudent = ({}: IAddStudent) => {
 											<ChevronRight className="h-5 w-5" />
 										</Button>
 									</div>
-									<Button
-										variant="ghost"
-										disabled={isEditMode}
-										onClick={() => addItem()}>
-										<img src={Plus} alt={Plus} />
-									</Button>
 								</div>
-
+								<Button
+									variant="ghost"
+									disabled={isEditMode}
+									onClick={() => addItem()}
+									className="ml-4">
+									<img src={Plus} alt={Plus} />
+								</Button>
+							</div>
+							<div className={s.ItemWrapper}>
 								{/* <Line width="100%" className={s.Line} /> */}
 
 								{items.map((item, index) => (
@@ -2808,35 +2808,6 @@ const AddStudent = ({}: IAddStudent) => {
 									sortBy={mediaSortBy}
 									onSortChange={setMediaSortBy}
 								/>
-								{/* <mui.ListItemButton
-							style={{marginTop: '10px'}}
-							onClick={handleClick}>
-							<img src={uploadFile} alt={uploadFile} />
-							<mui.ListItemText primary="Файлы/ссылки" />
-							{open ? <ExpandLess /> : <ExpandMore />}
-						</mui.ListItemButton> */}
-								{/*
-						<mui.Collapse in={open} timeout="auto" unmountOnExit>
-							<mui.List
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'center',
-									flexDirection: 'column',
-								}}
-								component="div"
-								disablePadding>
-								<Line width="100%" className={s.Line} />
-								<p>Список пока пуст</p>
-							</mui.List>
-						</mui.Collapse> */}
-								{/* <FileNLinks
-									alreadyUploaded={files}
-									callback={handleFileNLinks}
-									linksArray={links}
-									submitLinks={handleLinksSubmit}
-									deleteLink={deleteLink}
-								/> */}
 
 								{errorList.length > 0 && (
 									<div className={s.ErrorList}>
