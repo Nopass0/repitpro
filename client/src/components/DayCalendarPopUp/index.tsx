@@ -851,6 +851,8 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
     }
     setEditingNewLesson(newLesson)
   }
+  const totalGridLines = 8; // Можно настроить желаемое количество линий
+   const emptyGridLines = Array(totalGridLines).fill(null);
 
   return (
     <AnimatePresence>
@@ -860,8 +862,8 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-1/2 left-[-400px] -translate-x-1/2 -translate-y-1/2 w-[800px] bg-white rounded-xl shadow-2xl overflow-hidden"
-            style={{ maxHeight: 'calc(100vh - 120px)' }}>
+            className="fixed top-1/2 left-[-400px]  -translate-x-1/2 -translate-y-1/2 w-[800px] bg-white rounded-xl shadow-2xl overflow-hidden"
+            >
             {/* Header */}
             <div className="p-4 border-b bg-white">
               <div className="flex items-center justify-between">
@@ -905,7 +907,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
                               </div>
 
                               {/* Content */}
-                              <div className="flex flex-col h-[600px]">
+                              <div className="flex flex-col h-[400px]">
                                 <ScrollArea className="flex-1 p-6">
                                   <div className="space-y-2">
                                     {isLoading ? (
@@ -961,11 +963,19 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
                                               calendarMonth={calendarNowPopupMonth}
                                               calendarYear={calendarNowPopupYear}
                                             />
-                                            {index < students.length - 1 && (
-                                              <Separator className="my-2" />
-                                            )}
+                                            {index < students.length - 1 && <Separator className="my-2" />}
                                           </React.Fragment>
                                         ))}
+
+                                        {/* Grid Lines when no lessons */}
+                                        {students.length === 0 && !editingNewLesson && (
+                                          emptyGridLines.map((_, index) => (
+                                            <React.Fragment key={`grid-${index}`}>
+                                              <div className="h-16" /> {/* Spacing to match lesson row height */}
+                                              <Separator className="my-2" />
+                                            </React.Fragment>
+                                          ))
+                                        )}
 
                                         {/* New Lesson Form */}
                                         {editingNewLesson && (

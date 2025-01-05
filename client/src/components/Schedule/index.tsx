@@ -137,7 +137,7 @@ const Schedule = ({
 						return (
 							<div
 								key={index}
-								className={cn('py-3', isWeekend && 'bg-red-50/30')}>
+								className={cn('py-3', isWeekend && 'text-red-50')}>
 								<div className="flex items-center justify-between gap-4 px-2">
 									<div className="flex items-center gap-4 min-w-0 flex-1">
 										<span
@@ -154,9 +154,7 @@ const Schedule = ({
 												<span
 													className={cn(
 														'px-2 py-1 rounded-md text-sm whitespace-nowrap',
-														isWeekend
-															? 'bg-red-100 text-red-700'
-															: 'bg-green-100 text-green-700',
+														'bg-green-100 text-green-700',
 													)}>
 													{timeline.timeRanges
 														? `${String(timeline.timeRanges[0].startTime.hour).padStart(2, '0')}:${String(timeline.timeRanges[0].startTime.minute).padStart(2, '0')} -
@@ -191,9 +189,7 @@ const Schedule = ({
 														size="icon"
 														className={cn(
 															'h-8 w-8',
-															isWeekend
-																? 'text-red-500 hover:text-red-600'
-																: 'text-green-500 hover:text-green-600',
+															'text-green-500 hover:text-green-600',
 														)}
 														onClick={(e) => handleDayClick(e, index, timeline)}>
 														<Plus className="h-4 w-4" />
@@ -212,9 +208,7 @@ const Schedule = ({
 													size="sm"
 													className={cn(
 														'gap-1.5',
-														isWeekend
-															? 'text-red-500 hover:text-red-600'
-															: 'text-green-500 hover:text-green-600',
+														'text-green-500 hover:text-green-600',
 													)}
 													onClick={(e) => handleDayClick(e, index, timeline)}>
 													<Clock className="h-4 w-4" />
@@ -236,9 +230,7 @@ const Schedule = ({
 													key={rangeIndex}
 													className={cn(
 														'px-2 py-1 rounded-md text-sm',
-														isWeekend
-															? 'bg-red-50 text-red-700'
-															: 'bg-green-50 text-green-700',
+														'bg-green-50 text-green-700',
 													)}>
 													{`${String(range.startTime.hour).padStart(2, '0')}:${String(range.startTime.minute).padStart(2, '0')} -
                         ${String(range.endTime.hour).padStart(2, '0')}:${String(range.endTime.minute).padStart(2, '0')}`}

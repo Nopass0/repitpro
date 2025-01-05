@@ -14,6 +14,7 @@ import {
 	IItemCard,
 	IlinksArray,
 	IPrePayList,
+	Item,
 	ITimeLine,
 } from '../../types'
 import CheckBox from '../CheckBox'
@@ -42,6 +43,7 @@ import {Textarea} from '@/ui/textarea'
 import {useHistory} from '@/hooks/useHistory'
 import {useMemo, useCallback} from 'react'
 import debounce from 'lodash/debounce'
+import TimeRangePicker, {useTimeRangePicker} from '@/ui/time-range-picker-day'
 
 interface IAddStudent {}
 interface IScheduleTimer {
@@ -700,6 +702,18 @@ const AddStudent = ({}: IAddStudent) => {
 			if (isEditMode) updateHistory(newItems)
 			return newItems
 		})
+	}
+	const [initialTimeRange, setInitialTimeRange] = useState<TimeRange | null>(
+		null,
+	)
+	const [trialLessonDate, setTrialLessonDate] = useState<Date | null>(null)
+	const {isOpen, ranges, openPicker, closePicker, setRanges} =
+		useTimeRangePicker(initialTimeRange ? [initialTimeRange] : [])
+
+	const handleTimeSelect = (selectedRanges) => {
+		if (selectedRanges.length > 0) {
+			onTimeChange(selectedRanges[0])
+		}
 	}
 
 	// const handleClick_dp = (itemIndex: number, id: number) => {
@@ -2100,7 +2114,7 @@ const AddStudent = ({}: IAddStudent) => {
 									<p>₽</p>
 								</div>
 								<Line width="100%" className={s.Line} />
-								<div className={` w-[90%]`}>
+								<div className={`flex flex-col items-center w-[93%]`}>
 									<div className="flex items-center justify-between w-full p-4 border-b">
 										<div className="flex items-center gap-3">
 											<p className="text-md font-medium">Баланс</p>
@@ -2123,7 +2137,7 @@ const AddStudent = ({}: IAddStudent) => {
 									</div>
 
 									{isBalanceOpen && (
-										<div className="p-4 flex items-center gap-3">
+										<div className="p-4 flex items-center gap-3 bg-white rounded-md">
 											<MiniCalendar
 												disabled={isEditMode}
 												value={prePayDate}
@@ -2303,12 +2317,11 @@ const AddStudent = ({}: IAddStudent) => {
 									</mui.List>
 								</mui.Collapse>
 								<Line width="100%" className={s.Line} />
-								<label className="block text-sm font-medium text-gray-700">
-									Комментарий
-								</label>
+
 								<Textarea
 									className="mt-1 p-2 w-[90%] border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
 									value={commentStudent}
+									placeholder="Комментарий"
 									disabled={isEditMode}
 									onChange={(e) => {
 										setCommentStudent(e.target.value)
@@ -2428,96 +2441,39 @@ const AddStudent = ({}: IAddStudent) => {
 											</div>
 
 											{item.tryLessonCheck && (
-												<>
-													<Line width="100%" className={s.Line} />
-													<div className={s.StudentCard}>
-														<p>Дата и время пробного занятия:</p>
-														<div className="flex flex-col gap-2 w-full">
-															<div className="flex items-center gap-4">
-																<MiniCalendar
-																	disabled={isEditMode}
-																	value={item.trialLessonDate || new Date()}
-																	onChange={(newDate) =>
-																		changeItemValue(
-																			index,
-																			'trialLessonDate',
-																			new Date(newDate),
-																		)
-																	}
-																	calendarId={`trialLesson_${index}`}
-																/>
-																{!isEditMode && (
-																	<button
-																		onClick={() =>
-																			handleClick_dp(
-																				index,
-																				-1, // Special ID for trial lesson
-																			)
-																		}
-																		className={s.ScheduleBtn}>
-																		<ScheduleIcon />
-																	</button>
-																)}
-															</div>
-															{item.trialLessonTime && (
-																<div className="text-sm ml-2">
-																	{`${String(item.trialLessonTime.startTime.hour).padStart(2, '0')}:${String(item.trialLessonTime.startTime.minute).padStart(2, '0')} -
-             ${String(item.trialLessonTime.endTime.hour).padStart(2, '0')}:${String(item.trialLessonTime.endTime.minute).padStart(2, '0')}`}
-																</div>
-															)}
-															{activeTimePicker.itemIndex === index &&
-																activeTimePicker.timelineId === -1 && (
-																	<div className={s.timePickerWrapper}>
-																		<TimePicker
-																			title="Время пробного занятия"
-																			onTimeChange={(
-																				startHour,
-																				startMinute,
-																				endHour,
-																				endMinute,
-																			) => {
-																				changeItemValue(
-																					index,
-																					'trialLessonTime',
-																					{
-																						startTime: {
-																							hour: startHour,
-																							minute: startMinute,
-																						},
-																						endTime: {
-																							hour: endHour,
-																							minute: endMinute,
-																						},
-																					},
-																				)
-																				setActiveTimePicker({
-																					itemIndex: -1,
-																					timelineId: null,
-																				})
-																			}}
-																			onExit={() => {
-																				setActiveTimePicker({
-																					itemIndex: -1,
-																					timelineId: null,
-																				})
-																			}}
-																			addBlock={true}
-																			freeSlots={freeSlots}
-																			currentDay={format(
-																				new Date(
-																					item.trialLessonDate || new Date(),
-																				),
-																				'EE',
-																			)}
-																			lessonDuration={
-																				item.lessonDuration || undefined
-																			}
-																		/>
-																	</div>
-																)}
+												<div className="flex flex-col gap-2 w-full">
+													<div className="flex items-center gap-4">
+														<MiniCalendar
+															disabled={isEditMode}
+															value={trialLessonDate || new Date()}
+															onChange={(newDate) =>
+																onDateChange(new Date(newDate))
+															}
+															calendarId={`trialLesson_${index}`}
+														/>
+
+														<div className="flex items-center gap-2">
+															<button
+																onClick={() => openPicker()}
+																disabled={isEditMode}
+																className="px-4 py-2 bg-white border rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50">
+																{ranges.length > 0
+																	? `${ranges[0].startTime} - ${ranges[0].endTime}`
+																	: 'Выбрать время'}
+															</button>
 														</div>
+
+														{!isEditMode && isOpen && (
+															<TimeRangePicker
+																singleRange={true}
+																existingRanges={ranges}
+																onTimeRangeSelect={handleTimeSelect}
+																onClose={closePicker}
+																className="z-50"
+															/>
+														)}
 													</div>
-												</>
+												</div>
 											)}
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCardCheckBox}>
