@@ -211,27 +211,102 @@ const FileOrLink: React.FC<{
 	)
 }
 
-export const StudentMedia: React.FC<{
+// Компонент для загрузки файлов и ссылок
+export const FileAndLinkUploader: React.FC<{
 	files: StorageItem[]
-	isExpanded: boolean
-	onToggle: () => void
 	onFileUpload: (file: File) => void
 	onLinkAdd: (url: string) => void
-	onAudioRecord: (blob: Blob) => void
 	onItemRemove: (id: string) => void
 	sortBy: 'name' | 'type'
 	onSortChange: (sort: 'name' | 'type') => void
-}> = ({
-	files,
-	isExpanded,
-	onToggle,
-	onFileUpload,
-	onLinkAdd,
-	onAudioRecord,
-	onItemRemove,
-	sortBy,
-	onSortChange,
-}) => {
+}> = ({files, onFileUpload, onLinkAdd, onItemRemove, sortBy, onSortChange}) => {
+	const sortedFiles = [...files]
+		.filter((f) => f.type !== 'audio')
+		.sort((a, b) => {
+			if (sortBy === 'name') {
+				return a.name.localeCompare(b.name)
+			}
+			return a.type.localeCompare(b.type)
+		})
+
+	return (
+		<div className="space-y-4 max-w-full">
+			<div className="flex items-center gap-2 mb-4">
+				<div className="w-48">
+					<ContextMenu>
+						<ContextMenuTrigger>
+							<FileUploader onNewFile={onFileUpload} files={files} />
+						</ContextMenuTrigger>
+						<ContextMenuContent>
+							<ContextMenuItem
+								onClick={async () => {
+									try {
+										const text = await navigator.clipboard.readText()
+										if (text.startsWith('http')) {
+											onLinkAdd(text)
+										}
+									} catch (err) {
+										console.error('Failed to read clipboard:', err)
+									}
+								}}>
+								<Link2 className="mr-2 h-4 w-4" />
+								Вставить ссылку
+							</ContextMenuItem>
+						</ContextMenuContent>
+					</ContextMenu>
+				</div>
+			</div>
+
+			{sortedFiles.length > 0 && (
+				<>
+					<div className="flex justify-end gap-2 mb-2">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => onSortChange('name')}
+							className={sortBy === 'name' ? 'bg-gray-100' : ''}>
+							По имени
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => onSortChange('type')}
+							className={sortBy === 'type' ? 'bg-gray-100' : ''}>
+							По типу
+						</Button>
+					</div>
+
+					<ScrollArea className="h-[200px] rounded-md border">
+						<div className="p-4 space-y-2">
+							{sortedFiles.map((file) =>
+								file.type === 'audio' ? (
+									<AudioFile
+										key={file.id}
+										file={file}
+										onRemove={onItemRemove}
+									/>
+								) : (
+									<FileOrLink
+										key={file.id}
+										file={file}
+										onRemove={onItemRemove}
+									/>
+								),
+							)}
+						</div>
+					</ScrollArea>
+				</>
+			)}
+		</div>
+	)
+}
+
+// Компонент для записи аудио
+export const AudioRecorder: React.FC<{
+	files: StorageItem[]
+	onAudioRecord: (blob: Blob) => void
+	onItemRemove: (id: string) => void
+}> = ({files, onAudioRecord, onItemRemove}) => {
 	const [isRecording, setIsRecording] = useState(false)
 	const [recordingTime, setRecordingTime] = useState(0)
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -292,122 +367,45 @@ export const StudentMedia: React.FC<{
 			.padStart(2, '0')}`
 	}
 
-	const sortedFiles = [...files].sort((a, b) => {
-		if (sortBy === 'name') {
-			return a.name.localeCompare(b.name)
-		}
-		return a.type.localeCompare(b.type)
-	})
+	const audioFiles = files
+		.filter((f) => f.type === 'audio')
+		.sort((a, b) => a.name.localeCompare(b.name))
 
 	return (
 		<div className="space-y-4 max-w-full">
-			<div
-				className="flex items-center justify-between cursor-pointer"
-				onClick={onToggle}>
-				<h3 className="text-lg font-medium">Файлы и материалы</h3>
-				{isExpanded ? <ChevronUp /> : <ChevronDown />}
+			<div className="flex items-center gap-2 mb-4">
+				<Button
+					variant={isRecording ? 'destructive' : 'outline'}
+					onClick={isRecording ? stopRecording : startRecording}
+					className={cn(
+						'flex items-center gap-2 justify-center w-36',
+						isRecording && 'animate-pulse',
+					)}>
+					{isRecording ? (
+						<>
+							<Square className="h-4 w-4 shrink-0" />
+							<span className="text-sm font-medium">
+								{formatTime(recordingTime)}
+							</span>
+						</>
+					) : (
+						<>
+							<Mic className="h-4 w-4 shrink-0" />
+							<span className="text-sm font-medium">Запись</span>
+						</>
+					)}
+				</Button>
 			</div>
 
-			<AnimatePresence>
-				{isExpanded && (
-					<motion.div
-						initial={{height: 0, opacity: 0}}
-						animate={{height: 'auto', opacity: 1}}
-						exit={{height: 0, opacity: 0}}
-						className="overflow-hidden">
-						<div className="flex items-center gap-2 mb-4">
-							<div className="w-48">
-								<ContextMenu>
-									<ContextMenuTrigger>
-										<FileUploader onNewFile={onFileUpload} files={files} />
-									</ContextMenuTrigger>
-									<ContextMenuContent>
-										<ContextMenuItem
-											onClick={async () => {
-												try {
-													const text = await navigator.clipboard.readText()
-													if (text.startsWith('http')) {
-														onLinkAdd(text)
-													}
-												} catch (err) {
-													console.error('Failed to read clipboard:', err)
-												}
-											}}>
-											<Link2 className="mr-2 h-4 w-4" />
-											Вставить ссылку
-										</ContextMenuItem>
-									</ContextMenuContent>
-								</ContextMenu>
-							</div>
-
-							<Button
-								variant={isRecording ? 'destructive' : 'outline'}
-								onClick={isRecording ? stopRecording : startRecording}
-								className={cn(
-									'flex items-center gap-2 justify-center w-36',
-									isRecording && 'animate-pulse',
-								)}>
-								{isRecording ? (
-									<>
-										<Square className="h-4 w-4 shrink-0" />
-										<span className="text-sm font-medium">
-											{formatTime(recordingTime)}
-										</span>
-									</>
-								) : (
-									<>
-										<Mic className="h-4 w-4 shrink-0" />
-										<span className="text-sm font-medium">Запись</span>
-									</>
-								)}
-							</Button>
-						</div>
-
-						{files.length > 0 && (
-							<>
-								<div className="flex justify-end gap-2 mb-2">
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => onSortChange('name')}
-										className={sortBy === 'name' ? 'bg-gray-100' : ''}>
-										По имени
-									</Button>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => onSortChange('type')}
-										className={sortBy === 'type' ? 'bg-gray-100' : ''}>
-										По типу
-									</Button>
-								</div>
-
-								<ScrollArea className="h-[200px] rounded-md border">
-									<div className="p-4 space-y-2">
-										{sortedFiles.map((file) =>
-											file.type === 'audio' ? (
-												<AudioFile
-													key={file.id}
-													file={file}
-													onRemove={onItemRemove}
-												/>
-											) : (
-												<FileOrLink
-													key={file.id}
-													file={file}
-													onRemove={onItemRemove}
-												/>
-											),
-										)}
-									</div>
-								</ScrollArea>
-							</>
-						)}
-					</motion.div>
-				)}
-			</AnimatePresence>
+			{audioFiles.length > 0 && (
+				<ScrollArea className="h-[200px] rounded-md border">
+					<div className="p-4 space-y-2">
+						{audioFiles.map((file) => (
+							<AudioFile key={file.id} file={file} onRemove={onItemRemove} />
+						))}
+					</div>
+				</ScrollArea>
+			)}
 		</div>
 	)
 }
-
-export default StudentMedia

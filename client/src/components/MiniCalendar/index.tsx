@@ -183,7 +183,7 @@ const MiniCalendar: React.FC<CalendarProps> = ({
 
 	return (
 		<div className={s.container}>
-			<div className={s.input__init}>
+			<div className={`${s.input__init} text-gray-400 border-2 p-1 `}>
 				<input
 					disabled={disabled}
 					type="text"

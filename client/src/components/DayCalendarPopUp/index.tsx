@@ -862,7 +862,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-1/2 left-[-400px]  -translate-x-1/2 -translate-y-1/2 w-[800px] bg-white rounded-xl shadow-2xl overflow-hidden"
+            className="fixed top-1/2 left-[-400px]   -translate-x-1/2 -translate-y-1/2 w-[700px] bg-white rounded-xl shadow-2xl overflow-hidden"
             >
             {/* Header */}
             <div className="p-4 border-b bg-white">
@@ -907,7 +907,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
                               </div>
 
                               {/* Content */}
-                              <div className="flex flex-col h-[400px]">
+                              <div className="flex flex-col h-[600px]">
                                 <ScrollArea className="flex-1 p-6">
                                   <div className="space-y-2">
                                     {isLoading ? (
@@ -967,15 +967,15 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
                                           </React.Fragment>
                                         ))}
 
-                                        {/* Grid Lines when no lessons */}
-                                        {students.length === 0 && !editingNewLesson && (
-                                          emptyGridLines.map((_, index) => (
+                                        {/* Grid Lines to always have at least 6 lines */}
+                                        {students.length < 6 && !editingNewLesson ? (
+                                          Array.from({ length: 6 - students.length }).map((_, index) => (
                                             <React.Fragment key={`grid-${index}`}>
-                                              <div className="h-16" /> {/* Spacing to match lesson row height */}
+                                              <div className="h-14" /> {/* Spacing to match lesson row height with reduced top margin */}
                                               <Separator className="my-2" />
                                             </React.Fragment>
                                           ))
-                                        )}
+                                        ) : null}
 
                                         {/* New Lesson Form */}
                                         {editingNewLesson && (

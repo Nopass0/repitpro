@@ -6,7 +6,7 @@ import {useEffect, useRef, useState} from 'react'
 import InputMask from 'react-input-mask'
 import {useDispatch, useSelector} from 'react-redux'
 import Plus from '../../assets/ItemPlus.svg'
-import {StudentMedia} from '../StudentMedia'
+import {AudioRecorder, FileAndLinkUploader, StudentMedia} from '../StudentMedia'
 import socket, {isServer} from '../../socket'
 import {
 	ELeftMenuPage,
@@ -2336,6 +2336,16 @@ const AddStudent = ({}: IAddStudent) => {
 								className={s.RecordNListen}
 								typeCard="student"
 							/> */}
+
+							{/* use AudioRecorder instead */}
+							<div className="mb-6 py-6">
+								<AudioRecorder
+									files={mediaFiles}
+									onAudioRecord={handleAudioRecord}
+									onItemRemove={handleMediaRemove}
+								/>
+							</div>
+
 							<div className="flex items-center bg-zinc-50 justify-between my-5 p-4 border-2 border-solid border-green-500 rounded-lg outline-none ring-0">
 								<div className="w-full flex justify-center items-center">
 									<div className="flex items-center  justify-between px-4 pt-2 truncate border-2 border-green-500 rounded-lg mb-2">
@@ -2753,10 +2763,22 @@ const AddStudent = ({}: IAddStudent) => {
 									</>
 								))}
 								<div className="h-10"></div>
-								<StudentMedia
+								{/* <StudentMedia
 									files={mediaFiles}
 									isExpanded={isMediaExpanded}
 									onToggle={() => setIsMediaExpanded(!isMediaExpanded)}
+									onFileUpload={handleFileUpload}
+									onLinkAdd={handleLinkAdd}
+									onAudioRecord={handleAudioRecord}
+									onItemRemove={handleMediaRemove}
+									sortBy={mediaSortBy}
+									onSortChange={setMediaSortBy}
+								/> */}
+
+								{/* use FileAndLinkUploader instead */}
+
+								<FileAndLinkUploader
+									files={mediaFiles}
 									onFileUpload={handleFileUpload}
 									onLinkAdd={handleLinkAdd}
 									onAudioRecord={handleAudioRecord}

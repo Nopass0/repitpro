@@ -1,297 +1,1247 @@
-import s from './index.module.scss'
+import React, {useEffect, useState, useCallback} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {useSelector} from 'react-redux'
+import {
+	Checkbox,
+	FormControl,
+	InputLabel,
+	MenuItem,
+	Select,
+	styled,
+} from '@mui/material'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import CloseIcon from '@mui/icons-material/Close'
+import socket from '../../socket'
+import GraphicBlock from '../../components/GraphicBlock'
+import Line from '../../components/Line'
+import CheckBox from '../../components/CheckBox'
+import Arrow from '../../assets/arrow'
+import s from './index.module.scss'
+import MiniCalendar from '@/components/MiniCalendar'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
-import {TrendingUp} from 'lucide-react'
-import {CartesianGrid, Line, LineChart, XAxis, YAxis} from 'recharts'
-
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/ui/card'
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/ui/chart'
-import Checkbox from '@/components/CheckBox'
-
-import * as React from 'react'
-import {addDays, format} from 'date-fns'
-import {ru} from 'date-fns/locale'
-import {Calendar as CalendarIcon} from 'lucide-react'
-import {DateRange} from 'react-day-picker'
-import {ScrollArea} from '@/ui/scroll-area'
-
-import {Label} from '@/ui/label'
-import {cn} from '@/lib/utils'
-import {Button} from '@/ui/button'
-import {Calendar} from '@/ui/calendar'
-import {Switch} from '@/ui/switch'
-import {Popover, PopoverContent, PopoverTrigger} from '@/ui/popover'
-import {Badge} from '@/ui/badge'
-import {Separator} from '@/ui/separator'
-import {Upload} from '@mui/icons-material'
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableFooter,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/ui/table'
-
-import Uploader from '@/components/Uploader'
-
-const chartData = [
-	{month: 'Январь', desktop: 186, mobile: 80},
-	{month: 'Февраль', desktop: 305, mobile: 200},
-	{month: 'Март', desktop: 237, mobile: 120},
-	{month: 'Апрель', desktop: 73, mobile: 190},
-	{month: 'Май', desktop: 209, mobile: 130},
-	{month: 'Июнь', desktop: 214, mobile: 140},
-]
-
-const chartConfig = {
-	desktop: {
-		label: 'Desktop',
-		color: 'hsl(var(--chart-1))',
+const StyledPickersLayout = styled('span')({
+	'.MuiDateCalendar-root': {
+		color: '#25991c',
+		borderRadius: 2,
+		borderWidth: 1,
+		borderColor: '#25991c',
+		border: '1px solid',
 	},
-	mobile: {
-		label: 'Mobile',
-		color: 'hsl(var(--chart-2))',
+	'.MuiPickersDay-today': {
+		border: '1px solid #25991c',
 	},
-} satisfies ChartConfig
+	'.Mui-selected': {
+		color: '#fff',
+		backgroundColor: '#25991c !important',
+	},
+	'.Mui-selected:focus': {
+		color: '#fff',
+		backgroundColor: '#25991c',
+	},
+	'.MuiButtonBase-root:focus': {
+		color: '#fff',
+		backgroundColor: '#25991c',
+	},
+	'.MuiPickersYear-yearButton .Mui-selected:focus': {
+		color: '#fff',
+		backgroundColor: '#25991c',
+	},
+	'.MuiInputBase-input': {
+		padding: '4px 0 4px 8px !important',
+	},
+	'.MuiSvgIcon-root': {
+		color: 'grey',
+	},
+	'.MuiOutlinedInput-notchedOutline': {
+		border: 'none !important',
+	},
+})
+
+const options = {
+	responsive: true,
+	maintainAspectRatio: false,
+	aspectRatio: 2,
+	plugins: {
+		legend: {display: false},
+		title: {display: false},
+		tooltip: {enabled: true},
+	},
+	scales: {
+		x: {
+			ticks: {
+				color: 'black',
+				font: {
+					size: 14,
+				},
+			},
+			grid: {
+				display: true,
+				color: 'rgba(0, 0, 0, 0.1)',
+			},
+		},
+		y: {
+			ticks: {
+				color: 'black',
+				font: {
+					size: 14,
+				},
+			},
+			grid: {
+				display: true,
+				color: 'rgba(0, 0, 0, 0.1)',
+			},
+		},
+	},
+}
+
+const optionsBar = {
+	responsive: true,
+	maintainAspectRatio: false,
+	aspectRatio: 2,
+	plugins: {
+		legend: {display: false},
+		title: {display: false, text: 'Chart.js Bar Chart - Stacked'},
+	},
+	scales: {
+		x: {
+			stacked: true,
+			ticks: {
+				color: 'black',
+				font: {
+					size: 14,
+				},
+			},
+			grid: {
+				display: true,
+				color: 'rgba(0, 0, 0, 0.1)',
+			},
+		},
+		y: {
+			stacked: true,
+			ticks: {
+				color: 'black',
+				font: {
+					size: 14,
+				},
+			},
+			grid: {
+				display: true,
+				color: 'rgba(0, 0, 0, 0.1)',
+			},
+		},
+	},
+}
 
 const Statistics = () => {
-	const [date, setDate] = React.useState<DateRange | undefined>({
-		from: new Date(2022, 0, 20),
-		to: addDays(new Date(2022, 0, 20), 20),
-	})
+	const navigate = useNavigate()
+	const user = useSelector((state) => state.user)
+	const [chooseGraphic, setChooseGraphic] = useState(0)
+	const [subjects, setSubjects] = useState([])
+	const [sortColumn, setSortColumn] = useState('name')
+	const [sortDirection, setSortDirection] = useState(null)
 
-	const [items, setItems] = React.useState<
-		{
-			name: string
-			isChecked: boolean
-			amount: number
-			percent: number
-			color: string
-		}[]
-	>([
-		{
-			name: 'Предмет 1',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-1))',
+	// Tables CONST
+	const [cliTableDateState, setCliTableDateState] = useState<boolean>(0)
+	const [cliTableDateStart, setCliTableDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [cliTableDateEnd, setCliTableDateEnd] = useState(new Date())
+
+	const [studTableDateState, setStudTableDateState] = useState<boolean>(0)
+	const [studTableDateStart, setStudTableDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [studTableDateEnd, setStudTableDateEnd] = useState(new Date())
+
+	const [studFinSubjects, setStudFinSubjects] = useState([])
+	const [studFinDate, setStudFinDate] = useState(0)
+	const [studFinDateStart, setStudFinDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [studFinDateEnd, setStudFinDateEnd] = useState(new Date())
+
+	const [studAmSubjects, setStudAmSubjects] = useState([])
+	const [studAmDate, setStudAmDate] = useState(0)
+	const [studAmDateStart, setStudAmDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [studAmDateEnd, setStudAmDateEnd] = useState(new Date())
+
+	const [studLesSubjects, setStudLesSubjects] = useState([])
+	const [studLesDate, setStudLesDate] = useState(0)
+	const [studLesDateStart, setStudLesDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [studLesDateEnd, setStudLesDateEnd] = useState(new Date())
+
+	const [cliFinSubjects, setCliFinSubjects] = useState([])
+	const [cliFinDate, setCliFinDate] = useState(0)
+	const [cliFinDateStart, setCliFinDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [cliFinDateEnd, setCliFinDateEnd] = useState(new Date())
+
+	const [cliAmSubjects, setCliAmSubjects] = useState([])
+	const [cliAmDate, setCliAmDate] = useState(0)
+	const [cliAmDateStart, setCliAmDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [cliAmDateEnd, setCliAmDateEnd] = useState(new Date())
+
+	const [cliWorkSubjects, setCliWorkSubjects] = useState([])
+	const [cliWorkDate, setCliWorkDate] = useState(0)
+	const [cliWorkDateStart, setCliWorkDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [cliWorkDateEnd, setCliWorkDateEnd] = useState(new Date())
+
+	const [studRelatSubjects, setStudRelatSubjects] = useState([])
+	const [studRelatDate, setStudRelatDate] = useState(0)
+	const [studRelatDateStart, setStudRelatDateStart] = useState(
+		new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	)
+	const [studRelatDateEnd, setStudRelatDateEnd] = useState(new Date())
+
+	// Add these state variables for table subject filtering
+	const [studTableSubjects, setStudTableSubjects] = useState([])
+	const [cliTableSubjects, setCliTableSubjects] = useState([])
+
+	const [financeData, setFinanceData] = useState({labels: [], datasets: []})
+	const [studentCountData, setStudentCountData] = useState({
+		labels: [],
+		datasets: [],
+	})
+	const [studentCountItemsData, setStudentCountItemsData] = useState({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsFinanceData, setClientsFinanceData] = useState({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsCountData, setClientsCountData] = useState({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsWorksData, setClientsWorksData] = useState({
+		labels: [],
+		datasets: [],
+	})
+	const [clientsNstudentsCompareData, setClientsNstudentsCompareData] =
+		useState({labels: [], datasets: []})
+
+	const [studentsData, setStudentsData] = useState([])
+	const [clientData, setClientData] = useState([])
+
+	// Tables Change's
+
+	const cliTableOnChangeDate = () => {}
+
+	const columnTranslations = {
+		name: 'Имя',
+		lessons: 'Занятия',
+		avgCost: 'Средняя стоимость',
+		cancel: 'Отменено',
+		income: 'Доход',
+		consumption: 'Расход',
+		// duty: 'Долг',
+		total: 'Итого',
+	}
+
+	useEffect(() => {
+		console.log(
+			`\n-----------------Статистика загружена---------------\n${JSON.stringify(studentsData, null, 2)}\n----------------\n`,
+		)
+	}, [columnTranslations])
+
+	// В начале файла Statistics.tsx добавим новые состояния
+	const [showStudents, setShowStudents] = useState(true)
+	const [showClients, setShowClients] = useState(true)
+
+	// Обновим функцию renderComparisonCheckboxes
+	const renderComparisonCheckboxes = (data) => {
+		// Создаем стейты внутри функции компонента Statistics, НЕ внутри renderComparisonCheckboxes
+		// const [showStudents, setShowStudents] = useState(true);
+		// const [showClients, setShowClients] = useState(true);
+
+		// Функция подсчета общего количества для определенного типа (студенты/клиенты)
+		const calculateTotal = (label) => {
+			const dataset = data.datasets.find((ds) => ds.label === label)
+			if (!dataset) return 0
+
+			// Суммируем все значения в наборе данных, заменяя undefined и null на 0
+			return dataset.data.reduce((sum, val) => sum + (val || 0), 0)
+		}
+
+		// Получаем общие суммы для каждого типа
+		const clientsTotal = calculateTotal('Заказчики')
+		const studentsTotal = calculateTotal('Ученики')
+		const grandTotal = clientsTotal + studentsTotal
+
+		// Функция расчета процентного соотношения
+		const getPercentage = (value) => {
+			if (grandTotal === 0) return '0.0'
+			return ((value / grandTotal) * 100).toFixed(1)
+		}
+
+		// Обработчик изменения чекбокса студентов
+		const handleStudentsChange = (e) => {
+			const newShowStudents = e.target.checked
+			setShowStudents(newShowStudents)
+
+			// Переизлучаем событие с обновленными параметрами
+			socket.emit('getStudentClientComparisonData', {
+				token: user.token,
+				startDate: studRelatDateStart,
+				endDate: studRelatDateEnd,
+				showStudents: newShowStudents,
+				showClients,
+			})
+		}
+
+		// Обработчик изменения чекбокса клиентов
+		const handleClientsChange = (e) => {
+			const newShowClients = e.target.checked
+			setShowClients(newShowClients)
+
+			// Переизлучаем событие с обновленными параметрами
+			socket.emit('getStudentClientComparisonData', {
+				token: user.token,
+				startDate: studRelatDateStart,
+				endDate: studRelatDateEnd,
+				showStudents,
+				showClients: newShowClients,
+			})
+		}
+
+		// Получаем цвета из датасетов
+		const getDatasetColor = (label) => {
+			const dataset = data.datasets.find((ds) => ds.label === label)
+			return dataset?.backgroundColor || '#25991c'
+		}
+		return (
+			// Формируем структуру компонента
+			<table className={s.subjectCheckboxes}>
+				<thead>
+					<tr className={s.subjectHeader}>
+						<th></th>
+						<th style={{fontWeight: 'bold'}}>Кол-во</th>
+						<th style={{fontWeight: 'bold'}}>%</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr className={s.subjectOne}>
+						<td style={{width: '60%'}}>
+							<label>
+								<Checkbox
+									style={{
+										color: getDatasetColor('Заказчики'),
+									}}
+									checked={showClients}
+									onChange={handleClientsChange}
+								/>
+								Заказчики
+							</label>
+						</td>
+						<td className={s.subjectCounts} style={{width: '20%'}}>
+							{clientsTotal}
+						</td>
+						<td className={s.subjectCounts} style={{width: '20%'}}>
+							{getPercentage(clientsTotal)}%
+						</td>
+					</tr>
+					<tr className={s.subjectOne}>
+						<td style={{width: '60%'}}>
+							<label>
+								<Checkbox
+									style={{
+										color: getDatasetColor('Ученики'),
+									}}
+									checked={showStudents}
+									onChange={handleStudentsChange}
+								/>
+								Ученики
+							</label>
+						</td>
+						<td className={s.subjectCounts} style={{width: '20%'}}>
+							{studentsTotal}
+						</td>
+						<td className={s.subjectCounts} style={{width: '20%'}}>
+							{getPercentage(studentsTotal)}%
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr className={s.subjectCheckboxesAll}>
+						<td colSpan={3}>Всего: {grandTotal}</td>
+					</tr>
+				</tfoot>
+			</table>
+		)
+	}
+
+	const getSubjectIds = useCallback(
+		(selectedSubjects) => {
+			return selectedSubjects.length === 0
+				? subjects.map((subject) => subject.id)
+				: selectedSubjects.map((subject) => subject.id)
 		},
-		{
-			name: 'Предмет 2',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-2))',
+		[subjects],
+	)
+
+	const handleSort = useCallback(
+		(column) => {
+			setSortColumn(column)
+			setSortDirection((prevDirection) =>
+				sortColumn === column
+					? prevDirection === 'asc'
+						? 'desc'
+						: 'asc'
+					: 'asc',
+			)
 		},
-		{
-			name: 'Предмет 3',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-1))',
-		},
-		{
-			name: 'Предмет 4',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-2))',
-		},
-		{
-			name: 'Предмет 5',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-1))',
-		},
-		{
-			name: 'Предмет 6',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-2))',
-		},
-		{
-			name: 'Предмет 7',
-			isChecked: true,
-			amount: 100,
-			percent: 10,
-			color: 'hsl(var(--chart-1))',
-		},
+		[sortColumn],
+	)
+
+	const sortData = useCallback((data, column, direction) => {
+		return [...data].sort((a, b) => {
+			if (column === 'name') {
+				return direction === 'asc'
+					? a[column].localeCompare(b[column])
+					: b[column].localeCompare(a[column])
+			}
+			return direction === 'asc' ? a[column] - b[column] : b[column] - a[column]
+		})
+	}, [])
+
+	const updateDateRange = useCallback((dateState, setDateStart, setDateEnd) => {
+		const currentDate = new Date()
+		switch (dateState) {
+			case 0:
+				setDateStart(new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000))
+				setDateEnd(currentDate)
+				break
+			case 1:
+				setDateStart(
+					new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
+				)
+				setDateEnd(currentDate)
+				break
+			case 2:
+				setDateStart(new Date(currentDate.getFullYear(), 0, 1))
+				setDateEnd(currentDate)
+				break
+			case 3:
+				setDateStart(new Date(2000, 0, 1))
+				setDateEnd(currentDate)
+				break
+			default:
+				break
+		}
+	}, [])
+
+	useEffect(() => {
+		socket.emit('getAllItemsIdsAndNames', user.token)
+		socket.on('getAllItemsIdsAndNames', (data) => {
+			console.log(
+				'\n---------------ids--------------\n',
+				data,
+				'\n-------------------------\n',
+			)
+			setSubjects(data)
+			setStudFinSubjects(data)
+			setStudAmSubjects(data)
+			setStudLesSubjects(data)
+			setCliFinSubjects(data)
+			setCliAmSubjects(data)
+			setCliWorkSubjects(data)
+			setStudRelatSubjects(data)
+		})
+
+		return () => {
+			socket.off('getAllItemsIdsAndNames')
+		}
+	}, [user.token])
+
+	useEffect(() => {
+		const emitDataRequests = () => {
+			socket.emit('getStudentFinanceData', {
+				token: user.token,
+				subjectIds: getSubjectIds(studFinSubjects),
+				startDate: studFinDateStart,
+				endDate: studFinDateEnd,
+			})
+			socket.emit('getStudentCountData', {
+				token: user.token,
+				subjectIds: getSubjectIds(studAmSubjects),
+				startDate: studAmDateStart,
+				endDate: studAmDateEnd,
+			})
+			socket.emit('getStudentLessonsData', {
+				token: user.token,
+				subjectIds: getSubjectIds(studLesSubjects),
+				startDate: studLesDateStart,
+				endDate: studLesDateEnd,
+			})
+			socket.emit('getClientFinanceData', {
+				token: user.token,
+				subjectIds: getSubjectIds(cliFinSubjects),
+				startDate: cliFinDateStart,
+				endDate: cliFinDateEnd,
+			})
+			socket.emit('getClientCountData', {
+				token: user.token,
+				subjectIds: getSubjectIds(cliAmSubjects),
+				startDate: cliAmDateStart,
+				endDate: cliAmDateEnd,
+			})
+			socket.emit('getClientWorksData', {
+				token: user.token,
+				subjectIds: getSubjectIds(cliWorkSubjects),
+				startDate: cliWorkDateStart,
+				endDate: cliWorkDateEnd,
+			})
+			socket.emit('getStudentClientComparisonData', {
+				token: user.token,
+				subjectIds: getSubjectIds(studRelatSubjects),
+				startDate: studRelatDateStart,
+				endDate: studRelatDateEnd,
+			})
+			socket.emit('getTableData', {
+				token: user.token,
+				dateRange: {start: studFinDateStart, end: studFinDateEnd},
+				subjectIds: getSubjectIds(studTableSubjects),
+			})
+			socket.emit('getClientTableData', {
+				token: user.token,
+				dateRange: {start: cliAmDateStart, end: cliAmDateEnd},
+				subjectIds: getSubjectIds(cliTableSubjects),
+			})
+		}
+
+		emitDataRequests()
+
+		socket.on('getStudentFinanceData', setFinanceData)
+		socket.on('getStudentCountData', setStudentCountData)
+		socket.on('getStudentLessonsData', setStudentCountItemsData)
+		socket.on('getClientFinanceData', setClientsFinanceData)
+		socket.on('getClientCountData', setClientsCountData)
+		socket.on('getClientWorksData', setClientsWorksData)
+		socket.on('getStudentClientComparisonData', setClientsNstudentsCompareData)
+		socket.on('getTableData', setStudentsData)
+		socket.on('getClientTableData', setClientData)
+
+		return () => {
+			socket.off('getStudentFinanceData')
+			socket.off('getStudentCountData')
+			socket.off('getStudentLessonsData')
+			socket.off('getClientFinanceData')
+			socket.off('getClientCountData')
+			socket.off('getClientWorksData')
+			socket.off('getStudentClientComparisonData')
+			socket.off('getTableData')
+			socket.off('getClientTableData')
+		}
+	}, [
+		user.token,
+		getSubjectIds,
+		studFinSubjects,
+		studFinDateStart,
+		studFinDateEnd,
+		studAmSubjects,
+		studAmDateStart,
+		studAmDateEnd,
+		studLesSubjects,
+		studLesDateStart,
+		studLesDateEnd,
+		cliFinSubjects,
+		cliFinDateStart,
+		cliFinDateEnd,
+		cliAmSubjects,
+		cliAmDateStart,
+		cliAmDateEnd,
+		cliWorkSubjects,
+		cliWorkDateStart,
+		cliWorkDateEnd,
+		studRelatSubjects,
+		studRelatDateStart,
+		studRelatDateEnd,
 	])
 
-	return (
-		<>
-			<div className={s.wrapper}>
-				{' '}
-				{/* <div className="w-full flex flex-row float-right">
-					<div className="">sas</div>
-				</div> */}
-				<Card className="h-[500px] w-full">
-					<CardHeader>
-						<CardTitle>Ученики-Финансы</CardTitle>
-						<CardDescription>График</CardDescription>
-					</CardHeader>
-					<CardContent className="flex flex-row">
-						<div className="flex flex-col mr-2 w-auto">
-							<div className={cn('grid gap-2', '')}>
-								<Popover>
-									<PopoverTrigger asChild>
-										<Button
-											id="date"
-											variant={'outline'}
-											size={'sm'}
-											className={cn(
-												'w-[230px] justify-start border border-[#000] text-left font-normal',
-												!date && 'text-muted-foreground',
-											)}>
-											<CalendarIcon className="mr-2 h-4 w-4" />
-											{date?.from ? (
-												date.to ? (
-													<>
-														{format(date.from, 'LLL dd, y', {locale: ru})} -{' '}
-														{format(date.to, 'LLL dd, y', {locale: ru})}
-													</>
-												) : (
-													format(date.from, 'LLL dd, y', {locale: ru})
-												)
-											) : (
-												<span>Выберите период</span>
-											)}
-										</Button>
-									</PopoverTrigger>
-									<PopoverContent className="w-auto p-0" align="start">
-										<Calendar
-											initialFocus
-											mode="range"
-											defaultMonth={date?.from}
-											selected={date}
-											onSelect={setDate}
-											numberOfMonths={2}
-											ISOWeek={true}
-											locale={ru}
-											formatters={{
-												formatWeekdayName: (day) => (
-													//if сб, вс - красный цвет. day - Date
-													<p
-														className={`${cn('text-sm', day.getDay() === 6 || day.getDay() === 0 ? 'text-red-500' : '')}`}>
-														{format(day, 'eeeeee', {locale: ru})}
-													</p>
-												),
-												formatDay: (day) => (
-													<p
-														className={`${cn('text-sm', day.getDay() === 6 || day.getDay() === 0 ? 'text-red-500' : '')}`}>
-														{format(day, 'd', {locale: ru})}
-													</p>
-												),
-											}}
-										/>
-									</PopoverContent>
-								</Popover>
-							</div>
-							<Separator className="my-4 " />
+	// const renderSubjectCheckboxes = (
+	// 	selectedSubjects,
+	// 	setSelectedSubjects,
+	// 	data,
+	// ) => {
+	// 	// Создаем объект с уникальными названиями предметов
+	// 	const uniqueSubjects = subjects.reduce((acc, subject) => {
+	// 		if (!acc[subject.itemName]) {
+	// 			acc[subject.itemName] = subject
+	// 		}
+	// 		return acc
+	// 	}, {})
 
-							<ScrollArea className="h-72 rounded-md border flex flex-col ">
-								<Table className="min-w-56 h-72">
-									<TableHeader>
-										<TableRow>
-											<TableHead></TableHead>
-											<TableHead>Рубли</TableHead>
-											<TableHead>%</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{items.map((item) => (
-											<TableRow key={item.id}>
-												<TableCell>
-													<div className="flex items-center space-x-2">
-														<Checkbox size="16px" color={item.color} />
-														<Label htmlFor="terms">{item.name}</Label>
-													</div>
-												</TableCell>
-												<TableCell className="text-right">
-													{item.amount}
-												</TableCell>
-												<TableCell className="text-right">
-													{item.percent}
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-							</ScrollArea>
+	// 	const handleCheckboxChange = (subjectName, isChecked) => {
+	// 		if (isChecked) {
+	// 			// Добавляем все предметы с данным названием
+	// 			const subjectsToAdd = subjects.filter((s) => s.itemName === subjectName)
+	// 			setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
+	// 		} else {
+	// 			// Удаляем все предметы с данным названием
+	// 			setSelectedSubjects((prev) =>
+	// 				prev.filter((s) => s.itemName !== subjectName),
+	// 			)
+	// 		}
+	// 	}
+
+	// 	return (
+	// 		<div className={s.subjectCheckboxes}>
+	// 			<div className={s.subjectHeader}>
+	// 				<p></p>
+	// 				<p>Кол-во</p>
+	// 				<p>%</p>
+	// 			</div>
+	// 			{Object.values(uniqueSubjects).map((subject) => {
+	// 				const dataset = data.datasets.find(
+	// 					(ds) => ds.label === subject.itemName,
+	// 				)
+	// 				const color = dataset?.backgroundColor || '#25991c'
+	// 				const isChecked = selectedSubjects.some(
+	// 					(s) => s.itemName === subject.itemName,
+	// 				)
+
+	// 				return (
+	// 					<>
+	// 						<div className={s.subjectOne}>
+	// 							<label key={subject.itemName}>
+	// 								<Checkbox
+	// 									style={{color}}
+	// 									checked={isChecked}
+	// 									onChange={(e) =>
+	// 										handleCheckboxChange(subject.itemName, e.target.checked)
+	// 									}
+	// 								/>
+	// 								{subject.itemName}
+	// 							</label>
+	// 							<div className={s.subjectCounts}>
+	// 								<p>1</p>
+	// 							</div>
+	// 							<div className={s.subjectCounts}>
+	// 								{' '}
+	// 								{/* Добавлен контейнер для выравнивания */}
+	// 								<p>1</p>
+	// 							</div>
+	// 						</div>
+	// 					</>
+	// 				)
+	// 			})}
+	// 			<div className={s.subjectCheckboxesAll}>
+	// 				<p>Всего:</p>
+	// 				<p></p>
+	// 			</div>
+	// 		</div>
+	// 	)
+	// }
+
+	const renderSubjectCheckboxes = (
+		selectedSubjects,
+		setSelectedSubjects,
+		data,
+		yScaleName,
+	) => {
+		// Создаем объект с уникальными названиями предметов
+		const uniqueSubjects = subjects.reduce((acc, subject) => {
+			if (!acc[subject.itemName]) {
+				acc[subject.itemName] = subject
+			}
+			return acc
+		}, {})
+
+		const handleCheckboxChange = (subjectName, isChecked) => {
+			if (isChecked) {
+				// Добавляем все предметы с данным названием
+				const subjectsToAdd = subjects.filter((s) => s.itemName === subjectName)
+				setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
+			} else {
+				// Удаляем все предметы с данным названием
+				setSelectedSubjects((prev) =>
+					prev.filter((s) => s.itemName !== subjectName),
+				)
+			}
+		}
+
+		// Calculating totals for all datasets
+		const calculatedSubjects = Object.values(uniqueSubjects).map((subject) => {
+			const dataset = data.datasets.find((ds) => ds.label === subject.itemName)
+			const subjectTotal = dataset
+				? dataset.data.reduce((sum, val) => sum + (val || 0), 0)
+				: 0
+			return {
+				subject,
+				total: subjectTotal,
+			}
+		})
+
+		const grandTotal = calculatedSubjects.reduce(
+			(sum, {total}) => sum + total,
+			0,
+		)
+
+		return (
+			<div className={s.subjectCheckboxes}>
+				{/* Заголовок таблицы */}
+				<div className={s.subjectHeader}>
+					<p></p>
+					<div className={s.countsWrapper}>
+						<p>{yScaleName}</p>
+						<p>%</p>
+					</div>
+				</div>
+				{calculatedSubjects.map(({subject, total}) => {
+					const dataset = data.datasets.find(
+						(ds) => ds.label === subject.itemName,
+					)
+					const color = dataset?.backgroundColor || '#25991c'
+					const isChecked = selectedSubjects.some(
+						(s) => s.itemName === subject.itemName,
+					)
+					const percentage =
+						grandTotal > 0 ? ((total / grandTotal) * 100).toFixed(1) : '0.0'
+
+					return (
+						<div key={subject.itemName} className={s.subjectOne}>
+							<label>
+								<Checkbox
+									style={{color}}
+									checked={isChecked}
+									onChange={(e) =>
+										handleCheckboxChange(subject.itemName, e.target.checked)
+									}
+								/>
+								{subject.itemName}
+							</label>
+							<div className={s.countsWrapper}>
+								<div className={s.subjectCounts}>
+									<p>{total}</p>
+								</div>
+								<div className={s.subjectCounts}>
+									<p>{percentage}%</p>
+								</div>
+							</div>
 						</div>
-						<ChartContainer
-							className="h-[300px] w-auto md:w-[1000px]"
-							config={chartConfig}>
-							<LineChart
-								compact
-								className="h-[300px] "
-								accessibilityLayer
-								data={chartData}
-								margin={{
-									left: 12,
-									right: 12,
-								}}>
-								<CartesianGrid vertical={false} />
-								<XAxis
-									dataKey="month"
-									tickLine={false}
-									axisLine={true}
-									tickMargin={8}
-									tickFormatter={(value) => value.slice(0, 3)}
-								/>
-								<YAxis
-									dataKey="desktop"
-									name="Десктоп"
-									axisLine={true}
-									tickLine={true}
-									tickMargin={8}
-									tickFormatter={(value) => `${value} руб.`}
-								/>
-								<ChartTooltip
-									cursor={false}
-									content={<ChartTooltipContent />}
-								/>
-								<Line
-									dataKey="desktop"
-									type="monotone"
-									stroke="var(--color-desktop)"
-									strokeWidth={2}
-									dot={false}
-								/>
-								<Line
-									dataKey="mobile"
-									type="monotone"
-									stroke="var(--color-mobile)"
-									strokeWidth={2}
-									dot={false}
-								/>
-							</LineChart>
-						</ChartContainer>
-					</CardContent>
-				</Card>
-				<div className="w-[600px] h-[200px] flex justify-center items-center"></div>
-				<Uploader />
+					)
+				})}
+				{/* Итоговая строка */}
+				<div className={s.subjectCheckboxesAll}>
+					<p>Всего: {grandTotal}</p>
+				</div>
 			</div>
-		</>
+		)
+	}
+
+	const padTable = (data, columns, rows = 10) => {
+		const paddedData = [...data]
+		while (paddedData.length < rows) {
+			paddedData.push(columns.reduce((acc, col) => ({...acc, [col]: ''}), {}))
+		}
+		return paddedData
+	}
+
+	useEffect(() => {
+		// Устанавливаем сортировку по умолчанию для первого столбца
+		handleSort('name')
+	}, [])
+
+	return (
+		<div className={s.wrapper}>
+			<div className={s.Header}>
+				<button onClick={() => setChooseGraphic(0)}>
+					<ShowChartIcon
+						className={`${chooseGraphic === 0 && s.activeIcon} ${s.Icon}`}
+					/>
+				</button>
+				<button onClick={() => setChooseGraphic(1)}>
+					<BarChartIcon
+						className={`${chooseGraphic === 1 && s.activeIcon} ${s.Icon}`}
+					/>
+				</button>
+				<button onClick={() => navigate('../')}>
+					<CloseIcon className={s.CloseIcon} />
+				</button>
+			</div>
+			<div className={s.MainBlock}>
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={studFinSubjects}
+					OnChangeItem={(e) => setStudFinSubjects(e.target.value)}
+					DateState={studFinDate}
+					OnChangeDate={(e) => {
+						setStudFinDate(e.target.value)
+						updateDateRange(
+							e.target.value,
+							setStudFinDateStart,
+							setStudFinDateEnd,
+						)
+					}}
+					DateStartState={studFinDateStart}
+					OnChangeDateStart={setStudFinDateStart}
+					DateEndState={studFinDateEnd}
+					OnChangeDateEnd={setStudFinDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={financeData}
+					options={options}
+					yScaleName="Рубли"
+					optionsBar={optionsBar}
+					title="Ученики-Финансы"
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studFinSubjects,
+							setStudFinSubjects,
+							financeData,
+							'Рубли',
+						)
+					}
+				/>
+				<Line width="100%" className={s.Line} />
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={studAmSubjects}
+					OnChangeItem={(e) => setStudAmSubjects(e.target.value)}
+					DateState={studAmDate}
+					OnChangeDate={(e) => {
+						setStudAmDate(e.target.value)
+						updateDateRange(
+							e.target.value,
+							setStudAmDateStart,
+							setStudAmDateEnd,
+						)
+					}}
+					DateStartState={studAmDateStart}
+					OnChangeDateStart={setStudAmDateStart}
+					DateEndState={studAmDateEnd}
+					OnChangeDateEnd={setStudAmDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={studentCountData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики-Количество"
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studAmSubjects,
+							setStudAmSubjects,
+							studentCountData,
+							'Чел',
+						)
+					}
+				/>
+				<Line width="100%" className={s.Line} />
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={studLesSubjects}
+					OnChangeItem={(e) => setStudLesSubjects(e.target.value)}
+					DateState={studLesDate}
+					OnChangeDate={(e) => {
+						setStudLesDate(e.target.value)
+						updateDateRange(
+							e.target.value,
+							setStudLesDateStart,
+							setStudLesDateEnd,
+						)
+					}}
+					DateStartState={studLesDateStart}
+					OnChangeDateStart={setStudLesDateStart}
+					DateEndState={studLesDateEnd}
+					OnChangeDateEnd={setStudLesDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={studentCountItemsData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики-Занятия"
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							studLesSubjects,
+							setStudLesSubjects,
+							studentCountItemsData,
+							'Часы',
+						)
+					}
+				/>
+				<Line width="100%" className={s.Line} />
+
+				{/* Students Table */}
+				<div className={s.GraphicBlock}>
+					<div className={s.MenuForGraphic}>
+						<p className={s.TitleTable}>Ученики сводная таблица</p>
+						<FormControl variant="standard" className={s.formControl}>
+							<InputLabel id="date-select-label">Выберите период</InputLabel>
+							<Select
+								labelId="date-select-label"
+								className={s.muiSelect}
+								value={studTableDateState}
+								onChange={(e) => {
+									setStudTableDateState(e.target.value)
+									updateDateRange(
+										e.target.value,
+										setStudTableDateStart,
+										setStudTableDateEnd,
+									)
+								}}
+								defaultValue={0}>
+								<MenuItem value={0}>
+									<CalendarMonthIcon />
+									За последние 30 дней
+								</MenuItem>
+								<MenuItem value={1}>
+									<CalendarMonthIcon />С начала месяца
+								</MenuItem>
+								<MenuItem value={2}>
+									<CalendarMonthIcon />С начала года
+								</MenuItem>
+								<MenuItem value={3}>
+									<CalendarMonthIcon />
+									За всё время
+								</MenuItem>
+							</Select>
+						</FormControl>
+						<Line width="260px" />
+						<div className={s.Dates}>
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={studTableDateStart}
+									onChange={setStudTableDateStart}
+									calendarId={'cliTable-left'}
+								/>
+							</div>
+							<Line width="20px" className={s.LineDate} />
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={studTableDateEnd}
+									onChange={setStudTableDateEnd}
+									calendarId={`cliTable-right`}
+								/>
+							</div>
+						</div>
+						<div style={{maxHeight: '300px', overflowY: 'auto'}}>
+							{renderSubjectCheckboxes(
+								studTableSubjects,
+								setStudTableSubjects,
+								{
+									datasets: subjects.map((subject) => ({
+										label: subject.itemName,
+										data: studentsData
+											.filter((item) => item.subject === subject.itemName)
+											.map((item) => 1),
+									})),
+								},
+								'',
+							)}
+						</div>
+					</div>
+					<div className={s.TableWrap}>
+						<table className={s.Table}>
+							<thead className={s.Thead}>
+								<tr className={s.Tr}>
+									{Object.keys(columnTranslations).map((column) => {
+										const count =
+											column === 'name'
+												? studentsData.length
+												: studentsData.reduce(
+														(acc, item) =>
+															item[column] !== undefined && item[column] !== ''
+																? acc + 1
+																: acc,
+														0,
+													)
+										return (
+											<th
+												key={column}
+												onClick={() => handleSort(column)}
+												className={s.Th}>
+												{columnTranslations[column]}:{' '}
+												{sortColumn === column && (
+													<Arrow
+														direction={sortDirection === 'asc' ? 'up' : 'down'}
+													/>
+												)}
+												({count})
+											</th>
+										)
+									})}
+								</tr>
+							</thead>
+							<tbody className={s.Tbody}>
+								{padTable(
+									sortData(studentsData, sortColumn, sortDirection),
+									Object.keys(columnTranslations),
+								).map((item, index) => (
+									<tr key={index} className={s.Tr}>
+										{Object.keys(columnTranslations).map((column) => (
+											<td key={column} className={s.Td}>
+												<p>{item[column]}</p>
+											</td>
+										))}
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<Line width="100%" className={s.Line} />
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={cliFinSubjects}
+					OnChangeItem={(e) => setCliFinSubjects(e.target.value)}
+					DateState={cliFinDate}
+					OnChangeDate={(e) => {
+						setCliFinDate(e.target.value)
+						updateDateRange(
+							e.target.value,
+							setCliFinDateStart,
+							setCliFinDateEnd,
+						)
+					}}
+					DateStartState={cliFinDateStart}
+					OnChangeDateStart={setCliFinDateStart}
+					DateEndState={cliFinDateEnd}
+					OnChangeDateEnd={setCliFinDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={clientsFinanceData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Заказчики-Финансы"
+					isClient
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							cliFinSubjects,
+							setCliFinSubjects,
+							clientsFinanceData,
+							'Рубли',
+						)
+					}
+				/>
+				<Line width="100%" className={s.Line} />
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={cliAmSubjects}
+					OnChangeItem={(e) => setCliAmSubjects(e.target.value)}
+					DateState={cliAmDate}
+					OnChangeDate={(e) => {
+						setCliAmDate(e.target.value)
+						updateDateRange(e.target.value, setCliAmDateStart, setCliAmDateEnd)
+					}}
+					DateStartState={cliAmDateStart}
+					OnChangeDateStart={setCliAmDateStart}
+					DateEndState={cliAmDateEnd}
+					OnChangeDateEnd={setCliAmDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={clientsCountData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Заказчики-Количество"
+					isClient
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							cliAmSubjects,
+							setCliAmSubjects,
+							clientsCountData,
+							'Чел',
+						)
+					}
+				/>
+				<Line width="100%" className={s.Line} />
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={cliWorkSubjects}
+					OnChangeItem={(e) => setCliWorkSubjects(e.target.value)}
+					DateState={cliWorkDate}
+					OnChangeDate={(e) => {
+						setCliWorkDate(e.target.value)
+						updateDateRange(
+							e.target.value,
+							setCliWorkDateStart,
+							setCliWorkDateEnd,
+						)
+					}}
+					DateStartState={cliWorkDateStart}
+					OnChangeDateStart={setCliWorkDateStart}
+					DateEndState={cliWorkDateEnd}
+					OnChangeDateEnd={setCliWorkDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={clientsWorksData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Заказчики-Работы"
+					isClient
+					renderCheckboxes={() =>
+						renderSubjectCheckboxes(
+							cliWorkSubjects,
+							setCliWorkSubjects,
+							clientsWorksData,
+							'Часы',
+						)
+					}
+				/>
+				<Line width="100%" className={s.Line} />
+
+				{/* Clients Table */}
+				<div className={s.GraphicBlock}>
+					<div className={s.MenuForGraphic}>
+						<p className={s.TitleTable}>Заказчики сводная таблица</p>
+						<FormControl variant="standard" className={s.formControl}>
+							<InputLabel id="date-select-label">Выберите период</InputLabel>
+							<Select
+								labelId="date-select-label"
+								className={s.muiSelect}
+								value={cliTableDateState}
+								onChange={(e) => {
+									setCliTableDateState(e.target.value)
+									updateDateRange(
+										e.target.value,
+										setCliTableDateStart,
+										setCliTableDateEnd,
+									)
+								}}
+								defaultValue={0}>
+								<MenuItem value={0}>
+									<CalendarMonthIcon />
+									За последние 30 дней
+								</MenuItem>
+								<MenuItem value={1}>
+									<CalendarMonthIcon />С начала месяца
+								</MenuItem>
+								<MenuItem value={2}>
+									<CalendarMonthIcon />С начала года
+								</MenuItem>
+								<MenuItem value={3}>
+									<CalendarMonthIcon />
+									За всё время
+								</MenuItem>
+							</Select>
+						</FormControl>
+
+						<Line width="260px" />
+						<div className={s.Dates}>
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={cliTableDateStart}
+									onChange={setCliTableDateStart}
+									calendarId={'cliTable-left'}
+								/>
+							</div>
+							<Line width="20px" className={s.LineDate} />
+							<div className={s.DatePicker}>
+								<MiniCalendar
+									value={cliTableDateEnd}
+									onChange={setCliTableDateEnd}
+									calendarId={`cliTable-right`}
+								/>
+							</div>
+						</div>
+						<div style={{maxHeight: '300px', overflowY: 'auto'}}>
+							{renderSubjectCheckboxes(
+								cliTableSubjects,
+								setCliTableSubjects,
+								{
+									datasets: subjects.map((subject) => ({
+										label: subject.itemName,
+										data: clientData
+											.filter((item) => item.subject === subject.itemName)
+											.map((item) => 1),
+									})),
+								},
+								'',
+							)}
+						</div>
+					</div>
+					<div className={s.TableWrap}>
+						<table className={s.Table}>
+							<thead className={s.Thead}>
+								<tr className={s.Tr}>
+									{Object.keys(columnTranslations).map((column) => {
+										const count =
+											column === 'name'
+												? clientData.length
+												: clientData.reduce(
+														(acc, item) =>
+															item[column] !== undefined && item[column] !== ''
+																? acc + 1
+																: acc,
+														0,
+													)
+
+										return (
+											<th
+												key={column}
+												onClick={() => handleSort(column)}
+												className={s.Th}>
+												{columnTranslations[column]}:{' '}
+												{sortColumn === column && (
+													<Arrow
+														direction={sortDirection === 'asc' ? 'up' : 'down'}
+													/>
+												)}
+												({count})
+											</th>
+										)
+									})}
+								</tr>
+							</thead>
+							<tbody className={s.Tbody}>
+								{padTable(
+									sortData(clientData, sortColumn, sortDirection),
+									Object.keys(columnTranslations),
+									10,
+								).map((item, index) => (
+									<tr key={index} className={s.Tr}>
+										{Object.keys(columnTranslations).map((column) => (
+											<td key={column} className={s.Td}>
+												<p>{item[column]}</p>
+											</td>
+										))}
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<Line width="100%" className={s.Line} />
+
+				<GraphicBlock
+					StyledPickersLayout={StyledPickersLayout}
+					ItemState={studRelatSubjects}
+					OnChangeItem={(e) => setStudRelatSubjects(e.target.value)}
+					DateState={studRelatDate}
+					OnChangeDate={(e) => {
+						setStudRelatDate(e.target.value)
+						updateDateRange(
+							e.target.value,
+							setStudRelatDateStart,
+							setStudRelatDateEnd,
+						)
+					}}
+					DateStartState={studRelatDateStart}
+					OnChangeDateStart={setStudRelatDateStart}
+					DateEndState={studRelatDateEnd}
+					OnChangeDateEnd={setStudRelatDateEnd}
+					chooseGraphic={chooseGraphic}
+					data={clientsNstudentsCompareData}
+					options={options}
+					optionsBar={optionsBar}
+					title="Ученики - Заказчики сравнительный график"
+					isClient
+					renderCheckboxes={() =>
+						renderComparisonCheckboxes(clientsNstudentsCompareData)
+					}
+				/>
+			</div>
+		</div>
 	)
 }
 

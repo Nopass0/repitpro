@@ -200,7 +200,17 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 				)}
 			</div>
 			<div className={s.ChartWrap}>
-				<p>{title}</p>
+				<p
+					style={{
+						fontWeight: '500',
+						fontSize: '14px',
+						marginBottom: '10px',
+						marginLeft: '60px',
+						textAlign: 'left',
+						color: '#c0c0c0',
+					}}>
+					{title}
+				</p>
 				<div className={s.chart_container}>
 					{chooseGraphic === 0 ? (
 						<LineGraph
