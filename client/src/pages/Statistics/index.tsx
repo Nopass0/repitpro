@@ -322,63 +322,64 @@ const Statistics = () => {
 			return dataset?.backgroundColor || '#25991c'
 		}
 		return (
-			// Формируем структуру компонента
-			<table className={s.subjectCheckboxes}>
-				<thead>
-					<tr className={s.subjectHeader}>
-						<th></th>
-						<th style={{fontWeight: 'bold'}}>Кол-во</th>
-						<th style={{fontWeight: 'bold'}}>%</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr className={s.subjectOne}>
-						<td style={{width: '60%'}}>
-							<label>
-								<Checkbox
-									style={{
-										color: getDatasetColor('Заказчики'),
-									}}
-									checked={showClients}
-									onChange={handleClientsChange}
-								/>
-								Заказчики
-							</label>
-						</td>
-						<td className={s.subjectCounts} style={{width: '20%'}}>
-							{clientsTotal}
-						</td>
-						<td className={s.subjectCounts} style={{width: '20%'}}>
-							{getPercentage(clientsTotal)}%
-						</td>
-					</tr>
-					<tr className={s.subjectOne}>
-						<td style={{width: '60%'}}>
-							<label>
-								<Checkbox
-									style={{
-										color: getDatasetColor('Ученики'),
-									}}
-									checked={showStudents}
-									onChange={handleStudentsChange}
-								/>
-								Ученики
-							</label>
-						</td>
-						<td className={s.subjectCounts} style={{width: '20%'}}>
-							{studentsTotal}
-						</td>
-						<td className={s.subjectCounts} style={{width: '20%'}}>
-							{getPercentage(studentsTotal)}%
-						</td>
-					</tr>
-				</tbody>
-				<tfoot>
-					<tr className={s.subjectCheckboxesAll}>
-						<td colSpan={3}>Всего: {grandTotal}</td>
-					</tr>
-				</tfoot>
-			</table>
+			<div className="w-full max-w-lg">
+				<table className="w-full border-collapse">
+					<thead>
+						<tr className="border-b">
+							<th className="w-3/5 text-left py-2 px-4"></th>
+							<th className="w-1/5 text-right py-2 px-4 font-bold">Кол-во</th>
+							<th className="w-1/5 text-right py-2 px-4 font-bold">%</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr className="border-b">
+							<td className="py-2 px-4">
+								<label className="flex items-center space-x-2">
+									<Checkbox
+										className="h-4 w-4"
+										style={{
+											borderColor: getDatasetColor('Заказчики'),
+										}}
+										checked={showClients}
+										onChange={handleClientsChange}
+									/>
+									<span>Заказчики</span>
+								</label>
+							</td>
+							<td className="text-right py-2 px-4">{clientsTotal}</td>
+							<td className="text-right py-2 px-4">
+								{getPercentage(clientsTotal)}%
+							</td>
+						</tr>
+						<tr className="border-b">
+							<td className="py-2 px-4">
+								<label className="flex items-center space-x-2">
+									<Checkbox
+										className="h-4 w-4"
+										style={{
+											borderColor: getDatasetColor('Ученики'),
+										}}
+										checked={showStudents}
+										onChange={handleStudentsChange}
+									/>
+									<span>Ученики</span>
+								</label>
+							</td>
+							<td className="text-right py-2 px-4">{studentsTotal}</td>
+							<td className="text-right py-2 px-4">
+								{getPercentage(studentsTotal)}%
+							</td>
+						</tr>
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colSpan={3} className="py-2 px-4 text-right font-bold">
+								Всего: {grandTotal}
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
 		)
 	}
 
@@ -691,52 +692,54 @@ const Statistics = () => {
 
 		return (
 			<div className={s.subjectCheckboxes}>
-				{/* Заголовок таблицы */}
-				<div className={s.subjectHeader}>
-					<p></p>
-					<div className={s.countsWrapper}>
-						<p>{yScaleName}</p>
-						<p>%</p>
-					</div>
-				</div>
-				{calculatedSubjects.map(({subject, total}) => {
-					const dataset = data.datasets.find(
-						(ds) => ds.label === subject.itemName,
-					)
-					const color = dataset?.backgroundColor || '#25991c'
-					const isChecked = selectedSubjects.some(
-						(s) => s.itemName === subject.itemName,
-					)
-					const percentage =
-						grandTotal > 0 ? ((total / grandTotal) * 100).toFixed(1) : '0.0'
-
-					return (
-						<div key={subject.itemName} className={s.subjectOne}>
-							<label>
-								<Checkbox
-									style={{color}}
-									checked={isChecked}
-									onChange={(e) =>
-										handleCheckboxChange(subject.itemName, e.target.checked)
-									}
-								/>
-								{subject.itemName}
-							</label>
-							<div className={s.countsWrapper}>
-								<div className={s.subjectCounts}>
-									<p>{total}</p>
-								</div>
-								<div className={s.subjectCounts}>
-									<p>{percentage}%</p>
-								</div>
-							</div>
-						</div>
-					)
-				})}
-				{/* Итоговая строка */}
-				<div className={s.subjectCheckboxesAll}>
-					<p>Всего: {grandTotal}</p>
-				</div>
+				<table className="w-full">
+					<thead>
+						<tr>
+							<th className="text-left"></th>
+							<th className="text-right">{yScaleName}</th>
+							<th className="text-right">%</th>
+						</tr>
+					</thead>
+					<tbody>
+						{calculatedSubjects.map(({subject, total}) => {
+							const dataset = data.datasets.find(
+								(ds) => ds.label === subject.itemName,
+							)
+							const color = dataset?.backgroundColor || '#25991c'
+							const isChecked = selectedSubjects.some(
+								(s) => s.itemName === subject.itemName,
+							)
+							const percentage =
+								grandTotal > 0 ? ((total / grandTotal) * 100).toFixed(1) : '0.0'
+							return (
+								<tr key={subject.itemName}>
+									<td className="py-1">
+										<label className="flex items-center gap-2">
+											<Checkbox
+												style={{color: color}}
+												checked={isChecked}
+												onChange={(e) =>
+													handleCheckboxChange(
+														subject.itemName,
+														e.target.checked,
+													)
+												}
+											/>
+											{subject.itemName}
+										</label>
+									</td>
+									<td className="text-right py-1">{total}</td>
+									<td className="text-right py-1">{percentage}%</td>
+								</tr>
+							)
+						})}
+						<tr>
+							<td className="pt-2 font-medium">Всего:</td>
+							<td className="pt-2 text-right font-medium">{grandTotal}</td>
+							<td className="pt-2 text-right font-medium">100%</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		)
 	}
@@ -891,10 +894,7 @@ const Statistics = () => {
 									)
 								}}
 								defaultValue={0}>
-								<MenuItem value={0}>
-									<CalendarMonthIcon />
-									За последние 30 дней
-								</MenuItem>
+								<MenuItem value={0}>За последние 30 дней</MenuItem>
 								<MenuItem value={1}>
 									<CalendarMonthIcon />С начала месяца
 								</MenuItem>
@@ -961,13 +961,12 @@ const Statistics = () => {
 												key={column}
 												onClick={() => handleSort(column)}
 												className={s.Th}>
-												{columnTranslations[column]}:{' '}
+												{columnTranslations[column]}: ({count})
 												{sortColumn === column && (
 													<Arrow
 														direction={sortDirection === 'asc' ? 'up' : 'down'}
 													/>
 												)}
-												({count})
 											</th>
 										)
 									})}

@@ -192,12 +192,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						/>
 					</div>
 				</div>
-				{renderCheckboxes && (
-					<div className={s.CheckboxColumn}>
-						<h4 className={s.CheckboxTitle}>Выберите предметы:</h4>
-						{renderCheckboxes()}
-					</div>
-				)}
+				{renderCheckboxes && <div>{renderCheckboxes()}</div>}
 			</div>
 			<div className={s.ChartWrap}>
 				<p
