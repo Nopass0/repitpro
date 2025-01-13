@@ -971,8 +971,8 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
                                         {students.length < 6 && !editingNewLesson ? (
                                           Array.from({ length: 6 - students.length }).map((_, index) => (
                                             <React.Fragment key={`grid-${index}`}>
-                                              <div className="h-14" /> {/* Spacing to match lesson row height with reduced top margin */}
                                               <Separator className="my-2" />
+                                             <div className={`h-14 ${index === 0 ? 'mt-0' : 'mt-2'}`} />  {/* Spacing to match lesson row height with reduced top margin */}
                                             </React.Fragment>
                                           ))
                                         ) : null}

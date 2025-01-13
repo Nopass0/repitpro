@@ -8,122 +8,121 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --background: 140 33% 97%;
-        --foreground: 240 10% 3.9%;
+	:root {
+		--background: 140 33% 97%;
+		--foreground: 240 10% 3.9%;
 
-        --card: 0 0% 100%;
-        --card-foreground: 240 10% 3.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 3.9%;
 
-        --popover: 0 0% 100%;
-        --popover-foreground: 240 10% 3.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 3.9%;
 
-        /* Green primary color from the UI */
-        --primary: 142 76% 36%;
-        --primary-foreground: 355 100% 100%;
+		/* Green primary color from the UI */
+		--primary: 142 76% 36%;
+		--primary-foreground: 355 100% 100%;
 
-        /* Ring color for outline buttons */
-        --outline: 142 76% 36%;
-        --outline-foreground: 142 76% 36%;
+		/* Ring color for outline buttons */
+		--outline: 142 76% 36%;
+		--outline-foreground: 142 76% 36%;
 
-        /* Light green for secondary elements */
-        --secondary: 140 33% 96%;
-        --secondary-foreground: 240 5.9% 10%;
+		/* Light green for secondary elements */
+		--secondary: 140 33% 96%;
+		--secondary-foreground: 240 5.9% 10%;
 
-        --muted: 240 4.8% 95.9%;
-        --muted-foreground: 240 3.8% 46.1%;
+		--muted: 240 4.8% 95.9%;
+		--muted-foreground: 240 3.8% 46.1%;
 
-        /* Subtle green tint for accent elements */
-        --accent: 140 33% 96%;
-        --accent-foreground: 240 5.9% 10%;
+		/* Subtle green tint for accent elements */
+		--accent: 140 33% 96%;
+		--accent-foreground: 240 5.9% 10%;
 
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 0 0% 98%;
 
-        /* Border colors matching the UI */
-        --border: 140 6% 90%;
-        --input: 142 76% 36%;
-        --ring: 142 76% 36%;
+		/* Border colors matching the UI */
+		--border: 140 6% 90%;
+		--input: 142 76% 36%;
+		--ring: 142 76% 36%;
 
-        /* Chart colors similar to the UI scheme */
-        --chart-1: 142 76% 36%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
+		/* Chart colors similar to the UI scheme */
+		--chart-1: 142 76% 36%;
+		--chart-2: 173 58% 39%;
+		--chart-3: 197 37% 24%;
+		--chart-4: 43 74% 66%;
+		--chart-5: 27 87% 67%;
 
-        /* Rounded corners matching the UI */
-        --radius: 0.75rem;
+		/* Rounded corners matching the UI */
+		--radius: 0.75rem;
 
-        /* Sidebar styles from the image */
-        --sidebar-background: 140 33% 97%;
-        --sidebar-foreground: 240 5.3% 26.1%;
-        --sidebar-primary: 142 76% 36%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 140 33% 96%;
-        --sidebar-accent-foreground: 240 5.9% 10%;
-        --sidebar-border: 140 6% 90%;
-        --sidebar-ring: 142 76% 36%;
-    }
+		/* Sidebar styles from the image */
+		--sidebar-background: 140 33% 97%;
+		--sidebar-foreground: 240 5.3% 26.1%;
+		--sidebar-primary: 142 76% 36%;
+		--sidebar-primary-foreground: 0 0% 100%;
+		--sidebar-accent: 140 33% 96%;
+		--sidebar-accent-foreground: 240 5.9% 10%;
+		--sidebar-border: 140 6% 90%;
+		--sidebar-ring: 142 76% 36%;
+	}
 
-    .dark {
-        --background: 240 10% 3.9%;
-        --foreground: 0 0% 98%;
+	.dark {
+		--background: 240 10% 3.9%;
+		--foreground: 0 0% 98%;
 
-        --card: 240 10% 3.9%;
-        --card-foreground: 0 0% 98%;
+		--card: 240 10% 3.9%;
+		--card-foreground: 0 0% 98%;
 
-        --popover: 240 10% 3.9%;
-        --popover-foreground: 0 0% 98%;
+		--popover: 240 10% 3.9%;
+		--popover-foreground: 0 0% 98%;
 
-        /* Adjusted primary for dark mode */
-        --primary: 142 76% 46%;
-        --primary-foreground: 355 100% 100%;
+		/* Adjusted primary for dark mode */
+		--primary: 142 76% 46%;
+		--primary-foreground: 355 100% 100%;
 
-        --secondary: 240 3.7% 15.9%;
-        --secondary-foreground: 0 0% 98%;
+		--secondary: 240 3.7% 15.9%;
+		--secondary-foreground: 0 0% 98%;
 
-        --muted: 240 3.7% 15.9%;
-        --muted-foreground: 240 5% 64.9%;
+		--muted: 240 3.7% 15.9%;
+		--muted-foreground: 240 5% 64.9%;
 
-        --accent: 240 3.7% 15.9%;
-        --accent-foreground: 0 0% 98%;
+		--accent: 240 3.7% 15.9%;
+		--accent-foreground: 0 0% 98%;
 
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 0 0% 98%;
 
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
-        --ring: 142 76% 46%;
+		--border: 240 3.7% 15.9%;
+		--input: 240 3.7% 15.9%;
+		--ring: 142 76% 46%;
 
-        /* Dark mode chart colors */
-        --chart-1: 142 76% 46%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
+		/* Dark mode chart colors */
+		--chart-1: 142 76% 46%;
+		--chart-2: 160 60% 45%;
+		--chart-3: 30 80% 55%;
+		--chart-4: 280 65% 60%;
+		--chart-5: 340 75% 55%;
 
-        /* Dark mode sidebar */
-        --sidebar-background: 240 10% 3.9%;
-        --sidebar-foreground: 0 0% 98%;
-        --sidebar-primary: 142 76% 46%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
-        --sidebar-accent-foreground: 0 0% 98%;
-        --sidebar-border: 240 3.7% 15.9%;
-        --sidebar-ring: 142 76% 46%;
-    }
+		/* Dark mode sidebar */
+		--sidebar-background: 240 10% 3.9%;
+		--sidebar-foreground: 0 0% 98%;
+		--sidebar-primary: 142 76% 46%;
+		--sidebar-primary-foreground: 0 0% 100%;
+		--sidebar-accent: 240 3.7% 15.9%;
+		--sidebar-accent-foreground: 0 0% 98%;
+		--sidebar-border: 240 3.7% 15.9%;
+		--sidebar-ring: 142 76% 46%;
+	}
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
 }
-
 
 // @layer base {
 // 	:root {
@@ -378,4 +377,46 @@ body {
 	.container {
 		padding: 10px 0 0 0 !important;
 	}
+}
+
+@layer base {
+	:root {
+		--checkbox-color: #000000;
+	}
+}
+
+.checkbox {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	outline: none;
+	cursor: pointer;
+}
+
+.checkbox::before {
+	content: '';
+	display: block;
+	width: 100%;
+	height: 100%;
+	border-radius: 4px;
+	border: 2px solid #e2e8f0;
+	background-color: white;
+}
+
+.checkbox:checked::before {
+	background-color: var(--checkbox-color);
+	border-color: var(--checkbox-color);
+}
+
+.checkbox:checked::after {
+	content: '';
+	display: block;
+	width: 5px;
+	height: 10px;
+	border: solid white;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+	position: absolute;
+	top: 2px;
+	left: 6px;
 }

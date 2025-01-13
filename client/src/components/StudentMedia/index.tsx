@@ -1,14 +1,16 @@
-import {cn} from '@/lib/utils'
-import {StorageItem} from '@/types/student'
+import React, {useState, useRef, useEffect} from 'react'
+import {motion} from 'framer-motion'
 import {
-	ContextMenu,
-	ContextMenuTrigger,
-	ContextMenuContent,
-	ContextMenuItem,
-} from '@/ui/context-menu'
-import {ScrollArea} from '@/ui/scroll-area'
-import {AnimatePresence, motion} from 'framer-motion'
-import {
+	ChevronLeft,
+	ChevronRight,
+	X,
+	Plus,
+	Copy,
+	Trash2,
+	Home,
+	Users,
+	Video,
+	PlusIcon,
 	Volume2,
 	Link2,
 	ChevronUp,
@@ -16,16 +18,35 @@ import {
 	Square,
 	Mic,
 	File,
-	X,
 	Play,
 	Pause,
 	ExternalLink,
 } from 'lucide-react'
-import React, {useRef, useState, useEffect} from 'react'
 import {Button} from '@/ui/button'
+import {ScrollArea} from '@/ui/scroll-area'
+import {Separator} from '@/ui/separator'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/ui/select'
+import {Input} from '@/ui/input'
+import {Checkbox} from '@/ui/checkbox'
+import {cn} from '@/lib/utils'
+import {
+	ContextMenu,
+	ContextMenuTrigger,
+	ContextMenuContent,
+	ContextMenuItem,
+} from '@/ui/context-menu'
+import {Popover, PopoverContent, PopoverTrigger} from '@/ui/popover'
+
+import {StorageItem} from '@/types/student'
 import FileUploader from '../FileUploader'
 
-// Компонент для аудио файла
+// AudioFile component
 const AudioFile: React.FC<{
 	file: StorageItem
 	onRemove: (id: string) => void
@@ -146,7 +167,7 @@ const AudioFile: React.FC<{
 	)
 }
 
-// Компонент для файла или ссылки
+// FileOrLink component
 const FileOrLink: React.FC<{
 	file: StorageItem
 	onRemove: (id: string) => void
@@ -211,104 +232,57 @@ const FileOrLink: React.FC<{
 	)
 }
 
-// Компонент для загрузки файлов и ссылок
-export const FileAndLinkUploader: React.FC<{
-	files: StorageItem[]
-	onFileUpload: (file: File) => void
-	onLinkAdd: (url: string) => void
+// AudioListPopover component
+const AudioListPopover: React.FC<{
+	audioFiles: StorageItem[]
 	onItemRemove: (id: string) => void
-	sortBy: 'name' | 'type'
-	onSortChange: (sort: 'name' | 'type') => void
-}> = ({files, onFileUpload, onLinkAdd, onItemRemove, sortBy, onSortChange}) => {
-	const sortedFiles = [...files]
-		.filter((f) => f.type !== 'audio')
-		.sort((a, b) => {
-			if (sortBy === 'name') {
-				return a.name.localeCompare(b.name)
-			}
-			return a.type.localeCompare(b.type)
-		})
-
+}> = ({audioFiles, onItemRemove}) => {
 	return (
-		<div className="space-y-4 max-w-full">
-			<div className="flex items-center gap-2 mb-4">
-				<div className="w-48">
-					<ContextMenu>
-						<ContextMenuTrigger>
-							<FileUploader onNewFile={onFileUpload} files={files} />
-						</ContextMenuTrigger>
-						<ContextMenuContent>
-							<ContextMenuItem
-								onClick={async () => {
-									try {
-										const text = await navigator.clipboard.readText()
-										if (text.startsWith('http')) {
-											onLinkAdd(text)
-										}
-									} catch (err) {
-										console.error('Failed to read clipboard:', err)
-									}
-								}}>
-								<Link2 className="mr-2 h-4 w-4" />
-								Вставить ссылку
-							</ContextMenuItem>
-						</ContextMenuContent>
-					</ContextMenu>
-				</div>
+		<PopoverContent className="w-80">
+			<div className="flex items-center justify-between p-3 border-b">
+				<h3 className="text-sm font-medium">Список аудио</h3>
 			</div>
-
-			{sortedFiles.length > 0 && (
-				<>
-					<div className="flex justify-end gap-2 mb-2">
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => onSortChange('name')}
-							className={sortBy === 'name' ? 'bg-gray-100' : ''}>
-							По имени
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => onSortChange('type')}
-							className={sortBy === 'type' ? 'bg-gray-100' : ''}>
-							По типу
-						</Button>
-					</div>
-
-					<ScrollArea className="h-[200px] rounded-md border">
-						<div className="p-4 space-y-2">
-							{sortedFiles.map((file) =>
-								file.type === 'audio' ? (
-									<AudioFile
-										key={file.id}
-										file={file}
-										onRemove={onItemRemove}
-									/>
-								) : (
-									<FileOrLink
-										key={file.id}
-										file={file}
-										onRemove={onItemRemove}
-									/>
-								),
-							)}
-						</div>
-					</ScrollArea>
-				</>
-			)}
-		</div>
+			<ScrollArea className="h-60">
+				<div className="p-3 space-y-2">
+					{audioFiles.map((file) => (
+						<AudioFile key={file.id} file={file} onRemove={onItemRemove} />
+					))}
+				</div>
+			</ScrollArea>
+		</PopoverContent>
 	)
 }
 
-// Компонент для записи аудио
-export const AudioRecorder: React.FC<{
+// FileListPopover component
+const FileListPopover: React.FC<{
+	files: StorageItem[]
+	onItemRemove: (id: string) => void
+}> = ({files, onItemRemove}) => {
+	return (
+		<PopoverContent className="w-80">
+			<div className="flex items-center justify-between p-3 border-b">
+				<h3 className="text-sm font-medium">Список файлов</h3>
+			</div>
+			<ScrollArea className="h-60">
+				<div className="p-3 space-y-2">
+					{files.map((file) => (
+						<FileOrLink key={file.id} file={file} onRemove={onItemRemove} />
+					))}
+				</div>
+			</ScrollArea>
+		</PopoverContent>
+	)
+}
+
+// AudioRecorder component
+const AudioRecorder: React.FC<{
 	files: StorageItem[]
 	onAudioRecord: (blob: Blob) => void
 	onItemRemove: (id: string) => void
 }> = ({files, onAudioRecord, onItemRemove}) => {
 	const [isRecording, setIsRecording] = useState(false)
 	const [recordingTime, setRecordingTime] = useState(0)
+	const [isListening, setIsListening] = useState(false)
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 	const audioChunksRef = useRef<Blob[]>([])
 	const timerRef = useRef<NodeJS.Timer>()
@@ -395,17 +369,85 @@ export const AudioRecorder: React.FC<{
 						</>
 					)}
 				</Button>
+				<Popover>
+					<PopoverTrigger asChild>
+						<Button
+							variant="outline"
+							className="flex items-center gap-2 justify-center w-36">
+							<Volume2 className="h-4 w-4 shrink-0" />
+							<span className="text-sm font-medium">Слушать</span>
+						</Button>
+					</PopoverTrigger>
+					<AudioListPopover
+						audioFiles={audioFiles}
+						onItemRemove={onItemRemove}
+					/>
+				</Popover>
 			</div>
-
-			{audioFiles.length > 0 && (
-				<ScrollArea className="h-[200px] rounded-md border">
-					<div className="p-4 space-y-2">
-						{audioFiles.map((file) => (
-							<AudioFile key={file.id} file={file} onRemove={onItemRemove} />
-						))}
-					</div>
-				</ScrollArea>
-			)}
 		</div>
 	)
 }
+
+// FileAndLinkUploader component
+const FileAndLinkUploader: React.FC<{
+	files: StorageItem[]
+	onFileUpload: (file: File) => void
+	onLinkAdd: (url: string) => void
+	onItemRemove: (id: string) => void
+	sortBy: 'name' | 'type'
+	onSortChange: (sort: 'name' | 'type') => void
+}> = ({files, onFileUpload, onLinkAdd, onItemRemove, sortBy, onSortChange}) => {
+	const [isViewingFiles, setIsViewingFiles] = useState(false)
+
+	const sortedFiles = [...files]
+		.filter((f) => f.type !== 'audio')
+		.sort((a, b) => {
+			if (sortBy === 'name') {
+				return a.name.localeCompare(b.name)
+			}
+			return a.type.localeCompare(b.type)
+		})
+
+	return (
+		<div className="space-y-4 max-w-full">
+			<div className="flex items-center gap-2 mb-4">
+				<div className="w-48">
+					<ContextMenu>
+						<ContextMenuTrigger>
+							<FileUploader onNewFile={onFileUpload} files={files} />
+						</ContextMenuTrigger>
+						<ContextMenuContent>
+							<ContextMenuItem
+								onClick={async () => {
+									try {
+										const text = await navigator.clipboard.readText()
+										if (text.startsWith('http')) {
+											onLinkAdd(text)
+										}
+									} catch (err) {
+										console.error('Failed to read clipboard:', err)
+									}
+								}}>
+								<Link2 className="mr-2 h-4 w-4" />
+								Вставить ссылку
+							</ContextMenuItem>
+						</ContextMenuContent>
+					</ContextMenu>
+				</div>
+				<Popover>
+					<PopoverTrigger asChild>
+						<Button
+							variant="outline"
+							className="flex items-center gap-2 justify-center w-36">
+							<File className="h-4 w-4 shrink-0" />
+							<span className="text-sm font-medium">Просмотр файлов</span>
+						</Button>
+					</PopoverTrigger>
+					<FileListPopover files={sortedFiles} onItemRemove={onItemRemove} />
+				</Popover>
+			</div>
+		</div>
+	)
+}
+
+export {AudioRecorder, FileAndLinkUploader}
