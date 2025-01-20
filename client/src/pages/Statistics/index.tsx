@@ -20,7 +20,7 @@ import Arrow from '../../assets/arrow'
 import s from './index.module.scss'
 import MiniCalendar from '@/components/MiniCalendar'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-
+import './index.css'
 const StyledPickersLayout = styled('span')({
 	'.MuiDateCalendar-root': {
 		color: '#25991c',
@@ -661,15 +661,32 @@ const Statistics = () => {
 		}, {})
 
 		const handleCheckboxChange = (subjectName, isChecked) => {
-			if (isChecked) {
-				// Добавляем все предметы с данным названием
-				const subjectsToAdd = subjects.filter((s) => s.itemName === subjectName)
-				setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
+			if (subjectName === 'Всего') {
+				if (isChecked) {
+					// Добавляем специальный элемент "Всего"
+					setSelectedSubjects((prev) => [
+						...prev,
+						{itemName: 'Всего', isTotal: true},
+					])
+				} else {
+					// Удаляем специальный элемент "Всего"
+					setSelectedSubjects((prev) =>
+						prev.filter((s) => s.itemName !== 'Всего'),
+					)
+				}
 			} else {
-				// Удаляем все предметы с данным названием
-				setSelectedSubjects((prev) =>
-					prev.filter((s) => s.itemName !== subjectName),
-				)
+				if (isChecked) {
+					// Добавляем все предметы с данным названием
+					const subjectsToAdd = subjects.filter(
+						(s) => s.itemName === subjectName,
+					)
+					setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
+				} else {
+					// Удаляем все предметы с данным названием
+					setSelectedSubjects((prev) =>
+						prev.filter((s) => s.itemName !== subjectName),
+					)
+				}
 			}
 		}
 
@@ -690,6 +707,8 @@ const Statistics = () => {
 			0,
 		)
 
+		const isTotalChecked = selectedSubjects.some((s) => s.itemName === 'Всего')
+
 		return (
 			<div className={s.subjectCheckboxes}>
 				<table className="w-full">
@@ -701,6 +720,21 @@ const Statistics = () => {
 						</tr>
 					</thead>
 					<tbody>
+						<tr>
+							<td className="py-1">
+								<label className="flex items-center gap-2">
+									<Checkbox
+										checked={isTotalChecked}
+										onChange={(e) =>
+											handleCheckboxChange('Всего', e.target.checked)
+										}
+									/>
+									Всего
+								</label>
+							</td>
+							<td className="text-right py-1">{grandTotal}</td>
+							<td className="text-right py-1">100%</td>
+						</tr>
 						{calculatedSubjects.map(({subject, total}) => {
 							const dataset = data.datasets.find(
 								(ds) => ds.label === subject.itemName,
@@ -733,11 +767,6 @@ const Statistics = () => {
 								</tr>
 							)
 						})}
-						<tr>
-							<td className="pt-2 font-medium">Всего:</td>
-							<td className="pt-2 text-right font-medium">{grandTotal}</td>
-							<td className="pt-2 text-right font-medium">100%</td>
-						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -1083,7 +1112,7 @@ const Statistics = () => {
 							cliWorkSubjects,
 							setCliWorkSubjects,
 							clientsWorksData,
-							'Часы',
+							'Кол-во',
 						)
 					}
 				/>
@@ -1108,20 +1137,10 @@ const Statistics = () => {
 									)
 								}}
 								defaultValue={0}>
-								<MenuItem value={0}>
-									<CalendarMonthIcon />
-									За последние 30 дней
-								</MenuItem>
-								<MenuItem value={1}>
-									<CalendarMonthIcon />С начала месяца
-								</MenuItem>
-								<MenuItem value={2}>
-									<CalendarMonthIcon />С начала года
-								</MenuItem>
-								<MenuItem value={3}>
-									<CalendarMonthIcon />
-									За всё время
-								</MenuItem>
+								<MenuItem value={0}>За последние 30 дней</MenuItem>
+								<MenuItem value={1}>С начала месяца</MenuItem>
+								<MenuItem value={2}>С начала года</MenuItem>
+								<MenuItem value={3}>За всё время</MenuItem>
 							</Select>
 						</FormControl>
 
@@ -1180,13 +1199,12 @@ const Statistics = () => {
 												key={column}
 												onClick={() => handleSort(column)}
 												className={s.Th}>
-												{columnTranslations[column]}:{' '}
+												{columnTranslations[column]}: ({count})
 												{sortColumn === column && (
 													<Arrow
 														direction={sortDirection === 'asc' ? 'up' : 'down'}
 													/>
 												)}
-												({count})
 											</th>
 										)
 									})}

@@ -187,17 +187,7 @@ io.on("connection", (socket) => {
 
   socket.on("deleteLink", (data) => deleteLink(data, socket));
   //check account
-  socket.on("checkAccount", async (data) => {
-    let token = await db.token.findFirst({
-      where: {
-        token: data,
-      },
-    });
 
-    if (!token) return socket.emit("checkAccount", { status: "error" });
-
-    return socket.emit("checkAccount", { status: "ok" });
-  });
   socket.on("disconnect", () => {
     console.log("user disconnected");
   });

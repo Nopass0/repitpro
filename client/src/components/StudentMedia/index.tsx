@@ -1,4 +1,5 @@
-import React, {useState, useRef, useEffect} from 'react'
+import type React from 'react'
+import {useState, useRef, useEffect} from 'react'
 import {motion} from 'framer-motion'
 import {
 	ChevronLeft,
@@ -43,7 +44,7 @@ import {
 } from '@/ui/context-menu'
 import {Popover, PopoverContent, PopoverTrigger} from '@/ui/popover'
 
-import {StorageItem} from '@/types/student'
+import type {StorageItem} from '@/types/student'
 import FileUploader from '../FileUploader'
 
 // AudioFile component
@@ -54,6 +55,7 @@ const AudioFile: React.FC<{
 	const [isPlaying, setIsPlaying] = useState(false)
 	const [duration, setDuration] = useState<number | null>(null)
 	const [currentTime, setCurrentTime] = useState(0)
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false) // Added state
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 
 	useEffect(() => {
@@ -150,19 +152,49 @@ const AudioFile: React.FC<{
 
 			<audio ref={audioRef} src={file.url} preload="metadata" />
 
-			<Button
-				variant="ghost"
-				size="icon"
-				className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
-				onClick={(e) => {
-					e.stopPropagation()
-					if (isPlaying && audioRef.current) {
-						audioRef.current.pause()
-					}
-					onRemove(file.id)
-				}}>
-				<X className="h-4 w-4" />
-			</Button>
+			<Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+				{' '}
+				{/* Changed Popover */}
+				<PopoverTrigger asChild>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
+						onClick={(e) => {
+							e.stopPropagation()
+							if (isPlaying && audioRef.current) {
+								audioRef.current.pause()
+							}
+						}}>
+						<Trash2 className="h-4 w-4" />
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent className="w-auto p-0">
+					<div className="p-4">
+						<p className="text-sm font-medium mb-2">Удалить аудио файл?</p>
+						<div className="flex justify-end space-x-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={(e) => {
+									e.stopPropagation()
+									setIsPopoverOpen(false) // Changed onClick
+								}}>
+								Отмена
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={(e) => {
+									e.stopPropagation()
+									onRemove(file.id)
+								}}>
+								Удалить
+							</Button>
+						</div>
+					</div>
+				</PopoverContent>
+			</Popover>
 		</motion.div>
 	)
 }
@@ -172,6 +204,7 @@ const FileOrLink: React.FC<{
 	file: StorageItem
 	onRemove: (id: string) => void
 }> = ({file, onRemove}) => {
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false) // Added state
 	const handleClick = () => {
 		if (file.url) {
 			window.open(file.url, '_blank')
@@ -192,7 +225,7 @@ const FileOrLink: React.FC<{
 		const k = 1024
 		const sizes = ['B', 'KB', 'MB', 'GB']
 		const i = Math.floor(Math.log(bytes) / Math.log(k))
-		return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
+		return `${Number.parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
 	}
 
 	return (
@@ -218,16 +251,48 @@ const FileOrLink: React.FC<{
 				)}
 			</div>
 
-			<Button
-				variant="ghost"
-				size="icon"
-				className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
-				onClick={(e) => {
-					e.stopPropagation()
-					onRemove(file.id)
-				}}>
-				<X className="h-4 w-4" />
-			</Button>
+			<Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+				{' '}
+				{/* Changed Popover */}
+				<PopoverTrigger asChild>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
+						onClick={(e) => {
+							e.stopPropagation()
+						}}>
+						<Trash2 className="h-4 w-4" />
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent className="w-auto p-0">
+					<div className="p-4">
+						<p className="text-sm font-medium mb-2">
+							Удалить {file.type === 'link' ? 'ссылку' : 'файл'}?
+						</p>
+						<div className="flex justify-end space-x-2">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={(e) => {
+									e.stopPropagation()
+									setIsPopoverOpen(false) // Changed onClick
+								}}>
+								Отмена
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={(e) => {
+									e.stopPropagation()
+									onRemove(file.id)
+								}}>
+								Удалить
+							</Button>
+						</div>
+					</div>
+				</PopoverContent>
+			</Popover>
 		</motion.div>
 	)
 }
@@ -236,11 +301,19 @@ const FileOrLink: React.FC<{
 const AudioListPopover: React.FC<{
 	audioFiles: StorageItem[]
 	onItemRemove: (id: string) => void
-}> = ({audioFiles, onItemRemove}) => {
+	onClose: () => void
+}> = ({audioFiles, onItemRemove, onClose}) => {
 	return (
 		<PopoverContent className="w-80">
 			<div className="flex items-center justify-between p-3 border-b">
 				<h3 className="text-sm font-medium">Список аудио</h3>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8"
+					onClick={onClose}>
+					<X className="h-4 w-4" />
+				</Button>
 			</div>
 			<ScrollArea className="h-60">
 				<div className="p-3 space-y-2">
@@ -257,11 +330,19 @@ const AudioListPopover: React.FC<{
 const FileListPopover: React.FC<{
 	files: StorageItem[]
 	onItemRemove: (id: string) => void
-}> = ({files, onItemRemove}) => {
+	onClose: () => void
+}> = ({files, onItemRemove, onClose}) => {
 	return (
 		<PopoverContent className="w-80">
 			<div className="flex items-center justify-between p-3 border-b">
 				<h3 className="text-sm font-medium">Список файлов</h3>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8"
+					onClick={onClose}>
+					<X className="h-4 w-4" />
+				</Button>
 			</div>
 			<ScrollArea className="h-60">
 				<div className="p-3 space-y-2">
@@ -283,6 +364,7 @@ const AudioRecorder: React.FC<{
 	const [isRecording, setIsRecording] = useState(false)
 	const [recordingTime, setRecordingTime] = useState(0)
 	const [isListening, setIsListening] = useState(false)
+	const [isAudioListOpen, setIsAudioListOpen] = useState(false) // Added state
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 	const audioChunksRef = useRef<Blob[]>([])
 	const timerRef = useRef<NodeJS.Timer>()
@@ -336,9 +418,7 @@ const AudioRecorder: React.FC<{
 	const formatTime = (seconds: number) => {
 		const mins = Math.floor(seconds / 60)
 		const secs = seconds % 60
-		return `${mins.toString().padStart(2, '0')}:${secs
-			.toString()
-			.padStart(2, '0')}`
+		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 	}
 
 	const audioFiles = files
@@ -346,8 +426,8 @@ const AudioRecorder: React.FC<{
 		.sort((a, b) => a.name.localeCompare(b.name))
 
 	return (
-		<div className="space-y-4 max-w-full">
-			<div className="flex items-center gap-2 mb-4">
+		<div className="space-y-2 max-w-full">
+			<div className="flex items-center gap-2">
 				<Button
 					variant={isRecording ? 'destructive' : 'outline'}
 					onClick={isRecording ? stopRecording : startRecording}
@@ -369,7 +449,9 @@ const AudioRecorder: React.FC<{
 						</>
 					)}
 				</Button>
-				<Popover>
+				<Popover open={isAudioListOpen} onOpenChange={setIsAudioListOpen}>
+					{' '}
+					{/* Updated Popover */}
 					<PopoverTrigger asChild>
 						<Button
 							variant="outline"
@@ -381,6 +463,7 @@ const AudioRecorder: React.FC<{
 					<AudioListPopover
 						audioFiles={audioFiles}
 						onItemRemove={onItemRemove}
+						onClose={() => setIsAudioListOpen(false)}
 					/>
 				</Popover>
 			</div>
@@ -398,6 +481,7 @@ const FileAndLinkUploader: React.FC<{
 	onSortChange: (sort: 'name' | 'type') => void
 }> = ({files, onFileUpload, onLinkAdd, onItemRemove, sortBy, onSortChange}) => {
 	const [isViewingFiles, setIsViewingFiles] = useState(false)
+	const [isFileListOpen, setIsFileListOpen] = useState(false)
 
 	const sortedFiles = [...files]
 		.filter((f) => f.type !== 'audio')
@@ -409,8 +493,8 @@ const FileAndLinkUploader: React.FC<{
 		})
 
 	return (
-		<div className="space-y-4 max-w-full">
-			<div className="flex items-center gap-2 mb-4">
+		<div className="space-y-2 max-w-full">
+			<div className="flex items-center gap-2">
 				<div className="w-48">
 					<ContextMenu>
 						<ContextMenuTrigger>
@@ -434,7 +518,7 @@ const FileAndLinkUploader: React.FC<{
 						</ContextMenuContent>
 					</ContextMenu>
 				</div>
-				<Popover>
+				<Popover open={isFileListOpen} onOpenChange={setIsFileListOpen}>
 					<PopoverTrigger asChild>
 						<Button
 							variant="outline"
@@ -443,7 +527,11 @@ const FileAndLinkUploader: React.FC<{
 							<span className="text-sm font-medium">Просмотр файлов</span>
 						</Button>
 					</PopoverTrigger>
-					<FileListPopover files={sortedFiles} onItemRemove={onItemRemove} />
+					<FileListPopover
+						files={sortedFiles}
+						onItemRemove={onItemRemove}
+						onClose={() => setIsFileListOpen(false)}
+					/>
 				</Popover>
 			</div>
 		</div>

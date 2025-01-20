@@ -2619,23 +2619,27 @@ const AddStudent = ({}: IAddStudent) => {
 												</div>
 											</div>
 											<Line width="100%" className={s.Line} />
-											<div className={s.StudentCard}>
-												<TextAreaInputBlock
-													title="Место проведения:"
-													value={item.placeLesson!}
-													disabled={isEditMode}
-													onChange={(e) => {
-														changeItemValue(
-															index,
-															'placeLesson',
-															e.target.value,
-														)
-													}}
-													textIndent="150px"
-													// firstMinSymbols={31}
-												/>
-											</div>
-											<Line width="100%" className={s.Line} />
+											{item.typeLesson === 2 || item.typeLesson === 4 ? (
+												<>
+													<div className={s.StudentCard}>
+														<TextAreaInputBlock
+															title="Место проведения:"
+															value={item.placeLesson!}
+															disabled={isEditMode}
+															onChange={(e) => {
+																changeItemValue(
+																	index,
+																	'placeLesson',
+																	e.target.value,
+																)
+															}}
+															textIndent="150px"
+															// firstMinSymbols={31}
+														/>
+													</div>
+													<Line width="100%" className={s.Line} />
+												</>
+											) : null}
 											<div className={s.StudentCard}>
 												<p>Стоимость одного занятия:</p>
 												<Input
@@ -2776,6 +2780,13 @@ const AddStudent = ({}: IAddStudent) => {
 								/> */}
 
 								{/* use FileAndLinkUploader instead */}
+								<div className="mb-6 py-6">
+									<AudioRecorder
+										files={mediaFiles}
+										onAudioRecord={handleAudioRecord}
+										onItemRemove={handleMediaRemove}
+									/>
+								</div>
 
 								<FileAndLinkUploader
 									files={mediaFiles}

@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from 'react'
+import type React from 'react'
+import {useState, useEffect} from 'react'
 import {
 	Line,
 	Bar,
@@ -10,7 +11,7 @@ import {
 	BarChart,
 } from 'recharts'
 import {format} from 'date-fns'
-import {Loader} from 'lucide-react'
+import {CalendarIcon, CalendarX, Loader} from 'lucide-react'
 import {
 	Select,
 	SelectContent,
@@ -44,6 +45,7 @@ interface IGraphicBlock {
 	OnChangeDateEnd?: (date: Date | undefined) => void
 	yScaleName?: string
 	renderCheckboxes?: () => React.ReactNode
+	isTotalChecked: boolean
 }
 
 const GraphicBlock: React.FC<IGraphicBlock> = ({
@@ -61,6 +63,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 	loading,
 	yScaleName,
 	renderCheckboxes,
+	isTotalChecked,
 }) => {
 	const [dataSet, setDataSet] = useState<any>(null)
 
@@ -71,11 +74,17 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 				data.datasets.forEach((dataset, datasetIndex) => {
 					dataPoint[`value${datasetIndex}`] = dataset.data[index]
 				})
+				if (isTotalChecked) {
+					dataPoint['total'] = data.datasets.reduce(
+						(sum, dataset) => sum + (dataset.data[index] || 0),
+						0,
+					)
+				}
 				return dataPoint
 			})
 			setDataSet(formattedData)
 		}
-	}, [data])
+	}, [data, isTotalChecked])
 
 	if (loading) {
 		return (
@@ -110,20 +119,20 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 					x2={x2}
 					y2={y2}
 					{...props}
-					stroke="black"
+					stroke="red"
 					strokeWidth={1}
 				/>
 				{/* Add arrow for Y axis */}
 				{x1 === x2 && (
 					<polygon
-						points={`${x1},${y1} ${x1 - 5},${y1 + 10} ${x1 + 5},${y1 + 10}`}
+						points={`${x1},${y1} ${x1 - 5},${y1 + 5} ${x1 + 5},${y1 + 5}`}
 						fill="black"
 					/>
 				)}
 				{/* Add arrow for X axis */}
 				{y1 === y2 && (
 					<polygon
-						points={`${x2},${y2} ${x2 - 10},${y2 - 5} ${x2 - 10},${y2 + 5}`}
+						points={`${x2},${y2} ${x2 - 5},${y2 - 5} ${x2 - 5},${y2 + 5}`}
 						fill="black"
 					/>
 				)}
@@ -132,9 +141,9 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 	}
 
 	return (
-		<div className={`${className} flex gap-6`} style={style}>
+		<div className={`${className} flex gap-6 items-center`} style={style}>
 			{/* Left Column */}
-			<div className="w-[200px] flex-shrink-0">
+			<div className="w-[250px] flex-shrink-0 ">
 				<div className="flex flex-col space-y-4">
 					<Select
 						value={DateState.toString()}
@@ -155,9 +164,10 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 							<PopoverTrigger asChild>
 								<Button
 									variant="outline"
-									className="h-9 px-3 text-sm flex-1"
+									className="h-9 px-3 text-sm flex-1 flex items-center gap-2"
 									style={{borderColor: '#e2e8f0'}}>
 									{DateStartState ? format(DateStartState, 'dd.MM') : 'От'}
+									<CalendarIcon className="ml-2 h-4 w-4" />
 								</Button>
 							</PopoverTrigger>
 							<PopoverContent className="w-auto p-0" align="start">
@@ -173,9 +183,10 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 							<PopoverTrigger asChild>
 								<Button
 									variant="outline"
-									className="h-9 px-3 text-sm flex-1"
+									className="h-9 px-3 text-sm flex-1 flex items-center gap-2"
 									style={{borderColor: '#e2e8f0'}}>
 									{DateEndState ? format(DateEndState, 'dd.MM') : 'До'}
+									<CalendarIcon className="ml-2 h-4 w-4" />
 								</Button>
 							</PopoverTrigger>
 							<PopoverContent className="w-auto p-0" align="end">
@@ -197,10 +208,10 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 
 			{/* Right Column - Chart */}
 			<div className="flex-1 min-w-0">
-				<div className="flex items-center gap-2 mb-4">
+				<div className="flex items-center ml-20 gap-2 ">
 					<span className="text-sm text-gray-500">{title}</span>
 				</div>
-				<div className="w-full h-[400px]">
+				<div className="w-[98%] h-[400px]">
 					{chooseGraphic === 0 ? (
 						<LineChart
 							width={1200}
@@ -226,9 +237,15 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 								dx={-10}
 								label={{
 									value: yScaleName || 'Чел',
-									angle: -90,
-									position: 'insideLeft',
-									style: {fill: '#000000', fontSize: 12},
+									angle: 0,
+
+									position: 'insideTopLeft',
+									offset: -20,
+									style: {
+										fill: '#000000',
+										fontSize: 14,
+										fontWeight: 500,
+									},
 								}}
 							/>
 							<Tooltip
@@ -251,6 +268,16 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 										activeDot={{r: 4, strokeWidth: 2}}
 									/>
 								))}
+							{isTotalChecked && (
+								<Line
+									type="monotone"
+									dataKey="total"
+									stroke="black"
+									strokeWidth={2}
+									dot={false}
+									activeDot={{r: 4, strokeWidth: 2}}
+								/>
+							)}
 						</LineChart>
 					) : (
 						<BarChart
@@ -299,6 +326,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 										fill={dataset.backgroundColor}
 									/>
 								))}
+							{isTotalChecked && <Bar dataKey="total" fill="black" />}
 						</BarChart>
 					)}
 				</div>

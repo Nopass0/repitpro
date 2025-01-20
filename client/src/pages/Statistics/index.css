@@ -1,0 +1,35 @@
+.recharts-cartesian-axis-line {
+	stroke-linecap: square;
+	stroke-width: 2;
+}
+
+.recharts-cartesian-axis-line::before,
+.recharts-cartesian-axis-line::after {
+	content: '';
+	position: absolute;
+	background-color: #000000;
+}
+
+/* X-axis arrow */
+.recharts-xAxis .recharts-cartesian-axis-line::after {
+	width: 0;
+	height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 6px solid #000000;
+	transform: rotate(90deg);
+	right: -6px;
+	top: -3px;
+}
+
+/* Y-axis arrow */
+.recharts-yAxis .recharts-cartesian-axis-line::after {
+	width: 0;
+	height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 6px solid #000000;
+	transform: rotate(0deg);
+	left: -3px;
+	top: -6px;
+}

@@ -2,19 +2,21 @@ import React, {useLayoutEffect} from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.scss'
 import {createStore} from 'redux'
-import {EPagePopUpExit, IUser} from './types.ts'
+import {EPagePopUpExit, type IUser} from './types.ts'
 import {Provider} from 'react-redux'
 import {Navigate, RouterProvider, createBrowserRouter} from 'react-router-dom'
 import Header from './components/Header'
 import Login from './pages/Login'
 import Main from './pages/Main'
-import socket from './socket'
+import socket, {isServer} from './socket'
 import Register from './pages/Register/index.tsx'
 import Test from './pages/Test/index.tsx'
 import LeftMenu from './components/LeftMenu/index.tsx'
 import Statistics from './pages/Statistics/index'
 import {ELeftMenuPage, ECurrentDayPopUp} from './types.ts'
 import axios from 'axios'
+import LoadingState from '@/components/LoadingState'
+import ErrorMessage from '@/components/ErrorMessage'
 
 socket.on('connect', () => {
 	console.log(socket.id) // "G5p5..."
@@ -50,29 +52,45 @@ const defaultState = {
 	isEditDayPopUp: false,
 	dayPopUpExit: EPagePopUpExit.None,
 }
-socket.emit('getMonth', {
-	currentMonth: defaultState.currentMonth,
-	currentYear: defaultState.currentYear,
-	token: defaultState.user.token,
-})
-if (localStorage.getItem('token') !== '') {
-	socket.emit('checkAccount', defaultState.user.token, (data: any) => {
-		if (data.status !== 'ok') {
-			localStorage.removeItem('token')
-			defaultState.user.token = ''
-			//redirect to login page
-			window.location.href = '/login'
+
+// socket.emit('getMonth', {
+// 	currentMonth: defaultState.currentMonth,
+// 	currentYear: defaultState.currentYear,
+// 	token: defaultState.user.token,
+// })
+
+async function checkAccount() {
+	const adr = !isServer ? 'http://localhost:3000' : 'https://repitpro.ru/api'
+	const currentPath = window.location.pathname
+
+	if (currentPath === '/login' || currentPath === '/register') {
+		return true // Do nothing if on login or register page
+	}
+
+	try {
+		const response = await axios.get(`${adr}/check-account`, {
+			params: {token: defaultState.user.token},
+		})
+
+		if (response.data.status === 'ok') {
+			return true
+		} else {
+			throw new Error('Invalid account status')
 		}
-	})
+	} catch (error) {
+		console.error('Error checking account:', error)
+		if (axios.isAxiosError(error) && error.response?.status === 401) {
+			console.log('Unauthorized: Invalid or expired token')
+		}
+		localStorage.removeItem('token')
+		defaultState.user.token = ''
+		window.location.href = '/login'
+		return false
+	}
 }
 
-// useLayoutEffect(() => {
-// 	// socket.emit('checkAccount', defaultState.user.token, (data: any) => {
-// 	// 	if (data.status !== 'ok') {
-// 	// 		localStorage.removeItem('token')
-// 	// 		defaultState.user.token = ''
-// 	// 	}
-// 	// })
+// checkAccount()
+
 // axios
 // 	.get('https://repitpro.ru/api/check-occupied-slots', {
 // 		params: {token: defaultState.user.token},
@@ -82,7 +100,6 @@ if (localStorage.getItem('token') !== '') {
 // 			`\ncheck-occupied-slots\n${JSON.stringify(data.data, null, 2)}\n`,
 // 		)
 // 	})
-// }, [])
 
 const reducer = (state = defaultState, action: any) => {
 	switch (action.type) {
@@ -181,7 +198,7 @@ const reducer = (state = defaultState, action: any) => {
 	}
 }
 
-const store = createStore(reducer)
+// const store = createStore(reducer)
 
 function getWHeader(router_element: any, isPrivate: boolean) {
 	console.log(defaultState, 'user')
@@ -252,9 +269,65 @@ const getLinks = () => {
 	// }
 }
 
-const router = createBrowserRouter(getLinks())
-ReactDOM.createRoot(document.getElementById('root')!).render(
-	<Provider store={store}>
-		<RouterProvider router={router} />
-	</Provider>,
-)
+// const router = createBrowserRouter(getLinks())
+// ReactDOM.createRoot(document.getElementById('root')!).render(
+// 	<Provider store={store}>
+// 		<RouterProvider router={router} />
+// 	</Provider>,
+// )
+
+function App() {
+	const [isLoading, setIsLoading] = React.useState(true)
+	const [error, setError] = React.useState<string | null>(null)
+
+	React.useEffect(() => {
+		async function initializeApp() {
+			try {
+				const isAccountValid = await checkAccount()
+				if (!isAccountValid) {
+					setError('Account check failed. Redirecting to login.')
+					setTimeout(() => {
+						window.location.href = '/login'
+					}, 3000)
+					return
+				}
+
+				console.log('Account check passed. Initializing application.')
+
+				socket.emit('getMonth', {
+					currentMonth: defaultState.currentMonth,
+					currentYear: defaultState.currentYear,
+					token: defaultState.user.token,
+				})
+
+				setIsLoading(false)
+			} catch (error) {
+				console.error('Error initializing app:', error)
+				setError('An error occurred while initializing the application.')
+			}
+		}
+
+		initializeApp()
+	}, [])
+
+	if (isLoading) {
+		return <LoadingState />
+	}
+
+	if (error) {
+		return <ErrorMessage message={error} />
+	}
+
+	const store = createStore(reducer)
+	const router = createBrowserRouter(getLinks())
+
+	return (
+		<React.StrictMode>
+			<Provider store={store}>
+				<RouterProvider router={router} />
+			</Provider>
+		</React.StrictMode>
+	)
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />)

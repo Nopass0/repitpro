@@ -389,4 +389,34 @@ api.post("/check-schedule-conflicts", async (req, res) => {
   }
 });
 
+api.get("/check-account", async (req, res) => {
+  try {
+    const { token } = await z
+      .object({
+        token: z.string().min(1, "Token is required"),
+      })
+      .parseAsync(req.query);
+
+    let tokenRecord = await db.token.findFirst({
+      where: { token },
+      select: { userId: true },
+    });
+
+    if (!tokenRecord?.userId) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    res.json({ status: "ok" });
+  } catch (error) {
+    capture(error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Validation Error",
+        details: error.errors,
+      });
+    }
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 export default api;
