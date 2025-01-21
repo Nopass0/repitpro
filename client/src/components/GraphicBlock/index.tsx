@@ -46,6 +46,7 @@ interface IGraphicBlock {
 	yScaleName?: string
 	renderCheckboxes?: () => React.ReactNode
 	isTotalChecked: boolean
+	showTotal: boolean
 }
 
 const GraphicBlock: React.FC<IGraphicBlock> = ({
@@ -64,6 +65,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 	yScaleName,
 	renderCheckboxes,
 	isTotalChecked,
+	showTotal,
 }) => {
 	const [dataSet, setDataSet] = useState<any>(null)
 
@@ -71,20 +73,18 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 		if (data) {
 			const formattedData = data.labels.map((label, index) => {
 				const dataPoint: {[key: string]: any} = {date: label}
+				let total = 0
 				data.datasets.forEach((dataset, datasetIndex) => {
-					dataPoint[`value${datasetIndex}`] = dataset.data[index]
+					const value = dataset.data[index] || 0
+					dataPoint[`value${datasetIndex}`] = value
+					total += value
 				})
-				if (isTotalChecked) {
-					dataPoint['total'] = data.datasets.reduce(
-						(sum, dataset) => sum + (dataset.data[index] || 0),
-						0,
-					)
-				}
+				dataPoint['total'] = total
 				return dataPoint
 			})
 			setDataSet(formattedData)
 		}
-	}, [data, isTotalChecked])
+	}, [data])
 
 	if (loading) {
 		return (
@@ -211,11 +211,11 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 				<div className="flex items-center ml-20 gap-2 ">
 					<span className="text-sm text-gray-500">{title}</span>
 				</div>
-				<div className="w-[98%] h-[400px]">
+				<div className="w-[98%] h-[300px]">
 					{chooseGraphic === 0 ? (
 						<LineChart
 							width={1200}
-							height={400}
+							height={300}
 							data={dataSet}
 							margin={{top: 20, right: 30, left: 20, bottom: 20}}>
 							<CartesianGrid
@@ -268,7 +268,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 										activeDot={{r: 4, strokeWidth: 2}}
 									/>
 								))}
-							{isTotalChecked && (
+							{showTotal && (
 								<Line
 									type="monotone"
 									dataKey="total"
@@ -282,7 +282,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 					) : (
 						<BarChart
 							width={1200}
-							height={400}
+							height={300}
 							data={dataSet}
 							margin={{top: 20, right: 30, left: 20, bottom: 20}}
 							barSize={30}>
@@ -326,7 +326,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 										fill={dataset.backgroundColor}
 									/>
 								))}
-							{isTotalChecked && <Bar dataKey="total" fill="black" />}
+							{showTotal && <Bar dataKey="total" fill="black" />}
 						</BarChart>
 					)}
 				</div>

@@ -259,6 +259,7 @@ const Statistics = () => {
 	// В начале файла Statistics.tsx добавим новые состояния
 	const [showStudents, setShowStudents] = useState(true)
 	const [showClients, setShowClients] = useState(true)
+	const [showTotal, setShowTotal] = useState(true)
 
 	// Обновим функцию renderComparisonCheckboxes
 	const renderComparisonCheckboxes = (data) => {
@@ -332,6 +333,19 @@ const Statistics = () => {
 						</tr>
 					</thead>
 					<tbody>
+						<tr className="border-b">
+							<td className="py-1">
+								<label className="flex items-center gap-2">
+									<Checkbox
+										checked={showTotal}
+										onChange={(e) => setShowTotal(e.target.checked)}
+									/>
+									Всего
+								</label>
+							</td>
+							<td className="text-right py-1">{grandTotal}</td>
+							<td className="text-right py-1">100%</td>
+						</tr>
 						<tr className="border-b">
 							<td className="py-2 px-4">
 								<label className="flex items-center space-x-2">
@@ -571,81 +585,6 @@ const Statistics = () => {
 		studRelatDateEnd,
 	])
 
-	// const renderSubjectCheckboxes = (
-	// 	selectedSubjects,
-	// 	setSelectedSubjects,
-	// 	data,
-	// ) => {
-	// 	// Создаем объект с уникальными названиями предметов
-	// 	const uniqueSubjects = subjects.reduce((acc, subject) => {
-	// 		if (!acc[subject.itemName]) {
-	// 			acc[subject.itemName] = subject
-	// 		}
-	// 		return acc
-	// 	}, {})
-
-	// 	const handleCheckboxChange = (subjectName, isChecked) => {
-	// 		if (isChecked) {
-	// 			// Добавляем все предметы с данным названием
-	// 			const subjectsToAdd = subjects.filter((s) => s.itemName === subjectName)
-	// 			setSelectedSubjects((prev) => [...prev, ...subjectsToAdd])
-	// 		} else {
-	// 			// Удаляем все предметы с данным названием
-	// 			setSelectedSubjects((prev) =>
-	// 				prev.filter((s) => s.itemName !== subjectName),
-	// 			)
-	// 		}
-	// 	}
-
-	// 	return (
-	// 		<div className={s.subjectCheckboxes}>
-	// 			<div className={s.subjectHeader}>
-	// 				<p></p>
-	// 				<p>Кол-во</p>
-	// 				<p>%</p>
-	// 			</div>
-	// 			{Object.values(uniqueSubjects).map((subject) => {
-	// 				const dataset = data.datasets.find(
-	// 					(ds) => ds.label === subject.itemName,
-	// 				)
-	// 				const color = dataset?.backgroundColor || '#25991c'
-	// 				const isChecked = selectedSubjects.some(
-	// 					(s) => s.itemName === subject.itemName,
-	// 				)
-
-	// 				return (
-	// 					<>
-	// 						<div className={s.subjectOne}>
-	// 							<label key={subject.itemName}>
-	// 								<Checkbox
-	// 									style={{color}}
-	// 									checked={isChecked}
-	// 									onChange={(e) =>
-	// 										handleCheckboxChange(subject.itemName, e.target.checked)
-	// 									}
-	// 								/>
-	// 								{subject.itemName}
-	// 							</label>
-	// 							<div className={s.subjectCounts}>
-	// 								<p>1</p>
-	// 							</div>
-	// 							<div className={s.subjectCounts}>
-	// 								{' '}
-	// 								{/* Добавлен контейнер для выравнивания */}
-	// 								<p>1</p>
-	// 							</div>
-	// 						</div>
-	// 					</>
-	// 				)
-	// 			})}
-	// 			<div className={s.subjectCheckboxesAll}>
-	// 				<p>Всего:</p>
-	// 				<p></p>
-	// 			</div>
-	// 		</div>
-	// 	)
-	// }
-
 	const renderSubjectCheckboxes = (
 		selectedSubjects,
 		setSelectedSubjects,
@@ -724,10 +663,8 @@ const Statistics = () => {
 							<td className="py-1">
 								<label className="flex items-center gap-2">
 									<Checkbox
-										checked={isTotalChecked}
-										onChange={(e) =>
-											handleCheckboxChange('Всего', e.target.checked)
-										}
+										checked={showTotal}
+										onChange={(e) => setShowTotal(e.target.checked)}
 									/>
 									Всего
 								</label>
@@ -835,6 +772,7 @@ const Statistics = () => {
 							'Рубли',
 						)
 					}
+					showTotal={showTotal}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -868,6 +806,7 @@ const Statistics = () => {
 							'Чел',
 						)
 					}
+					showTotal={showTotal}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -901,6 +840,7 @@ const Statistics = () => {
 							'Часы',
 						)
 					}
+					showTotal={showTotal}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -924,6 +864,7 @@ const Statistics = () => {
 								}}
 								defaultValue={0}>
 								<MenuItem value={0}>За последние 30 дней</MenuItem>
+								<MenuItem value={1}>За последние 30 дней</MenuItem>
 								<MenuItem value={1}>
 									<CalendarMonthIcon />С начала месяца
 								</MenuItem>
@@ -989,13 +930,20 @@ const Statistics = () => {
 											<th
 												key={column}
 												onClick={() => handleSort(column)}
-												className={s.Th}>
+												className={`${s.Th} ${sortColumn === column ? s.activeSort : ''}`}>
 												{columnTranslations[column]}: ({count})
-												{sortColumn === column && (
-													<Arrow
-														direction={sortDirection === 'asc' ? 'up' : 'down'}
-													/>
-												)}
+												<Arrow
+													className={
+														sortColumn === column
+															? 'text-green-500'
+															: 'text-gray-500'
+													}
+													direction={
+														sortColumn === column && sortDirection === 'asc'
+															? 'up'
+															: 'down'
+													}
+												/>
 											</th>
 										)
 									})}
@@ -1009,7 +957,7 @@ const Statistics = () => {
 									<tr key={index} className={s.Tr}>
 										{Object.keys(columnTranslations).map((column) => (
 											<td key={column} className={s.Td}>
-												<p>{item[column]}</p>
+												<p>{item[column]}</p>{' '}
 											</td>
 										))}
 									</tr>
@@ -1051,6 +999,7 @@ const Statistics = () => {
 							'Рубли',
 						)
 					}
+					showTotal={showTotal}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -1081,6 +1030,7 @@ const Statistics = () => {
 							'Чел',
 						)
 					}
+					showTotal={showTotal}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -1115,6 +1065,7 @@ const Statistics = () => {
 							'Кол-во',
 						)
 					}
+					showTotal={showTotal}
 				/>
 				<Line width="100%" className={s.Line} />
 
@@ -1198,13 +1149,20 @@ const Statistics = () => {
 											<th
 												key={column}
 												onClick={() => handleSort(column)}
-												className={s.Th}>
+												className={`${s.Th} ${sortColumn === column ? s.activeSort : ''}`}>
 												{columnTranslations[column]}: ({count})
-												{sortColumn === column && (
-													<Arrow
-														direction={sortDirection === 'asc' ? 'up' : 'down'}
-													/>
-												)}
+												<Arrow
+													className={
+														sortColumn === column
+															? 'text-green-500'
+															: 'text-gray-500'
+													}
+													direction={
+														sortColumn === column && sortDirection === 'asc'
+															? 'up'
+															: 'down'
+													}
+												/>
 											</th>
 										)
 									})}
@@ -1256,6 +1214,7 @@ const Statistics = () => {
 					renderCheckboxes={() =>
 						renderComparisonCheckboxes(clientsNstudentsCompareData)
 					}
+					showTotal={showTotal}
 				/>
 			</div>
 		</div>

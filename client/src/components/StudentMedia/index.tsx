@@ -159,7 +159,7 @@ const AudioFile: React.FC<{
 					<Button
 						variant="ghost"
 						size="icon"
-						className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
+						className="opacity-100 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
 						onClick={(e) => {
 							e.stopPropagation()
 							if (isPlaying && audioRef.current) {
@@ -258,7 +258,7 @@ const FileOrLink: React.FC<{
 					<Button
 						variant="ghost"
 						size="icon"
-						className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
+						className="opacity-100 group-hover:opacity-100 transition-opacity h-8 w-8 shrink-0"
 						onClick={(e) => {
 							e.stopPropagation()
 						}}>

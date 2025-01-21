@@ -850,6 +850,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
       isTest: false,
     }
     setEditingNewLesson(newLesson)
+    setEditMode(true)
   }
   const totalGridLines = 8; // Можно настроить желаемое количество линий
    const emptyGridLines = Array(totalGridLines).fill(null);

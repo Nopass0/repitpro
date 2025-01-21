@@ -1568,6 +1568,30 @@ const AddStudent = ({}: IAddStudent) => {
 		items.forEach((item) => {
 			if (!item.itemName || !item.costOneLesson || !item.timeLinesArray) return
 
+			// Добавляем пробное занятие если оно активно
+			if (item.tryLessonCheck && item.trialLessonDate && item.trialLessonTime) {
+				const lessonDate = new Date(item.trialLessonDate)
+				lessonDate.setHours(
+					item.trialLessonTime.startTime.hour,
+					item.trialLessonTime.startTime.minute,
+				)
+
+				lessons.push({
+					date: lessonDate,
+					itemName: item.itemName,
+					isDone: lessonDate < now,
+					price: item.tryLessonCost || item.costOneLesson,
+					isPaid: false,
+					isCancel: false,
+					type: 'lesson',
+					timeSlot: {
+						startTime: {...item.trialLessonTime.startTime},
+						endTime: {...item.trialLessonTime.endTime},
+					},
+					isTrial: true,
+				})
+			}
+
 			// Add regular lessons
 			const differenceDays = differenceInDays(item.endLesson, item.startLesson)
 			const dateRange = Array.from({length: differenceDays + 1}, (_, i) =>
@@ -2216,6 +2240,11 @@ const AddStudent = ({}: IAddStudent) => {
 																			flexDirection: 'row',
 																			alignItems: 'center',
 																		}}>
+																		{item.isTrial ? (
+																			<p className="text-sm px-0.5 py-1 bg-blue-500/30 rounded-md">
+																				Пробное
+																			</p>
+																		) : null}
 																		<div
 																			style={{
 																				backgroundColor:
@@ -2455,10 +2484,15 @@ const AddStudent = ({}: IAddStudent) => {
 													<div className="flex items-center gap-4">
 														<MiniCalendar
 															disabled={isEditMode}
-															value={trialLessonDate || new Date()}
-															onChange={(newDate) =>
-																onDateChange(new Date(newDate))
-															}
+															value={item.trialLessonDate || new Date()} // Используем значение из items
+															onChange={(newDate) => {
+																changeItemValue(
+																	index,
+																	'trialLessonDate',
+																	newDate,
+																)
+																updateHistory(items) // Принудительно обновляем историю
+															}}
 															calendarId={`trialLesson_${index}`}
 														/>
 
@@ -2467,8 +2501,8 @@ const AddStudent = ({}: IAddStudent) => {
 																onClick={() => openPicker()}
 																disabled={isEditMode}
 																className="px-4 py-2 bg-white border rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50">
-																{ranges.length > 0
-																	? `${ranges[0].startTime} - ${ranges[0].endTime}`
+																{item.trialLessonTime
+																	? `${item.trialLessonTime.startTime.hour}:${item.trialLessonTime.startTime.minute.toString().padStart(2, '0')} - ${item.trialLessonTime.endTime.hour}:${item.trialLessonTime.endTime.minute.toString().padStart(2, '0')}`
 																	: 'Выбрать время'}
 															</button>
 														</div>
@@ -2477,7 +2511,30 @@ const AddStudent = ({}: IAddStudent) => {
 															<TimeRangePicker
 																singleRange={true}
 																existingRanges={ranges}
-																onTimeRangeSelect={handleTimeSelect}
+																onTimeRangeSelect={(selectedRanges) => {
+																	if (selectedRanges.length > 0) {
+																		const [startHour, startMinute] =
+																			selectedRanges[0].startTime
+																				.split(':')
+																				.map(Number)
+																		const [endHour, endMinute] =
+																			selectedRanges[0].endTime
+																				.split(':')
+																				.map(Number)
+
+																		changeItemValue(index, 'trialLessonTime', {
+																			startTime: {
+																				hour: startHour,
+																				minute: startMinute,
+																			},
+																			endTime: {
+																				hour: endHour,
+																				minute: endMinute,
+																			},
+																		})
+																		updateHistory(items)
+																	}
+																}}
 																onClose={closePicker}
 																className="z-50"
 															/>
@@ -2500,7 +2557,6 @@ const AddStudent = ({}: IAddStudent) => {
 													amountInputs={5}
 												/>
 											</div>
-
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCard}>
 												<div
@@ -2509,7 +2565,7 @@ const AddStudent = ({}: IAddStudent) => {
 														flexDirection: 'row',
 														alignItems: 'center',
 													}}>
-													<p style={{marginRight: '50px'}}>Тип занятия:</p>
+													<p style={{marginRight: '50px'}}>Место проведения:</p>
 
 													<mui.Select
 														className={s.muiSelect__menu}
@@ -2618,12 +2674,14 @@ const AddStudent = ({}: IAddStudent) => {
 													</mui.Select>
 												</div>
 											</div>
-											<Line width="100%" className={s.Line} />
+											{!(item.typeLesson == 2 || item.typeLesson == 4) ? (
+												<Line width="100%" className={s.Line} />
+											) : null}
 											{item.typeLesson === 2 || item.typeLesson === 4 ? (
 												<>
 													<div className={s.StudentCard}>
 														<TextAreaInputBlock
-															title="Место проведения:"
+															title="Адрес:"
 															value={item.placeLesson!}
 															disabled={isEditMode}
 															onChange={(e) => {
