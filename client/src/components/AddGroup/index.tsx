@@ -2276,7 +2276,7 @@ const AddGroup = ({className}: IAddGroup) => {
 											<Line width="100%" className={s.Line} />
 
 											<div className={s.StudentCard}>
-												<p>Предоплата:</p>
+												<p>Баланс:</p>
 												<MiniCalendar
 													disabled={isEditMode}
 													value={student.prePayDate}

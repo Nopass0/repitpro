@@ -129,7 +129,7 @@ const AddStudent = ({}: IAddStudent) => {
 			if (dateComparisonWithoutTime === 0) {
 				// Если даты (день, месяц, год) совпадают
 				if (a.type !== b.type) {
-					// Занятия идут перед предоплатами
+					// Занятия идут перед Балансми
 					return a.type === 'lesson' ? -1 : 1
 				} else {
 					// Если типы одинаковые, сортируем по времени в обратном порядке
@@ -1671,7 +1671,7 @@ const AddStudent = ({}: IAddStudent) => {
 								</div>
 								<Line width="100%" className={s.Line} />
 								<div className={s.StudentCard}>
-									<p>Предоплата:</p>
+									<p>Баланс:</p>
 									<MiniCalendar
 										disabled={isEditMode}
 										value={prePayDate}

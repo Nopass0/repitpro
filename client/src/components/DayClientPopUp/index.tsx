@@ -172,9 +172,7 @@ const DayClientPopUp = ({
 						<>
 							<div className={s.HeaderInfo}>
 								<p>Общая стоимость {client.totalWorkPrice} ₽</p>
-								<p>
-									{client.workStages[0].prePay ? 'Предоплата' : 'Постоплата'}
-								</p>
+								<p>{client.workStages[0].prePay ? 'Баланс' : 'Постоплата'}</p>
 							</div>
 							<div className={s.LineInfo}>
 								<p>{formatDate(client.workStages[0].firstPaymentDate)}</p>
@@ -185,7 +183,7 @@ const DayClientPopUp = ({
 									size={'20px'}
 									checked={client.workStages[0].firstPaymentPayed}
 								/>
-								<p onClick={() => console.log(client,clients)}>
+								<p onClick={() => console.log(client, clients)}>
 									{client.totalWorkPrice !== 0
 										? Math.round(
 												(client.workStages[0].fisrtPaymentPrice /

@@ -22,7 +22,8 @@ import {
 import {Button} from '@/ui/button'
 import {Calendar} from '@/ui/calendar'
 import {Popover, PopoverContent, PopoverTrigger} from '@/ui/popover'
-
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 interface IGraphicBlock {
 	className?: string
 	style?: React.CSSProperties
@@ -211,11 +212,12 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 				<div className="flex items-center ml-20 gap-2 ">
 					<span className="text-sm text-gray-500">{title}</span>
 				</div>
-				<div className="w-[98%] h-[300px]">
+				<div className="w-[98%] h-[350px]">
+					<KeyboardArrowUpIcon className="relative left-[68px] top-[36px] opacity-[0.6]" />
 					{chooseGraphic === 0 ? (
 						<LineChart
-							width={1200}
-							height={300}
+							width={1180}
+							height={350}
 							data={dataSet}
 							margin={{top: 20, right: 30, left: 20, bottom: 20}}>
 							<CartesianGrid
@@ -230,6 +232,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 								tick={{fill: '#000000', fontSize: 12}}
 								dy={10}
 							/>
+
 							<YAxis
 								axisLine={renderCustomAxisLine}
 								tickLine={false}
@@ -281,8 +284,8 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 						</LineChart>
 					) : (
 						<BarChart
-							width={1200}
-							height={300}
+							width={1180}
+							height={350}
 							data={dataSet}
 							margin={{top: 20, right: 30, left: 20, bottom: 20}}
 							barSize={30}>
@@ -329,6 +332,7 @@ const GraphicBlock: React.FC<IGraphicBlock> = ({
 							{showTotal && <Bar dataKey="total" fill="black" />}
 						</BarChart>
 					)}
+					<KeyboardArrowRightIcon className="relative bottom-[62px] left-[1136px]" />
 				</div>
 			</div>
 		</div>

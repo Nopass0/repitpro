@@ -1,4 +1,4 @@
-import React, {useLayoutEffect} from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.scss'
 import {createStore} from 'redux'

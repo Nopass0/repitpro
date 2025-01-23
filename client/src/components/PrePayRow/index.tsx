@@ -97,7 +97,7 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 									overflow: 'hidden',
 									textOverflow: 'ellipsis',
 								}}>
-								Предоплата
+								Баланс
 							</p>
 
 							<p
@@ -157,7 +157,7 @@ const PrePayRow: React.FC<IPrePayRow> = ({
 									overflow: 'hidden',
 									textOverflow: 'ellipsis',
 								}}>
-								Предоплата
+								Баланс
 							</p>
 							<Input
 								num

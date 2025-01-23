@@ -334,8 +334,8 @@ const Statistics = () => {
 					</thead>
 					<tbody>
 						<tr className="border-b">
-							<td className="py-1">
-								<label className="flex items-center gap-2">
+							<td className="">
+								<label className="flex items-center ">
 									<Checkbox
 										checked={showTotal}
 										onChange={(e) => setShowTotal(e.target.checked)}
@@ -343,14 +343,13 @@ const Statistics = () => {
 									Всего
 								</label>
 							</td>
-							<td className="text-right py-1">{grandTotal}</td>
-							<td className="text-right py-1">100%</td>
+							<td className="text-right py-2 px-4">{grandTotal}</td>
+							<td className="text-right py-2 px-4">100%</td>
 						</tr>
 						<tr className="border-b">
-							<td className="py-2 px-4">
-								<label className="flex items-center space-x-2">
+							<td className="">
+								<label className="flex items-center ">
 									<Checkbox
-										className="h-4 w-4"
 										style={{
 											borderColor: getDatasetColor('Заказчики'),
 										}}
@@ -366,10 +365,9 @@ const Statistics = () => {
 							</td>
 						</tr>
 						<tr className="border-b">
-							<td className="py-2 px-4">
-								<label className="flex items-center space-x-2">
+							<td className="">
+								<label className="flex items-center">
 									<Checkbox
-										className="h-4 w-4"
 										style={{
 											borderColor: getDatasetColor('Ученики'),
 										}}
@@ -385,13 +383,6 @@ const Statistics = () => {
 							</td>
 						</tr>
 					</tbody>
-					<tfoot>
-						<tr>
-							<td colSpan={3} className="py-2 px-4 text-right font-bold">
-								Всего: {grandTotal}
-							</td>
-						</tr>
-					</tfoot>
 				</table>
 			</div>
 		)

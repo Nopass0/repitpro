@@ -37,7 +37,7 @@ const AddClient = ({}: IAddClient) => {
 
 	// Block item
 	const [itemName, setItemName] = useState<string>('')
-	const [typePayment, setTypePayment] = useState<boolean>(false) // Предоплата
+	const [typePayment, setTypePayment] = useState<boolean>(false) // Баланс
 	const [generalComment, setGeneralComment] = useState<string>('')
 
 	const [currentJobIndex, setCurrentJobIndex] = useState<number>(0)
@@ -115,7 +115,7 @@ const AddClient = ({}: IAddClient) => {
 				{
 					totalCost: 0,
 					name: '',
-					typePayment: false, // Предоплата false - оплата true
+					typePayment: false, // Баланс false - оплата true
 
 					dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
 					cost: 0,
@@ -165,7 +165,7 @@ const AddClient = ({}: IAddClient) => {
 						{
 							totalCost: 0,
 							name: '',
-							typePayment: false, // Предоплата false - оплата true
+							typePayment: false, // Баланс false - оплата true
 							dateStart: new Date(Date.now()), // Изначально установлено null, чтобы пользователь мог ввести дату
 							cost: 0,
 							prePay: true,
@@ -257,7 +257,7 @@ const AddClient = ({}: IAddClient) => {
 											0,
 										),
 										name: '',
-										typePayment: false, // Предоплата false - оплата true
+										typePayment: false, // Баланс false - оплата true
 										dateStart: new Date(Date.now()),
 										cost: 0,
 										prePay: true,
@@ -1024,7 +1024,7 @@ const AddClient = ({}: IAddClient) => {
 																		)
 																	}}
 																	className={s.PrevPay}>
-																	<p>Предоплата</p>
+																	<p>Баланс</p>
 																	<CheckBox
 																		disabled={isEditMode}
 																		checked={
@@ -1507,7 +1507,7 @@ const AddClient = ({}: IAddClient) => {
 															changeStage(index, 0, 'typePayment', typePayment)
 														}}
 														className={s.PrevPay}>
-														<p>Предоплата</p>
+														<p>Баланс</p>
 														<CheckBox
 															disabled={isEditMode}
 															checked={
