@@ -348,6 +348,7 @@ export const useHistory = (
 							return {
 								...lesson,
 								itemName: changedItem.itemName,
+								price: lesson.isTrial ? (changedItem.tryLessonCost || changedItem.costOneLesson) : changedItem.costOneLesson,
 							}
 						}
 						return lesson
