@@ -494,83 +494,41 @@ export const useHistory = (
 			const now = new Date();
 			
 			setHistory(prevHistory => {
-				const updatedHistory = [...prevHistory];
-				const changedItem = items.find(item => item.itemName === changedItemName);
-				
-				if (!changedItem) return prevHistory;
-				
-				// Get all lessons for the changed item
-				const itemLessons = updatedHistory.filter(
+				// First, find all existing lessons for the changed item
+				const existingLessons = prevHistory.filter(
 					lesson => lesson.itemName === changedItemName
 				);
 				
-				const newStartDate = new Date(changedItem.startLesson);
-				const newEndDate = new Date(changedItem.endLesson);
-				
-				// Mark lessons outside the new date range as cancelled
-				itemLessons.forEach(lesson => {
-					const lessonDate = new Date(lesson.date);
-					if (lessonDate < newStartDate || lessonDate > newEndDate) {
-						lesson.isCancel = true;
-					}
-				});
-				
-				// Add new lessons for the extended range
-				const existingDates = new Set(
-					itemLessons
-						.filter(l => !l.isCancel)
-						.map(l => new Date(l.date).getTime())
+				// Get the changed item from items array
+				const changedItem = items.find(item => item.itemName === changedItemName);
+				if (!changedItem) return prevHistory;
+
+				// Generate new lessons based on the updated schedule
+				const newLessons = generateLessonsForItem(changedItem);
+
+				// Remove old lessons for this item that are in the future
+				const otherItemsLessons = prevHistory.filter(
+					lesson => 
+						lesson.itemName !== changedItemName || 
+						(lesson.itemName === changedItemName && new Date(lesson.date) < now)
 				);
-				
-				changedItem.timeLinesArray.forEach(timeline => {
-					const daysDiff = differenceInDays(newEndDate, newStartDate);
-					
-					for (let i = 0; i <= daysDiff; i++) {
-						const currentDate = addDays(newStartDate, i);
-						if (getDay(currentDate) === parseInt(timeline.day)) {
-							const dateTime = currentDate.getTime();
-							
-							if (!existingDates.has(dateTime)) {
-								const lessonEndTime = new Date(currentDate);
-								lessonEndTime.setHours(
-									timeline.endTime.hour,
-									timeline.endTime.minute
-								);
-								
-								updatedHistory.push({
-									date: currentDate,
-									itemName: changedItem.itemName,
-									isDone: lessonEndTime < now,
-									price: changedItem.costOneLesson,
-									isPaid: false,
-									isCancel: false,
-									timeSlot: timeline,
-									isAutoChecked: false,
-									itemId: changedItem.id
-								});
-							}
-						}
-					}
-				});
-				
-				// Update prices only for future lessons
-				updatedHistory.forEach(lesson => {
-					if (
-						lesson.itemName === changedItemName &&
-						!lesson.isCancel &&
-						new Date(lesson.date) > now
-					) {
-						lesson.price = changedItem.costOneLesson;
-					}
-				});
-				
-				return updatedHistory.sort(
-					(a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+
+				// Combine past lessons with new future lessons
+				const updatedHistory = [
+					...otherItemsLessons,
+					...newLessons.filter(lesson => new Date(lesson.date) >= now)
+				];
+
+				// Sort lessons by date
+				updatedHistory.sort((a, b) => 
+					new Date(a.date).getTime() - new Date(b.date).getTime()
 				);
+
+				return updatedHistory;
 			});
 		},
-		[]
-	)
+		[generateLessonsForItem]
+	);
 
 	return {
 		combinedHistory,
