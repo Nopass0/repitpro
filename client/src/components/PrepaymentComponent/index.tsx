@@ -54,7 +54,7 @@ const PrepaymentComponent = ({student, currentDate}) => {
 	)
 
 	useEffect(() => {
-		alert(JSON.stringify(student, null, 2))
+		// alert(JSON.stringify(student, null, 2))
 	}, [lastPrePay])
 
 	const todayLesson = sortedHistory.find(

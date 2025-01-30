@@ -106,6 +106,8 @@ const DayStudentPopUp: React.FC<IDayStudentPopUp> = ({
 			return
 		}
 
+	
+
 		const handleStudentData = (data: any) => {
 			setIsLoading(false)
 

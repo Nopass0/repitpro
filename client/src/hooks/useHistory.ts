@@ -124,77 +124,67 @@ export const useHistory = (
 
 	const processLessonsAndCalculateBalance = useCallback(
 		(lessons: HistoryLesson[], prepayments: PrePay[]) => {
-			let currentBalance = 0
-
-			// 1. Add all prepayments
-			prepayments.forEach((prepay) => {
-				currentBalance += Number(prepay.cost)
-			})
-
-			// 2. Add manual payments (not auto-checked)
-			lessons.forEach((lesson) => {
-				if (lesson.isPaid && !lesson.isAutoChecked) {
-					currentBalance += Number(lesson.price)
-				}
-			})
-
-			// 3. Sort all lessons chronologically
-			const sortedLessons = [...lessons].sort((a, b) => {
-				const dateCompare = a.date.getTime() - b.date.getTime()
-				if (dateCompare === 0) {
-					// If dates are equal, prioritize trial lessons
-					if (a.isTrial && !b.isTrial) return -1
-					if (!a.isTrial && b.isTrial) return 1
-					// If both are trial or both are not, sort by name
-					return a.itemName.localeCompare(b.itemName)
-				}
-				return dateCompare
-			})
-
-			// 4. Apply prepayments to lessons strictly in sequential order
-			let remainingPrepayment = currentBalance
-			let canMarkAsPaid = true
-			const processedLessons = sortedLessons.map((lesson) => {
-				const newLesson = {...lesson}
-
-				// If a previous lesson was unpaid and not cancelled, we can't mark any more lessons as paid
-				if (!canMarkAsPaid) {
-					newLesson.isPaid = false
-					newLesson.isAutoChecked = false
-					return newLesson
-				}
-
-				if (!newLesson.isCancel && !newLesson.isPaid) {
-					if (remainingPrepayment >= Number(newLesson.price)) {
-						remainingPrepayment -= Number(newLesson.price)
-						newLesson.isPaid = true
-						newLesson.isAutoChecked = true
-					} else {
-						canMarkAsPaid = false
-						newLesson.isPaid = false
-						newLesson.isAutoChecked = false
+			let currentBalance = 0;
+			
+			// Sort all events chronologically
+			const allEvents = [
+				...lessons.map(lesson => ({ ...lesson, type: 'lesson' as const })),
+				...prepayments.map(prepay => ({ ...prepay, type: 'prepayment' as const }))
+			].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+			
+			// Initialize all lessons as unpaid and sort them chronologically
+			const processedLessons = lessons
+				.map(lesson => ({ 
+					...lesson, 
+					isPaid: false, 
+					isAutoChecked: false 
+				}))
+				.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+			
+			// Process payments strictly sequentially
+			let lastUnpaidIndex = 0;
+			
+			for (const event of allEvents) {
+				if (event.type === 'prepayment') {
+					currentBalance += Number(event.cost);
+					
+					// Try to pay for lessons sequentially after each prepayment
+					while (lastUnpaidIndex < processedLessons.length) {
+						const lesson = processedLessons[lastUnpaidIndex];
+						if (!lesson.isCancel) {
+							const lessonPrice = Number(lesson.price);
+							if (currentBalance >= lessonPrice) {
+								currentBalance -= lessonPrice;
+								lesson.isPaid = true;
+								lesson.isAutoChecked = true;
+								lastUnpaidIndex++;
+							} else {
+								break;
+							}
+						} else {
+							lastUnpaidIndex++;
+						}
 					}
 				}
-
-				// If this lesson is not cancelled and not paid, we can't pay for future lessons
-				if (!newLesson.isCancel && !newLesson.isPaid) {
-					canMarkAsPaid = false
+			}
+			
+			// Update isDone based on current time
+			const now = new Date();
+			processedLessons.forEach(lesson => {
+				const lessonDate = new Date(lesson.date);
+				const lessonEndTime = new Date(lessonDate);
+				if (lesson.timeSlot?.endTime) {
+					lessonEndTime.setHours(lesson.timeSlot.endTime.hour, lesson.timeSlot.endTime.minute);
+					lesson.isDone = lessonEndTime < now;
 				}
-
-				return newLesson
-			})
-
-			// 5. Calculate final balance
-			let finalBalance = currentBalance
-			processedLessons.forEach((lesson) => {
-				if (lesson.isDone && !lesson.isCancel) {
-					finalBalance -= Number(lesson.price)
-				}
-			})
-
-			return {processedLessons, currentBalance: finalBalance}
+			});
+			
+			return {
+				processedLessons,
+				currentBalance
+			};
 		},
-		[isLessonEndTimeInPast],
+		[],
 	)
 
 	const updateCombinedHistory = useCallback(
@@ -210,11 +200,11 @@ export const useHistory = (
 
 			// Validate input data
 			if (!Array.isArray(historyData) || !Array.isArray(prePayData)) {
-				console.warn('Invalid data:', {historyData, prePayData})
+				console.warn('Invalid data:', { historyData, prePayData })
 				return
 			}
 
-			const {processedLessons, currentBalance} =
+			const { processedLessons, currentBalance } =
 				processLessonsAndCalculateBalance(historyData, prePayData)
 
 			// Process lesson history
@@ -222,8 +212,8 @@ export const useHistory = (
 				...lesson,
 				date: new Date(lesson.date),
 				timeSlot: {
-					startTime: lesson.timeSlot?.startTime || {hour: 0, minute: 0},
-					endTime: lesson.timeSlot?.endTime || {hour: 0, minute: 0},
+					startTime: lesson.timeSlot?.startTime || { hour: 0, minute: 0 },
+					endTime: lesson.timeSlot?.endTime || { hour: 0, minute: 0 },
 				},
 			}))
 
@@ -289,7 +279,7 @@ export const useHistory = (
 					item.endLesson,
 					item.startLesson,
 				)
-				const dateRange = Array.from({length: differenceDays + 1}, (_, i) =>
+				const dateRange = Array.from({ length: differenceDays + 1 }, (_, i) =>
 					addDays(item.startLesson, i),
 				)
 
@@ -346,21 +336,41 @@ export const useHistory = (
 			if (!changedItem) return
 
 			setHistory((currentHistory) => {
-				// Keep existing lessons for other items
-				const existingLessons = currentHistory.filter(
-					(lesson) => lesson.itemName !== changedItemName,
-				)
+				// Find previous item name by itemId
+				const oldItemName = currentHistory.find(
+					(lesson) => lesson.itemId === changedItem.id,
+				)?.itemName
 
-				// Generate new lessons for the changed item
-				const newLessons = generateLessonsForItem(changedItem)
+				if (oldItemName) {
+					// If found old item name, update it to new one
+					const updatedHistory = currentHistory.map((lesson) => {
+						if (lesson.itemId === changedItem.id) {
+							return {
+								...lesson,
+								itemName: changedItem.itemName,
+								price: lesson.isTrial ? (changedItem.tryLessonCost || changedItem.costOneLesson) : changedItem.costOneLesson,
+							}
+						}
+						return lesson
+					})
 
-				// Combine existing and new lessons, then sort
-				const combinedHistory = [...existingLessons, ...newLessons].sort(
-					(a, b) => a.date.getTime() - b.date.getTime(),
-				)
+					updateCombinedHistory(updatedHistory, prePay)
+					return updatedHistory
+				} else {
+					// If this is a new item, generate lessons for it
+					const existingLessons = currentHistory.filter(
+						(lesson) => lesson.itemId !== changedItem.id,
+					)
 
-				updateCombinedHistory(combinedHistory, prePay)
-				return combinedHistory
+					const newLessons = generateLessonsForItem(changedItem)
+
+					const combinedHistory = [...existingLessons, ...newLessons].sort(
+						(a, b) => a.date.getTime() - b.date.getTime(),
+					)
+
+					updateCombinedHistory(combinedHistory, prePay)
+					return combinedHistory
+				}
 			})
 		},
 		[generateLessonsForItem, updateCombinedHistory, prePay],
@@ -388,7 +398,7 @@ export const useHistory = (
 		(id: number, newDate: Date, newCost: string) => {
 			setPrePay((prev) => {
 				const newList = prev.map((item) =>
-					item.id === id ? {...item, date: newDate, cost: newCost} : item,
+					item.id === id ? { ...item, date: newDate, cost: newCost } : item,
 				)
 				updateCombinedHistory(history, newList)
 				return newList
@@ -471,7 +481,7 @@ export const useHistory = (
 			setPrePay(prepayments)
 			setCombinedHistory(serverCombinedHistory)
 
-			const {currentBalance} = processLessonsAndCalculateBalance(
+			const { currentBalance } = processLessonsAndCalculateBalance(
 				lessons,
 				prepayments,
 			)
@@ -482,40 +492,44 @@ export const useHistory = (
 
 	const updateHistoryWithChanges = useCallback(
 		(items: Item[], changedItemName: string) => {
-			if (!changedItemName || !items.length) return
+			const now = new Date();
+			
+			setHistory(prevHistory => {
+				// First, find all existing lessons for the changed item
+				const existingLessons = prevHistory.filter(
+					lesson => lesson.itemName === changedItemName
+				);
+				
+				// Get the changed item from items array
+				const changedItem = items.find(item => item.itemName === changedItemName);
+				if (!changedItem) return prevHistory;
 
-			const changedItem = items.find(
-				(item) => item.itemName === changedItemName,
-			)
-			if (!changedItem) return
+				// Generate new lessons based on the updated schedule
+				const newLessons = generateLessonsForItem(changedItem);
 
-			setHistory((currentHistory) => {
-				const updatedHistory = currentHistory.map((lesson) => {
-					if (lesson.itemId === changedItem.id) {
-						return {...lesson, itemName: changedItem.itemName}
-					}
-					return lesson
-				})
+				// Remove old lessons for this item that are in the future
+				const otherItemsLessons = prevHistory.filter(
+					lesson => 
+						lesson.itemName !== changedItemName || 
+						(lesson.itemName === changedItemName && new Date(lesson.date) < now)
+				);
 
-				if (
-					updatedHistory.every((lesson) => lesson.itemName !== changedItemName)
-				) {
-					const newLessons = generateLessonsForItem(changedItem)
+				// Combine past lessons with new future lessons
+				const updatedHistory = [
+					...otherItemsLessons,
+					...newLessons.filter(lesson => new Date(lesson.date) >= now)
+				];
 
-					const updatedHistoryCombined = [
-						...currentHistory,
-						...newLessons,
-					].sort((a, b) => a.date.getTime() - b.date.getTime())
-					updateCombinedHistory(updatedHistoryCombined, prePay)
-					return updatedHistoryCombined
-				} else {
-					updateCombinedHistory(updatedHistory, prePay)
-					return updatedHistory
-				}
-			})
+				// Sort lessons by date
+				updatedHistory.sort((a, b) => 
+					new Date(a.date).getTime() - new Date(b.date).getTime()
+				);
+
+				return updatedHistory;
+			});
 		},
-		[generateLessonsForItem, prePay, updateCombinedHistory],
-	)
+		[generateLessonsForItem]
+	);
 
 	return {
 		combinedHistory,

@@ -508,84 +508,7 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [isEditMode])
 
-	// const sendData = () => {
-	// 	setLoading(true)
-	// 	console.log(
-	// 		{
-	// 			nameStudent,
-	// 			contactFace,
-	// 			email,
-	// 			linkStudent,
-	// 			costStudent,
-	// 			commentStudent,
-	// 			prePayCost,
-	// 			prePayDate,
-	// 			costOneLesson,
-	// 			items,
-	// 			audios,
-	// 			token,
-	// 			files,
-	// 			phoneNumber,
-	// 		},
-	// 		'sendData',
-	// 	)
-	// 	if (currentOpenedStudent !== '') {
-	// 		socket.emit('updateStudentAndItems', {
-	// 			id: currentOpenedStudent,
-	// 			nameStudent,
-	// 			contactFace,
-	// 			email,
-	// 			linkStudent,
-	// 			costStudent,
-	// 			commentStudent,
-	// 			prePayCost,
-	// 			prePayDate,
-	// 			costOneLesson,
-	// 			files,
-	// 			audios,
-	// 			historyLessons: historyLesson,
 
-	// 			items,
-	// 			token,
-	// 			phoneNumber,
-	// 			prePay: prePayList,
-	// 		})
-
-	// 		socket.emit('createLink', {
-	// 			tag: 'addStudent',
-	// 			linkedId: currentOpenedStudent,
-	// 			links: links,
-	// 			token: token,
-	// 		})
-	// 		window.location.reload()
-	// 	} else {
-	// 		socket.emit('addStudent', {
-	// 			nameStudent,
-	// 			contactFace,
-	// 			email,
-	// 			linkStudent,
-	// 			historyLessons: historyLesson,
-	// 			costStudent,
-	// 			commentStudent,
-	// 			prePayCost,
-	// 			prePayDate,
-	// 			files,
-	// 			audios,
-	// 			costOneLesson,
-	// 			items,
-	// 			token,
-	// 			phoneNumber,
-	// 			prePay: prePayList,
-	// 		})
-
-	// 		socket.emit('createLink', {
-	// 			tag: 'addStudent',
-	// 			linkedId: currentOpenedStudent,
-	// 			links: links,
-	// 			token: token,
-	// 		})
-	// 	}
-	// }
 
 	const sendData = () => {
 		setLoading(true)
@@ -716,36 +639,7 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	// const handleClick_dp = (itemIndex: number, id: number) => {
-	// 	console.log(itemIndex, id, items)
-	// 	setItems((prevItems) =>
-	// 		prevItems.map((item, index) =>
-	// 			index === itemIndex
-	// 				? {
-	// 						...item,
-	// 						timeLinesArray: item.timeLinesArray.map((timeline) =>
-	// 							timeline.id === id
-	// 								? {
-	// 										...timeline,
-	// 										active: !timeline.active,
-	// 										editingStart: !timeline.active,
-	// 										editingEnd: false,
-	// 									}
-	// 								: {
-	// 										...timeline,
-	// 										active: false,
-	// 										editingStart: false,
-	// 										editingEnd: false,
-	// 									},
-	// 						),
-	// 					}
-	// 				: item,
-	// 		),
-	// 	)
-	// 	console.log(items, 'itemsitemsitems')
 
-	// 	setShowEndTimePicker(-1)
-	// }
 	// Измененная функция handleClick_dp
 	const handleClick_dp = (itemIndex: number, id: number) => {
 		// Если этот таймпикер уже активен, деактивируем его
@@ -872,63 +766,6 @@ const AddStudent = ({}: IAddStudent) => {
 		return `#${hexColor}`
 	}
 
-	// Функция для обработки предоплат
-	// const handlePrePayment = (historyLessons, prePayList) => {
-	// 	// Проверяем, является ли prePayList массивом и не пуст ли он
-	// 	if (!Array.isArray(prePayList) || prePayList.length === 0) {
-	// 		return historyLessons
-	// 	}
-
-	// 	// Функция для сравнения дат без учета времени
-	// 	const isSameDay = (date1, date2) => {
-	// 		return (
-	// 			date1.getFullYear() === date2.getFullYear() &&
-	// 			date1.getMonth() === date2.getMonth() &&
-	// 			date1.getDate() === date2.getDate()
-	// 		)
-	// 	}
-
-	// 	// Сортируем предоплаты по дате
-	// 	const sortedPrePayList = [...prePayList].sort(
-	// 		(a, b) => new Date(a.date) - new Date(b.date),
-	// 	)
-
-	// 	// Сортируем занятия по дате
-	// 	const sortedHistoryLessons = [...historyLessons].sort(
-	// 		(a, b) => new Date(a.date) - new Date(b.date),
-	// 	)
-
-	// 	let remainingPrePayment = 0
-	// 	let nextPrePayIndex = 0
-
-	// 	const updatedHistoryLessons = sortedHistoryLessons.map((lesson) => {
-	// 		const lessonDate = new Date(lesson.date)
-
-	// 		// Применяем все предоплаты, которые были до или в тот же день, что и это занятие
-	// 		while (
-	// 			nextPrePayIndex < sortedPrePayList.length &&
-	// 			(new Date(sortedPrePayList[nextPrePayIndex].date) < lessonDate ||
-	// 				isSameDay(
-	// 					new Date(sortedPrePayList[nextPrePayIndex].date),
-	// 					lessonDate,
-	// 				))
-	// 		) {
-	// 			remainingPrePayment += Number(sortedPrePayList[nextPrePayIndex].cost)
-	// 			nextPrePayIndex++
-	// 		}
-
-	// 		// Проверяем, можем ли мы оплатить это занятие
-	// 		if (remainingPrePayment >= Number(lesson.price) && !lesson.isCancel) {
-	// 			remainingPrePayment -= Number(lesson.price)
-	// 			return {...lesson, isPaid: true}
-	// 		} else {
-	// 			return {...lesson, isPaid: false}
-	// 		}
-	// 	})
-
-	// 	return updatedHistoryLessons
-	// }
-	//
 	const isSameDay = (date1, date2) => {
 		const d1 = new Date(date1)
 		const d2 = new Date(date2)
@@ -2540,7 +2377,7 @@ const AddStudent = ({}: IAddStudent) => {
 											/>
 										</LocalizationProvider> */}
 												<MiniCalendar
-													disabled={isEditMode}
+													disabled={isEditMode || currentOpenedStudent}
 													value={item.startLesson}
 													onChange={(newDate) =>
 														changeItemValue(
