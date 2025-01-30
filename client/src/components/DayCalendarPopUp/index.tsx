@@ -423,16 +423,6 @@ const LessonRow: React.FC<LessonRowProps> = ({
 						size="icon"
 						onClick={(e) => {
 							e.stopPropagation()
-							onCopy(lesson)
-						}}
-						className="h-10 w-10">
-						<PlusIcon className="h-5 w-5" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={(e) => {
-							e.stopPropagation()
 							onCancel(lesson.id)
 						}}
 						className="text-red-500 hover:text-red-600 h-10 w-10">
@@ -550,6 +540,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 	const [editingNewLesson, setEditingNewLesson] = useState(null)
 	const [pagePopup, setPagePopup] = useState(EPagePopUpExit.None)
 	const [currentDayPopUp, setCurrentDayPopUp] = useState(ECurrentDayPopUp.None)
+	const [lessonCancelId, setLessonCancelId] = useState<string | null>(null)
 
 	// Redux state
 	const user = useSelector((state: any) => state.user)
@@ -679,7 +670,6 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 	const handleLessonCancel = useCallback(
 		(lessonId) => {
-			setPagePopup(EPagePopUpExit.Cancel)
 			socket.emit('cancelLesson', {id: lessonId, token})
 
 			setStudents((prevStudents) =>
@@ -959,7 +949,11 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 														}}
 														isEditing={editMode}
 														onToggleComplete={handleLessonComplete}
-														onCancel={handleLessonCancel}
+														onCancel={() => {
+															if (lesson.isCancel) return
+															setLessonCancelId(lesson.id)
+															setPagePopup(EPagePopUpExit.Cancel)
+														}}
 														onCopy={handleLessonCopy}
 														onUpdate={handleLessonUpdate}
 														onRowClick={handleRowClick}
@@ -1144,7 +1138,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 						initial={{opacity: 0}}
 						animate={{opacity: 1}}
 						exit={{opacity: 0}}
-						className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+						className="fixed shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 translate-y-10 flex items-center justify-center z-50">
 						<motion.div
 							initial={{scale: 0.95}}
 							animate={{scale: 1}}
@@ -1162,9 +1156,8 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 								<Button
 									variant="destructive"
 									onClick={() => {
-										const lessonToCancel = students.find((s) => s.isCancel)
-										if (lessonToCancel) {
-											handleLessonCancel(lessonToCancel.id)
+										if (lessonCancelId) {
+											handleLessonCancel(lessonCancelId)
 										}
 										setPagePopup(EPagePopUpExit.None)
 									}}>
