@@ -508,8 +508,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [isEditMode])
 
-
-
 	const sendData = () => {
 		setLoading(true)
 		socket.off('addStudent')
@@ -638,7 +636,6 @@ const AddStudent = ({}: IAddStudent) => {
 			onTimeChange(selectedRanges[0])
 		}
 	}
-
 
 	// Измененная функция handleClick_dp
 	const handleClick_dp = (itemIndex: number, id: number) => {
@@ -916,7 +913,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	
 	const {
 		combinedHistory,
 		balance,
@@ -1845,11 +1841,11 @@ const AddStudent = ({}: IAddStudent) => {
 																			flexDirection: 'row',
 																			alignItems: 'center',
 																		}}>
-																		{item.isTrial ? (
-																			<p className="text-sm px-0.5 py-1 bg-blue-500/30 rounded-md">
+																		{item.isTrial && (
+																			<p className="text-sm absolute right-20 px-0.5 py-1 bg-blue-500/30 rounded-md">
 																				Пробное
 																			</p>
-																		) : null}
+																		)}
 																		<div
 																			style={{
 																				backgroundColor:
@@ -2046,6 +2042,7 @@ const AddStudent = ({}: IAddStudent) => {
 													firstMinSymbols={56}
 													placeholder="Наименование"
 												/>
+												<p className="text-red-500">*</p>
 											</div>
 											<Line width="100%" className={s.Line} />
 											<div className={s.StudentCardCheckBox}>

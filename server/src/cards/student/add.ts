@@ -129,7 +129,7 @@ const UploadFileSchema = z.object({
 
 const ItemSchema = z
   .object({
-    itemName: z.string(),
+    itemName: z.string().min(1, "Введите наименование предмета"),
     tryLessonCheck: z.boolean().optional().default(false),
     tryLessonCost: z.string().optional().default(""),
     trialLessonDate: z.string().datetime().nullable(),
@@ -174,11 +174,7 @@ const ItemSchema = z
 const AddStudentSchema = z
   .object({
     nameStudent: z.string().min(1, "Имя студента обязательно"),
-    phoneNumber: z
-      .string()
-      .regex(/^\+?[\d\s-()]+$/, "Некорректный формат телефона")
-      .optional()
-      .default(""),
+    phoneNumber: z.string().default(""),
     contactFace: z.string().optional().default(""),
     email: z
       .string()
@@ -222,7 +218,7 @@ const AddStudentSchema = z
             isDone: z.boolean().optional(),
             isPaid: z.boolean().optional(),
           }),
-        ]),
+        ])
       )
       .optional()
       .default([]),
@@ -323,7 +319,7 @@ function normalizeTimeLinesArray(data: any) {
 const retry = async <T>(
   operation: () => Promise<T>,
   retries = MAX_RETRIES,
-  delay = RETRY_DELAY,
+  delay = RETRY_DELAY
 ): Promise<T> => {
   try {
     return await operation();
@@ -366,7 +362,7 @@ async function validateToken(token: string): Promise<string> {
 // Проверка существующего студента
 async function checkExistingStudent(
   data: AddStudentInput,
-  userId: string,
+  userId: string
 ): Promise<void> {
   try {
     const cacheKey = `student:${userId}:${data.nameStudent}:${data.phoneNumber}:${data.email}`;
@@ -395,7 +391,7 @@ async function checkExistingStudent(
     if (error instanceof Error && "code" in error) throw error;
     throw createError(
       ErrorCode.DATABASE,
-      "Ошибка проверки существующего студента",
+      "Ошибка проверки существующего студента"
     );
   }
 }
@@ -406,7 +402,7 @@ async function createSchedule(
   group: GroupWithRelations,
   nameStudent: string,
   userId: string,
-  combinedHistory: any[], // добавляем параметр
+  combinedHistory: any[] // добавляем параметр
 ): Promise<void> {
   try {
     const scheduleData = [];
@@ -473,7 +469,7 @@ async function createSchedule(
     capture(error);
     throw createError(
       ErrorCode.SCHEDULE_CREATION_FAILED,
-      "Ошибка создания расписания",
+      "Ошибка создания расписания"
     );
   }
 }
@@ -483,7 +479,7 @@ async function processFiles(
   files: IUploadFiles[],
   audios: IUploadFiles[],
   userId: string,
-  studentId: string,
+  studentId: string
 ): Promise<void> {
   if (files.length === 0 && audios.length === 0) return;
 
@@ -512,7 +508,7 @@ async function processFiles(
 async function processLinks(
   links: string[],
   studentId: string,
-  userId: string,
+  userId: string
 ): Promise<void> {
   if (!links?.length) return;
   console.log("links", links);
@@ -545,7 +541,7 @@ async function processLinks(
 // Основная функция добавления студента
 export async function addStudent(
   data: unknown,
-  socket: any,
+  socket: any
 ): Promise<GroupWithRelations | void> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
   let operationCompleted = false;
@@ -647,14 +643,14 @@ export async function addStudent(
             group,
             validatedData.nameStudent,
             userId,
-            validatedData.combinedHistory || [], // передаем combinedHistory
+            validatedData.combinedHistory || [] // передаем combinedHistory
           );
           return group;
         } catch (error) {
           capture(error);
           throw createError(
             ErrorCode.GROUP_CREATION_FAILED,
-            "Ошибка создания группы",
+            "Ошибка создания группы"
           );
         }
       });
@@ -665,12 +661,12 @@ export async function addStudent(
             validatedData.files as IUploadFiles[],
             validatedData.audios as IUploadFiles[],
             userId,
-            createdGroup.students[0].id,
+            createdGroup.students[0].id
           ),
           processLinks(
             validatedData.links,
             createdGroup.students[0].id,
-            userId,
+            userId
           ),
         ]);
       }
