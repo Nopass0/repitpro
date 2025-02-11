@@ -26,7 +26,14 @@ export const createStudentScheduleSchema = z.object({
   itemName: z.string(),
   lessonsPrice: z.string(),
   studentName: z.string(),
-  copyBy: z.string(),
+  // copyBy теперь опционально – если передано, значит копируем существующее расписание,
+  // иначе создаём новое расписание с нуля.
+  copyBy: z.string().optional(),
+  // можно добавить и typeLesson, startTime, endTime, если они нужны при создании
+  typeLesson: z.union([z.string(), z.number()]).optional(),
+  startTime: TimeSchema.optional(),
+  endTime: TimeSchema.optional(),
+  itemId: z.string().optional(),
 });
 
 // Schema for updating student schedule
@@ -57,9 +64,7 @@ const UpdateStudentScheduleSchema = z.object({
 
 type StudentScheduleUpdateInput = Prisma.StudentScheduleUpdateInput;
 type UpdateStudentScheduleInput = z.infer<typeof UpdateStudentScheduleSchema>;
-export type CreateStudentScheduleSchemaType = z.infer<
-  typeof createStudentScheduleSchema
->;
+export type CreateStudentScheduleSchemaType = z.infer<typeof createStudentScheduleSchema>;
 
 // Helper function to compare dates
 function compareOnlyDates(date1: string | Date, date2: string | Date): boolean {
@@ -126,6 +131,10 @@ export async function createStudentSchedule(
     lessonsPrice,
     studentName,
     copyBy,
+    typeLesson,
+    startTime,
+    endTime,
+    itemId,
   } = data;
 
   try {
@@ -144,63 +153,100 @@ export async function createStudentSchedule(
 
     const userId = token_.userId;
 
-    // Get original schedule
-    const originalSchedule = await db.studentSchedule.findFirst({
-      where: {
-        id: copyBy,
-        userId,
-      },
-      include: {
-        item: {
-          include: {
-            group: true,
+    if (copyBy) {
+      // Если указан параметр copyBy – копируем существующее расписание
+      const originalSchedule = await db.studentSchedule.findFirst({
+        where: {
+          id: copyBy,
+          userId,
+        },
+        include: {
+          item: {
+            include: {
+              group: true,
+            },
           },
         },
-      },
-    });
-
-    if (!originalSchedule) {
-      socket.emit("createStudentSchedule", {
-        ok: false,
-        error: "Original schedule not found",
       });
-      return;
+
+      if (!originalSchedule) {
+        socket.emit("createStudentSchedule", {
+          ok: false,
+          error: "Original schedule not found",
+        });
+        return;
+      }
+
+      // Create new schedule based on original
+      const studentSchedule = await db.studentSchedule.create({
+        data: {
+          day,
+          month,
+          year,
+          userId,
+          groupId: originalSchedule.groupId,
+          workCount: 0,
+          lessonsCount: 0,
+          workPrice: 0,
+          itemId: originalSchedule.itemId,
+          lessonsPrice: Number(lessonsPrice),
+          itemName,
+          studentName,
+          typeLesson: originalSchedule.typeLesson,
+          timeLinesArray: originalSchedule.timeLinesArray,
+          isChecked: false,
+          isCancel: false,
+          isTrial: originalSchedule.isTrial,
+          isPaid: false,
+        },
+      });
+
+      socket.emit("createStudentSchedule", {
+        message: "student schedule created successfully",
+        created: studentSchedule.id,
+        nameStudent: studentName,
+        costOneLesson: lessonsPrice,
+        itemName: itemName,
+      });
+
+      return studentSchedule.id;
+    } else {
+      // Если copyBy не указан – создаём новое расписание с нуля
+      const studentSchedule = await db.studentSchedule.create({
+        data: {
+          day,
+          month,
+          year,
+          userId,
+          groupId: null, // можно задать группу, если требуется
+          workCount: 0,
+          lessonsCount: 0,
+          workPrice: 0,
+          itemId: itemId || "", // если есть переданный itemId, иначе пустая строка
+          lessonsPrice: Number(lessonsPrice),
+          itemName,
+          studentName,
+          typeLesson: typeLesson ? String(typeLesson) : "1", // по умолчанию тип "1"
+          startTime: startTime ? startTime : null,
+          endTime: endTime ? endTime : null,
+          isChecked: false,
+          isCancel: false,
+          isTrial: false,
+          isPaid: false,
+          timeLinesArray: [],
+        },
+      });
+
+      socket.emit("createStudentSchedule", {
+        message: "student schedule created successfully",
+        created: studentSchedule.id,
+        nameStudent: studentName,
+        costOneLesson: lessonsPrice,
+        itemName: itemName,
+      });
+
+      return studentSchedule.id;
     }
-
-    // Create new schedule
-    const studentSchedule = await db.studentSchedule.create({
-      data: {
-        day,
-        month,
-        year,
-        userId,
-        groupId: originalSchedule.groupId,
-        workCount: 0,
-        lessonsCount: 0,
-        workPrice: 0,
-        itemId: originalSchedule.itemId,
-        lessonsPrice: Number(lessonsPrice),
-        itemName,
-        studentName,
-        typeLesson: originalSchedule.typeLesson,
-        timeLinesArray: originalSchedule.timeLinesArray,
-        isChecked: false,
-        isCancel: false,
-        isTrial: originalSchedule.isTrial,
-        isPaid: false,
-      },
-    });
-
-    // Send success response
-    socket.emit("createStudentSchedule", {
-      message: "student schedule created successfully",
-      created: studentSchedule.id,
-      nameStudent: studentName,
-      costOneLesson: lessonsPrice,
-      itemName: itemName,
-    });
-
-    return studentSchedule.id;
   } catch (error) {
     console.error("Error creating student schedule:", error);
     socket.emit("createStudentSchedule", {

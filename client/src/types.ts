@@ -51,6 +51,16 @@ export interface ITimeLine {
 	}
 	editingStart: boolean
 	editingEnd: boolean
+	timeRanges?: {
+		startTime: {
+			hour: number
+			minute: number
+		}
+		endTime: {
+			hour: number
+			minute: number
+		}
+	}
 }
 
 // Обновленный тип для IItemCard
@@ -58,6 +68,7 @@ export interface IItemCard {
 	itemName: string
 	costOneLesson: string
 	tryLessonCheck: boolean
+	itemId: string
 	tryLessonCost: string
 	todayProgramStudent: string
 	targetLesson: string
@@ -206,6 +217,12 @@ export const TimeLineSchema = z.object({
 	endTime: TimeSchema,
 	editingStart: z.boolean(),
 	editingEnd: z.boolean(),
+	timeRanges: z
+		.object({
+			startTime: TimeSchema,
+			endTime: TimeSchema,
+		})
+		.optional(),
 })
 
 export const ItemSchema = z.object({

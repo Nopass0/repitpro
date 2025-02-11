@@ -1,7 +1,7 @@
-import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react'
-import {motion, AnimatePresence} from 'framer-motion'
-import {format, addDays, subDays} from 'date-fns'
-import {ru} from 'date-fns/locale'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { format, addDays, subDays } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import {
 	ChevronLeft,
 	ChevronRight,
@@ -14,10 +14,10 @@ import {
 	Video,
 	PlusIcon,
 } from 'lucide-react'
-import {useDispatch, useSelector} from 'react-redux'
-import {Button} from '@/ui/button'
-import {ScrollArea} from '@/ui/scroll-area'
-import {Separator} from '@/ui/separator'
+import { useDispatch, useSelector } from 'react-redux'
+import { Button } from '@/ui/button'
+import { ScrollArea } from '@/ui/scroll-area'
+import { Separator } from '@/ui/separator'
 import {
 	Select,
 	SelectContent,
@@ -25,9 +25,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/ui/select'
-import {Input} from '@/ui/input'
-import {Checkbox} from '@/ui/checkbox'
-import {cn} from '@/lib/utils'
+import { Input } from '@/ui/input'
+import { Checkbox } from '@/ui/checkbox'
+import { cn } from '@/lib/utils'
 
 // Import icons
 import icon1 from '@/assets/1.svg'
@@ -38,7 +38,7 @@ import icon5 from '@/assets/5.svg'
 import icon6 from '@/assets/6.svg'
 
 import socket from '@/socket'
-import {ECurrentDayPopUp, EPagePopUpExit, ELeftMenuPage} from '@/types'
+import { ECurrentDayPopUp, EPagePopUpExit, ELeftMenuPage } from '@/types'
 import TimeRangePicker from '@/ui/time-range-picker-day'
 import DayStudentPopUp from '../DayStudentPopUp'
 const LESSON_TYPES = {
@@ -53,11 +53,11 @@ interface LessonRowProps {
 	lesson: {
 		id: string
 		type: string
-		startTime: {hour: number; minute: number}
-		endTime: {hour: number; minute: number}
+		startTime: { hour: number; minute: number }
+		endTime: { hour: number; minute: number }
 		studentName: string
-		subject: string
-		price: number
+		itemName: string
+		costOneLesson: number
 		isCompleted: boolean
 		isCancelled: boolean
 		isTest: boolean
@@ -97,18 +97,18 @@ const LessonRow: React.FC<LessonRowProps> = ({
 	const [studentSuggestions, setStudentSuggestions] = useState([])
 	const [subjectSuggestions, setSubjectSuggestions] = useState([])
 	const [timePickerOpen, setTimePickerOpen] = useState(false)
-	const [timePickerPosition, setTimePickerPosition] = useState({x: 0, y: 0})
-	const [localPrice, setLocalPrice] = useState(lesson.price?.toString() || '0')
+	const [timePickerPosition, setTimePickerPosition] = useState({ x: 0, y: 0 })
+	const [localPrice, setLocalPrice] = useState(lesson.costOneLesson?.toString() || '0')
 	const timerRef = useRef<NodeJS.Timeout | null>(null)
 
 	useEffect(() => {
-		setLocalPrice(lesson.price?.toString() || '0')
-	}, [lesson.price])
+		setLocalPrice(lesson.costOneLesson?.toString() || '0')
+	}, [lesson.costOneLesson])
 
 	useEffect(() => {
 		if (isEditing) {
 			// Load student suggestions
-			socket.emit('getStudentSuggestions', {token})
+			socket.emit('getStudentSuggestions', { token })
 			socket.once('getStudentSuggestions', (response) => {
 				if (response.students) {
 					setStudentSuggestions(response.students)
@@ -116,7 +116,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 			})
 
 			// Load subject suggestions
-			socket.emit('getSubjectSuggestions', {token})
+			socket.emit('getSubjectSuggestions', { token })
 			socket.once('getSubjectSuggestions', (response) => {
 				if (response.subjects) {
 					setSubjectSuggestions(response.subjects)
@@ -150,19 +150,15 @@ const LessonRow: React.FC<LessonRowProps> = ({
 	}
 
 	const handleTimeRangeSelect = useCallback(
-		(ranges: {startTime: string; endTime: string}[]) => {
+		(ranges: { startTime: string; endTime: string }[]) => {
 			if (ranges.length > 0) {
 				const [selectedRange] = ranges
-				const [startHours, startMinutes] = selectedRange.startTime
-					.split(':')
-					.map(Number)
-				const [endHours, endMinutes] = selectedRange.endTime
-					.split(':')
-					.map(Number)
+				const [startHours, startMinutes] = selectedRange.startTime.split(':').map(Number)
+				const [endHours, endMinutes] = selectedRange.endTime.split(':').map(Number)
 
 				onUpdate(lesson.id, {
-					startTime: {hour: startHours, minute: startMinutes},
-					endTime: {hour: endHours, minute: endMinutes},
+					startTime: { hour: startHours, minute: startMinutes },
+					endTime: { hour: endHours, minute: endMinutes },
 					action: 'updateTime',
 					day: calendarDay,
 					month: calendarMonth,
@@ -257,7 +253,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 						<Select
 							value={lesson.type}
 							onValueChange={(value) =>
-								onUpdate(lesson.id, {type: value, action: 'updateType'})
+								onUpdate(lesson.id, { type: value, action: 'updateType' })
 							}>
 							<SelectTrigger className="w-[40px] h-[40px]">
 								<img
@@ -353,9 +349,11 @@ const LessonRow: React.FC<LessonRowProps> = ({
 				{/* Subject */}
 				<div className="border-r h-full flex items-center px-3">
 					{isEditing ? (
-						<Select value={lesson.subject} onValueChange={handleSubjectChange}>
-							<SelectTrigger>
-								<SelectValue>{lesson.subject}</SelectValue>
+						<Select value={lesson.itemName || ''} onValueChange={handleSubjectChange}>
+							<SelectTrigger className="w-full">
+								<SelectValue placeholder="Выберите предмет">
+									{lesson.itemName || 'Выберите предмет'}
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent>
 								{subjectSuggestions.map((subject) => (
@@ -367,8 +365,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 						</Select>
 					) : (
 						<div className="text-gray-600 truncate w-full text-base text-center">
-							{lesson.subject}
-							{lesson.isPaid}
+							{lesson.itemName}
 						</div>
 					)}
 				</div>
@@ -391,7 +388,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 						/>
 					) : (
 						<div className="text-center w-full text-base">
-							{!hiddenNum && <span>{lesson.price}₽</span>}
+							{!hiddenNum && <span>{lesson.costOneLesson}₽</span>}
 						</div>
 					)}
 				</div>
@@ -405,9 +402,8 @@ const LessonRow: React.FC<LessonRowProps> = ({
 							if (lesson.isAutoChecked || lesson.isCancelled) {
 								return
 							}
-							handleCompletionChange()
+							if (isEditing) handleCompletionChange();
 						}}
-						// disabled={lesson.isAutoChecked || lesson.isCancelled}
 						className={cn(
 							'h-5 w-5 cursor-pointer',
 							(lesson.isAutoChecked || lesson.isCancelled) &&
@@ -450,7 +446,7 @@ const LessonRow: React.FC<LessonRowProps> = ({
 }
 
 // Helper functions
-const formatTime = (time: {hour: number; minute: number}) => {
+const formatTime = (time: { hour: number; minute: number }) => {
 	return `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`
 }
 
@@ -477,7 +473,7 @@ interface IDayCalendarPopUp {
 	className?: string
 }
 
-const ClientRow = ({client, isEditing, onRowClick, hiddenNum}) => {
+const ClientRow = ({ client, isEditing, onRowClick, hiddenNum }) => {
 	return (
 		<div
 			className="border rounded-lg p-2 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
@@ -520,11 +516,7 @@ const ClientRow = ({client, isEditing, onRowClick, hiddenNum}) => {
 	)
 }
 
-const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
-	style,
-	onExit,
-	className,
-}) => {
+const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({ style, onExit, className }) => {
 	const dispatch = useDispatch()
 	const mountedRef = useRef(false)
 	const retryCountRef = useRef(0)
@@ -533,6 +525,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 	const [isVisible, setIsVisible] = useState(true)
 	const [editMode, setEditMode] = useState(false)
 	const [students, setStudents] = useState([])
+	const [editedStudents, setEditedStudents] = useState([])
 	const [clients, setClients] = useState([])
 	const [tempStudents, setTempStudents] = useState([])
 	const [isLoading, setIsLoading] = useState(true)
@@ -545,20 +538,12 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 	// Redux state
 	const user = useSelector((state: any) => state.user)
 	const token = user?.token
-	const calendarNowPopupDay = useSelector(
-		(state: any) => state.calendarNowPopupDay,
-	)
-	const calendarNowPopupMonth = useSelector(
-		(state: any) => state.calendarNowPopupMonth,
-	)
-	const calendarNowPopupYear = useSelector(
-		(state: any) => state.calendarNowPopupYear,
-	)
+	const calendarNowPopupDay = useSelector((state: any) => state.calendarNowPopupDay)
+	const calendarNowPopupMonth = useSelector((state: any) => state.calendarNowPopupMonth)
+	const calendarNowPopupYear = useSelector((state: any) => state.calendarNowPopupYear)
 	const hiddenNum = useSelector((state: any) => state.hiddenNum)
 	const dayPopUpExit = useSelector((state: any) => state.dayPopUpExit)
-	const currentOpenedStudent = useSelector(
-		(state: any) => state.currentOpenedStudent,
-	)
+	const currentOpenedStudent = useSelector((state: any) => state.currentOpenedStudent)
 
 	// Statistics
 	const statistics = useMemo(() => {
@@ -652,7 +637,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 		dispatch({
 			type: 'SET_CALENDAR_NOW_POPUP',
-			payload: {day: newDay, month: newMonth, year: newYear},
+			payload: { day: newDay, month: newMonth, year: newYear },
 		})
 		fetchData()
 	}
@@ -662,7 +647,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 		setStudents((prevStudents) => {
 			return prevStudents.map((student) =>
 				student.id === lessonId
-					? {...student, tryLessonCheck: !student.tryLessonCheck}
+					? { ...student, tryLessonCheck: !student.tryLessonCheck }
 					: student,
 			)
 		})
@@ -670,11 +655,11 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 	const handleLessonCancel = useCallback(
 		(lessonId) => {
-			socket.emit('cancelLesson', {id: lessonId, token})
+			socket.emit('cancelLesson', { id: lessonId, token })
 
 			setStudents((prevStudents) =>
 				prevStudents.map((student) =>
-					student.id === lessonId ? {...student, isCancel: true} : student,
+					student.id === lessonId ? { ...student, isCancel: true } : student,
 				),
 			)
 		},
@@ -700,31 +685,56 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 	const handleLessonUpdate = useCallback(
 		(lessonId, updates) => {
-			// Обновляем локальное состояние
-			setStudents((prevStudents) =>
-				prevStudents.map((student) => {
-					if (student.id === lessonId) {
-						const updatedStudent = {...student}
-						Object.assign(updatedStudent, updates)
-						return updatedStudent
-					}
-					return student
-				}),
-			)
-
-			// Отправляем обновления на сервер
-			socket.emit('updateStudentSchedule', {
-				id: lessonId,
-				...updates,
-				day: calendarNowPopupDay,
-				month: calendarNowPopupMonth,
-				year: calendarNowPopupYear,
-				token,
-			})
-
-			dispatch({type: 'SET_UPDATE_CARD', payload: true})
+			if (
+				updates.action === 'updateStudent' ||
+				updates.action === 'updateTime' ||
+				updates.action === 'updatePrice' ||
+				updates.action === 'updateSubject'
+			) {
+				// Update local state only
+				if (editingNewLesson?.id === lessonId) {
+					setTempStudents((prevStudents) =>
+						prevStudents.map((student) => {
+							if (student.id === lessonId) {
+								const updatedStudent = { ...student }
+								if (updates.studentName) updatedStudent.nameStudent = updates.studentName
+								if (updates.studentId) updatedStudent.studentId = updates.studentId
+								if (updates.startTime) updatedStudent.startTime = updates.startTime
+								if (updates.endTime) updatedStudent.endTime = updates.endTime
+								if (updates.lessonsPrice) updatedStudent.costOneLesson = updates.lessonsPrice
+								if (updates.itemName) updatedStudent.itemName = updates.itemName
+								return updatedStudent
+							}
+							return student
+						}),
+					)
+				} else {
+					setStudents((prevStudents) =>
+						prevStudents.map((student) => {
+							if (student.id === lessonId) {
+								const updatedStudent = { ...student }
+								if (updates.studentName) updatedStudent.nameStudent = updates.studentName
+								if (updates.studentId) updatedStudent.studentId = updates.studentId
+								if (updates.startTime) updatedStudent.startTime = updates.startTime
+								if (updates.endTime) updatedStudent.endTime = updates.endTime
+								if (updates.lessonsPrice) updatedStudent.costOneLesson = updates.lessonsPrice
+								if (updates.itemName) updatedStudent.itemName = updates.itemName
+								return updatedStudent
+							}
+							return student
+						}),
+					)
+					// Track edited students
+					setEditedStudents((prev) => {
+						if (!prev.includes(lessonId)) {
+							return [...prev, lessonId]
+						}
+						return prev
+					})
+				}
+			}
 		},
-		[calendarNowPopupDay, calendarNowPopupMonth, calendarNowPopupYear, token],
+		[editingNewLesson],
 	)
 
 	// Row click handler to open DayStudentPopUp
@@ -736,7 +746,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 				payload: lesson.studentId,
 			})
 
-			dispatch({type: 'SET_CURRENT_SCHEDULE_DAY', payload: lesson.id})
+			dispatch({ type: 'SET_CURRENT_SCHEDULE_DAY', payload: lesson.id })
 			setCurrentDayPopUp(ECurrentDayPopUp.Student)
 		}
 	}
@@ -745,11 +755,11 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 	const handleIconClick = (lesson) => {
 		if (!editMode) {
 			if (lesson.type === 'group') {
-				socket.emit('getGroupById', {token, groupId: lesson.groupId})
-				dispatch({type: 'SET_CURRENT_OPENED_GROUP', payload: lesson.groupId})
-				dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup})
+				socket.emit('getGroupById', { token, groupId: lesson.groupId })
+				dispatch({ type: 'SET_CURRENT_OPENED_GROUP', payload: lesson.groupId })
+				dispatch({ type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddGroup })
 			} else {
-				socket.emit('getGroupByStudentId', {token, studentId: lesson.studentId})
+				socket.emit('getGroupByStudentId', { token, studentId: lesson.studentId })
 				dispatch({
 					type: 'SET_CURRENT_OPENED_STUDENT',
 					payload: lesson.studentId,
@@ -764,63 +774,110 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 	// Client handlers
 	const handleOpenClientCard = (clientId) => {
-		socket.emit('getClientById', {token, clientId})
-		dispatch({type: 'SET_CURRENT_OPENED_CLIENT', payload: clientId})
-		dispatch({type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddClient})
+		socket.emit('getClientById', { token, clientId })
+		dispatch({ type: 'SET_CURRENT_OPENED_CLIENT', payload: clientId })
+		dispatch({ type: 'SET_LEFT_MENU_PAGE', payload: ELeftMenuPage.AddClient })
 	}
 
 	// Save & Exit handlers
 	const handleSave = async () => {
+		// Validate required fields for new lessons
 		const filledTempStudents = tempStudents.filter(
 			(s) =>
-				s.nameStudent &&
-				s.itemName &&
-				(s.startTime.hour !== 0 || s.startTime.minute !== 0),
+				s.nameStudent?.trim() && // имя ученика
+				s.itemName?.trim() && // имя предмета
+				s.studentId && // выбран ученик
+				(s.startTime.hour !== 0 || s.startTime.minute !== 0)
 		)
 
+		// Check if any new lessons are missing required fields
+		if (tempStudents.length > filledTempStudents.length) {
+			alert('Пожалуйста, заполните имя ученика и предмет для всех новых занятий')
+			return
+		}
+
 		try {
-			const studentsToSave = [...students, ...filledTempStudents]
-			await Promise.all(
-				studentsToSave.map(
-					(student) =>
-						new Promise((resolve, reject) => {
-							socket.emit('updateStudentSchedule', {
-								id: student.id,
-								day: calendarNowPopupDay,
-								month: calendarNowPopupMonth,
-								year: calendarNowPopupYear,
-								lessonsPrice: student.costOneLesson || 0,
-								studentName: student.nameStudent,
-								itemName: student.itemName,
-								typeLesson: student.typeLesson,
-								startTime: student.startTime,
-								endTime: student.endTime,
-								isChecked: student.tryLessonCheck,
-								isCancel: student.isCancel,
-								token,
-							})
-
-							socket.once(`updateStudentSchedule_${student.id}`, (response) => {
-								if (response.success) {
-									socket.emit('getAllStudentSchedules', {
-										studentId: currentOpenedStudent,
-										token: token,
+			// Save edited existing students
+			if (editedStudents.length > 0) {
+				await Promise.all(
+					students
+						.filter((student) => editedStudents.includes(student.id))
+						.map(
+							(student) =>
+								new Promise((resolve, reject) => {
+									socket.emit('updateStudentSchedule', {
+										id: student.id,
+										day: calendarNowPopupDay,
+										month: calendarNowPopupMonth,
+										year: calendarNowPopupYear,
+										lessonsPrice: student.costOneLesson || 0,
+										studentName: student.nameStudent,
+										itemName: student.itemName,
+										typeLesson: student.typeLesson || student.type,
+										startTime: student.startTime,
+										endTime: student.endTime,
+										isChecked: student.tryLessonCheck,
+										isCancel: student.isCancel,
+										token,
 									})
-									resolve(response)
-								} else reject(new Error('Failed to update student schedule'))
-							})
 
-							setTimeout(() => reject(new Error('Update timeout')), 5000)
-						}),
-				),
-			)
+									socket.once(`updateStudentSchedule_${student.id}`, (response) => {
+										if (response.success) {
+											resolve(response)
+										} else {
+											reject(new Error('Failed to update student schedule'))
+										}
+									})
+
+									setTimeout(() => reject(new Error('Update timeout')), 5000)
+								}),
+						),
+				)
+			}
+
+			// Save new students
+			if (filledTempStudents.length > 0) {
+				await Promise.all(
+					filledTempStudents.map(
+						(student) =>
+							new Promise((resolve, reject) => {
+								socket.emit('createStudentSchedule', {
+									token,
+									day: calendarNowPopupDay,
+									month: calendarNowPopupMonth,
+									year: calendarNowPopupYear,
+									studentId: student.studentId,
+									itemName: student.itemName,
+									lessonsPrice: student.costOneLesson || 0,
+									studentName: student.nameStudent,
+									startTime: student.startTime,
+									endTime: student.endTime,
+									typeLesson: student.type,
+								})
+
+								socket.once('createStudentSchedule', (response) => {
+									if (response.success || response.created) {
+										resolve(response)
+									} else {
+										reject(new Error('Failed to create student schedule'))
+									}
+								})
+
+								setTimeout(() => reject(new Error('Create timeout')), 5000)
+							}),
+					),
+				)
+			}
 
 			setTempStudents([])
+			setEditedStudents([])
+			setEditingNewLesson(null)
 			setEditMode(false)
-			dispatch({type: 'SET_IS_EDIT_DAY_POPUP', payload: false})
+			dispatch({ type: 'SET_IS_EDIT_DAY_POPUP', payload: false })
 			fetchData()
 		} catch (error) {
 			console.error('Error saving changes:', error)
+			alert('Произошла ошибка при сохранении. Пожалуйста, попробуйте еще раз.')
 		}
 	}
 
@@ -837,29 +894,30 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 		const newLesson = {
 			id: crypto.randomUUID(),
 			type: LESSON_TYPES.HOME,
-			startTime: {hour: 9, minute: 0},
-			endTime: {hour: 10, minute: 0},
+			startTime: { hour: 9, minute: 0 },
+			endTime: { hour: 10, minute: 0 },
 			studentName: '',
-			subject: '',
-			price: 0,
+			itemName: '',
+			costOneLesson: 0,
 			isCompleted: false,
 			isCancelled: false,
 			isTest: false,
+			isNew: true,
+			typeLesson: LESSON_TYPES.HOME,
 		}
 		setEditingNewLesson(newLesson)
+		setTempStudents((prev) => [...prev, newLesson])
 		setEditMode(true)
 	}
-	const totalGridLines = 8 // Можно настроить желаемое количество линий
-	const emptyGridLines = Array(totalGridLines).fill(null)
 
 	return (
 		<AnimatePresence>
 			<>
 				{isVisible && (
 					<motion.div
-						initial={{opacity: 0, y: -20}}
-						animate={{opacity: 1, y: 0}}
-						exit={{opacity: 0, y: -20}}
+						initial={{ opacity: 0, y: -20 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -20 }}
 						className="fixed top-[80px] left-[-400px]  -translate-x-1/2 -translate-y-1/2  w-[700px] bg-white rounded-xl shadow-2xl overflow-hidden">
 						{/* Header */}
 						<div className="p-4 border-b bg-white">
@@ -881,7 +939,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 												calendarNowPopupDay,
 											),
 											'd MMMM yyyy',
-											{locale: ru},
+											{ locale: ru },
 										)}
 									</h2>
 									<Button
@@ -937,8 +995,8 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 															startTime: lesson.startTime,
 															endTime: lesson.endTime,
 															studentName: lesson.nameStudent,
-															subject: lesson.itemName,
-															price: lesson.costOneLesson,
+															itemName: lesson.itemName,
+															costOneLesson: lesson.costOneLesson,
 															isCompleted: lesson.tryLessonCheck,
 															isCancelled: lesson.isCancel,
 															isTest: lesson.isTrial,
@@ -947,7 +1005,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 															groupId: lesson.groupId,
 															type: lesson.type,
 														}}
-														isEditing={editMode}
+														isEditing={editMode && !editingNewLesson}
 														onToggleComplete={handleLessonComplete}
 														onCancel={() => {
 															if (lesson.isCancel) return
@@ -972,14 +1030,13 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 											{/* Grid Lines to always have at least 6 lines */}
 											{students.length < 6 && !editingNewLesson
-												? Array.from({length: 6 - students.length}).map(
+												? Array.from({ length: 6 - students.length }).map(
 														(_, index) => (
 															<React.Fragment key={`grid-${index}`}>
 																<Separator className="my-2" />
 																<div
 																	className={`h-14 ${index === 0 ? 'mt-0' : 'mt-2'}`}
 																/>{' '}
-																{/* Spacing to match lesson row height with reduced top margin */}
 															</React.Fragment>
 														),
 													)
@@ -988,8 +1045,8 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 											{/* New Lesson Form */}
 											{editingNewLesson && (
 												<motion.div
-													initial={{opacity: 0, y: -10}}
-													animate={{opacity: 1, y: 0}}>
+													initial={{ opacity: 0, y: -10 }}
+													animate={{ opacity: 1, y: 0 }}>
 													<Separator className="my-2" />
 													<LessonRow
 														lesson={editingNewLesson}
@@ -997,12 +1054,18 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 														onToggleComplete={() => {}}
 														onCancel={() => setEditingNewLesson(null)}
 														onCopy={() => {}}
-														onUpdate={(_, updates) =>
-															setEditingNewLesson((prev) => ({
-																...prev,
-																...updates,
-															}))
-														}
+														// Изменённый обработчик onUpdate: синхронизация editingNewLesson и tempStudents
+														onUpdate={(id, updates) => {
+															setEditingNewLesson((prev) => {
+																const updated = { ...prev, ...updates }
+																setTempStudents((prevTemp) =>
+																	prevTemp.map((lesson) =>
+																		lesson.id === id ? updated : lesson,
+																	),
+																)
+																return updated
+															})
+														}}
 														onRowClick={() => {}}
 														onIconClick={() => {}}
 														hiddenNum={hiddenNum}
@@ -1084,10 +1147,7 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 				{/* DayStudentPopUp */}
 				{currentDayPopUp === ECurrentDayPopUp.Student && (
-					<motion.div
-						initial={{opacity: 0}}
-						animate={{opacity: 1}}
-						exit={{opacity: 0}}>
+					<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 						<DayStudentPopUp
 							onExit={() => {
 								setCurrentDayPopUp(ECurrentDayPopUp.None)
@@ -1100,14 +1160,14 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 				{/* Confirmation Dialogs */}
 				{pagePopup === EPagePopUpExit.Exit && (
 					<motion.div
-						initial={{opacity: 0}}
-						animate={{opacity: 1}}
-						exit={{opacity: 0}}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
 						className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 						<motion.div
-							initial={{scale: 0.95}}
-							animate={{scale: 1}}
-							exit={{scale: 0.95}}
+							initial={{ scale: 0.95 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0.95 }}
 							className="bg-white rounded-lg p-6 w-[400px]">
 							<h3 className="text-lg font-medium mb-4">Сохранить изменения?</h3>
 							<div className="flex justify-end gap-3">
@@ -1135,14 +1195,14 @@ const DayCalendarPopUp: React.FC<IDayCalendarPopUp> = ({
 
 				{pagePopup === EPagePopUpExit.Cancel && (
 					<motion.div
-						initial={{opacity: 0}}
-						animate={{opacity: 1}}
-						exit={{opacity: 0}}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
 						className="fixed shadow-lg top-1/2 left-1/2 transform -translate-x-1/2 translate-y-10 flex items-center justify-center z-50">
 						<motion.div
-							initial={{scale: 0.95}}
-							animate={{scale: 1}}
-							exit={{scale: 0.95}}
+							initial={{ scale: 0.95 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0.95 }}
 							className="bg-white rounded-lg p-6 w-[400px]">
 							<h3 className="text-lg font-medium mb-4">
 								Вы действительно хотите отменить занятие?

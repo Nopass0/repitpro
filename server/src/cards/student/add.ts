@@ -132,7 +132,7 @@ const ItemSchema = z
     itemName: z.string().min(1, "Введите наименование предмета"),
     tryLessonCheck: z.boolean().optional().default(false),
     tryLessonCost: z.string().optional().default(""),
-    trialLessonDate: z.string().datetime().nullable(),
+    trialLessonDate: z.string().datetime().nullable().or(z.number().transform((val) => new Date(val))),
     trialLessonTime: z
       .object({
         startTime: TimeSchema,
@@ -174,7 +174,7 @@ const ItemSchema = z
 const AddStudentSchema = z
   .object({
     nameStudent: z.string().min(1, "Имя студента обязательно"),
-    phoneNumber: z.string().default(""),
+    phoneNumber: z.string().optional().default(""),
     contactFace: z.string().optional().default(""),
     email: z
       .string()

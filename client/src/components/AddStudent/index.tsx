@@ -409,6 +409,23 @@ const AddStudent = ({}: IAddStudent) => {
 		timelineId: null,
 	})
 
+	
+	const {
+		combinedHistory,
+		balance,
+		updateHistory,
+		addPrePay,
+		deletePrePay,
+		editPrePay,
+		updateCombinedHistory,
+		putCombinedHistory,
+		updateHistoryWithChanges,
+	} = useHistory(
+		useMemo(() => [], []),
+		useMemo(() => [], []),
+		isEditMode,
+	)
+
 	const handleFileNLinks = (
 		file: any,
 		name: string,
@@ -467,7 +484,7 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	// AddStudent/index.tsx
+	// id items
 	const [editedItems, setEditedItems] = useState<Set<string>>(new Set())
 
 	// Модифицируем функцию changeItemValue
@@ -484,7 +501,7 @@ const AddStudent = ({}: IAddStudent) => {
 			// Добавляем измененный предмет в список
 			if (isEditMode) {
 				setEditedItems((prev) =>
-					new Set(prev).add(newItems[itemIndex].itemName),
+					new Set(prev).add(newItems[itemIndex].itemId),
 				)
 			}
 
@@ -495,8 +512,8 @@ const AddStudent = ({}: IAddStudent) => {
 	// Добавляем эффект для обработки изменений
 	useEffect(() => {
 		if (isEditMode && editedItems.size > 0) {
-			editedItems.forEach((itemName) => {
-				updateHistoryWithChanges(items, itemName)
+			editedItems.forEach((itemId: string) => {
+				updateHistoryWithChanges(items, itemId)
 			})
 		}
 	}, [items, isEditMode, editedItems])
@@ -913,21 +930,6 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}
 
-	const {
-		combinedHistory,
-		balance,
-		updateHistory,
-		addPrePay,
-		deletePrePay,
-		editPrePay,
-		updateCombinedHistory,
-		putCombinedHistory,
-		updateHistoryWithChanges,
-	} = useHistory(
-		useMemo(() => [], []),
-		useMemo(() => [], []),
-		isEditMode,
-	)
 
 	const [prevBalance, setPrevBalance] = useState(null)
 
@@ -1256,7 +1258,7 @@ const AddStudent = ({}: IAddStudent) => {
 			// Для новой карточки обновляем историю для всех предметов
 			items.forEach((item) => {
 				if (item.itemName && item.costOneLesson) {
-					updateHistory(items, item.itemName)
+					updateHistory(items, item.itemId)
 				}
 			})
 		}
