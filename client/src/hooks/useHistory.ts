@@ -331,37 +331,45 @@ export const useHistory = (
 
 	// Функция обновления истории для конкретного предмета по его индексу.
 	// Если параметр changedItemId не передан, то обновляются занятия для всех предметов.
-	const updateHistory = useCallback(
-		(items: Item[], changedItemId?: number) => {
-			if (updateSourceRef.current === 'socket') return;
-			if (changedItemId !== undefined) {
-				const changedItem = items[changedItemId];
-				if (!changedItem) return;
-				setHistory((currentHistory) => {
-					const filteredHistory = currentHistory.filter(
-						(lesson) => lesson.itemId !== changedItemId
-					);
-					const newLessons = generateLessonsForItem(changedItem, changedItemId);
-					const newHistory = [...filteredHistory, ...newLessons].sort(
-						(a, b) => a.date.getTime() - b.date.getTime()
-					);
-					updateCombinedHistory(newHistory, prePay);
-					return newHistory;
-				});
-			} else {
-				// Если не указан конкретный предмет – обновляем историю для всех
-				const allLessons: HistoryLesson[] = [];
-				items.forEach((item, index) => {
-					const lessonsForItem = generateLessonsForItem(item, index);
-					allLessons.push(...lessonsForItem);
-				});
-				allLessons.sort((a, b) => a.date.getTime() - b.date.getTime());
-				setHistory(allLessons);
-				updateCombinedHistory(allLessons, prePay);
-			}
-		},
-		[generateLessonsForItem, updateCombinedHistory, prePay]
-	);
+// Изменённая функция updateHistory
+const updateHistory = useCallback(
+	(items: Item[], changedItemId?: number) => {
+		// Если источник обновления – сокет, то пропускаем (не меняем историю)
+		if (updateSourceRef.current === 'socket') return;
+		const now = new Date();
+		if (changedItemId !== undefined) {
+			const changedItem = items[changedItemId];
+			if (!changedItem) return;
+			setHistory((currentHistory) => {
+				// Оставляем уроки, которые либо не относятся к изменённому предмету,
+				// либо относятся, но уже прошли (дата раньше текущего времени)
+				const remainingHistory = currentHistory.filter(
+					(lesson) => lesson.itemId !== changedItemId || new Date(lesson.date) < now
+				);
+				// Генерируем новые уроки для данного предмета, но только для будущего времени
+				const newLessons = generateLessonsForItem(changedItem, changedItemId).filter(
+					(lesson) => new Date(lesson.date) >= now
+				);
+				const newHistory = [...remainingHistory, ...newLessons].sort(
+					(a, b) => a.date.getTime() - b.date.getTime()
+				);
+				updateCombinedHistory(newHistory, prePay);
+				return newHistory;
+			});
+		} else {
+			// Если предмет не указан, обновляем историю для всех
+			const allLessons: HistoryLesson[] = [];
+			items.forEach((item, index) => {
+				allLessons.push(...generateLessonsForItem(item, index));
+			});
+			allLessons.sort((a, b) => a.date.getTime() - b.date.getTime());
+			setHistory(allLessons);
+			updateCombinedHistory(allLessons, prePay);
+		}
+	},
+	[generateLessonsForItem, updateCombinedHistory, prePay]
+);
+
 
 	// Функция обновления истории с учётом изменений для конкретного предмета (по индексу)
 	const updateHistoryWithChanges = useCallback(

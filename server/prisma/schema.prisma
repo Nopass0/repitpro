@@ -116,7 +116,7 @@ model Item {
   timeLinesArray Json //Objects
   commentItem String?
 
-  group             Group?       @relation(fields: [groupId], references: [id])
+  group             Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId           String?
   studentSchedules  StudentSchedule[]
 
@@ -151,7 +151,7 @@ model Student {
   targetLessonStudent String?
   todayProgramStudent String?
   isArchived      Boolean @default(false)
-  group           Group    @relation(fields: [groupId], references: [id])
+ group             Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId         String
   isCancel       Boolean @default(false)
 
@@ -196,7 +196,7 @@ model StudentSchedule {
   userId       String
   month        String
   year         String
-  item         Item     @relation(fields: [itemId], references: [id])
+  item              Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId       String
   isCancel       Boolean @default(false)
   isTrial      Boolean @default(false)

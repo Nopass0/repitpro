@@ -1289,10 +1289,23 @@ const AddStudent = ({}: IAddStudent) => {
 				setAudios(student.audiosData)
 				setMediaFiles(student.mediaFiles || [])
 				setItems(data.items || [])
+
+
 			}
 			setIsLoading(false)
 		}
 	}, [data])
+
+	useEffect(() => {
+		if (items.length > 1 && currentItemIndex === 0) {
+		  // Задержка в 2 секунды (2000 мс) – можно настроить по необходимости
+		  const timer = setTimeout(() => {
+			setCurrentItemIndex(1);
+		  }, 1000);
+		  return () => clearTimeout(timer);
+		}
+	  }, [items, currentItemIndex]);
+	  
 
 	useEffect(() => {
 		setTimeout(() => {
