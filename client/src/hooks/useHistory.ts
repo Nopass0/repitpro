@@ -166,7 +166,7 @@ export const useHistory = (
 		[]
 	);
 
-	// Обновление комбинированной истории (уроки + предоплаты)
+	// Модифицированная функция обновления комбинированной истории
 	const updateCombinedHistory = useCallback(
 		(historyData: HistoryLesson[], prePayData: PrePay[]) => {
 			const updateKey = JSON.stringify({
@@ -184,7 +184,8 @@ export const useHistory = (
 			const { processedLessons, currentBalance } =
 				processLessonsAndCalculateBalance(historyData, prePayData);
 
-			const validHistory = processedLessons.map((lesson) => ({
+			// Приводим даты к корректному виду и задаём значения по умолчанию для timeSlot
+			let validHistory = processedLessons.map((lesson) => ({
 				...lesson,
 				date: new Date(lesson.date),
 				timeSlot: {
@@ -192,6 +193,42 @@ export const useHistory = (
 					endTime: lesson.timeSlot?.endTime || { hour: 0, minute: 0 },
 				},
 			}));
+
+			// ===== Новая логика перерасчёта автоматических галочек =====
+			// Считаем сумму всех предоплат
+			const totalPrePay = prePayData.reduce(
+				(sum, payment) => sum + Number(payment.cost),
+				0
+			);
+			let cumulativeCost = 0;
+			// Флаг цепочки – как только встречается урок, для которого не хватает средств, дальнейшие не отмечаются
+			let chainActive = true;
+			// Сортируем уроки по возрастанию даты и пересчитываем флаги
+			validHistory = validHistory
+				.sort((a, b) => a.date.getTime() - b.date.getTime())
+				.map((lesson) => {
+					const lessonCost = Number(lesson.price);
+					if (!chainActive) {
+						return { ...lesson, isPaid: false, isAutoChecked: false };
+					}
+					if (cumulativeCost + lessonCost <= totalPrePay) {
+						cumulativeCost += lessonCost;
+						// Независимо от того, что пришло с сервера (например, ручное isPaid: true, isAutoChecked: false),
+						// ставим автоматическую отметку
+						return { ...lesson, isPaid: true, isAutoChecked: true };
+					} else {
+						// Если на данном уроке не хватает средств – цепочка прерывается.
+						// При этом даже если урок с сервера пришёл с ручной отметкой,
+						// мы не ставим автоматическую галочку и «переносим» её на следующее занятие.
+						chainActive = false;
+						return { ...lesson, isPaid: false, isAutoChecked: false };
+					}
+				});
+			// Сортируем обратно в порядке убывания дат (для комбинированной истории)
+			validHistory = validHistory.sort(
+				(a, b) => b.date.getTime() - a.date.getTime()
+			);
+			// ===========================================================
 
 			const validPrePay = prePayData.map((payment) => ({
 				...payment,
