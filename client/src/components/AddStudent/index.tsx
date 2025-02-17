@@ -337,6 +337,7 @@ const AddStudent = ({}: IAddStudent) => {
 				endTime: {hour: 0, minute: 0},
 			},
 			todayProgramStudent: '',
+			
 			targetLesson: '',
 			programLesson: '',
 			typeLesson: '1',
@@ -1296,15 +1297,20 @@ const AddStudent = ({}: IAddStudent) => {
 		}
 	}, [data])
 
+	const [autoSwitched, setAutoSwitched] = useState(false);
+
 	useEffect(() => {
-		if (items.length > 1 && currentItemIndex === 0) {
-		  // Задержка в 2 секунды (2000 мс) – можно настроить по необходимости
-		  const timer = setTimeout(() => {
-			setCurrentItemIndex(1);
-		  }, 1000);
-		  return () => clearTimeout(timer);
-		}
-	  }, [items, currentItemIndex]);
+	  // Авто-переключение происходит, если карточек больше одной,
+	  // индекс текущего предмета равен 0 и авто-переключение ещё не выполнено
+	  if (!autoSwitched && items.length > 1 && currentItemIndex === 0) {
+		const timer = setTimeout(() => {
+		  setCurrentItemIndex(1);
+		  setAutoSwitched(true); // Фиксируем, что авто-переключение уже было
+		}, 1000);
+		return () => clearTimeout(timer);
+	  }
+	}, [items, currentItemIndex, autoSwitched]);
+	
 	  
 
 	useEffect(() => {
@@ -1757,7 +1763,7 @@ const AddStudent = ({}: IAddStudent) => {
 								<div className={`flex flex-col items-center w-[93%]`}>
 									<div className="flex items-center justify-between w-full p-4 border-b">
 										<div className="flex items-center gap-3">
-											<p className="text-md font-medium">Баланс</p>
+											<p className="text-md font-medium">Пополнение</p>
 											<span
 												className={`text-md font-semibold ${
 													balance < 0 ? 'text-red-500' : 'text-green-500'
@@ -1903,7 +1909,7 @@ const AddStudent = ({}: IAddStudent) => {
 																			textAlign: 'end',
 																			textOverflow: 'ellipsis',
 																		}}>
-																		{item.price}₽
+																		{item.price || 0}₽
 																	</p>
 																	<CheckBox
 																		onChange={(e) => e.preventDefault()}
@@ -2081,6 +2087,8 @@ const AddStudent = ({}: IAddStudent) => {
 													num
 													type="text"
 													value={item.tryLessonCost!}
+													placeholder="0"
+
 													disabled={isEditMode}
 													onChange={(e) => {
 														changeItemValue(index, 'tryLessonCheck', true)
@@ -2320,6 +2328,7 @@ const AddStudent = ({}: IAddStudent) => {
 												<Input
 													width={`${item.costOneLesson.length}ch`}
 													num
+													placeholder='0'
 													type="text"
 													value={item.costOneLesson}
 													disabled={isEditMode}

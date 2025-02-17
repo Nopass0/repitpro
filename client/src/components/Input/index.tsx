@@ -12,6 +12,7 @@ interface IInput {
 	num?: boolean
 	disabled?: boolean
 	width?: string
+	placeholder?: string
 	maxWidth?: string
 	minWidth?: string
 	defaultValue?: string
@@ -23,6 +24,7 @@ const Input: React.FC<IInput> = ({
 	style,
 	children,
 	type,
+	placeholder,
 	value,
 	onChange,
 	onClick,
@@ -49,6 +51,7 @@ const Input: React.FC<IInput> = ({
 			className={`${s.input} ${className}`}
 			type={type ? type : 'text'}
 			value={value}
+			placeholder={placeholder}
 			disabled={disabled}
 			width={width}
 			onChange={(e) => {
